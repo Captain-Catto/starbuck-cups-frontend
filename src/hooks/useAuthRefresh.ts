@@ -1,0 +1,164 @@
+import { useEffect, useCallback, useRef } from "react";
+import { useAppDispatch, useAppSelector } from "@/store";
+import {
+  checkAuthStatus,
+  refreshAuthToken,
+  logout,
+} from "@/store/slices/authSlice";
+import { decodeJWT, isTokenExpired } from "@/lib/jwt";
+import { TokenRefreshNotification } from "@/utils/tokenNotification";
+
+export function useAuthRefresh() {
+  const dispatch = useAppDispatch();
+  const { token, refreshToken, isAuthenticated, sessionChecked } =
+    useAppSelector((state) => state.auth);
+
+  // Thêm ref để track đang kiểm tra
+  const isCheckingRef = useRef(false);
+
+  // Hàm check và refresh token nếu cần với debounce protection
+  const checkAndRefreshToken = useCallback(async () => {
+    if (typeof window === "undefined") return;
+
+    // Prevent multiple concurrent checks
+    if (isCheckingRef.current) {
+      console.log("Auth check already in progress, skipping...");
+      return;
+    }
+
+    try {
+      isCheckingRef.current = true;
+
+      const storedToken = localStorage.getItem("admin_token");
+
+      if (!storedToken) {
+        // Kiểm tra có refresh token cookie không
+        if (!document.cookie.includes("admin_refresh_token")) {
+          console.log("No access token and no refresh token cookie found");
+          if (isAuthenticated) {
+            dispatch(logout());
+          }
+          return;
+        }
+
+        // Không có access token, thử check session bằng refresh token trong cookie
+        try {
+          console.log("No access token found, checking session...");
+          const sessionResult = await dispatch(checkAuthStatus()).unwrap();
+          console.log("Session restored successfully");
+          return sessionResult;
+        } catch (error) {
+          console.log("No valid session found");
+          if (isAuthenticated) {
+            dispatch(logout());
+          }
+          return;
+        }
+      }
+
+      try {
+        // Kiểm tra token có hết hạn không
+        if (isTokenExpired(storedToken)) {
+          console.log("Token expired, refreshing...");
+          TokenRefreshNotification.showTokenExpiring();
+          const result = await dispatch(refreshAuthToken()).unwrap();
+          TokenRefreshNotification.showRefreshSuccess();
+          console.log("Token refreshed successfully");
+          return result;
+        }
+
+        // Kiểm tra token có gần hết hạn không (còn dưới 5 phút)
+        const payload = decodeJWT(storedToken);
+        if (payload && payload.exp) {
+          const currentTime = Date.now() / 1000;
+          const timeUntilExpiry = payload.exp - currentTime;
+
+          if (timeUntilExpiry < 300) {
+            // 5 phút = 300 giây
+            console.log("Token expiring soon, refreshing...");
+            TokenRefreshNotification.showTokenExpiring();
+            const result = await dispatch(refreshAuthToken()).unwrap();
+            TokenRefreshNotification.showRefreshSuccess();
+            console.log("Token refreshed successfully");
+            return result;
+          }
+        }
+
+        // Token vẫn còn hạn, verify với server nếu chưa check
+        if (!sessionChecked) {
+          await dispatch(checkAuthStatus()).unwrap();
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        TokenRefreshNotification.showRefreshError();
+        dispatch(logout());
+      }
+    } catch (error) {
+      console.error("Auth check failed:", error);
+      TokenRefreshNotification.showRefreshError();
+      dispatch(logout());
+    } finally {
+      isCheckingRef.current = false;
+    }
+  }, [dispatch, isAuthenticated, sessionChecked]);
+
+  // Auto check token khi component mount - chỉ gọi khi có token hoặc có thể có session
+  useEffect(() => {
+    const storedToken = localStorage.getItem("admin_token");
+
+    // Chỉ check nếu có token trong localStorage hoặc có thể có session cookie
+    if (storedToken || document.cookie.includes("admin_refresh_token")) {
+      const timer = setTimeout(() => {
+        checkAndRefreshToken();
+      }, 100); // Delay 100ms để tránh race condition
+
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Intentionally empty để chỉ chạy 1 lần
+
+  // Setup interval để check token định kỳ (mỗi 4 phút)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      checkAndRefreshToken();
+    }, 4 * 60 * 1000); // 4 phút
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated, checkAndRefreshToken]);
+
+  // Listen for focus event để check token khi user quay lại tab
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleFocus = () => {
+      // Debounce để tránh multiple calls
+      setTimeout(() => {
+        checkAndRefreshToken();
+      }, 200);
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [isAuthenticated, checkAndRefreshToken]);
+
+  return {
+    isAuthenticated,
+    token,
+    refreshToken,
+    sessionChecked,
+    checkAndRefreshToken,
+  };
+}
+
+// Hook để sử dụng trong admin layout
+export function useAdminAuth() {
+  const { isAuthenticated, sessionChecked } = useAuthRefresh();
+
+  return {
+    isAuthenticated,
+    sessionChecked,
+    isLoading: !sessionChecked,
+  };
+}

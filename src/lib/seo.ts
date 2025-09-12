@@ -1,0 +1,148 @@
+import { Metadata } from "next";
+import { PageSEO, Product } from "@/types";
+
+export const siteConfig = {
+  name: "Starbucks Cups Shop",
+  description:
+    "Cửa hàng ly Starbucks chính thức với đa dạng màu sắc và dung tích. Tư vấn miễn phí qua Messenger.",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://starbucks-cups.com",
+  image: "/images/og-image.jpg",
+  keywords:
+    "starbucks, ly starbucks, cups, tumbler, ly giữ nhiệt, starbucks vietnam",
+};
+
+export function generateSEO(seo: Partial<PageSEO>): Metadata {
+  const title = seo.title
+    ? `${seo.title} | ${siteConfig.name}`
+    : siteConfig.name;
+  const description = seo.description || siteConfig.description;
+  const url = seo.canonical || siteConfig.url;
+  const image = seo.openGraph?.image || siteConfig.image;
+
+  return {
+    title,
+    description,
+    keywords: seo.keywords || siteConfig.keywords,
+    authors: [{ name: siteConfig.name }],
+    creator: siteConfig.name,
+    publisher: siteConfig.name,
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false,
+    },
+    metadataBase: new URL(siteConfig.url),
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: seo.openGraph?.title || title,
+      description: seo.openGraph?.description || description,
+      url: seo.openGraph?.url || url,
+      siteName: siteConfig.name,
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: seo.openGraph?.title || title,
+        },
+      ],
+      locale: "vi_VN",
+      type: seo.openGraph?.type || "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seo.openGraph?.title || title,
+      description: seo.openGraph?.description || description,
+      images: [image],
+      creator: "@starbuckscups",
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+      yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION,
+    },
+  };
+}
+
+export function generateProductStructuredData(product: Product) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description,
+    image: product.images?.map((img: string) => `${siteConfig.url}${img}`),
+    brand: {
+      "@type": "Brand",
+      name: "Starbucks",
+    },
+    category: product.category?.name,
+    color: product.color?.name,
+    offers: {
+      "@type": "AggregateOffer",
+      availability: "https://schema.org/InStock",
+      priceCurrency: "VND",
+      lowPrice: "0",
+      highPrice: "0",
+      priceSpecification: {
+        "@type": "PriceSpecification",
+        valueAddedTaxIncluded: true,
+      },
+      seller: {
+        "@type": "Organization",
+        name: siteConfig.name,
+      },
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      reviewCount: "100",
+    },
+  };
+}
+
+export function generateBreadcrumbStructuredData(
+  items: Array<{ name: string; url: string }>
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: `${siteConfig.url}${item.url}`,
+    })),
+  };
+}
+
+export function generateOrganizationStructuredData() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteConfig.name,
+    description: siteConfig.description,
+    url: siteConfig.url,
+    logo: `${siteConfig.url}/images/logo.png`,
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer service",
+      availableLanguage: "Vietnamese",
+    },
+    sameAs: [
+      "https://facebook.com/starbuckscups",
+      "https://instagram.com/starbuckscups",
+    ],
+  };
+}
