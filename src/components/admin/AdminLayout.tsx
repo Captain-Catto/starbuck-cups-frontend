@@ -39,12 +39,8 @@ const sidebarItems: SidebarItem[] = [
   },
   {
     icon: Package,
-    label: "Sản phẩm",
+    label: "Danh sách sản phẩm",
     path: "/admin/products",
-    submenu: [
-      { label: "Danh sách sản phẩm", path: "/admin/products" },
-      { label: "Thêm sản phẩm", path: "/admin/products/new" },
-    ],
   },
   {
     icon: ShoppingCart,
@@ -122,6 +118,22 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const isActivePath = (path: string) => {
     return pathname === path || pathname.startsWith(path + "/");
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+
+    if (hour >= 5 && hour < 11) {
+      return "Chào buổi sáng";
+    } else if (hour >= 11 && hour < 14) {
+      return "Chào buổi trưa";
+    } else if (hour >= 14 && hour < 18) {
+      return "Chào buổi chiều";
+    } else if (hour >= 18 && hour < 22) {
+      return "Chào buổi tối";
+    } else {
+      return "Chào đêm khuya";
+    }
   };
 
   if (isLoading) {
@@ -277,12 +289,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </button>
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">
-                  {sidebarItems.find((item) => isActivePath(item.path))
-                    ?.label || "Dashboard"}
+                  {getGreeting()}
                 </h2>
-                <p className="text-sm text-gray-600">
-                  Quản lý hệ thống Starbucks Cups
-                </p>
+                <p className="text-sm text-gray-500">{user?.name || "Admin"}</p>
               </div>
             </div>
 

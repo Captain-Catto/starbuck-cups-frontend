@@ -23,7 +23,14 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
-    return NextResponse.json(data, { status: response.status });
+    // Create response and forward any set-cookie headers
+    const nextResponse = NextResponse.json(data, { status: response.status });
+    const setCookieHeader = response.headers.get("set-cookie");
+    if (setCookieHeader) {
+      nextResponse.headers.set("set-cookie", setCookieHeader);
+    }
+
+    return nextResponse;
   } catch (error) {
     console.error("Session check error:", error);
     return NextResponse.json(

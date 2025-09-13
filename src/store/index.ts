@@ -2,11 +2,15 @@ import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import authReducer from "./slices/authSlice";
 import cartReducer from "./slices/cartSlice";
+import customersReducer from "./slices/customersSlice";
+import ordersReducer from "./slices/ordersSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     cart: cartReducer,
+    customers: customersReducer,
+    orders: ordersReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

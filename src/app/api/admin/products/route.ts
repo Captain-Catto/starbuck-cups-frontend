@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
 
-// Helper function to get auth headers from cookies
+// Helper function to forward auth headers
 function getAuthHeaders(request: NextRequest): Record<string, string> {
-  const accessToken = request.cookies.get("admin_access_token")?.value;
   const headers: Record<string, string> = {};
 
-  if (accessToken) {
-    headers["authorization"] = `Bearer ${accessToken}`;
+  // Forward authorization header from client request
+  const authHeader = request.headers.get("authorization");
+  console.log("[DEBUG] Products API - Authorization header:", authHeader ? "Present" : "Missing");
+  console.log("[DEBUG] Products API - Request timestamp:", new Date().toISOString());
+  if (authHeader) {
+    headers["authorization"] = authHeader;
+    console.log("[DEBUG] Products API - Token preview:", authHeader.substring(0, 20) + "...");
   }
 
   return headers;

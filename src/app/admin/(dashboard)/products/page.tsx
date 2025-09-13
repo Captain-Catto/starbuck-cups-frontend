@@ -17,6 +17,7 @@ import Image from "next/image";
 import type { Product, Category, Color, Capacity } from "@/types";
 import ProductModal from "@/components/admin/ProductModal";
 import { apiService } from "@/lib/api";
+import { Pagination } from "@/components/ui/Pagination";
 
 interface ProductListItem extends Product {
   isActive: boolean;
@@ -78,7 +79,9 @@ export default function AdminProductsPage() {
         }),
       });
 
-      const response = await fetch(`/api/admin/products?${params}`);
+      const response = await fetch(`/api/admin/products?${params}`, {
+        headers: getAuthHeaders(),
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -108,12 +111,19 @@ export default function AdminProductsPage() {
     }
   }, [filters, pagination.page, pagination.limit]);
 
-  const loadFilterOptions = async () => {
+  const getAuthHeaders = (): Record<string, string> => {
+    const token = localStorage.getItem("admin_token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  const loadFilterOptions = useCallback(async () => {
     try {
+      const headers = getAuthHeaders();
+
       const [categoriesRes, colorsRes, capacitiesRes] = await Promise.all([
-        fetch("/api/admin/categories"),
-        fetch("/api/admin/colors"),
-        fetch("/api/admin/capacities"),
+        fetch("/api/admin/categories", { headers }),
+        fetch("/api/admin/colors", { headers }),
+        fetch("/api/admin/capacities", { headers }),
       ]);
 
       const [categoriesData, colorsData, capacitiesData] = await Promise.all([
@@ -159,13 +169,13 @@ export default function AdminProductsPage() {
       setColors([]);
       setCapacities([]);
     }
-  };
+  }, []);
 
   // Load data on component mount
   useEffect(() => {
     loadProducts();
     loadFilterOptions();
-  }, [loadProducts]);
+  }, [loadProducts, loadFilterOptions]);
 
   const handleFilterChange = (field: keyof ProductFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
@@ -648,102 +658,15 @@ export default function AdminProductsPage() {
 
           {/* Pagination */}
           {pagination.totalPages > 1 && (
-            <div className="bg-white px-4 py-3 border-t flex items-center justify-between sm:px-6">
-              <div className="flex-1 flex justify-between sm:hidden">
-                <button
-                  onClick={() =>
-                    setPagination((prev) => ({
-                      ...prev,
-                      page: Math.max(1, prev.page - 1),
-                    }))
-                  }
-                  disabled={pagination.page === 1}
-                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                  Trước
-                </button>
-                <button
-                  onClick={() =>
-                    setPagination((prev) => ({
-                      ...prev,
-                      page: Math.min(prev.totalPages, prev.page + 1),
-                    }))
-                  }
-                  disabled={pagination.page === pagination.totalPages}
-                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                  Sau
-                </button>
-              </div>
-              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">
-                    Hiển thị{" "}
-                    <span className="font-medium">
-                      {(pagination.page - 1) * pagination.limit + 1}
-                    </span>{" "}
-                    đến{" "}
-                    <span className="font-medium">
-                      {Math.min(
-                        pagination.page * pagination.limit,
-                        pagination.total
-                      )}
-                    </span>{" "}
-                    trong tổng số{" "}
-                    <span className="font-medium">{pagination.total}</span> kết
-                    quả
-                  </p>
-                </div>
-                <div>
-                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                    <button
-                      onClick={() =>
-                        setPagination((prev) => ({
-                          ...prev,
-                          page: Math.max(1, prev.page - 1),
-                        }))
-                      }
-                      disabled={pagination.page === 1}
-                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                    >
-                      Trước
-                    </button>
-                    {Array.from(
-                      { length: Math.min(5, pagination.totalPages) },
-                      (_, i) => {
-                        const page = i + 1;
-                        return (
-                          <button
-                            key={page}
-                            onClick={() =>
-                              setPagination((prev) => ({ ...prev, page }))
-                            }
-                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                              page === pagination.page
-                                ? "z-10 bg-green-50 border-green-500 text-green-600"
-                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        );
-                      }
-                    )}
-                    <button
-                      onClick={() =>
-                        setPagination((prev) => ({
-                          ...prev,
-                          page: Math.min(prev.totalPages, prev.page + 1),
-                        }))
-                      }
-                      disabled={pagination.page === pagination.totalPages}
-                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                    >
-                      Sau
-                    </button>
-                  </nav>
-                </div>
-              </div>
+            <div className="bg-white px-4 py-3 border-t">
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                onPageChange={(page) =>
+                  setPagination((prev) => ({ ...prev, page }))
+                }
+                className="justify-center"
+              />
             </div>
           )}
         </div>

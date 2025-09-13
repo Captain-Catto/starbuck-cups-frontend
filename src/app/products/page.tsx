@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Filter, Search, Grid3X3, List, ShoppingCart } from "lucide-react";
+import { Filter, Search, ShoppingCart } from "lucide-react";
 import { useAppDispatch } from "@/store";
 import { addToCart } from "@/store/slices/cartSlice";
 import type { Product, Category, Color, Capacity } from "@/types";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
+import { Pagination } from "@/components/ui/Pagination";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -29,8 +30,7 @@ export default function ProductsPage() {
     searchParams.get("capacity") || ""
   );
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [sortBy, setSortBy] = useState("name");
+  const [sortBy, setSortBy] = useState("name_asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -101,7 +101,29 @@ export default function ProductsPage() {
         if (selectedCapacity) params.append("capacityId", selectedCapacity);
         params.append("page", currentPage.toString());
         params.append("limit", "12");
-        if (sortBy === "name") params.append("sortBy", "name");
+
+        // Enhanced sorting options
+        switch (sortBy) {
+          case "name_asc":
+            params.append("sortBy", "name");
+            params.append("sortOrder", "asc");
+            break;
+          case "name_desc":
+            params.append("sortBy", "name");
+            params.append("sortOrder", "desc");
+            break;
+          case "newest":
+            params.append("sortBy", "createdAt");
+            params.append("sortOrder", "desc");
+            break;
+          case "oldest":
+            params.append("sortBy", "createdAt");
+            params.append("sortOrder", "asc");
+            break;
+          default:
+            params.append("sortBy", "name");
+            params.append("sortOrder", "asc");
+        }
 
         const response = await fetch(`/api/products?${params.toString()}`);
         const data = await response.json();
@@ -153,16 +175,21 @@ export default function ProductsPage() {
     setSelectedCategory("");
     setSelectedColor("");
     setSelectedCapacity("");
+    setSortBy("name_asc"); // Reset sort to default
     setCurrentPage(1);
     router.push("/products");
   };
 
   const hasActiveFilters =
-    searchQuery || selectedCategory || selectedColor || selectedCapacity;
+    searchQuery ||
+    selectedCategory ||
+    selectedColor ||
+    selectedCapacity ||
+    sortBy !== "name_asc";
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
+      {/* Hero Section
       <div className="bg-gradient-to-r from-green-600 to-green-700 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="text-center">
@@ -173,23 +200,58 @@ export default function ProductsPage() {
             </p>
           </div>
         </div>
-      </div>
+      </div> */}
 
-      <div className="container mx-auto px-15 py-8">
+      <div className="container mx-auto px-4 py-8 lg:px-8 xl:px-15">
+        {/* Mobile Filter Backdrop */}
+        {showFilters && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setShowFilters(false)}
+          />
+        )}
+
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
           <div className="lg:w-1/4">
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
+            <div
+              className={`bg-white rounded-lg shadow-sm p-6 lg:sticky lg:top-24 ${
+                showFilters
+                  ? "fixed inset-x-4 top-4 bottom-4 z-50 overflow-y-auto lg:relative lg:inset-auto lg:z-auto lg:overflow-visible"
+                  : "hidden lg:block"
+              }`}
+            >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Bộ lọc</h3>
-                {hasActiveFilters && (
-                  <button
-                    onClick={clearFilters}
-                    className="text-sm text-green-600 hover:text-green-700"
-                  >
-                    Xóa tất cả
-                  </button>
-                )}
+                <div className="flex items-center gap-3">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Bộ lọc
+                  </h3>
+                  {/* Clear filters button for mobile */}
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearFilters}
+                      className="lg:hidden text-sm text-red-600 hover:text-red-700 px-2 py-1 rounded"
+                    >
+                      Xóa tất cả
+                    </button>
+                  )}
+                  {/* Clear filters button for desktop */}
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearFilters}
+                      className="hidden lg:inline text-sm text-red-600 hover:text-red-700 rounded"
+                    >
+                      Xóa tất cả
+                    </button>
+                  )}
+                </div>
+                {/* Close button for mobile */}
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="lg:hidden text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
               </div>
 
               {/* Search */}
@@ -265,58 +327,43 @@ export default function ProductsPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Sort Options */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sắp xếp
+                </label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                >
+                  <option value="name_asc">Tên A → Z</option>
+                  <option value="name_desc">Tên Z → A</option>
+                  <option value="newest">Mới nhất</option>
+                  <option value="oldest">Cũ nhất</option>
+                </select>
+              </div>
             </div>
           </div>
 
           {/* Main Content */}
           <div className="lg:w-3/4">
-            {/* Toolbar */}
-            <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+            {/* Toolbar - Only show on mobile/tablet */}
+            <div className="lg:hidden bg-white rounded-lg shadow-sm p-4 mb-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-4">
                   {/* Mobile Filter Toggle */}
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className="lg:hidden flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 relative"
                   >
                     <Filter className="w-4 h-4" />
                     Bộ lọc
+                    {hasActiveFilters && (
+                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full"></span>
+                    )}
                   </button>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  {/* Sort */}
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="name">Tên A-Z</option>
-                  </select>
-
-                  {/* View Mode */}
-                  <div className="flex border border-gray-300 rounded-lg overflow-hidden">
-                    <button
-                      onClick={() => setViewMode("grid")}
-                      className={`p-2 ${
-                        viewMode === "grid"
-                          ? "bg-green-600 text-white"
-                          : "bg-white text-gray-600 hover:bg-gray-50"
-                      }`}
-                    >
-                      <Grid3X3 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode("list")}
-                      className={`p-2 ${
-                        viewMode === "list"
-                          ? "bg-green-600 text-white"
-                          : "bg-white text-gray-600 hover:bg-gray-50"
-                      }`}
-                    >
-                      <List className="w-4 h-4" />
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
@@ -328,18 +375,12 @@ export default function ProductsPage() {
               </div>
             ) : paginatedProducts.length > 0 ? (
               <>
-                <div
-                  className={`grid gap-6 mb-8 ${
-                    viewMode === "grid"
-                      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                      : "grid-cols-1"
-                  }`}
-                >
+                {/* Products Grid - Always grid layout */}
+                <div className="grid gap-6 mb-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                   {paginatedProducts.map((product) => (
                     <ProductCard
                       key={product.id}
                       product={product}
-                      viewMode={viewMode}
                       onAddToCart={handleAddToCart}
                     />
                   ))}
@@ -347,39 +388,12 @@ export default function ProductsPage() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-2">
-                    <button
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                    >
-                      Trước
-                    </button>
-
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (page) => (
-                        <button
-                          key={page}
-                          onClick={() => setCurrentPage(page)}
-                          className={`px-3 py-2 border rounded-lg ${
-                            currentPage === page
-                              ? "bg-green-600 text-white border-green-600"
-                              : "border-gray-300 hover:bg-gray-50"
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      )
-                    )}
-
-                    <button
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                    >
-                      Sau
-                    </button>
-                  </div>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    className="mb-8"
+                  />
                 )}
               </>
             ) : (
@@ -404,69 +418,11 @@ export default function ProductsPage() {
 
 interface ProductCardProps {
   product: Product;
-  viewMode: "grid" | "list";
   onAddToCart: (product: Product) => void;
 }
 
-function ProductCard({ product, viewMode, onAddToCart }: ProductCardProps) {
-  if (viewMode === "list") {
-    return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
-        <div className="flex gap-6">
-          <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-            <Image
-              src={product.images[0] || "/images/placeholder-product.jpg"}
-              alt={product.name}
-              width={96}
-              height={96}
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              <Link
-                href={`/products/${product.slug}`}
-                className="hover:text-green-600"
-              >
-                {product.name}
-              </Link>
-            </h3>
-            <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-              {product.description}
-            </p>
-
-            <div className="flex items-center gap-4 mb-3">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-4 h-4 rounded-full border border-gray-300"
-                  style={{ backgroundColor: product.color.hexCode }}
-                />
-                <span className="text-sm text-gray-600">
-                  {product.color.name}
-                </span>
-              </div>
-              <span className="text-sm text-gray-600">
-                {product.capacity.name}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => onAddToCart(product)}
-                  className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+function ProductCard({ product, onAddToCart }: ProductCardProps) {
+  // Always use grid layout - simplified component
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
       <div className="aspect-square bg-gray-100 overflow-hidden">

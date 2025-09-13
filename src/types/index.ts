@@ -73,7 +73,10 @@ export interface Customer {
   messengerId: string;
   firstName?: string;
   lastName?: string;
+  name?: string;
+  messengerName?: string;
   phone?: string;
+  email?: string;
   address?: string;
   createdAt: string;
   updatedAt: string;
@@ -135,21 +138,36 @@ export type OrderStatus =
 // Consultation Types
 export interface Consultation {
   id: string;
-  customerId: string;
-  products: Product[];
-  customerMessage: string;
-  adminResponse?: string;
+  customerName: string;
+  phoneNumber: string;
+  address: string;
+  totalItems: number;
   status: ConsultationStatus;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
-  customer: Customer;
+  consultationItems: ConsultationItem[];
+}
+
+export interface ConsultationItem {
+  id: string;
+  consultationId: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  color: string;
+  capacity: string;
+  category: string;
+  createdAt: string;
+  consultation: Consultation;
+  product: Product;
 }
 
 export type ConsultationStatus =
   | "PENDING"
   | "IN_PROGRESS"
-  | "COMPLETED"
-  | "CANCELLED";
+  | "RESOLVED"
+  | "CLOSED";
 
 // Cart Types
 export interface CartItem {

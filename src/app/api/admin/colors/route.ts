@@ -1,14 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 
-// Helper function to get auth headers from cookies
+// Helper function to forward auth headers
 function getAuthHeaders(request: NextRequest): Record<string, string> {
-  const accessToken = request.cookies.get("admin_access_token")?.value;
   const headers: Record<string, string> = {};
 
-  if (accessToken) {
-    headers["authorization"] = `Bearer ${accessToken}`;
+  // Forward authorization header from client request
+  const authHeader = request.headers.get("authorization");
+  console.log(
+    "[DEBUG] Colors API - Authorization header:",
+    authHeader ? "Present" : "Missing"
+  );
+  console.log(
+    "[DEBUG] Colors API - Request timestamp:",
+    new Date().toISOString()
+  );
+  if (authHeader) {
+    headers["authorization"] = authHeader;
+    console.log(
+      "[DEBUG] Colors API - Token preview:",
+      authHeader.substring(0, 20) + "..."
+    );
   }
 
   return headers;
@@ -31,6 +44,32 @@ export async function GET(request: NextRequest) {
     console.error("Colors API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch colors" },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/admin/colors - Create new color
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const response = await fetch(`${BACKEND_URL}/api/admin/colors`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(request),
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json();
+
+    return NextResponse.json(data, { status: response.status });
+  } catch (error) {
+    console.error("Colors POST error:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to create color" },
       { status: 500 }
     );
   }

@@ -142,10 +142,23 @@ class ApiService {
     accessToken?: string;
   }> {
     try {
-      // Refresh token sẽ được gửi tự động trong cookie
+      // Check if refresh token cookie exists before making request
+      const refreshTokenCookie = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('admin_refresh_token='));
+      
+      if (!refreshTokenCookie) {
+        console.error("No admin_refresh_token cookie found");
+        throw new Error("No refresh token available");
+      }
+
+      console.log("Attempting token refresh with cookie present");
+      
+      // Backend có thể lấy refresh token từ cookie hoặc body
+      // Gửi empty body để dựa vào cookie
       const response = await axios.post(
         `${this.api.defaults.baseURL}/auth/admin/refresh`,
-        {}, // Empty body vì token trong cookie
+        {}, // Empty body - backend sẽ lấy từ cookie
         {
           headers: { "Content-Type": "application/json" },
           timeout: 10000,
@@ -163,8 +176,15 @@ class ApiService {
       } else {
         throw new Error("Invalid refresh response");
       }
-    } catch (error) {
-      console.error("Token refresh error:", error);
+    } catch (error: unknown) {
+      const axiosError = error as any;
+      console.error("Token refresh error details:", {
+        status: axiosError.response?.status,
+        statusText: axiosError.response?.statusText,
+        data: axiosError.response?.data,
+        message: axiosError.message,
+        cookiePresent: document.cookie.includes('admin_refresh_token')
+      });
       throw error;
     }
   }

@@ -5,11 +5,15 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
+    // Forward cookies from the client request to the backend
+    const cookies = request.headers.get("cookie") || "";
+
     const response = await fetch(`${BACKEND_URL}/api/auth/admin/refresh`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Cookie": cookies, // Forward cookies to backend
       },
       body: JSON.stringify(body),
     });
@@ -23,7 +27,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(data);
+    // Forward any set-cookie headers back to the client
+    const nextResponse = NextResponse.json(data);
+    const setCookieHeader = response.headers.get("set-cookie");
+    if (setCookieHeader) {
+      nextResponse.headers.set("set-cookie", setCookieHeader);
+    }
+
+    return nextResponse;
   } catch (error) {
     console.error("Admin auth refresh error:", error);
     return NextResponse.json(

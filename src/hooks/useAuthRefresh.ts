@@ -59,12 +59,20 @@ export function useAuthRefresh() {
       try {
         // Kiểm tra token có hết hạn không
         if (isTokenExpired(storedToken)) {
-          console.log("Token expired, refreshing...");
+          console.log("Token expired, attempting refresh...");
           TokenRefreshNotification.showTokenExpiring();
-          const result = await dispatch(refreshAuthToken()).unwrap();
-          TokenRefreshNotification.showRefreshSuccess();
-          console.log("Token refreshed successfully");
-          return result;
+
+          try {
+            const result = await dispatch(refreshAuthToken()).unwrap();
+            TokenRefreshNotification.showRefreshSuccess();
+            console.log("Token refreshed successfully");
+            return result;
+          } catch (error) {
+            console.error("Token refresh failed:", error);
+            TokenRefreshNotification.showRefreshError();
+            dispatch(logout());
+            throw error;
+          }
         }
 
         // Kiểm tra token có gần hết hạn không (còn dưới 5 phút)
@@ -75,12 +83,20 @@ export function useAuthRefresh() {
 
           if (timeUntilExpiry < 300) {
             // 5 phút = 300 giây
-            console.log("Token expiring soon, refreshing...");
+            console.log("Token expiring soon, attempting refresh...");
             TokenRefreshNotification.showTokenExpiring();
-            const result = await dispatch(refreshAuthToken()).unwrap();
-            TokenRefreshNotification.showRefreshSuccess();
-            console.log("Token refreshed successfully");
-            return result;
+
+            try {
+              const result = await dispatch(refreshAuthToken()).unwrap();
+              TokenRefreshNotification.showRefreshSuccess();
+              console.log("Token refreshed successfully");
+              return result;
+            } catch (error) {
+              console.error("Proactive token refresh failed:", error);
+              TokenRefreshNotification.showRefreshError();
+              dispatch(logout());
+              throw error;
+            }
           }
         }
 

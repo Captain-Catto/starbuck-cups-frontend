@@ -1,0 +1,50 @@
+import { NextRequest, NextResponse } from "next/server";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+
+// Helper function to forward auth headers
+function getAuthHeaders(request: NextRequest): Record<string, string> {
+  const headers: Record<string, string> = {};
+
+  // Forward authorization header from client request
+  const authHeader = request.headers.get("authorization");
+  if (authHeader) {
+    headers["authorization"] = authHeader;
+  }
+
+  return headers;
+}
+
+// PATCH /api/admin/colors/[id]/toggle-status - Toggle color status
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    console.log(`[DEBUG] Toggle color status for ID: ${id}`);
+
+    const response = await fetch(
+      `${BACKEND_URL}/api/admin/colors/${id}/toggle-status`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(request),
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    console.log(`[DEBUG] Backend response:`, data);
+
+    return NextResponse.json(data, { status: response.status });
+  } catch (error) {
+    console.error("Colors toggle status error:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to toggle color status" },
+      { status: 500 }
+    );
+  }
+}

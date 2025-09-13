@@ -31,6 +31,9 @@ export default function ColorsManagement() {
   const [colors, setColors] = useState<ColorWithCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "inactive"
+  >("active");
   const [showModal, setShowModal] = useState(false);
   const [editingColor, setEditingColor] = useState<Color | null>(null);
   const [formData, setFormData] = useState<ColorFormData>({
@@ -41,50 +44,37 @@ export default function ColorsManagement() {
   const [formErrors, setFormErrors] = useState<Partial<ColorFormData>>({});
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchColors();
-  }, []);
+  const getAuthHeaders = (): Record<string, string> => {
+    const token = localStorage.getItem("admin_token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
 
   const fetchColors = async () => {
     try {
       setLoading(true);
-      // Mock data for development
-      const mockColors: ColorWithCount[] = [
-        {
-          id: "1",
-          name: "Xanh Starbucks",
-          hexCode: "#00704A",
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          _count: { products: 12 },
-        },
-        {
-          id: "2",
-          name: "Đỏ Cherry",
-          hexCode: "#D2001F",
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          _count: { products: 8 },
-        },
-        {
-          id: "3",
-          name: "Xanh Navy",
-          hexCode: "#0F3460",
-          isActive: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          _count: { products: 0 },
-        },
-      ];
-      setColors(mockColors);
+      const response = await fetch("/api/admin/colors", {
+        headers: getAuthHeaders(),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setColors(data.data?.items || []);
+      } else {
+        console.error("API Error:", data);
+        toast.error(data.message || "Không thể tải danh sách màu sắc");
+      }
     } catch (error) {
       console.error("Error fetching colors:", error);
+      toast.error("Có lỗi xảy ra khi tải màu sắc");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchColors();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const validateForm = (): boolean => {
     const errors: Partial<ColorFormData> = {};
@@ -110,28 +100,32 @@ export default function ColorsManagement() {
 
     setActionLoading("save");
     try {
-      if (editingColor) {
-        // Mock update
-        setColors((prev) =>
-          prev.map((c) =>
-            c.id === editingColor.id ? { ...c, ...formData } : c
-          )
-        );
-        toast.success(`Đã cập nhật màu "${formData.name}" thành công`);
-      } else {
-        // Mock create
-        const newColor: ColorWithCount = {
-          id: Date.now().toString(),
-          ...formData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          _count: { products: 0 },
-        };
-        setColors((prev) => [newColor, ...prev]);
-        toast.success(`Đã tạo màu "${formData.name}" thành công`);
-      }
+      const url = editingColor
+        ? `/api/admin/colors/${editingColor.id}`
+        : "/api/admin/colors";
 
-      handleCloseModal();
+      const method = editingColor ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(
+          editingColor ? "Cập nhật màu thành công" : "Tạo màu thành công"
+        );
+        handleCloseModal();
+        fetchColors();
+      } else {
+        toast.error(data.message || "Có lỗi xảy ra");
+      }
     } catch (error) {
       console.error("Error saving color:", error);
       toast.error("Có lỗi xảy ra khi lưu màu");
@@ -155,9 +149,19 @@ export default function ColorsManagement() {
 
     setActionLoading(`delete-${color.id}`);
     try {
-      // Mock delete
-      setColors((prev) => prev.filter((c) => c.id !== color.id));
-      toast.success(`Đã xóa màu "${color.name}" thành công`);
+      const response = await fetch(`/api/admin/colors/${color.id}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(`Đã xóa màu "${color.name}" thành công`);
+        fetchColors();
+      } else {
+        toast.error(data.message || "Có lỗi xảy ra khi xóa");
+      }
     } catch (error) {
       console.error("Error deleting color:", error);
       toast.error("Có lỗi xảy ra khi xóa màu");
@@ -168,17 +172,47 @@ export default function ColorsManagement() {
 
   const handleToggleStatus = async (color: ColorWithCount) => {
     setActionLoading(`toggle-${color.id}`);
+
+    // Optimistic update - cập nhật UI ngay lập tức
+    const updatedColors = colors.map((c) =>
+      c.id === color.id ? { ...c, isActive: !c.isActive } : c
+    );
+    setColors(updatedColors);
+
     try {
-      // Mock toggle
-      setColors((prev) =>
-        prev.map((c) =>
-          c.id === color.id ? { ...c, isActive: !c.isActive } : c
-        )
+      const response = await fetch(
+        `/api/admin/colors/${color.id}/toggle-status`,
+        {
+          method: "PATCH",
+          headers: getAuthHeaders(),
+        }
       );
-      toast.success(
-        `Đã ${!color.isActive ? "kích hoạt" : "tắt"} màu "${color.name}"`
-      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(
+          `Đã ${!color.isActive ? "kích hoạt" : "tắt"} màu "${color.name}"`
+        );
+        // Không cần fetchColors() nữa vì đã update optimistically
+      } else {
+        // Rollback nếu có lỗi
+        setColors(colors);
+
+        // Hiển thị message cụ thể từ backend
+        if (data.error?.code === "COLOR_IN_USE") {
+          toast.error(
+            `Không thể tắt màu "${color.name}" vì đang được sử dụng trong ${
+              data.error.message.match(/\d+/)?.[0] || "một số"
+            } sản phẩm`
+          );
+        } else {
+          toast.error(data.error?.message || data.message || "Có lỗi xảy ra");
+        }
+      }
     } catch (error) {
+      // Rollback nếu có lỗi network
+      setColors(colors);
       console.error("Error toggling color status:", error);
       toast.error("Có lỗi xảy ra khi thay đổi trạng thái màu");
     } finally {
@@ -197,9 +231,17 @@ export default function ColorsManagement() {
     setFormErrors({});
   };
 
-  const filteredColors = colors.filter((color) =>
-    color.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredColors = colors.filter((color) => {
+    const matchesSearch = color.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "active" && color.isActive) ||
+      (statusFilter === "inactive" && !color.isActive);
+
+    return matchesSearch && matchesStatus;
+  });
 
   if (loading) {
     return (
@@ -238,6 +280,17 @@ export default function ColorsManagement() {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
           />
         </div>
+        <select
+          value={statusFilter}
+          onChange={(e) =>
+            setStatusFilter(e.target.value as "all" | "active" | "inactive")
+          }
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white"
+        >
+          <option value="active">Đang hoạt động</option>
+          <option value="inactive">Đã ẩn</option>
+          <option value="all">Tất cả trạng thái</option>
+        </select>
       </div>
 
       {/* Colors Grid */}
