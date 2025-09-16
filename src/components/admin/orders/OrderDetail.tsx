@@ -177,8 +177,12 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [showProductSelector, setShowProductSelector] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(false);
-  const [productPrices, setProductPrices] = useState<{[key: string]: string}>({});
-  const [productQuantities, setProductQuantities] = useState<{[key: string]: number}>({});
+  const [productPrices, setProductPrices] = useState<{ [key: string]: string }>(
+    {}
+  );
+  const [productQuantities, setProductQuantities] = useState<{
+    [key: string]: number;
+  }>({});
 
   // Helper function to check if shipping is free
   const isFreeShipping = (orderData: OrderDetailData) => {
@@ -336,7 +340,9 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
       console.log("Products fetch response:", data);
       if (data.success && data.data && data.data.items) {
         setProducts(
-          data.data.items.filter((product: Product) => product.stockQuantity > 0 && product.isActive)
+          data.data.items.filter(
+            (product: Product) => product.stockQuantity > 0 && product.isActive
+          )
         );
       }
     } catch (error) {
@@ -348,7 +354,11 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
   };
 
   // Add product to order
-  const addProduct = (product: Product, quantity: number = 1, customPrice?: number) => {
+  const addProduct = (
+    product: Product,
+    quantity: number = 1,
+    customPrice?: number
+  ) => {
     const finalPrice = customPrice || product.unitPrice;
 
     // Validate price
@@ -384,20 +394,22 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
     }
 
     // Clear the price and quantity for this product
-    setProductPrices(prev => {
+    setProductPrices((prev) => {
       const newPrices = { ...prev };
       delete newPrices[product.id];
       return newPrices;
     });
-    setProductQuantities(prev => {
+    setProductQuantities((prev) => {
       const newQuantities = { ...prev };
       delete newQuantities[product.id];
       return newQuantities;
     });
 
     setShowProductSelector(false);
-    const priceMessage = customPrice 
-      ? `Đã thêm ${product.name} với giá tùy chỉnh ${formatCurrency(finalPrice)}`
+    const priceMessage = customPrice
+      ? `Đã thêm ${product.name} với giá tùy chỉnh ${formatCurrency(
+          finalPrice
+        )}`
       : `Đã thêm ${product.name} với giá ${formatCurrency(finalPrice)}`;
     toast.success(priceMessage);
   };
@@ -808,31 +820,36 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
                               className="object-cover rounded-lg flex-shrink-0"
                             />
                           )}
-                          
+
                           {/* Product Info */}
                           <div className="flex-1">
                             <h5 className="font-medium text-gray-900 mb-1">
                               {product.name}
                             </h5>
-                          <p className="text-sm text-gray-600 mb-1">
-                            {product.color.name} • {product.capacity.name}
-                          </p>
-                          <p className="text-sm text-gray-500 mb-3">
-                            Còn: {product.stockQuantity} • Giá: {formatCurrency(product.unitPrice)}
-                          </p>                            {/* Price and Quantity Inputs */}
+                            <p className="text-sm text-gray-600 mb-1">
+                              {product.color.name} • {product.capacity.name}
+                            </p>
+                            <p className="text-sm text-gray-500 mb-3">
+                              Còn: {product.stockQuantity} • Giá:{" "}
+                              {formatCurrency(product.unitPrice)}
+                            </p>{" "}
+                            {/* Price and Quantity Inputs */}
                             <div className="grid grid-cols-2 gap-3 mb-3">
                               <div>
                                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                                  Giá (VND) - Mặc định: {formatCurrency(product.unitPrice)}
+                                  Giá (VND) - Mặc định:{" "}
+                                  {formatCurrency(product.unitPrice)}
                                 </label>
                                 <input
                                   type="number"
                                   placeholder={`Mặc định: ${product.unitPrice}`}
                                   value={productPrices[product.id] || ""}
-                                  onChange={(e) => setProductPrices(prev => ({
-                                    ...prev,
-                                    [product.id]: e.target.value
-                                  }))}
+                                  onChange={(e) =>
+                                    setProductPrices((prev) => ({
+                                      ...prev,
+                                      [product.id]: e.target.value,
+                                    }))
+                                  }
                                   className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 />
                                 <p className="text-xs text-gray-500 mt-1">
@@ -847,20 +864,25 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
                                   type="number"
                                   min="1"
                                   value={productQuantities[product.id] || 1}
-                                  onChange={(e) => setProductQuantities(prev => ({
-                                    ...prev,
-                                    [product.id]: parseInt(e.target.value) || 1
-                                  }))}
+                                  onChange={(e) =>
+                                    setProductQuantities((prev) => ({
+                                      ...prev,
+                                      [product.id]:
+                                        parseInt(e.target.value) || 1,
+                                    }))
+                                  }
                                   className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 />
                               </div>
                             </div>
-                            
                             {/* Add Button */}
                             <button
                               onClick={() => {
-                                const customPrice = productPrices[product.id] ? parseFloat(productPrices[product.id]) : undefined;
-                                const quantity = productQuantities[product.id] || 1;
+                                const customPrice = productPrices[product.id]
+                                  ? parseFloat(productPrices[product.id])
+                                  : undefined;
+                                const quantity =
+                                  productQuantities[product.id] || 1;
                                 addProduct(product, quantity, customPrice);
                               }}
                               className="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
