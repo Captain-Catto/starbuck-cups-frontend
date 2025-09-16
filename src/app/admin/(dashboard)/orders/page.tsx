@@ -1,43 +1,114 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search, Filter, Download, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { OrderList } from "@/components/admin/orders/OrderList";
+
+interface OrderStats {
+  total: number;
+  pending: number;
+  processing: number;
+  shipped: number;
+  delivered: number;
+  cancelled: number;
+}
 
 export default function OrdersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [stats, setStats] = useState<OrderStats | null>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
 
-  // Mock statistics
-  const stats = [
-    {
-      label: "Tổng đơn hàng",
-      value: "156",
-      change: "+12%",
-      trend: "up" as const
-    },
-    {
-      label: "Chờ xử lý",
-      value: "23",
-      change: "+5%", 
-      trend: "up" as const
-    },
-    {
-      label: "Đang giao",
-      value: "18",
-      change: "-3%",
-      trend: "down" as const
-    },
-    {
-      label: "Hoàn thành",
-      value: "115",
-      change: "+8%",
-      trend: "up" as const
+  // Get auth headers
+  const getAuthHeaders = (): Record<string, string> => {
+    const token = localStorage.getItem("admin_token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  // Fetch order statistics
+  const fetchStats = async () => {
+    setLoadingStats(true);
+    try {
+      const response = await fetch("/api/admin/orders/stats", {
+        headers: getAuthHeaders(),
+      });
+
+      const data = await response.json();
+      console.log("Order stats response:", data);
+
+      if (data.success) {
+        setStats(data.data);
+      } else {
+        console.error("Failed to fetch order stats:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching order stats:", error);
+    } finally {
+      setLoadingStats(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  // Prepare stats for display
+  const displayStats = stats
+    ? [
+        {
+          label: "Tổng đơn hàng",
+          value: (stats.total || 0).toString(),
+          change: "+0%",
+          trend: "up" as const,
+        },
+        {
+          label: "Chờ xử lý",
+          value: (stats.pending || 0).toString(),
+          change: "+0%",
+          trend: "up" as const,
+        },
+        {
+          label: "Đang giao",
+          value: ((stats.shipped || 0) + (stats.processing || 0)).toString(),
+          change: "+0%",
+          trend: "down" as const,
+        },
+        {
+          label: "Hoàn thành",
+          value: (stats.delivered || 0).toString(),
+          change: "+0%",
+          trend: "up" as const,
+        },
+      ]
+    : [
+        {
+          label: "Tổng đơn hàng",
+          value: "0",
+          change: "+0%",
+          trend: "up" as const,
+        },
+        {
+          label: "Chờ xử lý",
+          value: "0",
+          change: "+0%",
+          trend: "up" as const,
+        },
+        {
+          label: "Đang giao",
+          value: "0",
+          change: "+0%",
+          trend: "down" as const,
+        },
+        {
+          label: "Hoàn thành",
+          value: "0",
+          change: "+0%",
+          trend: "up" as const,
+        },
+      ];
 
   return (
     <div className="space-y-6">
@@ -66,17 +137,30 @@ export default function OrdersPage() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-lg border border-gray-200 p-6">
+        {displayStats.map((stat, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-lg border border-gray-200 p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  {stat.label}
+                </p>
+                <p className="text-2xl font-bold text-gray-900 mt-2">
+                  {stat.value}
+                </p>
               </div>
-              <div className={`flex items-center gap-1 text-sm ${
-                stat.trend === "up" ? "text-green-600" : "text-red-600"
-              }`}>
-                <TrendingUp className={`w-4 h-4 ${stat.trend === "down" ? "rotate-180" : ""}`} />
+              <div
+                className={`flex items-center gap-1 text-sm ${
+                  stat.trend === "up" ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                <TrendingUp
+                  className={`w-4 h-4 ${
+                    stat.trend === "down" ? "rotate-180" : ""
+                  }`}
+                />
                 {stat.change}
               </div>
             </div>
@@ -97,7 +181,7 @@ export default function OrdersPage() {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
-          
+
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -180,7 +264,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Order List */}
-      <OrderList 
+      <OrderList
         searchTerm={searchTerm}
         statusFilter={statusFilter}
         typeFilter={typeFilter}

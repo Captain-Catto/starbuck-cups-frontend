@@ -11,6 +11,7 @@ import {
   AlertCircle,
   Check,
   X,
+  AlertTriangle,
 } from "lucide-react";
 import type { Color } from "@/types";
 import { toast } from "sonner";
@@ -43,6 +44,17 @@ export default function ColorsManagement() {
   });
   const [formErrors, setFormErrors] = useState<Partial<ColorFormData>>({});
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Confirmation modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    show: boolean;
+    color: ColorWithCount | null;
+    action: "toggle" | "delete";
+  }>({
+    show: false,
+    color: null,
+    action: "toggle",
+  });
 
   const getAuthHeaders = (): Record<string, string> => {
     const token = localStorage.getItem("admin_token");
@@ -145,8 +157,21 @@ export default function ColorsManagement() {
   };
 
   const handleDelete = async (color: ColorWithCount) => {
-    if (!confirm(`Bạn có chắc chắn muốn xóa màu "${color.name}"?`)) return;
+    const productCount = color._count?.products || 0;
+    if (productCount > 0) {
+      setConfirmModal({
+        show: true,
+        color: color,
+        action: "delete",
+      });
+      return;
+    }
 
+    // Nếu không có products, thực hiện xóa ngay
+    await performDelete(color);
+  };
+
+  const performDelete = async (color: ColorWithCount) => {
     setActionLoading(`delete-${color.id}`);
     try {
       const response = await fetch(`/api/admin/colors/${color.id}`, {
@@ -171,6 +196,22 @@ export default function ColorsManagement() {
   };
 
   const handleToggleStatus = async (color: ColorWithCount) => {
+    // Nếu tắt màu đang có products sử dụng, hiển thị modal xác nhận
+    const productCount = color._count?.products || 0;
+    if (color.isActive && productCount > 0) {
+      setConfirmModal({
+        show: true,
+        color: color,
+        action: "toggle",
+      });
+      return;
+    }
+
+    // Nếu không có products hoặc đang kích hoạt lại, thực hiện ngay
+    await performToggleStatus(color);
+  };
+
+  const performToggleStatus = async (color: ColorWithCount) => {
     setActionLoading(`toggle-${color.id}`);
 
     // Optimistic update - cập nhật UI ngay lập tức
@@ -191,24 +232,18 @@ export default function ColorsManagement() {
       const data = await response.json();
 
       if (data.success) {
-        toast.success(
-          `Đã ${!color.isActive ? "kích hoạt" : "tắt"} màu "${color.name}"`
-        );
+        const statusText = !color.isActive ? "kích hoạt" : "tắt";
+        const productCount = color._count?.products || 0;
+        const productInfo =
+          productCount > 0 ? ` (${productCount} sản phẩm vẫn giữ màu này)` : "";
+        toast.success(`Đã ${statusText} màu "${color.name}"${productInfo}`);
         // Không cần fetchColors() nữa vì đã update optimistically
       } else {
         // Rollback nếu có lỗi
         setColors(colors);
 
         // Hiển thị message cụ thể từ backend
-        if (data.error?.code === "COLOR_IN_USE") {
-          toast.error(
-            `Không thể tắt màu "${color.name}" vì đang được sử dụng trong ${
-              data.error.message.match(/\d+/)?.[0] || "một số"
-            } sản phẩm`
-          );
-        } else {
-          toast.error(data.error?.message || data.message || "Có lỗi xảy ra");
-        }
+        toast.error(data.error?.message || data.message || "Có lỗi xảy ra");
       }
     } catch (error) {
       // Rollback nếu có lỗi network
@@ -343,16 +378,35 @@ export default function ColorsManagement() {
               <button
                 onClick={() => handleToggleStatus(color)}
                 disabled={actionLoading === `toggle-${color.id}`}
-                className={`px-3 py-2 rounded-lg transition-colors ${
+                className={`relative px-3 py-2 rounded-lg transition-colors ${
                   color.isActive
                     ? "text-gray-600 hover:bg-gray-50"
                     : "text-green-600 hover:bg-green-50"
                 }`}
+                title={
+                  color.isActive && (color._count?.products || 0) > 0
+                    ? `Tắt màu (${
+                        color._count?.products || 0
+                      } sản phẩm đang sử dụng)`
+                    : color.isActive
+                    ? "Tắt màu"
+                    : "Kích hoạt màu"
+                }
               >
                 {actionLoading === `toggle-${color.id}` ? (
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                 ) : color.isActive ? (
-                  <EyeOff className="w-4 h-4" />
+                  <>
+                    <EyeOff className="w-4 h-4" />
+                    {(color._count?.products || 0) > 0 && (
+                      <span
+                        className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"
+                        title={`${
+                          color._count?.products || 0
+                        } sản phẩm đang sử dụng màu này`}
+                      />
+                    )}
+                  </>
                 ) : (
                   <Eye className="w-4 h-4" />
                 )}
@@ -360,16 +414,9 @@ export default function ColorsManagement() {
 
               <button
                 onClick={() => handleDelete(color)}
-                disabled={
-                  actionLoading === `delete-${color.id}` ||
-                  (color._count?.products || 0) > 0
-                }
+                disabled={actionLoading === `delete-${color.id}`}
                 className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title={
-                  (color._count?.products || 0) > 0
-                    ? "Không thể xóa màu đang được sử dụng"
-                    : "Xóa màu"
-                }
+                title="Xóa màu"
               >
                 {actionLoading === `delete-${color.id}` ? (
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -533,6 +580,136 @@ export default function ColorsManagement() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmModal.show && confirmModal.color && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    confirmModal.action === "delete"
+                      ? "bg-red-100"
+                      : "bg-yellow-100"
+                  }`}
+                >
+                  <AlertTriangle
+                    className={`w-5 h-5 ${
+                      confirmModal.action === "delete"
+                        ? "text-red-600"
+                        : "text-yellow-600"
+                    }`}
+                  />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {confirmModal.action === "delete"
+                      ? "Xác nhận xóa màu"
+                      : "Xác nhận tắt màu"}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Màu đang được sử dụng bởi sản phẩm
+                  </p>
+                </div>
+              </div>
+
+              {/* Color info */}
+              <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+                <div
+                  className="w-8 h-8 rounded border-2 border-gray-200"
+                  style={{ backgroundColor: confirmModal.color.hexCode }}
+                />
+                <div>
+                  <div className="font-medium text-gray-900">
+                    {confirmModal.color.name}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {confirmModal.color.hexCode}
+                  </div>
+                </div>
+              </div>
+
+              {/* Warning message */}
+              <div className="mb-6">
+                <p className="text-gray-700 mb-3">
+                  Màu <strong>&ldquo;{confirmModal.color.name}&rdquo;</strong>{" "}
+                  đang được sử dụng trong{" "}
+                  <strong>
+                    {confirmModal.color._count?.products || 0} sản phẩm
+                  </strong>
+                  .
+                </p>
+
+                <div
+                  className={`border rounded-lg p-3 ${
+                    confirmModal.action === "delete"
+                      ? "bg-red-50 border-red-200"
+                      : "bg-yellow-50 border-yellow-200"
+                  }`}
+                >
+                  {confirmModal.action === "delete" ? (
+                    <>
+                      <h4 className="font-medium text-red-800 mb-2">
+                        ⚠️ Không thể xóa màu đang được sử dụng!
+                      </h4>
+                      <p className="text-sm text-red-700">
+                        Bạn cần xóa hoặc thay đổi màu của tất cả sản phẩm trước
+                        khi có thể xóa màu này.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h4 className="font-medium text-yellow-800 mb-2">
+                        Khi tắt màu này:
+                      </h4>
+                      <ul className="text-sm text-yellow-700 space-y-1">
+                        <li>• Các sản phẩm hiện tại vẫn giữ màu này</li>
+                        <li>• Màu sẽ không hiển thị khi tạo sản phẩm mới</li>
+                        <li>• Bạn có thể kích hoạt lại bất cứ lúc nào</li>
+                      </ul>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() =>
+                    setConfirmModal({
+                      show: false,
+                      color: null,
+                      action: "toggle",
+                    })
+                  }
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  {confirmModal.action === "delete" ? "Đóng" : "Hủy"}
+                </button>
+                {confirmModal.action === "toggle" && (
+                  <button
+                    onClick={() => {
+                      if (confirmModal.color) {
+                        performToggleStatus(confirmModal.color);
+                        setConfirmModal({
+                          show: false,
+                          color: null,
+                          action: "toggle",
+                        });
+                      }
+                    }}
+                    className="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+                  >
+                    Xác nhận tắt
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

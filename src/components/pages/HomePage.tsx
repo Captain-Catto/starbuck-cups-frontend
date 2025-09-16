@@ -8,7 +8,6 @@ import { ShoppingCart, Star, MessageCircle, ArrowRight } from "lucide-react";
 import { Product, Category } from "@/types";
 import { addToCart } from "@/store/slices/cartSlice";
 import { toast } from "sonner";
-import { openZalo } from "@/utils/messenger";
 
 interface HomePageProps {
   featuredProducts: Product[];
@@ -36,7 +35,6 @@ const HomePage: React.FC<HomePageProps> = ({
       "Xin chào! Tôi muốn được tư vấn về các sản phẩm ly Starbucks.";
 
     try {
-      openZalo(zaloNumber, message);
       toast.success("Đang chuyển đến Zalo để tư vấn...", {
         duration: 3000,
       });

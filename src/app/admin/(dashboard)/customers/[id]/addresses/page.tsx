@@ -1,29 +1,36 @@
 "use client";
 
+import { use } from "react";
 import { ArrowLeft, Plus } from "lucide-react";
 import Link from "next/link";
 import { AddressManager } from "@/components/admin/customers/AddressManager";
 
 interface CustomerAddressesPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export default function CustomerAddressesPage({ params }: CustomerAddressesPageProps) {
+export default function CustomerAddressesPage({
+  params,
+}: CustomerAddressesPageProps) {
+  const { id } = use(params);
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link
-            href={`/admin/customers/${params.id}`}
+            href={`/admin/customers/${id}`}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Quản lý địa chỉ</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Quản lý địa chỉ
+            </h1>
             <p className="text-gray-600 mt-1">
               Quản lý địa chỉ giao hàng của khách hàng
             </p>
@@ -37,7 +44,7 @@ export default function CustomerAddressesPage({ params }: CustomerAddressesPageP
       </div>
 
       {/* Address Manager */}
-      <AddressManager customerId={params.id} />
+      <AddressManager customerId={id} />
     </div>
   );
 }

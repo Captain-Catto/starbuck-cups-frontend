@@ -1,9 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { X, Upload, ImageIcon } from "lucide-react";
 import type { Product, Category, Color, Capacity } from "@/types";
+import {
+  useProductForm,
+  type ProductFormData as HookFormData,
+} from "@/hooks/business/useProductForm";
+import { UpdateProductForm } from "./UpdateProductForm";
+import { useUpload } from "@/hooks/useUpload";
+import ImageReorder from "./ImageReorder";
 
 // Extended product type for admin operations
 interface AdminProduct extends Product {
@@ -41,66 +48,89 @@ export default function ProductModal({
   colors,
   capacities,
 }: ProductModalProps) {
-  const [loading, setLoading] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Upload hook
+  const { uploadProductImages } = useUpload();
 
   // Debug log
   console.log("ProductModal props:", { categories, colors, capacities });
 
-  const [formData, setFormData] = useState<ProductFormData>({
-    name: "",
-    description: "",
-    categoryId: "",
-    colorId: "",
-    capacityId: "",
-    stockQuantity: 0,
-    images: [],
-    productUrl: "",
+  // Prepare initial data for hook
+  const initialData = product
+    ? {
+        name: product.name,
+        description: product.description || "",
+        imageUrl: Array.isArray(product.images) ? product.images[0] : "",
+        colorIds: product.colorId ? [product.colorId] : [],
+        capacityIds: product.capacityId ? [product.capacityId] : [],
+        categoryIds: product.categoryId ? [product.categoryId] : [],
+        isActive: product.isActive ?? true,
+      }
+    : undefined;
+
+  const {
+    formData,
+    errors,
+    isSubmitting,
+    updateField,
+    toggleArrayField,
+    submitForm,
+    submitFormWithImages,
+  } = useProductForm({
+    initialData,
+    isEditing: !!product,
+    productId: product?.id,
+    onSuccess: () => {
+      onSuccess?.();
+      onClose();
+    },
   });
+
+  // Callback for image reordering (after updateField is available)
+  const handleImageReorder = useCallback(
+    (newImageUrls: string[]) => {
+      setImageUrls(newImageUrls);
+      updateField("images", newImageUrls);
+      updateField("imageUrl", newImageUrls[0] || "");
+    },
+    [updateField]
+  );
 
   useEffect(() => {
     if (product) {
-      setFormData({
-        name: product.name,
-        description: product.description || "",
-        categoryId: product.categoryId,
-        colorId: product.colorId,
-        capacityId: product.capacityId,
-        stockQuantity: product.stockQuantity || 0,
-        images: Array.isArray(product.images) ? product.images : [],
-        productUrl: product.productUrl || "",
-      });
       setImageUrls(Array.isArray(product.images) ? product.images : []);
+      setSelectedFiles([]);
     } else {
-      setFormData({
-        name: "",
-        description: "",
-        categoryId: "",
-        colorId: "",
-        capacityId: "",
-        stockQuantity: 0,
-        images: [],
-        productUrl: "",
-      });
       setImageUrls([]);
+      setSelectedFiles([]);
     }
   }, [product, isOpen]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // For now, create a simple data URL preview
-      // In production, this would upload to a file server or cloud storage
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const dataUrl = event.target?.result as string;
-        const newImages = [...imageUrls, dataUrl];
-        setImageUrls(newImages);
-        setFormData((prev) => ({ ...prev, images: newImages }));
-        toast.success("Đã thêm hình ảnh");
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    // Convert FileList to Array and add to selected files
+    const fileArray = Array.from(files);
+    const newFiles = [...selectedFiles, ...fileArray];
+    setSelectedFiles(newFiles);
+
+    // Create preview URLs for display
+    const previewUrls = fileArray.map((file) => URL.createObjectURL(file));
+    const allPreviews = [...imageUrls, ...previewUrls];
+    setImageUrls(allPreviews);
+
+    // Update form state
+    updateField("images", allPreviews);
+    updateField("imageUrl", allPreviews[0] || "");
+
+    toast.success(`Đã chọn ${fileArray.length} hình ảnh`);
+
+    // Reset input value
+    e.target.value = "";
   };
 
   const handleImageUrlAdd = () => {
@@ -108,81 +138,122 @@ export default function ProductModal({
     if (url && url.trim()) {
       const newImages = [...imageUrls, url.trim()];
       setImageUrls(newImages);
-      setFormData((prev) => ({ ...prev, images: newImages }));
+      updateField("images", newImages);
+      updateField("imageUrl", newImages[0] || "");
     }
   };
 
   const handleImageUrlRemove = (index: number) => {
+    const removedUrl = imageUrls[index];
+
+    // Remove from image URLs
     const newImages = imageUrls.filter((_, i) => i !== index);
     setImageUrls(newImages);
-    setFormData((prev) => ({ ...prev, images: newImages }));
+
+    // Update form data
+    updateField("images", newImages);
+    updateField("imageUrl", newImages[0] || "");
+
+    // If it's a blob URL (preview), remove from selected files too
+    if (removedUrl.startsWith("blob:")) {
+      const urlToFileIndex = imageUrls
+        .slice(0, index)
+        .filter((url) => url.startsWith("blob:")).length;
+      const existingUrlsCount = imageUrls
+        .slice(0, index)
+        .filter((url) => !url.startsWith("blob:")).length;
+
+      if (index >= existingUrlsCount) {
+        const fileIndex = index - existingUrlsCount;
+        const newFiles = selectedFiles.filter((_, i) => i !== fileIndex);
+        setSelectedFiles(newFiles);
+      }
+
+      // Revoke blob URL to prevent memory leaks
+      URL.revokeObjectURL(removedUrl);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic validation
-    if (!formData.name.trim()) {
-      toast.error("Tên sản phẩm không được để trống");
-      return;
-    }
-    if (!formData.categoryId) {
-      toast.error("Vui lòng chọn danh mục");
-      return;
-    }
-    if (!formData.colorId) {
-      toast.error("Vui lòng chọn màu sắc");
-      return;
-    }
-    if (!formData.capacityId) {
-      toast.error("Vui lòng chọn dung tích");
-      return;
-    }
+    let finalImageUrls = [...imageUrls];
 
-    setLoading(true);
-    try {
-      const url = product
-        ? `/api/admin/products/${product.id}`
-        : "/api/admin/products";
+    // Upload selected files first if any
+    if (selectedFiles.length > 0) {
+      setIsUploading(true);
+      try {
+        const response = await uploadProductImages(selectedFiles);
 
-      const method = product ? "PUT" : "POST";
+        if (response.success) {
+          const uploadedUrls = response.data.map((item) => item.url);
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+          // Replace blob URLs with actual uploaded URLs
+          finalImageUrls = imageUrls.map((url) => {
+            if (url.startsWith("blob:")) {
+              const blobIndex = imageUrls
+                .filter((u) => u.startsWith("blob:"))
+                .indexOf(url);
+              return uploadedUrls[blobIndex] || url;
+            }
+            return url;
+          });
 
-      const data = await response.json();
+          // Update form state
+          updateField("images", finalImageUrls);
+          updateField("imageUrl", finalImageUrls[0] || "");
 
-      if (data.success) {
-        toast.success(
-          product ? "Cập nhật sản phẩm thành công" : "Tạo sản phẩm thành công"
-        );
-        onSuccess();
-        onClose();
-      } else {
-        toast.error(data.message || "Có lỗi xảy ra");
+          toast.success(
+            `Đã tải lên ${selectedFiles.length} hình ảnh thành công`
+          );
+
+          // Clear selected files and update URLs
+          setSelectedFiles([]);
+          setImageUrls(finalImageUrls);
+        }
+      } catch (error: any) {
+        console.error("Upload error:", error);
+        toast.error(error.message || "Lỗi khi tải lên hình ảnh");
+        setIsUploading(false);
+        return;
+      } finally {
+        setIsUploading(false);
       }
-    } catch (error) {
-      console.error("Submit error:", error);
-      toast.error("Có lỗi xảy ra khi lưu sản phẩm");
-    } finally {
-      setLoading(false);
     }
+
+    // Submit form with final image URLs
+    await submitFormWithImages(finalImageUrls);
   };
 
   if (!isOpen) return null;
 
+  // If editing existing product, use UpdateProductForm
+  if (product) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <UpdateProductForm
+            productId={product.id}
+            onCancel={onClose}
+            onSuccess={() => {
+              onSuccess?.();
+              onClose();
+            }}
+            categories={Array.isArray(categories) ? categories : []}
+            colors={Array.isArray(colors) ? colors : []}
+            capacities={Array.isArray(capacities) ? capacities : []}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // For creating new product, keep existing form
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold">
-            {product ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
-          </h2>
+          <h2 className="text-xl font-semibold">Thêm sản phẩm mới</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
@@ -200,9 +271,7 @@ export default function ProductModal({
             <input
               type="text"
               value={formData.name}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, name: e.target.value }))
-              }
+              onChange={(e) => updateField("name", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="Nhập tên sản phẩm"
               required
@@ -216,12 +285,7 @@ export default function ProductModal({
             </label>
             <textarea
               value={formData.description}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
+              onChange={(e) => updateField("description", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="Nhập mô tả sản phẩm"
               rows={3}
@@ -235,13 +299,13 @@ export default function ProductModal({
                 Danh mục *
               </label>
               <select
-                value={formData.categoryId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    categoryId: e.target.value,
-                  }))
-                }
+                value={formData.categoryIds[0] || ""}
+                onChange={(e) => {
+                  updateField(
+                    "categoryIds",
+                    e.target.value ? [e.target.value] : []
+                  );
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 required
               >
@@ -260,10 +324,13 @@ export default function ProductModal({
                 Màu sắc *
               </label>
               <select
-                value={formData.colorId}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, colorId: e.target.value }))
-                }
+                value={formData.colorIds[0] || ""}
+                onChange={(e) => {
+                  updateField(
+                    "colorIds",
+                    e.target.value ? [e.target.value] : []
+                  );
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 required
               >
@@ -282,13 +349,13 @@ export default function ProductModal({
                 Dung tích *
               </label>
               <select
-                value={formData.capacityId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    capacityId: e.target.value,
-                  }))
-                }
+                value={formData.capacityIds[0] || ""}
+                onChange={(e) => {
+                  updateField(
+                    "capacityIds",
+                    e.target.value ? [e.target.value] : []
+                  );
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 required
               >
@@ -314,10 +381,7 @@ export default function ProductModal({
                 min="0"
                 value={formData.stockQuantity}
                 onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    stockQuantity: parseInt(e.target.value) || 0,
-                  }))
+                  updateField("stockQuantity", parseInt(e.target.value) || 0)
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="0"
@@ -331,12 +395,7 @@ export default function ProductModal({
               <input
                 type="url"
                 value={formData.productUrl}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    productUrl: e.target.value,
-                  }))
-                }
+                onChange={(e) => updateField("productUrl", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="https://example.com/product"
               />
@@ -348,44 +407,56 @@ export default function ProductModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Hình ảnh sản phẩm
             </label>
-            <div className="space-y-2">
-              {imageUrls.map((url, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 p-2 border border-gray-200 rounded"
-                >
-                  <ImageIcon className="w-4 h-4 text-gray-400" />
-                  <span className="flex-1 text-sm truncate">{url}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleImageUrlRemove(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <label className="flex items-center gap-2 px-3 py-2 text-sm border border-dashed border-gray-300 rounded hover:border-green-500 hover:text-green-600 cursor-pointer">
-                  <Upload className="w-4 h-4" />
-                  Tải lên hình ảnh
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </label>
-                <button
-                  type="button"
-                  onClick={handleImageUrlAdd}
-                  className="flex items-center gap-2 px-3 py-2 text-sm border border-dashed border-gray-300 rounded hover:border-green-500 hover:text-green-600"
-                >
-                  <ImageIcon className="w-4 h-4" />
-                  Thêm URL hình ảnh
-                </button>
+
+            {/* Image Reorder Component */}
+            {imageUrls.length > 0 && (
+              <div className="mb-4">
+                <ImageReorder
+                  images={imageUrls}
+                  onReorder={handleImageReorder}
+                  onRemove={handleImageUrlRemove}
+                  className="bg-gray-50 p-3 rounded-md border"
+                />
               </div>
+            )}
+
+            {/* Upload Controls */}
+            <div className="flex gap-2">
+              <label
+                className={`flex items-center gap-2 px-3 py-2 text-sm border border-dashed border-gray-300 rounded hover:border-green-500 hover:text-green-600 cursor-pointer ${
+                  isUploading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                <Upload className="w-4 h-4" />
+                {isUploading ? "Đang tải lên..." : "Chọn hình ảnh"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageSelect}
+                  className="hidden"
+                  disabled={isUploading}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={handleImageUrlAdd}
+                className="flex items-center gap-2 px-3 py-2 text-sm border border-dashed border-gray-300 rounded hover:border-green-500 hover:text-green-600"
+                disabled={isUploading}
+              >
+                <ImageIcon className="w-4 h-4" />
+                Thêm URL hình ảnh
+              </button>
             </div>
+
+            <p className="text-xs text-gray-500 mt-2">
+              Chọn nhiều hình ảnh và kéo thả để sắp xếp thứ tự hiển thị
+            </p>
+
+            {/* Error message for images */}
+            {errors.images && (
+              <p className="text-red-500 text-sm mt-1">{errors.images}</p>
+            )}
           </div>
 
           {/* Submit Buttons */}
@@ -394,16 +465,22 @@ export default function ProductModal({
               type="button"
               onClick={onClose}
               className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
-              disabled={loading}
+              disabled={isSubmitting}
             >
               Hủy
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-              disabled={loading}
+              disabled={isSubmitting || isUploading}
             >
-              {loading ? "Đang lưu..." : product ? "Cập nhật" : "Tạo mới"}
+              {isUploading
+                ? "Đang tải hình..."
+                : isSubmitting
+                ? "Đang lưu..."
+                : product
+                ? "Cập nhật"
+                : "Tạo mới"}
             </button>
           </div>
         </form>

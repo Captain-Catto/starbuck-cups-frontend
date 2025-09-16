@@ -8,8 +8,15 @@ function getAuthHeaders(request: NextRequest): Record<string, string> {
 
   // Forward authorization header from client request
   const authHeader = request.headers.get("authorization");
+  console.log("Customers API Route - Received auth header:", authHeader);
+
   if (authHeader) {
     headers["authorization"] = authHeader;
+    console.log("Customers API Route - Forwarding auth header to backend");
+  } else {
+    console.warn(
+      "Customers API Route - No authorization header received from client"
+    );
   }
 
   return headers;
@@ -25,15 +32,27 @@ export async function GET(request: NextRequest) {
       url.searchParams.append(key, value);
     });
 
+    const authHeaders = getAuthHeaders(request);
+    console.log(
+      "Customers API Route - Calling backend with URL:",
+      url.toString()
+    );
+    console.log("Customers API Route - Headers being sent:", authHeaders);
+
     const response = await fetch(url.toString(), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...authHeaders,
       },
     });
 
     const data = await response.json();
+    console.log(
+      "Customers API Route - Backend response status:",
+      response.status
+    );
+    console.log("Customers API Route - Backend response data:", data);
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {

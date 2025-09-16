@@ -1,32 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { Eye, Edit, Trash2, Phone, Mail, MapPin } from "lucide-react";
 import { Pagination } from "@/components/ui/Pagination";
-import { toast } from "sonner";
-
-interface Customer {
-  id: string;
-  messengerId: string;
-  fullName?: string;
-  phone?: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-  createdByAdmin: {
-    id: string;
-    username: string;
-  };
-  addresses: Array<{
-    id: string;
-    addressLine: string;
-    district?: string;
-    city: string;
-    postalCode?: string;
-    isDefault: boolean;
-  }>;
-}
+import { useCustomers, type Customer } from "@/hooks/business/useCustomers";
 
 interface CustomerListProps {
   searchTerm: string;
@@ -37,71 +15,19 @@ export function CustomerList({
   searchTerm,
   refreshTrigger,
 }: CustomerListProps) {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0,
-  });
-
-  const getAuthHeaders = (): Record<string, string> => {
-    const token = localStorage.getItem("admin_token");
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
-
-  const fetchCustomers = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-        ...(searchTerm && { search: searchTerm }),
-      });
-
-      const response = await fetch(`/api/admin/customers?${params}`, {
-        headers: getAuthHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Customers API response:", data);
-
-      if (data.success) {
-        setCustomers(data.data.items || []);
-        if (data.data?.pagination) {
-          setPagination((prev) => ({
-            ...prev,
-            total: data.data.pagination.total_items || 0,
-            totalPages: data.data.pagination.total_pages || 0,
-          }));
-        }
-      } else {
-        console.error("API Error:", data);
-        toast.error(data.message || "Không thể tải danh sách khách hàng");
-      }
-    } catch (error) {
-      console.error("Error fetching customers:", error);
-      toast.error("Có lỗi xảy ra khi tải danh sách khách hàng");
-    } finally {
-      setLoading(false);
-    }
-  }, [searchTerm, pagination.page, pagination.limit]);
+  const { customers, pagination, loading, fetchCustomers, setPage } =
+    useCustomers({ autoFetch: true });
+  console.log("CustomerList render - customers:", customers);
 
   useEffect(() => {
-    fetchCustomers();
-  }, [fetchCustomers]);
+    fetchCustomers(searchTerm);
+  }, [searchTerm, fetchCustomers]);
 
-  // Refresh when refreshTrigger changes
   useEffect(() => {
     if (refreshTrigger && refreshTrigger > 0) {
       fetchCustomers();
     }
-  }, [refreshTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [refreshTrigger, fetchCustomers]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("vi-VN", {
@@ -255,9 +181,7 @@ export function CustomerList({
           <Pagination
             currentPage={pagination.page}
             totalPages={pagination.totalPages}
-            onPageChange={(page) =>
-              setPagination((prev) => ({ ...prev, page }))
-            }
+            onPageChange={setPage}
             className="justify-center"
           />
         </div>

@@ -130,7 +130,21 @@ export default function ProductsPage() {
         console.log("productsData", data);
 
         if (data.success) {
-          setProducts(data.data?.items || []);
+          // Normalize products data to handle both old and new image structure
+          const normalizedProducts = (data.data?.items || []).map(
+            (product: Product) => ({
+              ...product,
+              // Ensure backward compatibility - convert productImages to images array
+              images:
+                product.productImages?.map(
+                  (img: { url: string; order: number }) => img.url
+                ) ||
+                product.images ||
+                [],
+            })
+          );
+
+          setProducts(normalizedProducts);
           setTotalItems(data.data?.pagination?.total_items || 0);
         } else {
           console.error("Error fetching products:", data.message);
@@ -422,17 +436,51 @@ interface ProductCardProps {
 }
 
 function ProductCard({ product, onAddToCart }: ProductCardProps) {
+  // Debug: Log product data to see what we're working with
+  console.log("ProductCard - Product data:", product);
+  console.log("ProductCard - Images:", product.images);
+
   // Always use grid layout - simplified component
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-      <div className="aspect-square bg-gray-100 overflow-hidden">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
+      <div className="relative aspect-square bg-gray-100 overflow-hidden">
+        {/* Primary Image */}
         <Image
-          src={product.images[0] || "/images/placeholder-product.jpg"}
+          src={product.images?.[0] || "/images/placeholder-product.jpg"}
           alt={product.name}
           width={300}
           height={300}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-0"
+          onError={(e) => {
+            console.error("Image load error:", e);
+            console.error("Failed image URL:", product.images?.[0]);
+          }}
         />
+
+        {/* Secondary Image - shows on hover if available */}
+        {product.images && product.images.length > 1 && (
+          <Image
+            src={product.images[1]}
+            alt={`${product.name} - view 2`}
+            width={300}
+            height={300}
+            className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            onError={(e) => {
+              console.error("Secondary image load error:", e);
+              console.error("Failed secondary image URL:", product.images?.[1]);
+            }}
+          />
+        )}
+
+        {/* Cart Button - Hidden by default, shows on hover (desktop only) */}
+        <div className="absolute bottom-10 left-[45%] bg-transparent group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+          <button
+            onClick={() => onAddToCart(product)}
+            className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-green-600 text-green-600 hover:text-white p-3 rounded-full shadow-lg hidden md:flex items-center justify-center"
+          >
+            <ShoppingCart className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       <div className="p-4">
@@ -455,13 +503,14 @@ function ProductCard({ product, onAddToCart }: ProductCardProps) {
           <span className="text-sm text-gray-600">{product.capacity.name}</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        {/* Mobile Cart Button - Always visible on mobile */}
+        <div className="md:hidden">
           <button
             onClick={() => onAddToCart(product)}
-            className="flex items-center justify-center gap-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
           >
             <ShoppingCart className="w-4 h-4" />
-            Giỏ
+            Thêm vào giỏ
           </button>
         </div>
       </div>

@@ -90,6 +90,13 @@ export default function AdminProductsPage() {
           (item: Product & { stockQuantity: number }) => ({
             ...item,
             stock: item.stockQuantity, // Map stockQuantity to stock
+            // Ensure backward compatibility - convert productImages to images array
+            images:
+              item.productImages?.map(
+                (img: { url: string; order: number }) => img.url
+              ) ||
+              item.images ||
+              [],
           })
         );
 

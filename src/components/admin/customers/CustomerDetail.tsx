@@ -1,38 +1,52 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAppSelector } from "@/store";
 import { CustomerForm } from "./CustomerForm";
-import { User, Phone, Mail, MapPin, Calendar, Clock, Shield } from "lucide-react";
+import {
+  User,
+  Phone,
+  MapPin,
+  Calendar,
+  Clock,
+  Shield,
+  MessageSquare,
+} from "lucide-react";
 
 interface Customer {
   id: string;
-  fullName?: string;
-  phone?: string;
-  email?: string;
-  isActive: boolean;
+  messengerId?: string | null;
+  zaloId?: string | null;
+  fullName: string;
+  phone: string;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
+  createdByAdminId: string;
   createdByAdmin: {
-    id: string;
     username: string;
     email: string;
   };
   addresses: Array<{
     id: string;
-    label: string;
-    streetAddress: string;
-    ward?: string;
-    district: string;
+    customerId: string;
+    addressLine: string;
+    district?: string | null;
     city: string;
-    postalCode?: string;
+    postalCode?: string | null;
     isDefault: boolean;
+    createdAt: string;
+    updatedAt: string;
   }>;
-  socialAccounts: Array<{
+  orders?: Array<{
     id: string;
-    platform: "facebook" | "zalo";
-    accountIdentifier: string;
-    displayName?: string;
+    createdAt: string;
+    status?: string;
+    totalAmount?: number;
   }>;
+  _count?: {
+    orders: number;
+  };
 }
 
 interface CustomerDetailProps {
@@ -43,65 +57,81 @@ interface CustomerDetailProps {
 export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Get auth state from Redux store
+  const { token, isAuthenticated, sessionChecked } = useAppSelector(
+    (state) => state.auth
+  );
+
+  // Debug auth state
+  useEffect(() => {
+    console.log("CustomerDetail - Auth state:", {
+      token: token ? `${token.substring(0, 20)}...` : "null",
+      isAuthenticated,
+      sessionChecked,
+    });
+  }, [token, isAuthenticated, sessionChecked]);
 
   useEffect(() => {
-    // Mock customer data - replace with actual API call
-    const mockCustomer: Customer = {
-      id: customerId,
-      fullName: "Nguyễn Văn An",
-      phone: "0901234567",
-      email: "nguyenvanan@gmail.com",
-      isActive: true,
-      createdAt: "2024-01-15T08:30:00Z",
-      updatedAt: "2024-01-20T14:15:00Z",
-      createdByAdmin: {
-        id: "admin1",
-        username: "admin",
-        email: "admin@starbucks.com"
-      },
-      addresses: [
-        {
-          id: "addr1",
-          label: "Địa chỉ chính",
-          streetAddress: "123 Nguyễn Trãi",
-          ward: "Phường 2",
-          district: "Quận 5",
-          city: "TP.HCM",
-          postalCode: "70000",
-          isDefault: true
-        },
-        {
-          id: "addr2", 
-          label: "Văn phòng",
-          streetAddress: "456 Lê Lợi",
-          ward: "Phường Bến Nghé",
-          district: "Quận 1",
-          city: "TP.HCM",
-          postalCode: "70000",
-          isDefault: false
+    // Only fetch when session has been checked and we have a token
+    if (!sessionChecked) {
+      console.log("CustomerDetail - Session not yet checked, waiting...");
+      return;
+    }
+
+    if (!token) {
+      console.log("CustomerDetail - No token available after session check");
+      setError("Authentication required");
+      setLoading(false);
+      return;
+    }
+
+    const fetchCustomer = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Debug: Check if token exists
+        console.log("CustomerDetail - Redux token:", token);
+
+        // Include authorization header with Redux token
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+          console.log("CustomerDetail - Sending headers:", headers);
+        } else {
+          console.warn("CustomerDetail - No token found in Redux store");
         }
-      ],
-      socialAccounts: [
-        {
-          id: "social1",
-          platform: "facebook",
-          accountIdentifier: "nguyenvanan",
-          displayName: "Nguyễn Văn An"
-        },
-        {
-          id: "social2",
-          platform: "zalo",
-          accountIdentifier: "0901234567",
-          displayName: "An Nguyễn"
+
+        const response = await fetch(`/api/admin/customers/${customerId}`, {
+          headers,
+        });
+        const data = await response.json();
+
+        console.log("CustomerDetail - Response status:", response.status);
+        console.log("CustomerDetail - Response data:", data);
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Failed to fetch customer");
         }
-      ]
+
+        setCustomer(data.data);
+      } catch (error) {
+        console.error("Error fetching customer:", error);
+        setError(
+          error instanceof Error ? error.message : "Failed to fetch customer"
+        );
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setTimeout(() => {
-      setCustomer(mockCustomer);
-      setLoading(false);
-    }, 500);
-  }, [customerId]);
+    fetchCustomer();
+  }, [customerId, token, sessionChecked]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("vi-VN", {
@@ -109,7 +139,7 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
       month: "2-digit",
       year: "numeric",
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
     });
   };
 
@@ -130,6 +160,25 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
     );
   }
 
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="text-center text-red-500">
+          <div className="text-lg font-medium mb-2">
+            Lỗi khi tải thông tin khách hàng
+          </div>
+          <div className="text-sm">{error}</div>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Thử lại
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!customer) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -145,25 +194,24 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <CustomerForm
           initialData={{
+            messengerId: customer.messengerId || "",
+            zaloId: customer.zaloId || "",
             fullName: customer.fullName,
-            phone: customer.phone || "",
-            email: customer.email || "",
-            addresses: customer.addresses.map(addr => ({
-              id: addr.id,
-              label: addr.label,
-              streetAddress: addr.streetAddress,
-              ward: addr.ward || "",
-              district: addr.district,
-              city: addr.city,
-              postalCode: addr.postalCode || "",
-              isDefault: addr.isDefault
-            })),
-            socialAccounts: customer.socialAccounts.map(social => ({
-              id: social.id,
-              platform: social.platform,
-              accountIdentifier: social.accountIdentifier,
-              displayName: social.displayName || ""
-            }))
+            phone: customer.phone,
+            notes: customer.notes || "",
+            address: customer.addresses[0]
+              ? {
+                  addressLine: customer.addresses[0].addressLine,
+                  district: customer.addresses[0].district || "",
+                  city: customer.addresses[0].city,
+                  postalCode: customer.addresses[0].postalCode || "",
+                }
+              : {
+                  addressLine: "",
+                  district: "",
+                  city: "",
+                  postalCode: "",
+                },
           }}
           isEditing={true}
           customerId={customerId}
@@ -187,14 +235,8 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
               </h2>
               <p className="text-gray-600">ID: {customer.id}</p>
               <div className="flex items-center gap-2 mt-1">
-                <span
-                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    customer.isActive
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {customer.isActive ? "Hoạt động" : "Không hoạt động"}
+                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                  Hoạt động
                 </span>
               </div>
             </div>
@@ -219,15 +261,27 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
                   </div>
                 </div>
               )}
-              
-              {customer.email && (
+
+              {customer.messengerId && (
                 <div className="flex items-center gap-3">
-                  <Mail className="w-5 h-5 text-gray-400" />
+                  <MessageSquare className="w-5 h-5 text-gray-400" />
                   <div>
                     <div className="text-sm font-medium text-gray-900">
-                      {customer.email}
+                      {customer.messengerId}
                     </div>
-                    <div className="text-sm text-gray-500">Email</div>
+                    <div className="text-sm text-gray-500">Messenger ID</div>
+                  </div>
+                </div>
+              )}
+
+              {customer.zaloId && (
+                <div className="flex items-center gap-3">
+                  <MessageSquare className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {customer.zaloId}
+                    </div>
+                    <div className="text-sm text-gray-500">Zalo ID</div>
                   </div>
                 </div>
               )}
@@ -249,7 +303,7 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
                   <div className="text-sm text-gray-500">Ngày tạo</div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Clock className="w-5 h-5 text-gray-400" />
                 <div>
@@ -259,7 +313,7 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
                   <div className="text-sm text-gray-500">Cập nhật cuối</div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Shield className="w-5 h-5 text-gray-400" />
                 <div>
@@ -279,7 +333,7 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Địa chỉ giao hàng ({customer.addresses.length})
         </h3>
-        
+
         {customer.addresses.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {customer.addresses.map((address) => (
@@ -295,7 +349,7 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-gray-400" />
                     <span className="font-medium text-gray-900">
-                      {address.label}
+                      {address.isDefault ? "Địa chỉ chính" : "Địa chỉ phụ"}
                     </span>
                   </div>
                   {address.isDefault && (
@@ -305,9 +359,9 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
                   )}
                 </div>
                 <div className="text-sm text-gray-700">
-                  <div>{address.streetAddress}</div>
+                  <div>{address.addressLine}</div>
                   <div>
-                    {[address.ward, address.district, address.city]
+                    {[address.district, address.city]
                       .filter(Boolean)
                       .join(", ")}
                   </div>
@@ -327,40 +381,31 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
         )}
       </div>
 
-      {/* Social Accounts */}
+      {/* Order Statistics */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Tài khoản mạng xã hội ({customer.socialAccounts.length})
+          Thống kê đơn hàng
         </h3>
-        
-        {customer.socialAccounts.length > 0 ? (
-          <div className="space-y-3">
-            {customer.socialAccounts.map((account) => (
-              <div
-                key={account.id}
-                className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
-              >
-                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white border border-gray-200">
-                  {account.platform === "facebook" ? (
-                    <div className="w-5 h-5 bg-blue-600 rounded"></div>
-                  ) : (
-                    <div className="w-5 h-5 bg-blue-400 rounded"></div>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">
-                    {account.displayName || account.accountIdentifier}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {account.platform === "facebook" ? "Facebook" : "Zalo"} • {account.accountIdentifier}
-                  </div>
-                </div>
-              </div>
-            ))}
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">
+              {customer._count?.orders || 0}
+            </div>
+            <div className="text-sm text-gray-500">Tổng đơn hàng</div>
           </div>
-        ) : (
-          <div className="text-gray-500 text-center py-8">
-            Chưa có tài khoản mạng xã hội nào
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-600">
+              {customer.orders?.length || 0}
+            </div>
+            <div className="text-sm text-gray-500">Đơn hàng gần đây</div>
+          </div>
+        </div>
+
+        {customer.notes && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <h4 className="font-medium text-gray-900 mb-2">Ghi chú</h4>
+            <p className="text-sm text-gray-700">{customer.notes}</p>
           </div>
         )}
       </div>

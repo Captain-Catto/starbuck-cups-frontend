@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const { email, password } = body;
 
     // Proxy request to backend
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:5000";
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
 
     const response = await fetch(`${backendUrl}/api/auth/admin/login`, {
       method: "POST",

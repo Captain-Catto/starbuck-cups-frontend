@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 
 // Helper function to forward auth headers
 function getAuthHeaders(request: NextRequest): Record<string, string> {
@@ -50,7 +50,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("[DEBUG] POST request received");
+    console.log("[DEBUG] All headers:", Object.fromEntries(request.headers.entries()));
+
     const body = await request.json();
+    console.log("[DEBUG] Request body:", body);
 
     const response = await fetch(`${BACKEND_URL}/api/admin/products`, {
       method: "POST",
@@ -62,6 +66,10 @@ export async function POST(request: NextRequest) {
     });
 
     const data = await response.json();
+    console.log("[DEBUG] Backend response:", response.status, data);
+    if (data.error && data.error.details) {
+      console.log("[DEBUG] Validation details:", JSON.stringify(data.error.details, null, 2));
+    }
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {

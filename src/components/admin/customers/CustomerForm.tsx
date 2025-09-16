@@ -1,27 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-
-interface Address {
-  addressLine: string;
-  district: string;
-  city: string;
-  postalCode: string;
-}
-
-interface CustomerFormData {
-  messengerId: string;
-  zaloId: string;
-  fullName: string;
-  phone: string;
-  notes: string;
-  address: Address;
-}
-
-interface ValidationErrors {
-  [key: string]: string;
-}
+import React from "react";
+import { useCustomerForm, type CustomerFormData } from "@/hooks/business/useCustomerForm";
 
 interface CustomerFormProps {
   initialData?: Partial<CustomerFormData>;
@@ -34,106 +14,22 @@ export function CustomerForm({
   isEditing = false,
   customerId,
 }: CustomerFormProps) {
-  const router = useRouter();
-
-  const [formData, setFormData] = useState<CustomerFormData>({
-    messengerId: initialData?.messengerId || "",
-    zaloId: initialData?.zaloId || "",
-    fullName: initialData?.fullName || "",
-    phone: initialData?.phone || "",
-    notes: initialData?.notes || "",
-    address: initialData?.address || {
-      addressLine: "",
-      district: "",
-      city: "",
-      postalCode: "",
-    },
+  const {
+    formData,
+    errors,
+    isSubmitting,
+    updateField,
+    updateAddress,
+    submitForm,
+  } = useCustomerForm({
+    initialData,
+    isEditing,
+    customerId,
   });
-
-  const [errors, setErrors] = useState<ValidationErrors>({});
-  const [loading, setLoading] = useState(false);
-
-  const validateForm = () => {
-    setErrors({});
-    const newErrors: ValidationErrors = {};
-
-    // Required fields
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Tên khách hàng là bắt buộc";
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Số điện thoại là bắt buộc";
-    } else if (!/^0\d{9}$/.test(formData.phone.replace(/\s/g, ""))) {
-      newErrors.phone = "Số điện thoại không hợp lệ";
-    }
-
-    // Validate messenger/zalo ID
-    if (!formData.messengerId.trim() && !formData.zaloId.trim()) {
-      newErrors.social = "Phải có ít nhất một Messenger ID hoặc Zalo ID";
-    }
-
-    // Validate address
-    if (!formData.address.addressLine.trim()) {
-      newErrors.addressLine = "Địa chỉ là bắt buộc";
-    }
-    if (!formData.address.district.trim()) {
-      newErrors.district = "Quận/Huyện là bắt buộc";
-    }
-    if (!formData.address.city.trim()) {
-      newErrors.city = "Tỉnh/Thành phố là bắt buộc";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const customerData = {
-        messengerId: formData.messengerId || null,
-        zaloId: formData.zaloId || null,
-        fullName: formData.fullName,
-        phone: formData.phone,
-        notes: formData.notes || null,
-        address: formData.address,
-      };
-
-      const url = isEditing ? `/api/customers/${customerId}` : "/api/customers";
-      const method = isEditing ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(customerData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Có lỗi xảy ra khi lưu khách hàng");
-      }
-
-      router.push("/admin/customers");
-    } catch (err) {
-      setErrors({
-        general:
-          err instanceof Error
-            ? err.message
-            : "Có lỗi xảy ra khi lưu khách hàng",
-      });
-    } finally {
-      setLoading(false);
-    }
+    await submitForm();
   };
 
   return (
@@ -164,9 +60,7 @@ export function CustomerForm({
               <input
                 type="text"
                 value={formData.fullName}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, fullName: e.target.value }))
-                }
+                onChange={(e) => updateField('fullName', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
                   errors.fullName ? "border-red-500" : "border-gray-300"
                 }`}
@@ -185,9 +79,7 @@ export function CustomerForm({
               <input
                 type="tel"
                 value={formData.phone}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, phone: e.target.value }))
-                }
+                onChange={(e) => updateField('phone', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
                   errors.phone ? "border-red-500" : "border-gray-300"
                 }`}
@@ -217,12 +109,7 @@ export function CustomerForm({
               <input
                 type="text"
                 value={formData.messengerId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    messengerId: e.target.value,
-                  }))
-                }
+                onChange={(e) => updateField('messengerId', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder="Nhập Messenger ID"
               />
@@ -235,9 +122,7 @@ export function CustomerForm({
               <input
                 type="text"
                 value={formData.zaloId}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, zaloId: e.target.value }))
-                }
+                onChange={(e) => updateField('zaloId', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder="Nhập Zalo ID"
               />
@@ -256,12 +141,7 @@ export function CustomerForm({
               <input
                 type="text"
                 value={formData.address.addressLine}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    address: { ...prev.address, addressLine: e.target.value },
-                  }))
-                }
+                onChange={(e) => updateAddress('addressLine', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
                   errors.addressLine ? "border-red-500" : "border-gray-300"
                 }`}
@@ -283,12 +163,7 @@ export function CustomerForm({
                 <input
                   type="text"
                   value={formData.address.district}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      address: { ...prev.address, district: e.target.value },
-                    }))
-                  }
+                    onChange={(e) => updateAddress('district', e.target.value)}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
                     errors.district ? "border-red-500" : "border-gray-300"
                   }`}
@@ -307,12 +182,7 @@ export function CustomerForm({
                 <input
                   type="text"
                   value={formData.address.city}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      address: { ...prev.address, city: e.target.value },
-                    }))
-                  }
+                  onChange={(e) => updateAddress('city', e.target.value)}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
                     errors.city ? "border-red-500" : "border-gray-300"
                   }`}
@@ -331,12 +201,7 @@ export function CustomerForm({
                 <input
                   type="text"
                   value={formData.address.postalCode}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      address: { ...prev.address, postalCode: e.target.value },
-                    }))
-                  }
+                  onChange={(e) => updateAddress('postalCode', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="Mã bưu điện"
                 />
@@ -352,9 +217,7 @@ export function CustomerForm({
           </label>
           <textarea
             value={formData.notes}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, notes: e.target.value }))
-            }
+            onChange={(e) => updateField('notes', e.target.value)}
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             placeholder="Thêm ghi chú về khách hàng (tùy chọn)"
@@ -372,10 +235,10 @@ export function CustomerForm({
           </button>
           <button
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
             className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {loading
+            {isSubmitting
               ? "Đang lưu..."
               : isEditing
               ? "Cập nhật"

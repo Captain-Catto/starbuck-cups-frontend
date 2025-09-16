@@ -12,10 +12,14 @@ import {
   Send,
   Package,
   Calendar,
+  ExternalLink,
+  Trash2,
 } from "lucide-react";
 import type { Consultation, ConsultationStatus } from "@/types";
 import { toast } from "sonner";
 import { Pagination } from "@/components/ui/Pagination";
+import Image from "next/image";
+import Link from "next/link";
 
 interface ConsultationFilters {
   status: string;
@@ -53,6 +57,10 @@ export default function ConsultationsManagement() {
   const [selectedConsultation, setSelectedConsultation] =
     useState<Consultation | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [consultationToDelete, setConsultationToDelete] = useState<
+    string | null
+  >(null);
   const [adminResponse, setAdminResponse] = useState("");
   const [selectedStatus, setSelectedStatus] =
     useState<ConsultationStatus>("PENDING");
@@ -193,6 +201,53 @@ export default function ConsultationsManagement() {
   ) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
     setPagination((prev) => ({ ...prev, page: 1 }));
+  };
+
+  const handleDeleteConsultation = async (consultationId: string) => {
+    setConsultationToDelete(consultationId);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteConsultation = async () => {
+    if (!consultationToDelete) return;
+
+    try {
+      setActionLoading("delete");
+
+      const response = await fetch(
+        `http://localhost:8080/api/consultations/${consultationToDelete}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Xóa consultation thành công");
+        setConsultations((prev) =>
+          prev.filter((c) => c.id !== consultationToDelete)
+        );
+        setShowDeleteConfirm(false);
+        setConsultationToDelete(null);
+      } else {
+        toast.error(data.message || "Có lỗi xảy ra khi xóa consultation");
+      }
+    } catch (error) {
+      console.error("Error deleting consultation:", error);
+      toast.error("Có lỗi xảy ra khi xóa consultation");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const cancelDeleteConsultation = () => {
+    setShowDeleteConfirm(false);
+    setConsultationToDelete(null);
   };
 
   return (
@@ -368,13 +423,26 @@ export default function ConsultationsManagement() {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button
-                            onClick={() => handleViewConsultation(consultation)}
-                            className="text-blue-600 hover:text-blue-900 p-1"
-                            title="Xem chi tiết"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() =>
+                                handleViewConsultation(consultation)
+                              }
+                              className="text-blue-600 hover:text-blue-900 p-1"
+                              title="Xem chi tiết"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleDeleteConsultation(consultation.id)
+                              }
+                              className="text-red-600 hover:text-red-900 p-1"
+                              title="Xóa consultation"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -471,24 +539,65 @@ export default function ConsultationsManagement() {
                   <h4 className="text-sm font-medium text-gray-900 mb-3">
                     Sản phẩm quan tâm
                   </h4>
-                  <div className="space-y-2">
-                    {selectedConsultation.consultationItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-                      >
-                        <Package className="w-8 h-8 text-gray-400" />
-                        <div>
-                          <p className="text-sm font-medium">
-                            {item.productName}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {item.category} • {item.color} • {item.capacity} •
-                            Số lượng: {item.quantity}
-                          </p>
+                  <div className="space-y-3">
+                    {selectedConsultation.consultationItems.map((item) => {
+                      // Get product images
+                      const productImages =
+                        item.product?.productImages?.map((img) => img.url) ||
+                        (Array.isArray(item.product?.images)
+                          ? item.product.images
+                          : []);
+                      const firstImage = productImages[0];
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                          {/* Product Image */}
+                          <div className="flex-shrink-0">
+                            {firstImage ? (
+                              <div className="w-16 h-16 relative bg-white rounded-lg overflow-hidden border border-gray-200">
+                                <Image
+                                  src={firstImage}
+                                  alt={item.productName}
+                                  fill
+                                  className="object-cover"
+                                  sizes="64px"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <Package className="w-8 h-8 text-gray-400" />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Product Info */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Link
+                                href={`/products/${item.productId}`}
+                                target="_blank"
+                                className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                              >
+                                {item.productName}
+                                <ExternalLink className="w-3 h-3" />
+                              </Link>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              {item.category} • {item.color} • {item.capacity}
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1">
+                              Số lượng:{" "}
+                              <span className="font-medium">
+                                {item.quantity}
+                              </span>
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -568,6 +677,53 @@ export default function ConsultationsManagement() {
                   Cập nhật
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Xác nhận xóa
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Hành động này không thể hoàn tác
+                </p>
+              </div>
+            </div>
+
+            <p className="text-gray-700 mb-6">
+              Bạn có chắc chắn muốn xóa consultation này? Tất cả thông tin liên
+              quan sẽ bị xóa vĩnh viễn.
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={cancelDeleteConsultation}
+                disabled={actionLoading === "delete"}
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={confirmDeleteConsultation}
+                disabled={actionLoading === "delete"}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+              >
+                {actionLoading === "delete" && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                )}
+                <Trash2 className="w-4 h-4" />
+                Xóa
+              </button>
             </div>
           </div>
         </div>

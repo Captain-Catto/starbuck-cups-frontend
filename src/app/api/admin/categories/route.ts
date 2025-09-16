@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 
 // Helper function to forward auth headers
 function getAuthHeaders(request: NextRequest): Record<string, string> {
@@ -8,11 +8,20 @@ function getAuthHeaders(request: NextRequest): Record<string, string> {
 
   // Forward authorization header from client request
   const authHeader = request.headers.get("authorization");
-  console.log("[DEBUG] Categories API - Authorization header:", authHeader ? "Present" : "Missing");
-  console.log("[DEBUG] Categories API - Request timestamp:", new Date().toISOString());
+  console.log(
+    "[DEBUG] Categories API - Authorization header:",
+    authHeader ? "Present" : "Missing"
+  );
+  console.log(
+    "[DEBUG] Categories API - Request timestamp:",
+    new Date().toISOString()
+  );
   if (authHeader) {
     headers["authorization"] = authHeader;
-    console.log("[DEBUG] Categories API - Token preview:", authHeader.substring(0, 20) + "...");
+    console.log(
+      "[DEBUG] Categories API - Token preview:",
+      authHeader.substring(0, 20) + "..."
+    );
   }
 
   return headers;

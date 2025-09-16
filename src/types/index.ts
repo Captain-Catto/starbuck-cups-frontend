@@ -17,12 +17,18 @@ export interface PaginationMeta {
 }
 
 // Product Types
+export interface ProductImage {
+  url: string;
+  order: number;
+}
+
 export interface Product {
   id: string;
   name: string;
   description: string;
   slug: string;
-  images: string[];
+  images?: string[]; // Legacy field for backward compatibility
+  productImages?: ProductImage[]; // New field from backend
   stockQuantity: number;
   productUrl?: string;
   categoryId: string;
