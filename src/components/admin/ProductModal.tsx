@@ -4,16 +4,15 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { X, Upload, ImageIcon } from "lucide-react";
 import type { Product, Category, Color, Capacity } from "@/types";
-import {
-  useProductForm,
-  type ProductFormData as HookFormData,
-} from "@/hooks/business/useProductForm";
+import { useProductForm } from "@/hooks/business/useProductForm";
 import { UpdateProductForm } from "./UpdateProductForm";
 import { useUpload } from "@/hooks/useUpload";
 import ImageReorder from "./ImageReorder";
+import RichTextEditor from "@/components/ui/RichTextEditor";
+import { getFirstProductImageUrl } from "@/lib/utils/image";
 
 // Extended product type for admin operations
-interface AdminProduct extends Product {
+interface AdminProduct extends Omit<Product, "stockQuantity"> {
   stockQuantity?: number;
   productUrl?: string;
 }
@@ -26,17 +25,6 @@ interface ProductModalProps {
   categories: Category[];
   colors: Color[];
   capacities: Capacity[];
-}
-
-interface ProductFormData {
-  name: string;
-  description: string;
-  categoryId: string;
-  colorId: string;
-  capacityId: string;
-  stockQuantity: number;
-  images: string[];
-  productUrl: string;
 }
 
 export default function ProductModal({
@@ -63,10 +51,16 @@ export default function ProductModal({
     ? {
         name: product.name,
         description: product.description || "",
-        imageUrl: Array.isArray(product.images) ? product.images[0] : "",
-        colorIds: product.colorId ? [product.colorId] : [],
-        capacityIds: product.capacityId ? [product.capacityId] : [],
-        categoryIds: product.categoryId ? [product.categoryId] : [],
+        imageUrl: getFirstProductImageUrl(product.productImages),
+        colorIds:
+          product.productColors?.map(
+            (pc: { color: { id: string } }) => pc.color.id
+          ) || [],
+        capacityIds: product.capacity?.id ? [product.capacity.id] : [],
+        categoryIds:
+          product.productCategories?.map(
+            (pc: { category: { id: string } }) => pc.category.id
+          ) || [],
         isActive: product.isActive ?? true,
       }
     : undefined;
@@ -77,7 +71,6 @@ export default function ProductModal({
     isSubmitting,
     updateField,
     toggleArrayField,
-    submitForm,
     submitFormWithImages,
   } = useProductForm({
     initialData,
@@ -101,7 +94,8 @@ export default function ProductModal({
 
   useEffect(() => {
     if (product) {
-      setImageUrls(Array.isArray(product.images) ? product.images : []);
+      const imageUrls = product.productImages?.map((img) => img.url) || [];
+      setImageUrls(imageUrls);
       setSelectedFiles([]);
     } else {
       setImageUrls([]);
@@ -156,9 +150,6 @@ export default function ProductModal({
 
     // If it's a blob URL (preview), remove from selected files too
     if (removedUrl.startsWith("blob:")) {
-      const urlToFileIndex = imageUrls
-        .slice(0, index)
-        .filter((url) => url.startsWith("blob:")).length;
       const existingUrlsCount = imageUrls
         .slice(0, index)
         .filter((url) => !url.startsWith("blob:")).length;
@@ -186,7 +177,7 @@ export default function ProductModal({
         const response = await uploadProductImages(selectedFiles);
 
         if (response.success) {
-          const uploadedUrls = response.data.map((item) => item.url);
+          const uploadedUrls = response.data.map((item: { url: string }) => item.url);
 
           // Replace blob URLs with actual uploaded URLs
           finalImageUrls = imageUrls.map((url) => {
@@ -211,9 +202,11 @@ export default function ProductModal({
           setSelectedFiles([]);
           setImageUrls(finalImageUrls);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Upload error:", error);
-        toast.error(error.message || "Lỗi khi tải lên hình ảnh");
+        toast.error(
+          error instanceof Error ? error.message : "Lỗi khi tải lên hình ảnh"
+        );
         setIsUploading(false);
         return;
       } finally {
@@ -283,12 +276,13 @@ export default function ProductModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Mô tả
             </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => updateField("description", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Nhập mô tả sản phẩm"
-              rows={3}
+            <RichTextEditor
+              value={formData.description || ""}
+              onChange={(htmlContent) =>
+                updateField("description", htmlContent)
+              }
+              placeholder="Nhập mô tả chi tiết sản phẩm..."
+              height={300}
             />
           </div>
 
@@ -298,50 +292,61 @@ export default function ProductModal({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Danh mục *
               </label>
-              <select
-                value={formData.categoryIds[0] || ""}
-                onChange={(e) => {
-                  updateField(
-                    "categoryIds",
-                    e.target.value ? [e.target.value] : []
-                  );
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
-              >
-                <option value="">Chọn danh mục</option>
+              <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
                 {Array.isArray(categories) &&
                   categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
+                    <label
+                      key={category.id}
+                      className="flex items-center gap-2"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.categoryIds.includes(category.id)}
+                        onChange={() =>
+                          toggleArrayField("categoryIds", category.id)
+                        }
+                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
+                      <span className="text-sm">{category.name}</span>
+                    </label>
                   ))}
-              </select>
+              </div>
+              {formData.categoryIds.length === 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Vui lòng chọn ít nhất một danh mục
+                </p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Màu sắc *
               </label>
-              <select
-                value={formData.colorIds[0] || ""}
-                onChange={(e) => {
-                  updateField(
-                    "colorIds",
-                    e.target.value ? [e.target.value] : []
-                  );
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
-              >
-                <option value="">Chọn màu sắc</option>
+              <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
                 {Array.isArray(colors) &&
                   colors.map((color) => (
-                    <option key={color.id} value={color.id}>
-                      {color.name}
-                    </option>
+                    <label key={color.id} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.colorIds.includes(color.id)}
+                        onChange={() => toggleArrayField("colorIds", color.id)}
+                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
+                      <span className="text-sm flex items-center gap-2">
+                        <div
+                          className="w-4 h-4 rounded border border-gray-300"
+                          style={{ backgroundColor: color.hexCode }}
+                        ></div>
+                        {color.name}
+                      </span>
+                    </label>
                   ))}
-              </select>
+              </div>
+              {formData.colorIds.length === 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Vui lòng chọn ít nhất một màu sắc
+                </p>
+              )}
             </div>
 
             <div>

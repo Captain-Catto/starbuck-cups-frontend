@@ -210,7 +210,7 @@ export function useOrders(options: UseOrdersOptions = {}): UseOrdersReturn {
     if (autoFetch) {
       fetchOrders();
     }
-  }, [pagination.page, pagination.limit, filters]);
+  }, [pagination.page, pagination.limit, filters, autoFetch, fetchOrders]);
 
   return {
     orders,

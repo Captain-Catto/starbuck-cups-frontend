@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
+import Image from "next/image";
 import {
   DndContext,
   closestCenter,
@@ -65,9 +66,11 @@ function SortableImageItem({ image, onRemove }: SortableImageItemProps) {
         <GripVertical className="w-4 h-4" />
       </div>
 
-      <img
+      <Image
         src={image.url}
         alt={`Product image ${image.order + 1}`}
+        width={48}
+        height={48}
         className="w-12 h-12 object-cover rounded border"
         onError={(e) => {
           e.currentTarget.style.display = 'none';

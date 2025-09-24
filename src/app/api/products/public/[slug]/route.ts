@@ -4,12 +4,12 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { id } = params;
+    const { slug } = await params;
 
-    const response = await fetch(`${BACKEND_URL}/api/products/public/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/api/products/public/${slug}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

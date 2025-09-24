@@ -10,10 +10,12 @@ export interface ApiResponse<T = unknown> {
 }
 
 export interface PaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
+  current_page: number;
+  has_next: boolean;
+  has_prev: boolean;
+  per_page: number;
+  total_items: number;
+  total_pages: number;
 }
 
 // Product Types
@@ -27,19 +29,15 @@ export interface Product {
   name: string;
   description: string;
   slug: string;
-  images?: string[]; // Legacy field for backward compatibility
   productImages?: ProductImage[]; // New field from backend
   stockQuantity: number;
   productUrl?: string;
-  categoryId: string;
-  colorId: string;
-  capacityId: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  category: Category;
-  color: Color;
-  capacity: Capacity;
+  productCategories?: { category: Category }[];
+  productColors?: { color: Color }[];
+  capacity?: Capacity;
 }
 
 export interface Category {
@@ -58,6 +56,7 @@ export interface Category {
 export interface Color {
   id: string;
   name: string;
+  slug: string;
   hexCode: string;
   isActive: boolean;
   createdAt: string;
@@ -67,10 +66,16 @@ export interface Color {
 export interface Capacity {
   id: string;
   name: string;
+  slug: string;
   volumeMl: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CapacityRange {
+  min: number;
+  max: number;
 }
 
 // Customer Types

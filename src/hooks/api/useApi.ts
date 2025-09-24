@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;
@@ -25,7 +25,7 @@ export interface UseApiReturn<T> {
   reset: () => void;
 }
 
-export function useApi<T = any>(options: UseApiOptions = {}): UseApiReturn<T> {
+export function useApi<T = unknown>(options: UseApiOptions = {}): UseApiReturn<T> {
   const {
     showSuccessToast = false,
     showErrorToast = true,
@@ -107,15 +107,15 @@ export function useApi<T = any>(options: UseApiOptions = {}): UseApiReturn<T> {
 }
 
 // Specific hooks for common operations
-export function useApiPost<T = any>(options?: UseApiOptions) {
+export function useApiPost<T = unknown>(options?: UseApiOptions) {
   return useApi<T>({ showSuccessToast: true, ...options });
 }
 
-export function useApiPut<T = any>(options?: UseApiOptions) {
+export function useApiPut<T = unknown>(options?: UseApiOptions) {
   return useApi<T>({ showSuccessToast: true, ...options });
 }
 
-export function useApiDelete<T = any>(options?: UseApiOptions) {
+export function useApiDelete<T = unknown>(options?: UseApiOptions) {
   return useApi<T>({
     showSuccessToast: true,
     successMessage: "Xóa thành công",

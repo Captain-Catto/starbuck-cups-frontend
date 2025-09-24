@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import StoreProvider from "@/components/StoreProvider";
 import ClientLayout from "@/components/layout/ClientLayout";
 import { generateSEO, generateOrganizationStructuredData } from "@/lib/seo";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = generateSEO({
   title: "Cửa hàng ly Starbucks chính thức",
@@ -40,7 +37,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>
+      <body>
         <StoreProvider>
           <ClientLayout>{children}</ClientLayout>
         </StoreProvider>

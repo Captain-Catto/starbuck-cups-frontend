@@ -1,4 +1,4 @@
-import { Order, CreateOrderData, UpdateOrderData, UpdateOrderStatusData, OrdersFilter } from '@/store/slices/ordersSlice';
+import { Order, CreateOrderData, UpdateOrderStatusData, OrdersFilter } from '@/store/slices/ordersSlice';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
 

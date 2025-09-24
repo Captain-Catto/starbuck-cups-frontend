@@ -23,10 +23,10 @@ function getAuthHeaders(request: NextRequest): Record<string, string> {
 // GET /api/admin/customers/{customerId} - Get single customer by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { customerId: string } }
+  { params }: { params: Promise<{ customerId: string }> }
 ) {
   try {
-    const { customerId } = params;
+    const { customerId } = await params;
     const authHeaders = getAuthHeaders(request);
 
     console.log(
@@ -63,10 +63,10 @@ export async function GET(
 // PUT /api/admin/customers/{customerId} - Update customer
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { customerId: string } }
+  { params }: { params: Promise<{ customerId: string }> }
 ) {
   try {
-    const { customerId } = params;
+    const { customerId } = await params;
     const body = await request.json();
 
     const response = await fetch(
@@ -95,10 +95,10 @@ export async function PUT(
 // DELETE /api/admin/customers/{customerId} - Delete customer
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { customerId: string } }
+  { params }: { params: Promise<{ customerId: string }> }
 ) {
   try {
-    const { customerId } = params;
+    const { customerId } = await params;
 
     const response = await fetch(
       `${BACKEND_URL}/api/admin/customers/${customerId}`,

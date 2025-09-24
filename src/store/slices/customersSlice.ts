@@ -103,199 +103,169 @@ const initialState: CustomersState = {
 // Async thunks
 export const fetchCustomers = createAsyncThunk(
   'customers/fetchCustomers',
-  async (params: { page?: number; filters?: CustomersFilter } = {}) => {
-    const { page = 1, filters = {} } = params;
-    
-    // TODO: Replace with actual API call
-    const response = await new Promise<{
-      customers: Customer[];
-      pagination: {
-        currentPage: number;
-        totalPages: number;
-        totalCount: number;
-        pageSize: number;
+  async (params: { page?: number; filters?: CustomersFilter } = {}, { rejectWithValue }) => {
+    try {
+      const { page = 1, filters = {} } = params;
+
+      // Build query parameters
+      const searchParams = new URLSearchParams();
+      searchParams.append('page', page.toString());
+      searchParams.append('limit', '10');
+
+      if (filters.search) searchParams.append('search', filters.search);
+      if (filters.status) searchParams.append('status', filters.status);
+      if (filters.createdBy) searchParams.append('createdBy', filters.createdBy);
+
+      if (filters.dateRange) {
+        searchParams.append('startDate', filters.dateRange.from);
+        searchParams.append('endDate', filters.dateRange.to);
+      }
+
+      const response = await fetch(`/api/customers?${searchParams.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Failed to fetch customers');
+      }
+
+      if (!data.success) {
+        return rejectWithValue(data.message || 'Failed to fetch customers');
+      }
+
+      return {
+        customers: data.data?.items || [],
+        pagination: {
+          currentPage: data.data?.currentPage || page,
+          totalPages: data.data?.totalPages || 1,
+          totalCount: data.data?.totalItems || 0,
+          pageSize: data.data?.limit || 10,
+        },
       };
-    }>((resolve) => {
-      setTimeout(() => {
-        resolve({
-          customers: [
-            {
-              id: '1',
-              fullName: 'Nguyễn Văn An',
-              phone: '0901234567',
-              email: 'nguyenvanan@gmail.com',
-              isActive: true,
-              createdAt: '2024-01-15T08:30:00Z',
-              updatedAt: '2024-01-15T08:30:00Z',
-              createdByAdmin: {
-                id: 'admin1',
-                username: 'admin'
-              },
-              addresses: [
-                {
-                  id: 'addr1',
-                  label: 'Địa chỉ chính',
-                  streetAddress: '123 Nguyễn Trãi',
-                  ward: 'Phường 2',
-                  district: 'Quận 5',
-                  city: 'TP.HCM',
-                  postalCode: '70000',
-                  isDefault: true
-                }
-              ],
-              socialAccounts: [
-                {
-                  id: 'social1',
-                  platform: 'facebook',
-                  accountIdentifier: 'nguyenvanan',
-                  displayName: 'Nguyễn Văn An'
-                }
-              ]
-            }
-          ],
-          pagination: {
-            currentPage: page,
-            totalPages: 1,
-            totalCount: 1,
-            pageSize: 10
-          }
-        });
-      }, 1000);
-    });
-    
-    return response;
+    } catch {
+      return rejectWithValue('Network error: Failed to fetch customers');
+    }
   }
 );
 
 export const fetchCustomerById = createAsyncThunk(
   'customers/fetchCustomerById',
-  async (customerId: string) => {
-    // TODO: Replace with actual API call
-    const response = await new Promise<Customer>((resolve, reject) => {
-      setTimeout(() => {
-        if (customerId === '1') {
-          resolve({
-            id: '1',
-            fullName: 'Nguyễn Văn An',
-            phone: '0901234567',
-            email: 'nguyenvanan@gmail.com',
-            isActive: true,
-            createdAt: '2024-01-15T08:30:00Z',
-            updatedAt: '2024-01-15T08:30:00Z',
-            createdByAdmin: {
-              id: 'admin1',
-              username: 'admin'
-            },
-            addresses: [
-              {
-                id: 'addr1',
-                label: 'Địa chỉ chính',
-                streetAddress: '123 Nguyễn Trãi',
-                ward: 'Phường 2',
-                district: 'Quận 5',
-                city: 'TP.HCM',
-                postalCode: '70000',
-                isDefault: true
-              }
-            ],
-            socialAccounts: [
-              {
-                id: 'social1',
-                platform: 'facebook',
-                accountIdentifier: 'nguyenvanan',
-                displayName: 'Nguyễn Văn An'
-              }
-            ]
-          });
-        } else {
-          reject(new Error('Customer not found'));
-        }
-      }, 500);
-    });
-    
-    return response;
+  async (customerId: string, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/customers/${customerId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Failed to fetch customer');
+      }
+
+      if (!data.success) {
+        return rejectWithValue(data.message || 'Failed to fetch customer');
+      }
+
+      return data.data;
+    } catch {
+      return rejectWithValue('Network error: Failed to fetch customer');
+    }
   }
 );
 
 export const createCustomer = createAsyncThunk(
   'customers/createCustomer',
-  async (customerData: CreateCustomerData) => {
-    // TODO: Replace with actual API call
-    const response = await new Promise<Customer>((resolve) => {
-      setTimeout(() => {
-        const newCustomer: Customer = {
-          id: `customer_${Date.now()}`,
-          ...customerData,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          createdByAdmin: {
-            id: 'admin1',
-            username: 'admin'
-          },
-          addresses: customerData.addresses.map((addr, index) => ({
-            ...addr,
-            id: `addr_${Date.now()}_${index}`
-          })),
-          socialAccounts: customerData.socialAccounts.map((social, index) => ({
-            ...social,
-            id: `social_${Date.now()}_${index}`
-          }))
-        };
-        resolve(newCustomer);
-      }, 1000);
-    });
-    
-    return response;
+  async (customerData: CreateCustomerData, { rejectWithValue }) => {
+    try {
+      const response = await fetch('/api/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(customerData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Failed to create customer');
+      }
+
+      if (!data.success) {
+        return rejectWithValue(data.message || 'Failed to create customer');
+      }
+
+      return data.data;
+    } catch {
+      return rejectWithValue('Network error: Failed to create customer');
+    }
   }
 );
 
 export const updateCustomer = createAsyncThunk(
   'customers/updateCustomer',
-  async (customerData: UpdateCustomerData) => {
-    // TODO: Replace with actual API call
-    const response = await new Promise<Customer>((resolve) => {
-      setTimeout(() => {
-        const updatedCustomer: Customer = {
-          id: customerData.id,
-          fullName: customerData.fullName,
-          phone: customerData.phone || '',
-          email: customerData.email,
-          isActive: true,
-          createdAt: '2024-01-15T08:30:00Z',
-          updatedAt: new Date().toISOString(),
-          createdByAdmin: {
-            id: 'admin1',
-            username: 'admin'
-          },
-          addresses: customerData.addresses?.map((addr, index) => ({
-            ...addr,
-            id: addr.id || `addr_${Date.now()}_${index}`
-          })) || [],
-          socialAccounts: customerData.socialAccounts?.map((social, index) => ({
-            ...social,
-            id: social.id || `social_${Date.now()}_${index}`
-          })) || []
-        };
-        resolve(updatedCustomer);
-      }, 1000);
-    });
-    
-    return response;
+  async (customerData: UpdateCustomerData, { rejectWithValue }) => {
+    try {
+      const { id, ...updateData } = customerData;
+
+      const response = await fetch(`/api/customers/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Failed to update customer');
+      }
+
+      if (!data.success) {
+        return rejectWithValue(data.message || 'Failed to update customer');
+      }
+
+      return data.data;
+    } catch {
+      return rejectWithValue('Network error: Failed to update customer');
+    }
   }
 );
 
 export const deleteCustomer = createAsyncThunk(
   'customers/deleteCustomer',
-  async (customerId: string) => {
-    // TODO: Replace with actual API call
-    await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(true);
-      }, 1000);
-    });
-    
-    return customerId;
+  async (customerId: string, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/customers/${customerId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Failed to delete customer');
+      }
+
+      if (!data.success) {
+        return rejectWithValue(data.message || 'Failed to delete customer');
+      }
+
+      return customerId;
+    } catch {
+      return rejectWithValue('Network error: Failed to delete customer');
+    }
   }
 );
 

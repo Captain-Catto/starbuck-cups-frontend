@@ -18,8 +18,8 @@ export const addressSchema = z.object({
 // Social account validation schema
 export const socialAccountSchema = z.object({
   id: z.string().optional(),
-  platform: z.enum(['facebook', 'zalo'], {
-    errorMap: () => ({ message: 'Nền tảng không hợp lệ' })
+  platform: z.enum(['facebook', 'zalo']).refine(() => true, {
+    message: 'Nền tảng không hợp lệ'
   }),
   accountIdentifier: z.string().min(1, 'Tài khoản là bắt buộc').max(255, 'Tài khoản không được quá 255 ký tự'),
   displayName: z.string().max(255, 'Tên hiển thị không được quá 255 ký tự').optional(),
@@ -133,14 +133,14 @@ export const validateSocialAccount = (data: unknown) => {
 
 // Error message helpers
 export const getFieldError = (error: z.ZodError, fieldPath: string): string | undefined => {
-  const fieldError = error.errors.find(err => err.path.join('.') === fieldPath);
+  const fieldError = error.issues.find(err => err.path.join('.') === fieldPath);
   return fieldError?.message;
 };
 
 export const getFieldErrors = (error: z.ZodError): Record<string, string> => {
   const errors: Record<string, string> = {};
   
-  error.errors.forEach(err => {
+  error.issues.forEach(err => {
     const path = err.path.join('.');
     if (!errors[path]) {
       errors[path] = err.message;

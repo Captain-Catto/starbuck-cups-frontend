@@ -82,13 +82,13 @@ export function generateProductStructuredData(product: Product) {
     "@type": "Product",
     name: product.name,
     description: product.description,
-    image: product.images?.map((img: string) => `${siteConfig.url}${img}`),
+    image: product.productImages?.map((img: { url: string }) => `${siteConfig.url}${img.url}`),
     brand: {
       "@type": "Brand",
       name: "Starbucks",
     },
-    category: product.category?.name,
-    color: product.color?.name,
+    category: product.productCategories?.map((pc: { category: { name: string } }) => pc.category.name).join(", ") || "",
+    color: product.productColors?.map((pc: { color: { name: string } }) => pc.color.name).join(", ") || "",
     offers: {
       "@type": "AggregateOffer",
       availability: "https://schema.org/InStock",

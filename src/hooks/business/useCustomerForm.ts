@@ -18,6 +18,7 @@ export interface CustomerFormData {
   fullName: string;
   phone: string;
   notes: string;
+  isVip: boolean;
   address: Address;
 }
 
@@ -38,7 +39,10 @@ export interface UseCustomerFormReturn {
   errors: ValidationErrors;
   loading: boolean;
   isSubmitting: boolean;
-  updateField: (field: keyof CustomerFormData | string, value: any) => void;
+  updateField: (
+    field: keyof CustomerFormData | string,
+    value: string | string[] | boolean
+  ) => void;
   updateAddress: (field: keyof Address, value: string) => void;
   validateForm: () => boolean;
   submitForm: () => Promise<void>;
@@ -67,6 +71,7 @@ export function useCustomerForm(
     fullName: initialData?.fullName || "",
     phone: initialData?.phone || "",
     notes: initialData?.notes || "",
+    isVip: initialData?.isVip || false,
     address: initialData?.address || {
       addressLine: "",
       district: "",
@@ -76,11 +81,14 @@ export function useCustomerForm(
   });
 
   const [errors, setErrors] = useState<ValidationErrors>({});
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateField = useCallback(
-    (field: keyof CustomerFormData | string, value: any) => {
+    (
+      field: keyof CustomerFormData | string,
+      value: string | string[] | boolean
+    ) => {
       setFormData((prev) => ({
         ...prev,
         [field]: value,
@@ -166,6 +174,7 @@ export function useCustomerForm(
         fullName: string;
         phone: string;
         notes: string | null;
+        isVip: boolean;
         address?: {
           addressLine: string;
           district: string | null;
@@ -181,6 +190,7 @@ export function useCustomerForm(
         fullName: formData.fullName.trim(),
         phone: formData.phone.trim(),
         notes: formData.notes.trim() || null,
+        isVip: formData.isVip,
       };
 
       // Only include address if required fields are provided
@@ -256,6 +266,7 @@ export function useCustomerForm(
       fullName: initialData?.fullName || "",
       phone: initialData?.phone || "",
       notes: initialData?.notes || "",
+      isVip: initialData?.isVip || false,
       address: initialData?.address || {
         addressLine: "",
         district: "",

@@ -1,21 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useAppSelector } from "@/store";
 import { Edit, Trash2, MapPin, Plus, Save, X } from "lucide-react";
+import { toast } from "sonner";
 
 interface Address {
   id: string;
-  label: string;
-  streetAddress: string;
+  customerId: string;
+  addressLine?: string; // From backend
+  streetAddress?: string; // From frontend
   ward?: string;
-  district: string;
+  district?: string;
   city: string;
   postalCode?: string;
   isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface AddressFormData {
-  label: string;
   streetAddress: string;
   ward: string;
   district: string;
@@ -31,49 +35,57 @@ interface AddressManagerProps {
 export function AddressManager({ customerId }: AddressManagerProps) {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState<AddressFormData>({
-    label: "",
     streetAddress: "",
     ward: "",
     district: "",
     city: "",
     postalCode: "",
-    isDefault: false
+    isDefault: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    // Mock addresses data - replace with actual API call
-    const mockAddresses: Address[] = [
-      {
-        id: "addr1",
-        label: "Địa chỉ chính",
-        streetAddress: "123 Nguyễn Trãi",
-        ward: "Phường 2",
-        district: "Quận 5", 
-        city: "TP.HCM",
-        postalCode: "70000",
-        isDefault: true
-      },
-      {
-        id: "addr2",
-        label: "Văn phòng",
-        streetAddress: "456 Lê Lợi",
-        ward: "Phường Bến Nghé",
-        district: "Quận 1",
-        city: "TP.HCM",
-        postalCode: "70000",
-        isDefault: false
-      }
-    ];
+  // Get token from Redux store
+  const { token } = useAppSelector((state) => state.auth);
 
-    setTimeout(() => {
-      setAddresses(mockAddresses);
+  const fetchAddresses = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      if (!token) {
+        throw new Error("No authentication token");
+      }
+
+      const response = await fetch(`/api/admin/customers/${customerId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch customer data");
+      }
+
+      const result = await response.json();
+      if (result.success && result.data.addresses) {
+        setAddresses(result.data.addresses);
+      }
+    } catch (error) {
+      console.error("Error fetching addresses:", error);
+      setAddresses([]);
+    } finally {
       setLoading(false);
-    }, 500);
-  }, [customerId]);
+    }
+  }, [customerId, token]);
+
+  useEffect(() => {
+    if (customerId && token) {
+      fetchAddresses();
+    }
+  }, [customerId, token, fetchAddresses]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -96,13 +108,12 @@ export function AddressManager({ customerId }: AddressManagerProps) {
     setIsAdding(true);
     setEditingId(null);
     setFormData({
-      label: `Địa chỉ ${addresses.length + 1}`,
       streetAddress: "",
       ward: "",
       district: "",
       city: "",
       postalCode: "",
-      isDefault: addresses.length === 0 // First address is default
+      isDefault: addresses.length === 0, // First address is default
     });
     setErrors({});
   };
@@ -111,64 +122,107 @@ export function AddressManager({ customerId }: AddressManagerProps) {
     setEditingId(address.id);
     setIsAdding(false);
     setFormData({
-      label: address.label,
-      streetAddress: address.streetAddress,
+      streetAddress: address.addressLine || address.streetAddress || "",
       ward: address.ward || "",
-      district: address.district,
-      city: address.city,
+      district: address.district || "",
+      city: address.city || "",
       postalCode: address.postalCode || "",
-      isDefault: address.isDefault
+      isDefault: address.isDefault,
     });
     setErrors({});
   };
 
   const handleSave = async () => {
-    if (!validateForm()) {
+    if (!validateForm() || !token) {
+      console.log("❌ Validation failed or no token:", {
+        validationPassed: validateForm(),
+        hasToken: !!token,
+      });
       return;
     }
+
+    console.log("🔍 Sending address data:", formData);
+
+    // Map frontend format to backend format
+    const backendData = {
+      addressLine: formData.streetAddress,
+      ward: formData.ward,
+      district: formData.district,
+      city: formData.city,
+      postalCode: formData.postalCode,
+      isDefault: formData.isDefault,
+    };
+
+    console.log("🔍 Mapped backend data:", backendData);
 
     try {
       if (isAdding) {
         // Create new address
-        const newAddress: Address = {
-          id: `addr_${Date.now()}`,
-          ...formData
-        };
+        const response = await fetch(
+          `/api/admin/customers/${customerId}/addresses`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(backendData),
+          }
+        );
 
-        // If setting as default, unset others
-        const updatedAddresses = formData.isDefault
-          ? addresses.map(addr => ({ ...addr, isDefault: false }))
-          : addresses;
+        console.log("📡 Response status:", response.status);
+        const result = await response.json();
+        console.log("📡 Response data:", result);
 
-        setAddresses([...updatedAddresses, newAddress]);
-        setIsAdding(false);
+        if (!response.ok) {
+          throw new Error("Failed to create address");
+        }
+
+        if (result.success) {
+          // Refresh addresses
+          await fetchAddresses();
+          setIsAdding(false);
+          toast.success("Đã tạo địa chỉ mới thành công");
+        }
       } else if (editingId) {
         // Update existing address
-        setAddresses(addresses.map(addr => {
-          if (addr.id === editingId) {
-            return { ...addr, ...formData };
+        const response = await fetch(
+          `/api/admin/customers/${customerId}/addresses/${editingId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(backendData),
           }
-          // If setting another as default, unset this one
-          if (formData.isDefault) {
-            return { ...addr, isDefault: false };
-          }
-          return addr;
-        }));
-        setEditingId(null);
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to update address");
+        }
+
+        const result = await response.json();
+        if (result.success) {
+          // Refresh addresses
+          await fetchAddresses();
+          setEditingId(null);
+          toast.success("Đã cập nhật địa chỉ thành công");
+        }
       }
 
       // Reset form
       setFormData({
-        label: "",
         streetAddress: "",
         ward: "",
         district: "",
         city: "",
         postalCode: "",
-        isDefault: false
+        isDefault: false,
       });
     } catch (error) {
       console.error("Error saving address:", error);
+      toast.error("Có lỗi xảy ra khi lưu địa chỉ");
     }
   };
 
@@ -176,53 +230,115 @@ export function AddressManager({ customerId }: AddressManagerProps) {
     setIsAdding(false);
     setEditingId(null);
     setFormData({
-      label: "",
       streetAddress: "",
       ward: "",
       district: "",
       city: "",
       postalCode: "",
-      isDefault: false
+      isDefault: false,
     });
     setErrors({});
   };
 
   const handleDelete = async (addressId: string) => {
-    const addressToDelete = addresses.find(addr => addr.id === addressId);
+    if (!token) return;
+
+    const addressToDelete = addresses.find((addr) => addr.id === addressId);
     if (!addressToDelete) return;
 
     if (addresses.length === 1) {
-      alert("Không thể xóa địa chỉ cuối cùng");
+      toast.error("Không thể xóa địa chỉ cuối cùng");
       return;
     }
 
     if (window.confirm("Bạn có chắc chắn muốn xóa địa chỉ này?")) {
-      const remainingAddresses = addresses.filter(addr => addr.id !== addressId);
-      
-      // If deleting default address, make first remaining address default
-      if (addressToDelete.isDefault && remainingAddresses.length > 0) {
-        remainingAddresses[0].isDefault = true;
-      }
+      try {
+        const response = await fetch(
+          `/api/admin/customers/${customerId}/addresses/${addressId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      setAddresses(remainingAddresses);
+        if (!response.ok) {
+          throw new Error("Failed to delete address");
+        }
+
+        const result = await response.json();
+        if (result.success) {
+          // Refresh addresses
+          await fetchAddresses();
+          toast.success("Đã xóa địa chỉ thành công");
+        }
+      } catch (error) {
+        console.error("Error deleting address:", error);
+        toast.error("Có lỗi xảy ra khi xóa địa chỉ");
+      }
     }
   };
 
   const handleSetDefault = async (addressId: string) => {
-    setAddresses(addresses.map(addr => ({
+    if (!token) return;
+
+    setActionLoading(`default-${addressId}`);
+
+    // Store original state for potential rollback
+    const originalAddresses = [...addresses];
+
+    // Optimistic update: Set the selected address as default and others as non-default
+    const optimisticAddresses = addresses.map((addr) => ({
       ...addr,
-      isDefault: addr.id === addressId
-    })));
+      isDefault: addr.id === addressId,
+    }));
+    setAddresses(optimisticAddresses);
+
+    try {
+      const response = await fetch(
+        `/api/admin/customers/${customerId}/addresses/${addressId}/set-default`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to set default address");
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        // Success - the optimistic update was correct, no need to fetch again
+        toast.success("Đã đặt làm địa chỉ mặc định thành công");
+        console.log("✅ Address set as default successfully");
+      } else {
+        // API returned success: false, rollback
+        setAddresses(originalAddresses);
+        console.error("API error:", result.message);
+        toast.error("Có lỗi xảy ra khi đặt địa chỉ mặc định");
+      }
+    } catch (error) {
+      // Network error, rollback to original state
+      setAddresses(originalAddresses);
+      console.error("Error setting default address:", error);
+      toast.error("Có lỗi xảy ra khi đặt địa chỉ mặc định");
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-4 bg-gray-600 rounded w-1/4"></div>
           <div className="space-y-3">
             {[...Array(2)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded"></div>
+              <div key={i} className="h-24 bg-gray-600 rounded"></div>
             ))}
           </div>
         </div>
@@ -233,10 +349,10 @@ export function AddressManager({ customerId }: AddressManagerProps) {
   return (
     <div className="space-y-6">
       {/* Address List */}
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Danh sách địa chỉ ({addresses.length}/5)
+      <div className="bg-gray-800 rounded-lg border border-gray-700">
+        <div className="px-6 py-4 border-b border-gray-700">
+          <h3 className="text-lg font-semibold text-white">
+            Danh sách địa chỉ ({addresses.length})
           </h3>
         </div>
 
@@ -247,32 +363,26 @@ export function AddressManager({ customerId }: AddressManagerProps) {
                 key={address.id}
                 className={`p-4 rounded-lg border-2 transition-colors ${
                   address.isDefault
-                    ? "border-green-200 bg-green-50"
-                    : "border-gray-200 bg-gray-50"
+                    ? "border-green-600 bg-green-900/20"
+                    : "border-gray-600 bg-gray-700"
                 }`}
               >
                 {editingId === address.id ? (
                   // Edit Form
                   <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Nhãn địa chỉ
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.label}
-                          onChange={(e) => setFormData(prev => ({ ...prev, label: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                        />
-                      </div>
+                    <div className="grid grid-cols-1 gap-4">
                       <div className="flex items-center">
                         <label className="flex items-center gap-2 text-sm">
                           <input
                             type="checkbox"
                             checked={formData.isDefault}
-                            onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
-                            className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                isDefault: e.target.checked,
+                              }))
+                            }
+                            className="rounded border-gray-600 text-green-600 focus:ring-green-500"
                           />
                           Địa chỉ mặc định
                         </label>
@@ -280,78 +390,113 @@ export function AddressManager({ customerId }: AddressManagerProps) {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-white mb-1">
                         Địa chỉ <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.streetAddress}
-                        onChange={(e) => setFormData(prev => ({ ...prev, streetAddress: e.target.value }))}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
-                          errors.streetAddress ? "border-red-500" : "border-gray-300"
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            streetAddress: e.target.value,
+                          }))
+                        }
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 bg-gray-700 text-white ${
+                          errors.streetAddress
+                            ? "border-red-500"
+                            : "border-gray-600"
                         }`}
                         placeholder="Số nhà, tên đường"
                       />
                       {errors.streetAddress && (
-                        <p className="mt-1 text-sm text-red-600">{errors.streetAddress}</p>
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.streetAddress}
+                        </p>
                       )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-white mb-1">
                           Phường/Xã
                         </label>
                         <input
                           type="text"
                           value={formData.ward}
-                          onChange={(e) => setFormData(prev => ({ ...prev, ward: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              ward: e.target.value,
+                            }))
+                          }
+                          className="w-full px-3 py-2 border bg-gray-700 text-white border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-white mb-1">
                           Quận/Huyện <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={formData.district}
-                          onChange={(e) => setFormData(prev => ({ ...prev, district: e.target.value }))}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
-                            errors.district ? "border-red-500" : "border-gray-300"
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              district: e.target.value,
+                            }))
+                          }
+                          className={`w-full px-3 py-2 border bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-green-500 ${
+                            errors.district
+                              ? "border-red-500"
+                              : "border-gray-600"
                           }`}
                         />
                         {errors.district && (
-                          <p className="mt-1 text-sm text-red-600">{errors.district}</p>
+                          <p className="mt-1 text-sm text-red-600">
+                            {errors.district}
+                          </p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-white mb-1">
                           Tỉnh/Thành phố <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={formData.city}
-                          onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
-                            errors.city ? "border-red-500" : "border-gray-300"
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              city: e.target.value,
+                            }))
+                          }
+                          className={`w-full px-3 py-2 border bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-green-500 ${
+                            errors.city ? "border-red-500" : "border-gray-600"
                           }`}
                         />
                         {errors.city && (
-                          <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+                          <p className="mt-1 text-sm text-red-600">
+                            {errors.city}
+                          </p>
                         )}
                       </div>
                     </div>
 
                     <div className="w-full md:w-1/3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-white mb-1">
                         Mã bưu điện
                       </label>
                       <input
                         type="text"
                         value={formData.postalCode}
-                        onChange={(e) => setFormData(prev => ({ ...prev, postalCode: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            postalCode: e.target.value,
+                          }))
+                        }
+                        className="w-full px-3 py-2 border bg-gray-700 text-white border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500"
                       />
                     </div>
 
@@ -365,7 +510,7 @@ export function AddressManager({ customerId }: AddressManagerProps) {
                       </button>
                       <button
                         onClick={handleCancel}
-                        className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                        className="flex items-center gap-2 px-4 py-2 text-white bg-gray-600 border border-gray-500 rounded-lg hover:bg-gray-500"
                       >
                         <X className="w-4 h-4" />
                         Hủy
@@ -378,8 +523,8 @@ export function AddressManager({ customerId }: AddressManagerProps) {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-gray-400" />
-                        <span className="font-medium text-gray-900">
-                          {address.label}
+                        <span className="font-medium text-white">
+                          {address.isDefault ? "Địa chỉ chính" : "Địa chỉ phụ"}
                         </span>
                         {address.isDefault && (
                           <span className="px-2 py-1 text-xs bg-green-600 text-white rounded-full">
@@ -391,8 +536,12 @@ export function AddressManager({ customerId }: AddressManagerProps) {
                         {!address.isDefault && (
                           <button
                             onClick={() => handleSetDefault(address.id)}
-                            className="px-3 py-1 text-xs text-green-600 border border-green-600 rounded-lg hover:bg-green-50"
+                            disabled={actionLoading === `default-${address.id}`}
+                            className="px-3 py-1 text-xs text-green-600 border border-green-600 rounded-lg hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                           >
+                            {actionLoading === `default-${address.id}` && (
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-green-600"></div>
+                            )}
                             Đặt làm mặc định
                           </button>
                         )}
@@ -410,15 +559,17 @@ export function AddressManager({ customerId }: AddressManagerProps) {
                         </button>
                       </div>
                     </div>
-                    <div className="text-sm text-gray-700">
-                      <div className="font-medium">{address.streetAddress}</div>
+                    <div className="text-sm text-gray-300">
+                      <div className="font-medium">
+                        {address.addressLine || address.streetAddress}
+                      </div>
                       <div>
                         {[address.ward, address.district, address.city]
                           .filter(Boolean)
                           .join(", ")}
                       </div>
                       {address.postalCode && (
-                        <div className="text-gray-500">
+                        <div className="text-gray-400">
                           Mã bưu điện: {address.postalCode}
                         </div>
                       )}
@@ -430,30 +581,25 @@ export function AddressManager({ customerId }: AddressManagerProps) {
 
             {/* Add New Address Form */}
             {isAdding && (
-              <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-4">Thêm địa chỉ mới</h4>
-                
+              <div className="p-4 border-2 border-dashed border-gray-600 rounded-lg">
+                <h4 className="font-medium text-white mb-4">
+                  Thêm địa chỉ mới
+                </h4>
+
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Nhãn địa chỉ
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.label}
-                        onChange={(e) => setFormData(prev => ({ ...prev, label: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                        placeholder="Ví dụ: Nhà riêng, Văn phòng"
-                      />
-                    </div>
+                  <div className="grid grid-cols-1 gap-4">
                     <div className="flex items-center">
                       <label className="flex items-center gap-2 text-sm">
                         <input
                           type="checkbox"
                           checked={formData.isDefault}
-                          onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
-                          className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              isDefault: e.target.checked,
+                            }))
+                          }
+                          className="rounded border-gray-600 text-green-600 focus:ring-green-500"
                         />
                         Địa chỉ mặc định
                       </label>
@@ -461,81 +607,114 @@ export function AddressManager({ customerId }: AddressManagerProps) {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-white mb-1">
                       Địa chỉ <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={formData.streetAddress}
-                      onChange={(e) => setFormData(prev => ({ ...prev, streetAddress: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          streetAddress: e.target.value,
+                        }))
+                      }
                       className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
-                        errors.streetAddress ? "border-red-500" : "border-gray-300"
+                        errors.streetAddress
+                          ? "border-red-500"
+                          : "border-gray-600"
                       }`}
                       placeholder="Số nhà, tên đường"
                     />
                     {errors.streetAddress && (
-                      <p className="mt-1 text-sm text-red-600">{errors.streetAddress}</p>
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.streetAddress}
+                      </p>
                     )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-white mb-1">
                         Phường/Xã
                       </label>
                       <input
                         type="text"
                         value={formData.ward}
-                        onChange={(e) => setFormData(prev => ({ ...prev, ward: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            ward: e.target.value,
+                          }))
+                        }
+                        className="w-full px-3 py-2 border bg-gray-700 text-white border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500"
                         placeholder="Phường/Xã"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-white mb-1">
                         Quận/Huyện <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.district}
-                        onChange={(e) => setFormData(prev => ({ ...prev, district: e.target.value }))}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
-                          errors.district ? "border-red-500" : "border-gray-300"
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            district: e.target.value,
+                          }))
+                        }
+                        className={`w-full px-3 py-2 border bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-green-500 ${
+                          errors.district ? "border-red-500" : "border-gray-600"
                         }`}
                         placeholder="Quận/Huyện"
                       />
                       {errors.district && (
-                        <p className="mt-1 text-sm text-red-600">{errors.district}</p>
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.district}
+                        </p>
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-white mb-1">
                         Tỉnh/Thành phố <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.city}
-                        onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
-                          errors.city ? "border-red-500" : "border-gray-300"
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            city: e.target.value,
+                          }))
+                        }
+                        className={`w-full px-3 py-2 border bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-green-500 ${
+                          errors.city ? "border-red-500" : "border-gray-600"
                         }`}
                         placeholder="Tỉnh/Thành phố"
                       />
                       {errors.city && (
-                        <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.city}
+                        </p>
                       )}
                     </div>
                   </div>
 
                   <div className="w-full md:w-1/3">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-white mb-1">
                       Mã bưu điện
                     </label>
                     <input
                       type="text"
                       value={formData.postalCode}
-                      onChange={(e) => setFormData(prev => ({ ...prev, postalCode: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          postalCode: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border bg-gray-700 text-white border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500"
                       placeholder="Mã bưu điện"
                     />
                   </div>
@@ -550,7 +729,7 @@ export function AddressManager({ customerId }: AddressManagerProps) {
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                      className="flex items-center gap-2 px-4 py-2 text-white bg-gray-600 border border-gray-500 rounded-lg hover:bg-gray-500"
                     >
                       <X className="w-4 h-4" />
                       Hủy
@@ -561,22 +740,16 @@ export function AddressManager({ customerId }: AddressManagerProps) {
             )}
 
             {/* Add Button */}
-            {!isAdding && !editingId && addresses.length < 5 && (
+            {!isAdding && !editingId && (
               <button
                 onClick={handleStartAdd}
-                className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors"
+                className="w-full p-4 border-2 border-dashed border-gray-600 rounded-lg text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-colors"
               >
                 <div className="flex items-center justify-center gap-2">
                   <Plus className="w-5 h-5" />
                   <span>Thêm địa chỉ mới</span>
                 </div>
               </button>
-            )}
-
-            {addresses.length >= 5 && (
-              <div className="text-center text-sm text-gray-500 py-4">
-                Đã đạt giới hạn tối đa 5 địa chỉ cho mỗi khách hàng
-              </div>
             )}
           </div>
         </div>

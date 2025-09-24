@@ -8,6 +8,9 @@ import { toast } from "sonner";
 import { ChevronLeft, FileText, Phone, User, MapPin } from "lucide-react";
 import Image from "next/image";
 import type { CartItem } from "@/types";
+import { Header } from "@/components/layout/Header";
+import { Cart } from "@/components/ui/Cart";
+import { getFirstProductImageUrl } from "@/lib/utils/image";
 
 interface ConsultationFormData {
   customerName: string;
@@ -81,9 +84,9 @@ export default function CartPage() {
           productId: item.product.id,
           productName: item.product.name,
           quantity: item.quantity,
-          color: item.product.color.name,
-          capacity: item.product.capacity.name,
-          category: item.product.category.name,
+          color: item.product.productColors?.map((pc) => pc.color.name).join(", ") || "N/A",
+          capacity: item.product.capacity?.name || "N/A",
+          category: item.product.productCategories?.map((pc) => pc.category.name).join(", ") || "N/A",
         })),
         totalItems,
         createdAt: new Date().toISOString(),
@@ -124,150 +127,161 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Giỏ hàng trống
-            </h1>
-            <p className="text-gray-600 mb-8">
-              Bạn chưa có sản phẩm nào trong giỏ hàng.
-            </p>
-            <button
-              onClick={() => router.push("/products")}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
-            >
-              <ChevronLeft className="w-5 h-5" />
-              Tiếp tục mua sắm
-            </button>
+      <div className="min-h-screen bg-black text-white">
+        <div className="pt-24 py-12">
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-white mb-4">
+                Giỏ hàng trống
+              </h1>
+              <p className="text-zinc-400 mb-8">
+                Bạn chưa có sản phẩm nào trong giỏ hàng.
+              </p>
+              <button
+                onClick={() => router.push("/products")}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-lg hover:bg-zinc-100 transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                Tiếp tục mua sắm
+              </button>
+            </div>
           </div>
         </div>
+        <Cart />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Giỏ hàng</h1>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Cart Items */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Sản phẩm cần tư vấn ({totalItems} sản phẩm)
-            </h2>
-
-            <div className="space-y-4">
-              {items.map((item) => (
-                <CartItemRow key={item.product.id} item={item} />
-              ))}
-            </div>
+    <div className="min-h-screen bg-black text-white">
+      <Header />
+      <div className="pt-16">
+        <div className="max-w-6xl mx-auto px-4">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white">Giỏ hàng</h1>
           </div>
 
-          {/* Customer Information Form */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Thông tin liên hệ
-            </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Cart Items */}
+            <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
+              <h2 className="text-xl font-semibold text-white mb-4">
+                Sản phẩm cần tư vấn ({totalItems} sản phẩm)
+              </h2>
 
-            <form className="space-y-4">
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <User className="w-4 h-4 inline mr-2" />
-                  Họ và tên *
-                </label>
-                <input
-                  type="text"
-                  value={formData.customerName}
-                  onChange={(e) =>
-                    handleInputChange("customerName", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  placeholder="Nhập họ và tên của bạn"
-                  required
-                />
+              <div className="space-y-4">
+                {items.map((item) => (
+                  <CartItemRow key={item.product.id} item={item} />
+                ))}
               </div>
+            </div>
 
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Phone className="w-4 h-4 inline mr-2" />
-                  Số điện thoại *
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phoneNumber}
-                  onChange={(e) =>
-                    handleInputChange("phoneNumber", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  placeholder="Nhập số điện thoại"
-                  required
-                />
+            {/* Customer Information Form */}
+            <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
+              <h2 className="text-xl font-semibold text-white mb-4">
+                Thông tin liên hệ
+              </h2>
+
+              <form className="space-y-4">
+                {/* Name */}
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    <User className="w-4 h-4 inline mr-2" />
+                    Họ và tên *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.customerName}
+                    onChange={(e) =>
+                      handleInputChange("customerName", e.target.value)
+                    }
+                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
+                    placeholder="Nhập họ và tên của bạn"
+                    required
+                  />
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    <Phone className="w-4 h-4 inline mr-2" />
+                    Số điện thoại *
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phoneNumber}
+                    onChange={(e) =>
+                      handleInputChange("phoneNumber", e.target.value)
+                    }
+                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
+                    placeholder="Nhập số điện thoại"
+                    required
+                  />
+                </div>
+
+                {/* Address */}
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    <MapPin className="w-4 h-4 inline mr-2" />
+                    Địa chỉ *
+                  </label>
+                  <textarea
+                    value={formData.address}
+                    onChange={(e) =>
+                      handleInputChange("address", e.target.value)
+                    }
+                    rows={3}
+                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
+                    placeholder="Nhập địa chỉ của bạn"
+                    required
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="button"
+                  onClick={handleSubmitConsultation}
+                  disabled={isSubmitting}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-lg hover:bg-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
+                      Đang tạo đơn...
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-5 h-5" />
+                      Tạo đơn tư vấn
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <div className="mt-6 p-4 bg-zinc-800 border border-zinc-700 rounded-lg">
+                <p className="text-sm text-zinc-300">
+                  <strong>Lưu ý:</strong> Sau khi tạo đơn tư vấn, chúng tôi sẽ
+                  liên hệ với bạn trong vòng 24h để tư vấn chi tiết về các sản
+                  phẩm và báo giá phù hợp nhất.
+                </p>
               </div>
-
-              {/* Address */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <MapPin className="w-4 h-4 inline mr-2" />
-                  Địa chỉ *
-                </label>
-                <textarea
-                  value={formData.address}
-                  onChange={(e) => handleInputChange("address", e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  placeholder="Nhập địa chỉ của bạn"
-                  required
-                />
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="button"
-                onClick={handleSubmitConsultation}
-                disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Đang tạo đơn...
-                  </>
-                ) : (
-                  <>
-                    <FileText className="w-5 h-5" />
-                    Tạo đơn tư vấn
-                  </>
-                )}
-              </button>
-            </form>
-
-            <div className="mt-6 p-4 bg-green-50 rounded-lg">
-              <p className="text-sm text-green-800">
-                <strong>Lưu ý:</strong> Sau khi tạo đơn tư vấn, chúng tôi sẽ
-                liên hệ với bạn trong vòng 24h để tư vấn chi tiết về các sản
-                phẩm và báo giá phù hợp nhất.
-              </p>
             </div>
           </div>
         </div>
       </div>
+      <Cart />
     </div>
   );
 }
 
 function CartItemRow({ item }: { item: CartItem }) {
   return (
-    <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
+    <div className="flex items-center gap-4 p-4 border border-zinc-700 rounded-lg bg-zinc-800">
       <div className="relative w-16 h-16 flex-shrink-0">
         <Image
-          src={item.product.images[0] || "/placeholder-product.jpg"}
+          src={
+            getFirstProductImageUrl(item.product.productImages) || "/placeholder-product.jpg"
+          }
           alt={item.product.name}
           fill
           className="object-cover rounded-lg"
@@ -275,19 +289,18 @@ function CartItemRow({ item }: { item: CartItem }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-gray-900 truncate">
-          {item.product.name}
-        </h3>
-        <p className="text-sm text-gray-500">
-          {item.product.color.name} • {item.product.capacity.name}
+        <h3 className="font-medium text-white truncate">{item.product.name}</h3>
+        <p className="text-sm text-zinc-400">
+          {item.product.productColors?.map((pc) => pc.color.name).join(", ") || "Chưa có"} •{" "}
+          {item.product.capacity?.name || "Chưa có"}
         </p>
-        <p className="text-sm text-gray-500">
-          Danh mục: {item.product.category.name}
+        <p className="text-sm text-zinc-400">
+          Danh mục: {item.product.productCategories?.map((pc) => pc.category.name).join(", ") || "N/A"}
         </p>
       </div>
 
       <div className="text-right">
-        <p className="font-medium text-gray-900">Số lượng: {item.quantity}</p>
+        <p className="font-medium text-white">Số lượng: {item.quantity}</p>
       </div>
     </div>
   );

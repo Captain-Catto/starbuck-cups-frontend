@@ -6,6 +6,7 @@ import type { Category, Color, Capacity } from "@/types";
 import { useUpdateProduct } from "@/hooks/business/useUpdateProduct";
 import { uploadAPI } from "@/lib/api/upload";
 import ImageReorder from "./ImageReorder";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 
 interface UpdateProductFormProps {
   productId: string;
@@ -26,7 +27,7 @@ export function UpdateProductForm({
 }: UpdateProductFormProps) {
   const [isUploading, setIsUploading] = useState(false);
 
-  const { formData, errors, loading, isSubmitting, updateField, submitForm } =
+  const { formData, errors, loading, isSubmitting, updateField, toggleArrayField, submitForm } =
     useUpdateProduct({
       productId,
       onSuccess,
@@ -160,12 +161,11 @@ export function UpdateProductForm({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Mô tả
           </label>
-          <textarea
-            value={formData.description}
-            onChange={(e) => updateField("description", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            placeholder="Nhập mô tả sản phẩm"
-            rows={3}
+          <RichTextEditor
+            value={formData.description || ""}
+            onChange={(htmlContent) => updateField("description", htmlContent)}
+            placeholder="Nhập mô tả chi tiết sản phẩm..."
+            height={300}
           />
         </div>
 
@@ -175,24 +175,24 @@ export function UpdateProductForm({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Danh mục <span className="text-red-500">*</span>
             </label>
-            <select
-              value={formData.categoryId}
-              onChange={(e) => updateField("categoryId", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                errors.categoryId ? "border-red-500" : "border-gray-300"
-              }`}
-              required
-            >
-              <option value="">Chọn danh mục</option>
+            <div className={`space-y-2 max-h-32 overflow-y-auto border rounded-md p-2 ${
+              errors.categoryIds ? "border-red-500" : "border-gray-300"
+            }`}>
               {Array.isArray(categories) &&
                 categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
+                  <label key={category.id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.categoryIds?.includes(category.id) || false}
+                      onChange={() => toggleArrayField("categoryIds", category.id)}
+                      className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                    />
+                    <span className="text-sm">{category.name}</span>
+                  </label>
                 ))}
-            </select>
-            {errors.categoryId && (
-              <p className="mt-1 text-sm text-red-600">{errors.categoryId}</p>
+            </div>
+            {errors.categoryIds && (
+              <p className="mt-1 text-sm text-red-600">{errors.categoryIds}</p>
             )}
           </div>
 
@@ -200,24 +200,30 @@ export function UpdateProductForm({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Màu sắc <span className="text-red-500">*</span>
             </label>
-            <select
-              value={formData.colorId}
-              onChange={(e) => updateField("colorId", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                errors.colorId ? "border-red-500" : "border-gray-300"
-              }`}
-              required
-            >
-              <option value="">Chọn màu sắc</option>
+            <div className={`space-y-2 max-h-32 overflow-y-auto border rounded-md p-2 ${
+              errors.colorIds ? "border-red-500" : "border-gray-300"
+            }`}>
               {Array.isArray(colors) &&
                 colors.map((color) => (
-                  <option key={color.id} value={color.id}>
-                    {color.name}
-                  </option>
+                  <label key={color.id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.colorIds?.includes(color.id) || false}
+                      onChange={() => toggleArrayField("colorIds", color.id)}
+                      className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                    />
+                    <span className="text-sm flex items-center gap-2">
+                      <div
+                        className="w-4 h-4 rounded border border-gray-300"
+                        style={{ backgroundColor: color.hexCode }}
+                      ></div>
+                      {color.name}
+                    </span>
+                  </label>
                 ))}
-            </select>
-            {errors.colorId && (
-              <p className="mt-1 text-sm text-red-600">{errors.colorId}</p>
+            </div>
+            {errors.colorIds && (
+              <p className="mt-1 text-sm text-red-600">{errors.colorIds}</p>
             )}
           </div>
 

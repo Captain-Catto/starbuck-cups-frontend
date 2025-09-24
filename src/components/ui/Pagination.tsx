@@ -1,9 +1,17 @@
 "use client";
 import React, { useState } from "react";
 
+interface PaginationData {
+  current_page: number;
+  has_next: boolean;
+  has_prev: boolean;
+  per_page: number;
+  total_items: number;
+  total_pages: number;
+}
+
 interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
+  data?: PaginationData;
   onPageChange?: (page: number) => void;
   showPages?: number;
   className?: string;
@@ -14,18 +22,35 @@ function classNames(...classes: string[]) {
 }
 
 export function Pagination({
-  currentPage,
-  totalPages,
+  data,
   onPageChange,
   showPages = 5,
   className = "",
 }: PaginationProps) {
   const [isInputMode, setIsInputMode] = useState(false);
-  const [inputValue, setInputValue] = useState(currentPage.toString());
+  const [inputValue, setInputValue] = useState("");
   const [desktopInputMode, setDesktopInputMode] = useState(false);
-  const [desktopInputValue, setDesktopInputValue] = useState(
-    currentPage.toString()
-  );
+  const [desktopInputValue, setDesktopInputValue] = useState("");
+
+  // Handle case when data is undefined or null
+  if (!data) {
+    return null;
+  }
+
+  const {
+    current_page: currentPage,
+    total_pages: totalPages,
+    has_next,
+    has_prev
+  } = data;
+
+  // Initialize input values based on current page
+  if (inputValue === "") {
+    setInputValue(currentPage.toString());
+  }
+  if (desktopInputValue === "") {
+    setDesktopInputValue(currentPage.toString());
+  }
 
   const getDesktopPages = () => {
     const pages = [];
@@ -108,12 +133,12 @@ export function Pagination({
           onClick={() =>
             onPageChange && onPageChange(Math.max(1, currentPage - 1))
           }
-          disabled={currentPage === 1}
+          disabled={!has_prev}
           className={classNames(
             "relative inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-            currentPage === 1
-              ? "text-gray-500 cursor-not-allowed bg-gray-200"
-              : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+            !has_prev
+              ? "text-zinc-600 cursor-not-allowed bg-zinc-800"
+              : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800"
           )}
           aria-label="Trang trước"
         >
@@ -124,7 +149,7 @@ export function Pagination({
         <div className="flex lg:hidden">
           {isInputMode ? (
             <form onSubmit={handleInputSubmit} className="flex items-center">
-              <span className="text-sm font-medium text-gray-700 mr-2">
+              <span className="text-sm font-medium text-zinc-300 mr-2">
                 Trang
               </span>
               <input
@@ -135,17 +160,17 @@ export function Pagination({
                 onChange={(e) => setInputValue(e.target.value)}
                 onBlur={handleInputBlur}
                 onKeyDown={handleInputKeyDown}
-                className="w-12 px-2 py-1 text-sm text-center text-gray-900 bg-white border border-green-500 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-12 px-2 py-1 text-sm text-center text-white bg-zinc-800 border border-zinc-600 rounded focus:outline-none focus:ring-2 focus:ring-zinc-500"
                 autoFocus
               />
-              <span className="text-sm font-medium text-gray-700 ml-2">
+              <span className="text-sm font-medium text-zinc-300 ml-2">
                 / {totalPages}
               </span>
             </form>
           ) : (
             <button
               onClick={handleMobilePageClick}
-              className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors"
             >
               <span>
                 Trang {currentPage} / {totalPages}
@@ -161,12 +186,12 @@ export function Pagination({
             <>
               <button
                 onClick={() => onPageChange && onPageChange(1)}
-                className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors"
               >
                 1
               </button>
               {desktopPages[0] > 2 && (
-                <span className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-400">
+                <span className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-500">
                   ...
                 </span>
               )}
@@ -181,8 +206,8 @@ export function Pagination({
               className={classNames(
                 "relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors",
                 page === currentPage
-                  ? "z-10 bg-green-600 border-green-600 text-white"
-                  : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                  ? "z-10 bg-zinc-600 border-zinc-600 text-white"
+                  : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800"
               )}
               aria-current={page === currentPage ? "page" : undefined}
             >
@@ -200,7 +225,7 @@ export function Pagination({
                       onSubmit={handleDesktopInputSubmit}
                       className="flex items-center"
                     >
-                      <span className="text-xs font-medium text-gray-400 mr-1">
+                      <span className="text-xs font-medium text-zinc-400 mr-1">
                         Đến
                       </span>
                       <input
@@ -211,7 +236,7 @@ export function Pagination({
                         onChange={(e) => setDesktopInputValue(e.target.value)}
                         onBlur={handleDesktopInputBlur}
                         onKeyDown={handleDesktopInputKeyDown}
-                        className="w-16 px-2 py-1 text-sm text-center text-gray-900 bg-white border border-green-500 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-16 px-2 py-1 text-sm text-center text-white bg-zinc-800 border border-zinc-600 rounded focus:outline-none focus:ring-2 focus:ring-zinc-500"
                         autoFocus
                         placeholder={`1-${totalPages}`}
                       />
@@ -222,7 +247,7 @@ export function Pagination({
                         setDesktopInputMode(true);
                         setDesktopInputValue("");
                       }}
-                      className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors"
+                      className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-400 transition-colors"
                       title={`Nhảy đến trang (1-${totalPages})`}
                     >
                       ...
@@ -232,7 +257,7 @@ export function Pagination({
               )}
               <button
                 onClick={() => onPageChange && onPageChange(totalPages)}
-                className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors"
               >
                 {totalPages}
               </button>
@@ -245,12 +270,12 @@ export function Pagination({
           onClick={() =>
             onPageChange && onPageChange(Math.min(totalPages, currentPage + 1))
           }
-          disabled={currentPage === totalPages}
+          disabled={!has_next}
           className={classNames(
             "relative inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-            currentPage === totalPages
-              ? "text-gray-500 cursor-not-allowed bg-gray-200"
-              : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+            !has_next
+              ? "text-zinc-600 cursor-not-allowed bg-zinc-800"
+              : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800"
           )}
           aria-label="Trang sau"
         >

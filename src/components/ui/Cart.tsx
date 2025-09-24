@@ -12,6 +12,7 @@ import type { CartItem } from "@/types";
 import Image from "next/image";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { getFirstProductImageUrl } from "@/lib/utils/image";
 
 interface CartProps {
   className?: string;
@@ -63,18 +64,18 @@ export function Cart({ className = "" }: CartProps) {
 
       {/* Cart Panel */}
       <div
-        className={`fixed right-0 top-0 h-full w-full max-w-md z-50 bg-white shadow-xl transform transition-transform flex flex-col ${className}`}
+        className={`fixed right-0 top-0 h-full w-full max-w-md z-50 bg-zinc-900 shadow-xl transform transition-transform flex flex-col ${className}`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-800 flex-shrink-0">
+          <h2 className="text-lg font-semibold text-white">
             Giỏ tư vấn ({totalItems} sản phẩm)
           </h2>
           <button
             onClick={() => dispatch(closeCart())}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 text-zinc-400" />
           </button>
         </div>
 
@@ -82,7 +83,7 @@ export function Cart({ className = "" }: CartProps) {
         {items.length > 0 && (
           <button
             onClick={handleClearCart}
-            className="w-full text-sm text-gray-600 hover:text-red-600 transition-colors py-2 px-3 hover:bg-red-50 rounded-lg"
+            className="w-full text-sm text-zinc-400 hover:text-red-400 transition-colors py-2 px-3 hover:bg-red-900/20 rounded-lg"
           >
             Xóa tất cả sản phẩm
           </button>
@@ -93,14 +94,14 @@ export function Cart({ className = "" }: CartProps) {
           {items.length === 0 ? (
             // Empty Cart
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <ShoppingBag className="w-8 h-8 text-gray-400" />
+              <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
+                <ShoppingBag className="w-8 h-8 text-zinc-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-white mb-2">
                 Giỏ tư vấn trống
               </h3>
-              <p className="text-gray-600 mb-4">
-                Thêm sản phẩm vào giỏ để được tư vấn chi tiết qua Messenger
+              <p className="text-zinc-400 mb-4">
+                Thêm sản phẩm vào giỏ để được tư vấn chi tiết
               </p>
             </div>
           ) : (
@@ -118,18 +119,18 @@ export function Cart({ className = "" }: CartProps) {
               </div>
 
               {/* Footer Actions - Fixed at bottom */}
-              <div className="border-t bg-white p-4 space-y-3">
+              <div className="border-t border-zinc-800 bg-zinc-900 p-4 space-y-3">
                 {/* Consultation Order Button */}
                 <button
                   onClick={handleCreateConsultationOrder}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-zinc-100 text-black font-medium rounded-lg transition-colors"
                 >
                   <FileText className="w-5 h-5" />
                   Tạo đơn tư vấn
                 </button>
 
                 {/* Info Text */}
-                <p className="text-xs text-gray-500 text-center">
+                <p className="text-xs text-zinc-400 text-center">
                   Tạo đơn tư vấn để chúng tôi liên hệ tư vấn chi tiết về sản
                   phẩm và giá cả
                 </p>
@@ -150,34 +151,47 @@ interface CartItemCardProps {
 
 function CartItemCard({ item, onQuantityChange, onRemove }: CartItemCardProps) {
   const { product, quantity } = item;
-  const primaryImage = product.images?.[0] || "/images/placeholder-product.jpg";
 
   return (
-    <div className="flex gap-3 p-3 bg-gray-50 rounded-lg">
+    <div className="flex gap-3 p-3 bg-zinc-800 rounded-lg">
       {/* Product Image */}
-      <div className="w-16 h-16 bg-white rounded-lg overflow-hidden flex-shrink-0">
-        <Image
-          src={primaryImage}
-          alt={product.name}
-          width={64}
-          height={64}
-          className="w-full h-full object-cover"
-        />
+      <div className="w-16 h-16 bg-zinc-700 rounded-lg overflow-hidden flex-shrink-0">
+        {getFirstProductImageUrl(product.productImages) ? (
+          <Image
+            src={getFirstProductImageUrl(product.productImages)}
+            alt={product.name}
+            width={64}
+            height={64}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-2xl font-light text-white/30">
+              {product.name.charAt(0)}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Product Info */}
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-gray-900 text-sm line-clamp-2 mb-1">
+        <h4 className="font-medium text-white text-sm line-clamp-2 mb-1">
           {product.name}
         </h4>
 
         <div className="flex items-center gap-2 mb-2">
-          <div
-            className="w-3 h-3 rounded-full border border-gray-300"
-            style={{ backgroundColor: product.color.hexCode }}
-          />
-          <span className="text-xs text-gray-600">
-            {product.color.name} • {product.capacity.name}
+          <div className="flex items-center gap-1">
+            {product.productColors?.map((pc: { color: { id: string; name: string; hexCode?: string } }) => (
+              <div
+                key={pc.color.id}
+                className="w-3 h-3 rounded-full border border-zinc-600"
+                style={{ backgroundColor: pc.color.hexCode || "#ffffff" }}
+              />
+            ))}
+          </div>
+          <span className="text-xs text-zinc-400">
+            {product.productColors?.map((pc: { color: { name: string } }) => pc.color.name).join(", ") || "Chưa có"} •{" "}
+            {product.capacity?.name || "Chưa có"}
           </span>
         </div>
 
@@ -185,19 +199,19 @@ function CartItemCard({ item, onQuantityChange, onRemove }: CartItemCardProps) {
         <div className="flex items-center gap-2">
           <button
             onClick={() => onQuantityChange(product.id, quantity - 1)}
-            className="p-1 hover:bg-gray-200 rounded transition-colors"
+            className="p-1 hover:bg-zinc-700 rounded transition-colors text-zinc-400"
             disabled={quantity <= 1}
           >
             <Minus className="w-3 h-3" />
           </button>
 
-          <span className="px-2 py-1 bg-white border rounded text-sm min-w-[2rem] text-center">
+          <span className="px-2 py-1 bg-zinc-700 border border-zinc-600 rounded text-sm min-w-[2rem] text-center text-white">
             {quantity}
           </span>
 
           <button
             onClick={() => onQuantityChange(product.id, quantity + 1)}
-            className="p-1 hover:bg-gray-200 rounded transition-colors"
+            className="p-1 hover:bg-zinc-700 rounded transition-colors text-zinc-400"
           >
             <Plus className="w-3 h-3" />
           </button>
@@ -207,9 +221,9 @@ function CartItemCard({ item, onQuantityChange, onRemove }: CartItemCardProps) {
       {/* Remove Button */}
       <button
         onClick={() => onRemove(product.id)}
-        className="p-1 hover:bg-gray-200 rounded transition-colors self-start"
+        className="p-1 hover:bg-zinc-700 rounded transition-colors self-start"
       >
-        <X className="w-4 h-4 text-gray-400" />
+        <X className="w-4 h-4 text-zinc-400" />
       </button>
     </div>
   );

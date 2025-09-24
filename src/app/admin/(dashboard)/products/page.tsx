@@ -1,682 +1,108 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { toast } from "sonner";
-import {
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  AlertTriangle,
-  Eye,
-  EyeOff,
-  Package,
-  Image as ImageIcon,
-} from "lucide-react";
-import Image from "next/image";
-import type { Product, Category, Color, Capacity } from "@/types";
+import { useProducts } from "@/hooks/admin/useProducts";
+import { ProductsHeader } from "@/components/admin/products/ProductsHeader";
+import { ProductsFilters } from "@/components/admin/products/ProductsFilters";
+import { ProductsBulkActions } from "@/components/admin/products/ProductsBulkActions";
+import { ProductsTable } from "@/components/admin/products/ProductsTable";
+import { ProductsPagination } from "@/components/admin/products/ProductsPagination";
 import ProductModal from "@/components/admin/ProductModal";
-import { apiService } from "@/lib/api";
-import { Pagination } from "@/components/ui/Pagination";
-
-interface ProductListItem extends Product {
-  isActive: boolean;
-  stock: number;
-}
-
-interface ProductFilters {
-  search: string;
-  category: string;
-  color: string;
-  capacity: string;
-  status: "all" | "active" | "inactive" | "low_stock";
-}
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<ProductListItem[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [colors, setColors] = useState<Color[]>([]);
-  const [capacities, setCapacities] = useState<Capacity[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const {
+    // Data
+    products,
+    categories,
+    colors,
+    capacities,
 
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<ProductListItem | null>(
-    null
-  );
+    // State
+    loading,
+    actionLoading,
+    selectedProducts,
+    filters,
+    pagination,
 
-  const [filters, setFilters] = useState<ProductFilters>({
-    search: "",
-    category: "",
-    color: "",
-    capacity: "",
-    status: "all",
-  });
+    // Modal state
+    isModalOpen,
+    editingProduct,
 
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0,
-  });
+    // Actions
+    handleFilterChange,
+    handleBulkAction,
+    handleProductAction,
+    handleCreateProduct,
+    handleEditProduct,
+    handleCloseModal,
+    handleModalSuccess,
+    getProductStatus,
+    setSelectedProducts,
+    setPagination,
 
-  const loadProducts = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-        ...(filters.search && { search: filters.search }),
-        ...(filters.category && { categoryId: filters.category }),
-        ...(filters.color && { colorId: filters.color }),
-        ...(filters.capacity && { capacityId: filters.capacity }),
-        ...(filters.status === "active" && { isActive: "true" }),
-        ...(filters.status === "inactive" && { isActive: "false" }),
-        ...(filters.status === "low_stock" && {
-          lowStock: "true",
-          lowStockThreshold: "10",
-        }),
-      });
+    // Selection helpers
+    isAllSelected,
+    isIndeterminate,
+  } = useProducts();
 
-      const response = await fetch(`/api/admin/products?${params}`, {
-        headers: getAuthHeaders(),
-      });
-      const data = await response.json();
-
-      if (data.success) {
-        // Map API response to match our interface
-        const mappedProducts = (data.data?.items || []).map(
-          (item: Product & { stockQuantity: number }) => ({
-            ...item,
-            stock: item.stockQuantity, // Map stockQuantity to stock
-            // Ensure backward compatibility - convert productImages to images array
-            images:
-              item.productImages?.map(
-                (img: { url: string; order: number }) => img.url
-              ) ||
-              item.images ||
-              [],
-          })
-        );
-
-        setProducts(mappedProducts);
-        setPagination((prev) => ({
-          ...prev,
-          total: data.data?.pagination?.total_items || 0,
-          totalPages: data.data?.pagination?.total_pages || 0,
-        }));
-      } else {
-        console.error("API Error:", data);
-        toast.error(data.message || "Không thể tải danh sách sản phẩm");
-      }
-    } catch (error) {
-      console.error("Error loading products:", error);
-      toast.error("Có lỗi xảy ra khi tải sản phẩm");
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, pagination.page, pagination.limit]);
-
-  const getAuthHeaders = (): Record<string, string> => {
-    const token = localStorage.getItem("admin_token");
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
-
-  const loadFilterOptions = useCallback(async () => {
-    try {
-      const headers = getAuthHeaders();
-
-      const [categoriesRes, colorsRes, capacitiesRes] = await Promise.all([
-        fetch("/api/admin/categories", { headers }),
-        fetch("/api/admin/colors", { headers }),
-        fetch("/api/admin/capacities", { headers }),
-      ]);
-
-      const [categoriesData, colorsData, capacitiesData] = await Promise.all([
-        categoriesRes.json(),
-        colorsRes.json(),
-        capacitiesRes.json(),
-      ]);
-
-      console.log("Filter options response:", {
-        categoriesData,
-        colorsData,
-        capacitiesData,
-        categoriesDataStructure: categoriesData?.data,
-        colorsDataStructure: colorsData?.data,
-        capacitiesDataStructure: capacitiesData?.data,
-      });
-
-      if (categoriesData.success) {
-        const cats = Array.isArray(categoriesData.data?.items)
-          ? categoriesData.data.items
-          : [];
-        console.log("Setting categories:", cats);
-        setCategories(cats);
-      }
-      if (colorsData.success) {
-        const cols = Array.isArray(colorsData.data?.items)
-          ? colorsData.data.items
-          : [];
-        console.log("Setting colors:", cols);
-        setColors(cols);
-      }
-      if (capacitiesData.success) {
-        const caps = Array.isArray(capacitiesData.data?.items)
-          ? capacitiesData.data.items
-          : [];
-        console.log("Setting capacities:", caps);
-        setCapacities(caps);
-      }
-    } catch (error) {
-      console.error("Error loading filter options:", error);
-      // Set empty arrays as fallback
-      setCategories([]);
-      setColors([]);
-      setCapacities([]);
-    }
-  }, []);
-
-  // Load data on component mount
-  useEffect(() => {
-    loadProducts();
-    loadFilterOptions();
-  }, [loadProducts, loadFilterOptions]);
-
-  const handleFilterChange = (field: keyof ProductFilters, value: string) => {
-    setFilters((prev) => ({ ...prev, [field]: value }));
-    setPagination((prev) => ({ ...prev, page: 1 }));
-  };
-
-  const handleBulkAction = async (
-    action: "activate" | "deactivate" | "delete"
-  ) => {
-    if (selectedProducts.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một sản phẩm");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const promises = selectedProducts.map(async (productId) => {
-        if (action === "delete") {
-          return apiService.adminDeleteProduct(productId);
-        } else {
-          // For activate/deactivate, we need to check current status first
-          const product = products.find((p) => p.id === productId);
-          if (!product) return Promise.resolve();
-
-          const shouldToggle =
-            (action === "activate" && !product.isActive) ||
-            (action === "deactivate" && product.isActive);
-
-          if (shouldToggle) {
-            return apiService.toggleProductStatus(productId);
-          }
-          return Promise.resolve();
-        }
-      });
-
-      await Promise.all(promises);
-
-      toast.success(
-        `Đã ${
-          action === "delete"
-            ? "xóa"
-            : action === "activate"
-            ? "kích hoạt"
-            : "vô hiệu hóa"
-        } ${selectedProducts.length} sản phẩm`
-      );
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedProducts(products.map((p) => p.id));
+    } else {
       setSelectedProducts([]);
-      loadProducts();
-    } catch (error) {
-      console.error(`Bulk ${action} error:`, error);
-      toast.error(
-        `Lỗi khi ${
-          action === "delete"
-            ? "xóa"
-            : action === "activate"
-            ? "kích hoạt"
-            : "vô hiệu hóa"
-        } sản phẩm`
-      );
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleProductAction = async (
-    productId: string,
-    action: "activate" | "deactivate" | "delete"
-  ) => {
-    try {
-      let result;
-
-      if (action === "delete") {
-        result = await apiService.adminDeleteProduct(productId);
-      } else {
-        result = await apiService.toggleProductStatus(productId);
-      }
-
-      if (result.success) {
-        const actionText =
-          action === "activate"
-            ? "kích hoạt"
-            : action === "deactivate"
-            ? "vô hiệu hóa"
-            : "xóa";
-        toast.success(`Đã ${actionText} sản phẩm thành công`);
-        loadProducts();
-      } else {
-        toast.error(result.error || "Có lỗi xảy ra");
-      }
-    } catch (error) {
-      console.error("Product action error:", error);
-      toast.error("Có lỗi xảy ra khi thực hiện hành động");
+  const handleSelectProduct = (productId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedProducts((prev) => [...prev, productId]);
+    } else {
+      setSelectedProducts((prev) => prev.filter((id) => id !== productId));
     }
   };
-
-  const handleCreateProduct = () => {
-    console.log("Opening modal with filter options:", {
-      categories,
-      colors,
-      capacities,
-    });
-    setEditingProduct(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEditProduct = (product: ProductListItem) => {
-    setEditingProduct(product);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingProduct(null);
-  };
-
-  const handleModalSuccess = () => {
-    loadProducts();
-  };
-
-  const getStatusBadge = (product: ProductListItem) => {
-    if (!product.isActive) {
-      return (
-        <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
-          Không hoạt động
-        </span>
-      );
-    }
-    if (product.stock <= 5) {
-      return (
-        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
-          Sắp hết hàng
-        </span>
-      );
-    }
-    return (
-      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-        Hoạt động
-      </span>
-    );
-  };
-
-  const isAllSelected =
-    selectedProducts.length === products.length && products.length > 0;
-  const isIndeterminate =
-    selectedProducts.length > 0 && selectedProducts.length < products.length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Quản lý sản phẩm
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Quản lý danh sách sản phẩm, tồn kho và trạng thái
-            </p>
-          </div>
-          <button
-            onClick={handleCreateProduct}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            Thêm sản phẩm
-          </button>
-        </div>
+        <ProductsHeader onCreateProduct={handleCreateProduct} />
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Tìm kiếm sản phẩm..."
-                value={filters.search}
-                onChange={(e) => handleFilterChange("search", e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
-
-            {/* Category Filter */}
-            <select
-              value={filters.category}
-              onChange={(e) => handleFilterChange("category", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="">Tất cả danh mục</option>
-              {Array.isArray(categories) &&
-                categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-            </select>
-
-            {/* Color Filter */}
-            <select
-              value={filters.color}
-              onChange={(e) => handleFilterChange("color", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="">Tất cả màu sắc</option>
-              {Array.isArray(colors) &&
-                colors.map((color) => (
-                  <option key={color.id} value={color.id}>
-                    {color.name}
-                  </option>
-                ))}
-            </select>
-
-            {/* Capacity Filter */}
-            <select
-              value={filters.capacity}
-              onChange={(e) => handleFilterChange("capacity", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="">Tất cả dung tích</option>
-              {Array.isArray(capacities) &&
-                capacities.map((capacity) => (
-                  <option key={capacity.id} value={capacity.id}>
-                    {capacity.name}
-                  </option>
-                ))}
-            </select>
-
-            {/* Status Filter */}
-            <select
-              value={filters.status}
-              onChange={(e) =>
-                handleFilterChange(
-                  "status",
-                  e.target.value as ProductFilters["status"]
-                )
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            >
-              <option value="all">Tất cả trạng thái</option>
-              <option value="active">Đang hoạt động</option>
-              <option value="inactive">Không hoạt động</option>
-              <option value="low_stock">Sắp hết hàng</option>
-            </select>
-          </div>
-        </div>
+        <ProductsFilters
+          filters={filters}
+          categories={categories}
+          colors={colors}
+          capacities={capacities}
+          onFilterChange={handleFilterChange}
+        />
 
         {/* Bulk Actions */}
-        {selectedProducts.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">
-                Đã chọn {selectedProducts.length} sản phẩm
-              </span>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleBulkAction("activate")}
-                  className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                >
-                  Kích hoạt
-                </button>
-                <button
-                  onClick={() => handleBulkAction("deactivate")}
-                  className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors"
-                >
-                  Vô hiệu hóa
-                </button>
-                <button
-                  onClick={() => handleBulkAction("delete")}
-                  className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-                >
-                  Xóa
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <ProductsBulkActions
+          selectedCount={selectedProducts.length}
+          onBulkAction={handleBulkAction}
+        />
 
         {/* Products Table */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-left">
-                    <input
-                      type="checkbox"
-                      checked={isAllSelected}
-                      ref={(el) => {
-                        if (el) el.indeterminate = isIndeterminate;
-                      }}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedProducts(products.map((p) => p.id));
-                        } else {
-                          setSelectedProducts([]);
-                        }
-                      }}
-                      className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                    />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Sản phẩm
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Danh mục
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Thuộc tính
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tồn kho
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Trạng thái
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Hành động
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {loading ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-                      <p className="text-gray-500 mt-2">Đang tải...</p>
-                    </td>
-                  </tr>
-                ) : products.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center">
-                      <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500">Không có sản phẩm nào</p>
-                    </td>
-                  </tr>
-                ) : (
-                  products.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <input
-                          type="checkbox"
-                          checked={selectedProducts.includes(product.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedProducts((prev) => [
-                                ...prev,
-                                product.id,
-                              ]);
-                            } else {
-                              setSelectedProducts((prev) =>
-                                prev.filter((id) => id !== product.id)
-                              );
-                            }
-                          }}
-                          className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                        />
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-12 w-12">
-                            {product.images && product.images[0] ? (
-                              <Image
-                                src={product.images[0]}
-                                alt={product.name}
-                                width={48}
-                                height={48}
-                                className="h-12 w-12 rounded-lg object-cover"
-                                onError={(e) => {
-                                  // Hide image and show fallback icon on error
-                                  e.currentTarget.style.display = "none";
-                                  const fallback = e.currentTarget
-                                    .nextElementSibling as HTMLElement;
-                                  if (fallback) fallback.style.display = "flex";
-                                }}
-                              />
-                            ) : null}
-                            <div
-                              className="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center"
-                              style={{
-                                display:
-                                  product.images && product.images[0]
-                                    ? "none"
-                                    : "flex",
-                              }}
-                            >
-                              <ImageIcon className="w-6 h-6 text-gray-400" />
-                            </div>
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {product.name}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {product.slug}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {product.category.name}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="w-3 h-3 rounded-full border"
-                              style={{ backgroundColor: product.color.hexCode }}
-                            />
-                            <span>{product.color.name}</span>
-                          </div>
-                          <div>{product.capacity.name}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={
-                              product.stock <= 5
-                                ? "text-red-600 font-medium"
-                                : ""
-                            }
-                          >
-                            {product.stock}
-                          </span>
-                          {product.stock <= 5 && (
-                            <AlertTriangle className="w-4 h-4 text-red-500" />
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">{getStatusBadge(product)}</td>
-                      <td className="px-6 py-4 text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleEditProduct(product)}
-                            className="text-blue-600 hover:text-blue-900 p-1"
-                            title="Chỉnh sửa"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleProductAction(
-                                product.id,
-                                product.isActive ? "deactivate" : "activate"
-                              )
-                            }
-                            className={`p-1 ${
-                              product.isActive
-                                ? "text-yellow-600 hover:text-yellow-900"
-                                : "text-green-600 hover:text-green-900"
-                            }`}
-                            title={
-                              product.isActive ? "Vô hiệu hóa" : "Kích hoạt"
-                            }
-                          >
-                            {product.isActive ? (
-                              <EyeOff className="w-4 h-4" />
-                            ) : (
-                              <Eye className="w-4 h-4" />
-                            )}
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleProductAction(product.id, "delete")
-                            }
-                            className="text-red-600 hover:text-red-900 p-1"
-                            title="Xóa"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+        <ProductsTable
+          products={products}
+          loading={loading}
+          actionLoading={actionLoading}
+          selectedProducts={selectedProducts}
+          isAllSelected={isAllSelected}
+          isIndeterminate={isIndeterminate}
+          onSelectAll={handleSelectAll}
+          onSelectProduct={handleSelectProduct}
+          onEditProduct={handleEditProduct}
+          onProductAction={handleProductAction}
+          getProductStatus={getProductStatus}
+        />
 
-          {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <div className="bg-white px-4 py-3 border-t">
-              <Pagination
-                currentPage={pagination.page}
-                totalPages={pagination.totalPages}
-                onPageChange={(page) =>
-                  setPagination((prev) => ({ ...prev, page }))
-                }
-                className="justify-center"
-              />
-            </div>
-          )}
-        </div>
+        {/* Pagination */}
+        <ProductsPagination
+          pagination={pagination}
+          onPageChange={(page) =>
+            setPagination((prev) => ({ ...prev, current_page: page }))
+          }
+        />
       </div>
 
       {/* Product Modal */}

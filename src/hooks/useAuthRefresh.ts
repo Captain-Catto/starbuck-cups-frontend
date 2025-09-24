@@ -47,7 +47,7 @@ export function useAuthRefresh() {
           const sessionResult = await dispatch(checkAuthStatus()).unwrap();
           console.log("Session restored successfully");
           return sessionResult;
-        } catch (error) {
+        } catch {
           console.log("No valid session found");
           if (isAuthenticated) {
             dispatch(logout());

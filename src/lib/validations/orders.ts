@@ -16,8 +16,8 @@ export const orderItemSchema = z.object({
 // Order validation schema
 export const orderSchema = z.object({
   customerId: z.string().min(1, 'Khách hàng là bắt buộc'),
-  orderType: z.enum(['custom', 'product'], {
-    errorMap: () => ({ message: 'Loại đơn hàng không hợp lệ' })
+  orderType: z.enum(['custom', 'product']).refine(() => true, {
+    message: 'Loại đơn hàng không hợp lệ'
   }),
   customDescription: z.string().max(5000, 'Mô tả không được quá 5000 ký tự').optional(),
   items: z.array(orderItemSchema).optional(),
@@ -88,8 +88,8 @@ export const updateOrderSchema = orderSchema.partial().extend({
 // Order status update validation
 export const updateOrderStatusSchema = z.object({
   orderId: z.string().min(1, 'ID đơn hàng là bắt buộc'),
-  status: z.enum(['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'], {
-    errorMap: () => ({ message: 'Trạng thái đơn hàng không hợp lệ' })
+  status: z.enum(['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']).refine(() => true, {
+    message: 'Trạng thái đơn hàng không hợp lệ'
   }),
   note: z.string().max(500, 'Ghi chú không được quá 500 ký tự').optional(),
 });
@@ -194,14 +194,14 @@ export const validateBulkDelete = (data: unknown) => {
 
 // Error message helpers
 export const getFieldError = (error: z.ZodError, fieldPath: string): string | undefined => {
-  const fieldError = error.errors.find(err => err.path.join('.') === fieldPath);
+  const fieldError = error.issues.find(err => err.path.join('.') === fieldPath);
   return fieldError?.message;
 };
 
 export const getFieldErrors = (error: z.ZodError): Record<string, string> => {
   const errors: Record<string, string> = {};
   
-  error.errors.forEach(err => {
+  error.issues.forEach(err => {
     const path = err.path.join('.');
     if (!errors[path]) {
       errors[path] = err.message;

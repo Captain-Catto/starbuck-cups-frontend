@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 
 // Types
 export interface Order {
@@ -10,8 +10,14 @@ export interface Order {
     phone?: string;
     email?: string;
   };
-  orderType: 'custom' | 'product';
-  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  orderType: "custom" | "product";
+  status:
+    | "pending"
+    | "confirmed"
+    | "processing"
+    | "shipped"
+    | "delivered"
+    | "cancelled";
   totalAmount: number;
   shippingCost: number;
   originalShippingCost: number;
@@ -59,7 +65,7 @@ export interface OrderStatusHistory {
 
 export interface CreateOrderData {
   customerId: string;
-  orderType: 'custom' | 'product';
+  orderType: "custom" | "product";
   customDescription?: string;
   items?: Array<{
     productId: string;
@@ -81,14 +87,14 @@ export interface UpdateOrderData extends Partial<CreateOrderData> {
 
 export interface UpdateOrderStatusData {
   orderId: string;
-  status: Order['status'];
+  status: Order["status"];
   note?: string;
 }
 
 export interface OrdersFilter {
   search?: string;
-  status?: Order['status'];
-  orderType?: 'custom' | 'product';
+  status?: Order["status"];
+  orderType?: "custom" | "product";
   customerId?: string;
   dateRange?: {
     from: string;
@@ -105,29 +111,29 @@ export interface OrdersState {
   // Data
   orders: Order[];
   selectedOrder: Order | null;
-  
+
   // Pagination
   currentPage: number;
   totalPages: number;
   totalCount: number;
   pageSize: number;
-  
+
   // Filters
   filters: OrdersFilter;
-  
+
   // UI State
   loading: boolean;
   saving: boolean;
   deleting: boolean;
   updatingStatus: boolean;
   error: string | null;
-  
+
   // Modal/Form state
   isCreateModalOpen: boolean;
   isEditModalOpen: boolean;
   isStatusModalOpen: boolean;
   editingOrderId: string | null;
-  
+
   // Statistics
   stats: {
     total: number;
@@ -170,320 +176,227 @@ const initialState: OrdersState = {
 
 // Async thunks
 export const fetchOrders = createAsyncThunk(
-  'orders/fetchOrders',
-  async (params: { page?: number; filters?: OrdersFilter } = {}) => {
-    const { page = 1, filters = {} } = params;
-    
-    // TODO: Replace with actual API call
-    const response = await new Promise<{
-      orders: Order[];
-      pagination: {
-        currentPage: number;
-        totalPages: number;
-        totalCount: number;
-        pageSize: number;
+  "orders/fetchOrders",
+  async (params: { page?: number; filters?: OrdersFilter } = {}, { rejectWithValue }) => {
+    try {
+      const { page = 1, filters = {} } = params;
+
+      // Build query parameters
+      const searchParams = new URLSearchParams();
+      searchParams.append('page', page.toString());
+      searchParams.append('limit', '10');
+
+      if (filters.search) searchParams.append('search', filters.search);
+      if (filters.status) searchParams.append('status', filters.status);
+      if (filters.orderType) searchParams.append('orderType', filters.orderType);
+      if (filters.customerId) searchParams.append('customerId', filters.customerId);
+      if (filters.freeShipping !== undefined) searchParams.append('freeShipping', filters.freeShipping.toString());
+
+      if (filters.dateRange) {
+        searchParams.append('startDate', filters.dateRange.from);
+        searchParams.append('endDate', filters.dateRange.to);
+      }
+
+      if (filters.amountRange) {
+        searchParams.append('minAmount', filters.amountRange.min.toString());
+        searchParams.append('maxAmount', filters.amountRange.max.toString());
+      }
+
+      const response = await fetch(`/api/orders?${searchParams.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Failed to fetch orders');
+      }
+
+      if (!data.success) {
+        return rejectWithValue(data.message || 'Failed to fetch orders');
+      }
+
+      return {
+        orders: data.data?.items || [],
+        pagination: {
+          currentPage: data.data?.currentPage || page,
+          totalPages: data.data?.totalPages || 1,
+          totalCount: data.data?.totalItems || 0,
+          pageSize: data.data?.limit || 10,
+        },
+        stats: data.data?.stats || {
+          total: 0,
+          pending: 0,
+          confirmed: 0,
+          processing: 0,
+          shipped: 0,
+          delivered: 0,
+          cancelled: 0,
+        },
       };
-      stats: OrdersState['stats'];
-    }>((resolve) => {
-      setTimeout(() => {
-        resolve({
-          orders: [
-            {
-              id: '1',
-              orderNumber: 'ORD-20240115-0001',
-              customer: {
-                id: 'cust1',
-                fullName: 'Nguyễn Văn An',
-                phone: '0901234567',
-                email: 'nguyenvanan@gmail.com'
-              },
-              orderType: 'product',
-              status: 'pending',
-              totalAmount: 450000,
-              shippingCost: 30000,
-              isFreeShipping: false,
-              items: [
-                {
-                  id: 'item1',
-                  productId: 'prod1',
-                  productName: 'Ly Starbucks Classic',
-                  quantity: 3,
-                  unitPrice: 150000,
-                  productSnapshot: {
-                    name: 'Ly Starbucks Classic',
-                    displayColor: 'Trắng',
-                    capacity: '450ml',
-                    category: 'Tumblers',
-                    images: ['/images/cup1.jpg']
-                  }
-                }
-              ],
-              statusHistory: [
-                {
-                  status: 'pending',
-                  timestamp: '2024-01-15T08:30:00Z',
-                  note: 'Đơn hàng được tạo',
-                  updatedBy: 'admin'
-                }
-              ],
-              createdAt: '2024-01-15T08:30:00Z',
-              updatedAt: '2024-01-15T08:30:00Z'
-            }
-          ],
-          pagination: {
-            currentPage: page,
-            totalPages: 1,
-            totalCount: 1,
-            pageSize: 10
-          },
-          stats: {
-            total: 156,
-            pending: 23,
-            confirmed: 18,
-            processing: 12,
-            shipped: 8,
-            delivered: 85,
-            cancelled: 10
-          }
-        });
-      }, 1000);
-    });
-    
-    return response;
+    } catch {
+      return rejectWithValue('Network error: Failed to fetch orders');
+    }
   }
 );
 
 export const fetchOrderById = createAsyncThunk(
-  'orders/fetchOrderById',
-  async (orderId: string) => {
-    // TODO: Replace with actual API call
-    const response = await new Promise<Order>((resolve, reject) => {
-      setTimeout(() => {
-        if (orderId === '1') {
-          resolve({
-            id: '1',
-            orderNumber: 'ORD-20240115-0001',
-            customer: {
-              id: 'cust1',
-              fullName: 'Nguyễn Văn An',
-              phone: '0901234567',
-              email: 'nguyenvanan@gmail.com'
-            },
-            orderType: 'product',
-            status: 'confirmed',
-            totalAmount: 450000,
-            shippingCost: 30000,
-            isFreeShipping: false,
-            deliveryAddress: {
-              id: 'addr1',
-              label: 'Địa chỉ chính',
-              streetAddress: '123 Nguyễn Trãi',
-              ward: 'Phường 2',
-              district: 'Quận 5',
-              city: 'TP.HCM'
-            },
-            notes: 'Khách hàng yêu cầu giao vào buổi sáng',
-            items: [
-              {
-                id: 'item1',
-                productId: 'prod1',
-                productName: 'Ly Starbucks Classic',
-                quantity: 2,
-                unitPrice: 150000,
-                requestedColor: 'Đỏ',
-                productSnapshot: {
-                  name: 'Ly Starbucks Classic',
-                  displayColor: 'Trắng',
-                  capacity: '450ml',
-                  category: 'Tumblers',
-                  images: ['/images/cup1.jpg']
-                }
-              },
-              {
-                id: 'item2',
-                productId: 'prod2',
-                productName: 'Ly Starbucks Premium',
-                quantity: 1,
-                unitPrice: 150000,
-                productSnapshot: {
-                  name: 'Ly Starbucks Premium',
-                  displayColor: 'Đen',
-                  capacity: '500ml',
-                  category: 'Tumblers',
-                  images: ['/images/cup2.jpg']
-                }
-              }
-            ],
-            statusHistory: [
-              {
-                status: 'pending',
-                timestamp: '2024-01-15T08:30:00Z',
-                note: 'Đơn hàng được tạo',
-                updatedBy: 'admin'
-              },
-              {
-                status: 'confirmed',
-                timestamp: '2024-01-15T09:15:00Z',
-                note: 'Đã xác nhận và kiểm tra tồn kho',
-                updatedBy: 'admin'
-              }
-            ],
-            createdAt: '2024-01-15T08:30:00Z',
-            updatedAt: '2024-01-15T09:15:00Z',
-            confirmedAt: '2024-01-15T09:15:00Z'
-          });
-        } else {
-          reject(new Error('Order not found'));
-        }
-      }, 500);
-    });
-    
-    return response;
+  "orders/fetchOrderById",
+  async (orderId: string, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Failed to fetch order');
+      }
+
+      if (!data.success) {
+        return rejectWithValue(data.message || 'Failed to fetch order');
+      }
+
+      return data.data;
+    } catch {
+      return rejectWithValue('Network error: Failed to fetch order');
+    }
   }
 );
 
 export const createOrder = createAsyncThunk(
-  'orders/createOrder',
-  async (orderData: CreateOrderData) => {
-    // TODO: Replace with actual API call
-    const response = await new Promise<Order>((resolve) => {
-      setTimeout(() => {
-        const orderNumber = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0')}`;
-        
-        const newOrder: Order = {
-          id: `order_${Date.now()}`,
-          orderNumber,
-          customer: {
-            id: orderData.customerId,
-            fullName: 'Nguyễn Văn An', // Would be fetched from customer data
-            phone: '0901234567'
-          },
-          orderType: orderData.orderType,
-          status: 'pending',
-          totalAmount: orderData.totalAmount,
-          shippingCost: orderData.shippingCost,
-          isFreeShipping: orderData.isFreeShipping,
-          customDescription: orderData.customDescription,
-          notes: orderData.notes,
-          items: orderData.items?.map((item, index) => ({
-            id: `item_${Date.now()}_${index}`,
-            productId: item.productId,
-            productName: `Product ${item.productId}`, // Would be fetched from product data
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            requestedColor: item.requestedColor,
-            productSnapshot: {
-              name: `Product ${item.productId}`,
-              displayColor: 'Trắng',
-              capacity: '450ml',
-              category: 'Tumblers',
-              images: ['/images/cup1.jpg']
-            }
-          })),
-          statusHistory: [
-            {
-              status: 'pending',
-              timestamp: new Date().toISOString(),
-              note: 'Đơn hàng được tạo',
-              updatedBy: 'admin'
-            }
-          ],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        resolve(newOrder);
-      }, 1500);
-    });
-    
-    return response;
+  "orders/createOrder",
+  async (orderData: CreateOrderData, { rejectWithValue }) => {
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Failed to create order');
+      }
+
+      if (!data.success) {
+        return rejectWithValue(data.message || 'Failed to create order');
+      }
+
+      return data.data;
+    } catch {
+      return rejectWithValue('Network error: Failed to create order');
+    }
   }
 );
 
 export const updateOrder = createAsyncThunk(
-  'orders/updateOrder',
-  async (orderData: UpdateOrderData) => {
-    // TODO: Replace with actual API call
-    const response = await new Promise<Order>((resolve) => {
-      setTimeout(() => {
-        const updatedOrder: Order = {
-          id: orderData.id,
-          orderNumber: 'ORD-20240115-0001',
-          customer: {
-            id: orderData.customerId || 'cust1',
-            fullName: 'Nguyễn Văn An',
-            phone: '0901234567'
-          },
-          orderType: orderData.orderType || 'product',
-          status: 'pending',
-          totalAmount: orderData.totalAmount || 0,
-          shippingCost: orderData.shippingCost || 0,
-          isFreeShipping: orderData.isFreeShipping || false,
-          customDescription: orderData.customDescription,
-          notes: orderData.notes,
-          items: [],
-          statusHistory: [
-            {
-              status: 'pending',
-              timestamp: '2024-01-15T08:30:00Z',
-              note: 'Đơn hàng được tạo',
-              updatedBy: 'admin'
-            }
-          ],
-          createdAt: '2024-01-15T08:30:00Z',
-          updatedAt: new Date().toISOString()
-        };
-        resolve(updatedOrder);
-      }, 1000);
-    });
-    
-    return response;
+  "orders/updateOrder",
+  async (orderData: UpdateOrderData, { rejectWithValue }) => {
+    try {
+      const { id, ...updateData } = orderData;
+
+      const response = await fetch(`/api/orders/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Failed to update order');
+      }
+
+      if (!data.success) {
+        return rejectWithValue(data.message || 'Failed to update order');
+      }
+
+      return data.data;
+    } catch {
+      return rejectWithValue('Network error: Failed to update order');
+    }
   }
 );
 
 export const updateOrderStatus = createAsyncThunk(
-  'orders/updateOrderStatus',
-  async (data: UpdateOrderStatusData) => {
-    // TODO: Replace with actual API call
-    const response = await new Promise<{
-      orderId: string;
-      status: Order['status'];
-      statusHistory: OrderStatusHistory;
-    }>((resolve) => {
-      setTimeout(() => {
-        resolve({
-          orderId: data.orderId,
-          status: data.status,
-          statusHistory: {
-            status: data.status,
-            timestamp: new Date().toISOString(),
-            note: data.note,
-            updatedBy: 'admin'
-          }
-        });
-      }, 1000);
-    });
-    
-    return response;
+  "orders/updateOrderStatus",
+  async (data: UpdateOrderStatusData, { rejectWithValue }) => {
+    try {
+      const { orderId, ...statusData } = data;
+
+      const response = await fetch(`/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(statusData),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(responseData.message || 'Failed to update order status');
+      }
+
+      if (!responseData.success) {
+        return rejectWithValue(responseData.message || 'Failed to update order status');
+      }
+
+      return {
+        orderId,
+        status: data.status,
+        statusHistory: responseData.data.statusHistory,
+      };
+    } catch {
+      return rejectWithValue('Network error: Failed to update order status');
+    }
   }
 );
 
 export const deleteOrder = createAsyncThunk(
-  'orders/deleteOrder',
-  async (orderId: string) => {
-    // TODO: Replace with actual API call
-    await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(true);
-      }, 1000);
-    });
-    
-    return orderId;
+  "orders/deleteOrder",
+  async (orderId: string, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Failed to delete order');
+      }
+
+      if (!data.success) {
+        return rejectWithValue(data.message || 'Failed to delete order');
+      }
+
+      return orderId;
+    } catch {
+      return rejectWithValue('Network error: Failed to delete order');
+    }
   }
 );
 
 // Slice
 const ordersSlice = createSlice({
-  name: 'orders',
+  name: "orders",
   initialState,
   reducers: {
     // Filter actions
@@ -495,12 +408,12 @@ const ordersSlice = createSlice({
       state.filters = {};
       state.currentPage = 1;
     },
-    
+
     // Pagination actions
     setCurrentPage: (state, action: PayloadAction<number>) => {
       state.currentPage = action.payload;
     },
-    
+
     // Modal/Form actions
     openCreateModal: (state) => {
       state.isCreateModalOpen = true;
@@ -524,7 +437,7 @@ const ordersSlice = createSlice({
       state.isStatusModalOpen = false;
       state.editingOrderId = null;
     },
-    
+
     // Selection actions
     selectOrder: (state, action: PayloadAction<Order>) => {
       state.selectedOrder = action.payload;
@@ -532,7 +445,7 @@ const ordersSlice = createSlice({
     clearSelectedOrder: (state) => {
       state.selectedOrder = null;
     },
-    
+
     // Error handling
     clearError: (state) => {
       state.error = null;
@@ -556,9 +469,9 @@ const ordersSlice = createSlice({
       })
       .addCase(fetchOrders.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch orders';
+        state.error = action.error.message || "Failed to fetch orders";
       });
-      
+
     // Fetch order by ID
     builder
       .addCase(fetchOrderById.pending, (state) => {
@@ -571,9 +484,9 @@ const ordersSlice = createSlice({
       })
       .addCase(fetchOrderById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch order';
+        state.error = action.error.message || "Failed to fetch order";
       });
-      
+
     // Create order
     builder
       .addCase(createOrder.pending, (state) => {
@@ -590,9 +503,9 @@ const ordersSlice = createSlice({
       })
       .addCase(createOrder.rejected, (state, action) => {
         state.saving = false;
-        state.error = action.error.message || 'Failed to create order';
+        state.error = action.error.message || "Failed to create order";
       });
-      
+
     // Update order
     builder
       .addCase(updateOrder.pending, (state) => {
@@ -601,7 +514,7 @@ const ordersSlice = createSlice({
       })
       .addCase(updateOrder.fulfilled, (state, action) => {
         state.saving = false;
-        const index = state.orders.findIndex(o => o.id === action.payload.id);
+        const index = state.orders.findIndex((o) => o.id === action.payload.id);
         if (index !== -1) {
           state.orders[index] = action.payload;
         }
@@ -613,9 +526,9 @@ const ordersSlice = createSlice({
       })
       .addCase(updateOrder.rejected, (state, action) => {
         state.saving = false;
-        state.error = action.error.message || 'Failed to update order';
+        state.error = action.error.message || "Failed to update order";
       });
-      
+
     // Update order status
     builder
       .addCase(updateOrderStatus.pending, (state) => {
@@ -625,50 +538,49 @@ const ordersSlice = createSlice({
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
         state.updatingStatus = false;
         const { orderId, status, statusHistory } = action.payload;
-        
+
         // Update order in list
-        const orderIndex = state.orders.findIndex(o => o.id === orderId);
+        const orderIndex = state.orders.findIndex((o) => o.id === orderId);
         if (orderIndex !== -1) {
           const oldStatus = state.orders[orderIndex].status;
           state.orders[orderIndex].status = status;
           state.orders[orderIndex].statusHistory.push(statusHistory);
           state.orders[orderIndex].updatedAt = new Date().toISOString();
-          
-          if (status === 'confirmed' && !state.orders[orderIndex].confirmedAt) {
+
+          if (status === "confirmed" && !state.orders[orderIndex].confirmedAt) {
             state.orders[orderIndex].confirmedAt = new Date().toISOString();
           }
-          if (status === 'delivered' && !state.orders[orderIndex].completedAt) {
+          if (status === "delivered" && !state.orders[orderIndex].completedAt) {
             state.orders[orderIndex].completedAt = new Date().toISOString();
           }
-          
+
           // Update stats
           state.stats[oldStatus as keyof typeof state.stats] -= 1;
           state.stats[status as keyof typeof state.stats] += 1;
         }
-        
+
         // Update selected order
         if (state.selectedOrder?.id === orderId) {
-          const oldStatus = state.selectedOrder.status;
           state.selectedOrder.status = status;
           state.selectedOrder.statusHistory.push(statusHistory);
           state.selectedOrder.updatedAt = new Date().toISOString();
-          
-          if (status === 'confirmed' && !state.selectedOrder.confirmedAt) {
+
+          if (status === "confirmed" && !state.selectedOrder.confirmedAt) {
             state.selectedOrder.confirmedAt = new Date().toISOString();
           }
-          if (status === 'delivered' && !state.selectedOrder.completedAt) {
+          if (status === "delivered" && !state.selectedOrder.completedAt) {
             state.selectedOrder.completedAt = new Date().toISOString();
           }
         }
-        
+
         state.isStatusModalOpen = false;
         state.editingOrderId = null;
       })
       .addCase(updateOrderStatus.rejected, (state, action) => {
         state.updatingStatus = false;
-        state.error = action.error.message || 'Failed to update order status';
+        state.error = action.error.message || "Failed to update order status";
       });
-      
+
     // Delete order
     builder
       .addCase(deleteOrder.pending, (state) => {
@@ -677,8 +589,8 @@ const ordersSlice = createSlice({
       })
       .addCase(deleteOrder.fulfilled, (state, action) => {
         state.deleting = false;
-        const deletedOrder = state.orders.find(o => o.id === action.payload);
-        state.orders = state.orders.filter(o => o.id !== action.payload);
+        const deletedOrder = state.orders.find((o) => o.id === action.payload);
+        state.orders = state.orders.filter((o) => o.id !== action.payload);
         state.totalCount -= 1;
         state.stats.total -= 1;
         if (deletedOrder) {
@@ -690,7 +602,7 @@ const ordersSlice = createSlice({
       })
       .addCase(deleteOrder.rejected, (state, action) => {
         state.deleting = false;
-        state.error = action.error.message || 'Failed to delete order';
+        state.error = action.error.message || "Failed to delete order";
       });
   },
 });

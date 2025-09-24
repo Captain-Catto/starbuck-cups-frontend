@@ -6,8 +6,8 @@ import { toast } from "sonner";
 export interface UpdateProductFormData {
   name: string;
   description: string;
-  categoryId: string;
-  colorId: string;
+  categoryIds: string[];
+  colorIds: string[];
   capacityId: string;
   stockQuantity: number;
   images: string[];
@@ -33,7 +33,8 @@ export interface UseUpdateProductReturn {
   errors: ValidationErrors;
   loading: boolean;
   isSubmitting: boolean;
-  updateField: (field: keyof UpdateProductFormData, value: any) => void;
+  updateField: (field: keyof UpdateProductFormData, value: unknown) => void;
+  toggleArrayField: (field: "categoryIds" | "colorIds", value: string) => void;
   validateForm: () => boolean;
   submitForm: () => Promise<void>;
   loadProductData: () => Promise<void>;
@@ -51,8 +52,8 @@ export function useUpdateProduct(
   const [formData, setFormData] = useState<UpdateProductFormData>({
     name: "",
     description: "",
-    categoryId: "",
-    colorId: "",
+    categoryIds: [],
+    colorIds: [],
     capacityId: "",
     stockQuantity: 0,
     images: [],
@@ -99,8 +100,8 @@ export function useUpdateProduct(
       const mappedData = {
         name: product.name || "",
         description: product.description || "",
-        categoryId: product.category?.id || "",
-        colorId: product.color?.id || "",
+        categoryIds: product.productCategories?.map((pc: { category: { id: string } }) => pc.category.id) || [],
+        colorIds: product.productColors?.map((pc: { color: { id: string } }) => pc.color.id) || [],
         capacityId: product.capacity?.id || "",
         stockQuantity: product.stockQuantity || 0,
         images: Array.isArray(product.images) ? product.images : [],
@@ -136,11 +137,36 @@ export function useUpdateProduct(
   }, [productId, loadProductData]);
 
   const updateField = useCallback(
-    (field: keyof UpdateProductFormData, value: any) => {
+    (field: keyof UpdateProductFormData, value: unknown) => {
       setFormData((prev) => ({
         ...prev,
         [field]: value,
       }));
+
+      // Clear error for this field if it exists
+      if (errors[field]) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: "",
+        }));
+      }
+    },
+    [errors]
+  );
+
+  const toggleArrayField = useCallback(
+    (field: "categoryIds" | "colorIds", value: string) => {
+      setFormData((prev) => {
+        const currentArray = prev[field] || [];
+        const newArray = currentArray.includes(value)
+          ? currentArray.filter((item) => item !== value)
+          : [...currentArray, value];
+
+        return {
+          ...prev,
+          [field]: newArray,
+        };
+      });
 
       // Clear error for this field if it exists
       if (errors[field]) {
@@ -160,12 +186,12 @@ export function useUpdateProduct(
       newErrors.name = "Tên sản phẩm là bắt buộc";
     }
 
-    if (!formData.categoryId) {
-      newErrors.categoryId = "Danh mục là bắt buộc";
+    if (!formData.categoryIds || formData.categoryIds.length === 0) {
+      newErrors.categoryIds = "Vui lòng chọn ít nhất một danh mục";
     }
 
-    if (!formData.colorId) {
-      newErrors.colorId = "Màu sắc là bắt buộc";
+    if (!formData.colorIds || formData.colorIds.length === 0) {
+      newErrors.colorIds = "Vui lòng chọn ít nhất một màu sắc";
     }
 
     if (!formData.capacityId) {
@@ -229,8 +255,8 @@ export function useUpdateProduct(
         // Add text fields
         formDataToSend.append("name", formData.name.trim());
         formDataToSend.append("description", formData.description.trim() || "");
-        formDataToSend.append("categoryId", formData.categoryId);
-        formDataToSend.append("colorId", formData.colorId);
+        formDataToSend.append("categoryIds", JSON.stringify(formData.categoryIds));
+        formDataToSend.append("colorIds", JSON.stringify(formData.colorIds));
         formDataToSend.append("capacityId", formData.capacityId);
         formDataToSend.append(
           "stockQuantity",
@@ -295,14 +321,14 @@ export function useUpdateProduct(
         const payload = {
           name: formData.name.trim(),
           description: formData.description.trim() || "",
-          categoryId: formData.categoryId,
-          colorId: formData.colorId,
+          categoryIds: formData.categoryIds,
+          colorIds: formData.colorIds,
           capacityId: formData.capacityId,
           stockQuantity: formData.stockQuantity,
           productUrl: formData.productUrl.trim() || "",
           isActive: formData.isActive,
           // Include images array for image reordering
-          images: formData.images,
+          productImages: formData.images,
         };
 
         console.log("🚀 [useUpdateProduct] Update product payload:", payload);
@@ -357,6 +383,7 @@ export function useUpdateProduct(
     loading,
     isSubmitting,
     updateField,
+    toggleArrayField,
     validateForm,
     submitForm,
     loadProductData,

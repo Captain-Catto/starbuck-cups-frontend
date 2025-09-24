@@ -1,110 +1,38 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Eye,
-  Edit,
   Package,
   User,
   Calendar,
   MapPin,
-  Currency,
+  CircleDollarSign,
 } from "lucide-react";
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  customer: {
-    id: string;
-    fullName?: string;
-    phone?: string;
-  };
-  orderType: "PRODUCT" | "CUSTOM";
-  status: string;
-  totalAmount: string; // API trả về string, không phải number
-  shippingCost: string; // API trả về string, không phải number
-  isFreeShipping: boolean;
-  customDescription?: string;
-  deliveryAddress?: {
-    city?: string;
-    district?: string;
-    addressLine?: string;
-    postalCode?: string;
-  };
-  _count?: {
-    items: number;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
+import { useOrders } from "@/hooks/admin/useOrders";
+import { Pagination } from "@/components/ui/Pagination";
 
 interface OrderListProps {
   searchTerm: string;
   statusFilter: string;
   typeFilter: string;
+  dateFrom?: string;
+  dateTo?: string;
+  priceRange?: string;
+  freeShipping?: string;
 }
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-  pending: { label: "Chờ xử lý", color: "bg-yellow-100 text-yellow-800" },
-  confirmed: { label: "Đã xác nhận", color: "bg-blue-100 text-blue-800" },
-  processing: { label: "Đang xử lý", color: "bg-purple-100 text-purple-800" },
-  shipped: { label: "Đang giao", color: "bg-orange-100 text-orange-800" },
-  delivered: { label: "Đã giao", color: "bg-green-100 text-green-800" },
-  cancelled: { label: "Đã hủy", color: "bg-red-100 text-red-800" },
+  pending: { label: "Chờ xử lý", color: "bg-gray-700 text-white" },
+  confirmed: { label: "Đã xác nhận", color: "bg-gray-600 text-white" },
+  processing: { label: "Đang xử lý", color: "bg-gray-700 text-white" },
+  shipped: { label: "Đang giao", color: "bg-gray-600 text-white" },
+  delivered: { label: "Đã giao", color: "bg-gray-700 text-white" },
+  cancelled: { label: "Đã hủy", color: "bg-gray-800 text-white" },
 };
 
-export function OrderList({
-  searchTerm,
-  statusFilter,
-  typeFilter,
-}: OrderListProps) {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Get auth headers
-  const getAuthHeaders = (): Record<string, string> => {
-    const token = localStorage.getItem("admin_token");
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
-
-  // Fetch orders from API
-  const fetchOrders = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (searchTerm) params.append("search", searchTerm);
-      if (statusFilter) params.append("status", statusFilter);
-      if (typeFilter) params.append("orderType", typeFilter);
-      params.append("page", "1");
-      params.append("limit", "10");
-
-      console.log("Fetching orders with params:", params.toString());
-
-      const response = await fetch(`/api/admin/orders?${params.toString()}`, {
-        headers: getAuthHeaders(),
-      });
-
-      const data = await response.json();
-      console.log("Orders API response:", data);
-
-      if (data.success) {
-        setOrders(data.data.items || []);
-      } else {
-        console.error("Failed to fetch orders:", data.message);
-        setOrders([]);
-      }
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchOrders();
-  }, [searchTerm, statusFilter, typeFilter]);
+export function OrderList(props: OrderListProps) {
+  const { orders, pagination, loading, setPage } = useOrders(props);
 
   const formatCurrency = (amount: string) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -125,12 +53,54 @@ export function OrderList({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-          <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-20 bg-gray-200 rounded"></div>
+      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+        <div className="animate-pulse">
+          {/* Table Header Skeleton */}
+          <div className="bg-gray-700 px-6 py-3">
+            <div className="grid grid-cols-6 gap-4">
+              <div className="h-4 bg-gray-600 rounded w-20"></div>
+              <div className="h-4 bg-gray-600 rounded w-24"></div>
+              <div className="h-4 bg-gray-600 rounded w-28"></div>
+              <div className="h-4 bg-gray-600 rounded w-20"></div>
+              <div className="h-4 bg-gray-600 rounded w-20"></div>
+              <div className="h-4 bg-gray-600 rounded w-16"></div>
+            </div>
+          </div>
+          {/* Table Rows Skeleton */}
+          <div className="divide-y divide-gray-700">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="px-6 py-4 bg-gray-800">
+                <div className="grid grid-cols-6 gap-4 items-center">
+                  {/* Order Number & Status */}
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-700 rounded w-24"></div>
+                    <div className="h-5 bg-gray-700 rounded w-20"></div>
+                  </div>
+                  {/* Customer */}
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-700 rounded w-32"></div>
+                    <div className="h-3 bg-gray-700 rounded w-24"></div>
+                  </div>
+                  {/* Address */}
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-700 rounded w-28"></div>
+                    <div className="h-3 bg-gray-700 rounded w-36"></div>
+                  </div>
+                  {/* Total Amount */}
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-700 rounded w-20"></div>
+                    <div className="h-3 bg-gray-700 rounded w-16"></div>
+                  </div>
+                  {/* Date */}
+                  <div>
+                    <div className="h-4 bg-gray-700 rounded w-24"></div>
+                  </div>
+                  {/* Actions */}
+                  <div className="text-right">
+                    <div className="h-8 bg-gray-700 rounded w-16 ml-auto"></div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -138,16 +108,16 @@ export function OrderList({
     );
   }
 
-  if (orders.length === 0) {
+  if (!orders || !Array.isArray(orders) || orders.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-8">
+      <div className="bg-gray-800 rounded-lg border border-gray-700 p-8">
         <div className="text-center">
-          <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <Package className="w-12 h-12 text-white mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-white mb-2">
             Không có đơn hàng nào
           </h3>
-          <p className="text-gray-600">
-            {searchTerm || statusFilter || typeFilter
+          <p className="text-gray-300">
+            {props.searchTerm || props.statusFilter || props.typeFilter
               ? "Không tìm thấy đơn hàng phù hợp với bộ lọc"
               : "Chưa có đơn hàng nào được tạo"}
           </p>
@@ -157,123 +127,132 @@ export function OrderList({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-gray-700">
+          <thead className="bg-gray-700">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 <div className="flex items-center gap-2">
                   <Package className="w-4 h-4" />
                   Đơn hàng
                 </div>
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
                   Khách hàng
                 </div>
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
                   Địa chỉ giao hàng
                 </div>
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 <div className="flex items-center gap-2">
-                  <Currency className="w-4 h-4" />
+                  <CircleDollarSign className="w-4 h-4" />
                   Tổng tiền
                 </div>
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   Ngày tạo
                 </div>
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Thao tác
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">
-                      {order.orderNumber}
+          <tbody className="bg-gray-800 divide-y divide-gray-700">
+            {orders &&
+              Array.isArray(orders) &&
+              orders.map((order) => (
+                <tr key={order.id} className="hover:bg-gray-700">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-white">
+                        {order.orderNumber}
+                      </div>
+                      <div className="flex items-center mt-1">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            statusConfig[order.status.toLowerCase()]?.color ||
+                            "bg-gray-700 text-white"
+                          }`}
+                        >
+                          {statusConfig[order.status.toLowerCase()]?.label ||
+                            order.status}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center mt-1">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          statusConfig[order.status.toLowerCase()]?.color ||
-                          "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {statusConfig[order.status.toLowerCase()]?.label ||
-                          order.status}
-                      </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-white">
+                        {order.customer.fullName || "Khách hàng"}
+                      </div>
+                      <div className="text-xs text-gray-300">
+                        {order.customer.phone}
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">
-                      {order.customer.fullName || "Khách hàng"}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div>
+                      <div className="text-sm text-white">
+                        {order.deliveryAddress?.city || "Chưa có địa chỉ"}
+                      </div>
+                      <div className="text-xs text-gray-300 max-w-xs">
+                        {order.deliveryAddress?.district &&
+                        order.deliveryAddress?.addressLine
+                          ? `${order.deliveryAddress.district}, ${order.deliveryAddress.addressLine}`
+                          : order.deliveryAddress?.district ||
+                            order.deliveryAddress?.addressLine ||
+                            ""}
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {order.customer.phone}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-white">
+                        {formatCurrency(order.totalAmount)}
+                      </div>
+                      <div className="text-xs text-gray-300">
+                        {order.orderType === "PRODUCT"
+                          ? `${order._count?.items || 0} sản phẩm`
+                          : "Đơn tùy chỉnh"}
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div>
-                    <div className="text-sm text-gray-900">
-                      {order.deliveryAddress?.city || "Chưa có địa chỉ"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-white">
+                      {formatDate(order.createdAt)}
                     </div>
-                    <div className="text-xs text-gray-500 max-w-xs">
-                      {order.deliveryAddress?.district &&
-                      order.deliveryAddress?.addressLine
-                        ? `${order.deliveryAddress.district}, ${order.deliveryAddress.addressLine}`
-                        : order.deliveryAddress?.district ||
-                          order.deliveryAddress?.addressLine ||
-                          ""}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">
-                      {formatCurrency(order.totalAmount)}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {order.orderType === "PRODUCT"
-                        ? `${order._count?.items || 0} sản phẩm`
-                        : "Đơn tùy chỉnh"}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    {formatDate(order.createdAt)}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link
-                    href={`/admin/orders/${order.id}`}
-                    className="inline-flex items-center gap-1 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  >
-                    <Eye className="w-4 h-4" />
-                    Chi tiết
-                  </Link>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-white hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <Eye className="w-4 h-4" />
+                      Chi tiết
+                    </Link>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {pagination.total_pages > 1 && (
+        <div className="mt-6 pt-4 border-t border-gray-700">
+          <Pagination data={pagination} onPageChange={setPage} />
+        </div>
+      )}
     </div>
   );
 }

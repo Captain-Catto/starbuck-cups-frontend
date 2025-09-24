@@ -18,10 +18,10 @@ function getAuthHeaders(request: NextRequest): Record<string, string> {
 // GET /api/admin/customers/{customerId}/addresses - Get all addresses for a customer
 export async function GET(
   request: NextRequest,
-  { params }: { params: { customerId: string } }
+  { params }: { params: Promise<{ customerId: string }> }
 ) {
   try {
-    const { customerId } = params;
+    const { customerId } = await params;
 
     const response = await fetch(
       `${BACKEND_URL}/api/admin/customers/${customerId}/addresses`,
@@ -48,10 +48,10 @@ export async function GET(
 // POST /api/admin/customers/{customerId}/addresses - Add new address for customer
 export async function POST(
   request: NextRequest,
-  { params }: { params: { customerId: string } }
+  { params }: { params: Promise<{ customerId: string }> }
 ) {
   try {
-    const { customerId } = params;
+    const { customerId } = await params;
     const body = await request.json();
 
     const response = await fetch(

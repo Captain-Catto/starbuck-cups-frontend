@@ -2,17 +2,23 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { Eye, Edit, Trash2, Phone, Mail, MapPin } from "lucide-react";
+import { Eye, Edit, Trash2, Phone, MapPin } from "lucide-react";
 import { Pagination } from "@/components/ui/Pagination";
-import { useCustomers, type Customer } from "@/hooks/business/useCustomers";
+import { useCustomers } from "@/hooks/business/useCustomers";
 
 interface CustomerListProps {
   searchTerm: string;
+  vipStatus?: string;
+  dateFrom?: string;
+  dateTo?: string;
   refreshTrigger?: number;
 }
 
 export function CustomerList({
   searchTerm,
+  vipStatus = "all",
+  dateFrom,
+  dateTo,
   refreshTrigger,
 }: CustomerListProps) {
   const { customers, pagination, loading, fetchCustomers, setPage } =
@@ -20,8 +26,8 @@ export function CustomerList({
   console.log("CustomerList render - customers:", customers);
 
   useEffect(() => {
-    fetchCustomers(searchTerm);
-  }, [searchTerm, fetchCustomers]);
+    fetchCustomers(searchTerm, vipStatus, dateFrom, dateTo);
+  }, [searchTerm, vipStatus, dateFrom, dateTo, fetchCustomers]);
 
   useEffect(() => {
     if (refreshTrigger && refreshTrigger > 0) {
@@ -41,12 +47,58 @@ export function CustomerList({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-          <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-200 rounded"></div>
+      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+        <div className="animate-pulse">
+          {/* Table Header Skeleton */}
+          <div className="bg-gray-700 px-6 py-3">
+            <div className="grid grid-cols-6 gap-4">
+              <div className="h-4 bg-gray-600 rounded w-32"></div>
+              <div className="h-4 bg-gray-600 rounded w-24"></div>
+              <div className="h-4 bg-gray-600 rounded w-20"></div>
+              <div className="h-4 bg-gray-600 rounded w-20"></div>
+              <div className="h-4 bg-gray-600 rounded w-24"></div>
+              <div className="h-4 bg-gray-600 rounded w-20"></div>
+            </div>
+          </div>
+          {/* Table Rows Skeleton */}
+          <div className="divide-y divide-gray-700">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="px-6 py-4 bg-gray-800">
+                <div className="grid grid-cols-6 gap-4 items-center">
+                  {/* Customer Info */}
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-700 rounded w-36"></div>
+                    <div className="h-3 bg-gray-700 rounded w-20"></div>
+                  </div>
+                  {/* Contact */}
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-700 rounded w-28"></div>
+                    <div className="h-3 bg-gray-700 rounded w-24"></div>
+                  </div>
+                  {/* Address */}
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-700 rounded w-24"></div>
+                    <div className="h-3 bg-gray-700 rounded w-16"></div>
+                  </div>
+                  {/* Status */}
+                  <div>
+                    <div className="h-6 bg-gray-700 rounded-full w-20"></div>
+                  </div>
+                  {/* Created */}
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-700 rounded w-24"></div>
+                    <div className="h-3 bg-gray-700 rounded w-20"></div>
+                  </div>
+                  {/* Actions */}
+                  <div className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <div className="w-8 h-8 bg-gray-700 rounded"></div>
+                      <div className="w-8 h-8 bg-gray-700 rounded"></div>
+                      <div className="w-8 h-8 bg-gray-700 rounded"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -55,114 +107,129 @@ export function CustomerList({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200">
-      {/* Table Header */}
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Danh sách khách hàng ({customers.length})
-        </h3>
-      </div>
-
-      {/* Table */}
+    <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-gray-700">
+          <thead className="bg-gray-700">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Thông tin khách hàng
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Liên hệ
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Địa chỉ
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Trạng thái
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Được tạo
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                Đơn hàng cuối
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">
                 Thao tác
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-gray-800 divide-y divide-gray-700">
             {customers.map((customer) => (
-              <tr key={customer.id} className="hover:bg-gray-50">
+              <tr key={customer.id} className="hover:bg-gray-700">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">
-                      {customer.fullName || "Chưa có tên"}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      ID: {customer.id}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="space-y-1">
-                    {customer.phone && (
-                      <div className="flex items-center gap-2 text-sm text-gray-900">
-                        <Phone className="w-4 h-4 text-gray-400" />
-                        {customer.phone}
+                  <div className="max-w-48">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="text-sm font-medium text-white truncate"
+                        title={customer.fullName || "Chưa có tên"}
+                      >
+                        {customer.fullName || "Chưa có tên"}
                       </div>
-                    )}
+                      {customer.isVip && (
+                        <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-yellow-900/30 text-yellow-300 border border-yellow-700">
+                          VIP
+                        </span>
+                      )}
+                    </div>
                     {customer.notes && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Mail className="w-4 h-4 text-gray-400" />
+                      <div
+                        className="text-sm text-gray-300 truncate"
+                        title={customer.notes}
+                      >
                         {customer.notes}
                       </div>
                     )}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    {customer.addresses.length > 0 ? (
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span>{customer.addresses[0].city}</span>
-                        <span className="text-gray-500">
-                          ({customer.addresses.length} địa chỉ)
-                        </span>
+                  <div className="space-y-1">
+                    {customer.phone && (
+                      <div className="flex items-center gap-2 text-sm text-white">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        {customer.phone}
                       </div>
-                    ) : (
-                      <span className="text-gray-500">Chưa có địa chỉ</span>
                     )}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                    Hoạt động
-                  </span>
+                  <div className="text-sm text-white max-w-32">
+                    {customer.addresses.length > 0 ? (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div
+                            className="truncate"
+                            title={customer.addresses[0].city}
+                          >
+                            {customer.addresses[0].city}
+                          </div>
+                          <div className="text-gray-300 text-xs">
+                            {customer.addresses.length} địa chỉ
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-gray-300">Chưa có địa chỉ</span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
+                  <div className="text-sm text-white">
                     {formatDate(customer.createdAt)}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-300">
                     bởi {customer.createdByAdmin.username}
                   </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-white">
+                    {customer.lastOrderDate
+                      ? formatDate(customer.lastOrderDate)
+                      : "Chưa có đơn"}
+                  </div>
+                  {customer.lastOrderDate && (
+                    <div className="text-sm text-gray-300">
+                      {customer._count.orders} đơn hàng
+                    </div>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end gap-2">
                     <Link
                       href={`/admin/customers/${customer.id}`}
-                      className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                      className="text-white hover:bg-gray-700 p-1 rounded transition-colors"
                       title="Xem chi tiết"
                     >
                       <Eye className="w-4 h-4" />
                     </Link>
                     <Link
                       href={`/admin/customers/${customer.id}?edit=true`}
-                      className="p-2 text-blue-400 hover:text-blue-600 hover:bg-blue-100 rounded-lg"
+                      className="text-white hover:bg-gray-700 p-1 rounded transition-colors"
                       title="Chỉnh sửa"
                     >
                       <Edit className="w-4 h-4" />
                     </Link>
                     <button
-                      className="p-2 text-red-400 hover:text-red-600 hover:bg-red-100 rounded-lg"
+                      className="text-white hover:bg-gray-700 p-1 rounded transition-colors"
                       title="Xóa"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -176,11 +243,10 @@ export function CustomerList({
       </div>
 
       {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="px-6 py-4 border-t border-gray-200">
+      {pagination.total_pages > 1 && (
+        <div className="px-6 py-4 border-t border-gray-700">
           <Pagination
-            currentPage={pagination.page}
-            totalPages={pagination.totalPages}
+            data={pagination}
             onPageChange={setPage}
             className="justify-center"
           />
@@ -190,7 +256,7 @@ export function CustomerList({
       {/* Empty State */}
       {customers.length === 0 && (
         <div className="px-6 py-12 text-center">
-          <div className="text-gray-500">
+          <div className="text-gray-300">
             {searchTerm
               ? "Không tìm thấy khách hàng nào"
               : "Chưa có khách hàng nào"}

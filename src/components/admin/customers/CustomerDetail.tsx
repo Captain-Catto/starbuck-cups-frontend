@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAppSelector } from "@/store";
 import { CustomerForm } from "./CustomerForm";
+import { OrderHistory } from "./OrderHistory";
 import {
   User,
   Phone,
@@ -146,13 +147,13 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-6 bg-gray-600 rounded w-1/4"></div>
             <div className="space-y-3">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+              <div className="h-4 bg-gray-600 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-600 rounded w-1/2"></div>
+              <div className="h-4 bg-gray-600 rounded w-2/3"></div>
             </div>
           </div>
         </div>
@@ -162,9 +163,9 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="text-center text-red-500">
-          <div className="text-lg font-medium mb-2">
+      <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+        <div className="text-center text-red-400">
+          <div className="text-lg font-medium mb-2 text-white">
             Lỗi khi tải thông tin khách hàng
           </div>
           <div className="text-sm">{error}</div>
@@ -181,8 +182,8 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
 
   if (!customer) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="text-center text-gray-500">
+      <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+        <div className="text-center text-gray-400">
           Không tìm thấy thông tin khách hàng
         </div>
       </div>
@@ -191,7 +192,7 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
 
   if (isEditing) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
         <CustomerForm
           initialData={{
             messengerId: customer.messengerId || "",
@@ -223,17 +224,17 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
   return (
     <div className="space-y-6">
       {/* Customer Overview */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
               <User className="w-8 h-8 text-green-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-white">
                 {customer.fullName || "Chưa có tên"}
               </h2>
-              <p className="text-gray-600">ID: {customer.id}</p>
+              <p className="text-gray-400">ID: {customer.id}</p>
               <div className="flex items-center gap-2 mt-1">
                 <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                   Hoạt động
@@ -246,7 +247,7 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Contact Information */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <h3 className="text-lg font-semibold text-white mb-4">
               Thông tin liên hệ
             </h3>
             <div className="space-y-3">
@@ -254,10 +255,10 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
                 <div className="flex items-center gap-3">
                   <Phone className="w-5 h-5 text-gray-400" />
                   <div>
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-white">
                       {customer.phone}
                     </div>
-                    <div className="text-sm text-gray-500">Số điện thoại</div>
+                    <div className="text-sm text-gray-400">Số điện thoại</div>
                   </div>
                 </div>
               )}
@@ -266,10 +267,10 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
                 <div className="flex items-center gap-3">
                   <MessageSquare className="w-5 h-5 text-gray-400" />
                   <div>
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-white">
                       {customer.messengerId}
                     </div>
-                    <div className="text-sm text-gray-500">Messenger ID</div>
+                    <div className="text-sm text-gray-400">Messenger ID</div>
                   </div>
                 </div>
               )}
@@ -278,10 +279,10 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
                 <div className="flex items-center gap-3">
                   <MessageSquare className="w-5 h-5 text-gray-400" />
                   <div>
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-white">
                       {customer.zaloId}
                     </div>
-                    <div className="text-sm text-gray-500">Zalo ID</div>
+                    <div className="text-sm text-gray-400">Zalo ID</div>
                   </div>
                 </div>
               )}
@@ -290,37 +291,37 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
 
           {/* System Information */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <h3 className="text-lg font-semibold text-white mb-4">
               Thông tin hệ thống
             </h3>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <Calendar className="w-5 h-5 text-gray-400" />
                 <div>
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-white">
                     {formatDate(customer.createdAt)}
                   </div>
-                  <div className="text-sm text-gray-500">Ngày tạo</div>
+                  <div className="text-sm text-gray-400">Ngày tạo</div>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <Clock className="w-5 h-5 text-gray-400" />
                 <div>
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-white">
                     {formatDate(customer.updatedAt)}
                   </div>
-                  <div className="text-sm text-gray-500">Cập nhật cuối</div>
+                  <div className="text-sm text-gray-400">Cập nhật cuối</div>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <Shield className="w-5 h-5 text-gray-400" />
                 <div>
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-white">
                     {customer.createdByAdmin.username}
                   </div>
-                  <div className="text-sm text-gray-500">Được tạo bởi</div>
+                  <div className="text-sm text-gray-400">Được tạo bởi</div>
                 </div>
               </div>
             </div>
@@ -329,8 +330,8 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
       </div>
 
       {/* Addresses */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+        <h3 className="text-lg font-semibold text-white mb-4">
           Địa chỉ giao hàng ({customer.addresses.length})
         </h3>
 
@@ -341,14 +342,14 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
                 key={address.id}
                 className={`p-4 rounded-lg border-2 ${
                   address.isDefault
-                    ? "border-green-200 bg-green-50"
-                    : "border-gray-200 bg-gray-50"
+                    ? "border-green-600 bg-green-900/20"
+                    : "border-gray-600 bg-gray-700"
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-gray-400" />
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-white">
                       {address.isDefault ? "Địa chỉ chính" : "Địa chỉ phụ"}
                     </span>
                   </div>
@@ -358,7 +359,7 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
                     </span>
                   )}
                 </div>
-                <div className="text-sm text-gray-700">
+                <div className="text-sm text-gray-300">
                   <div>{address.addressLine}</div>
                   <div>
                     {[address.district, address.city]
@@ -366,7 +367,7 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
                       .join(", ")}
                   </div>
                   {address.postalCode && (
-                    <div className="text-gray-500">
+                    <div className="text-gray-400">
                       Mã bưu điện: {address.postalCode}
                     </div>
                   )}
@@ -375,15 +376,15 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
             ))}
           </div>
         ) : (
-          <div className="text-gray-500 text-center py-8">
+          <div className="text-gray-400 text-center py-8">
             Chưa có địa chỉ nào được thêm
           </div>
         )}
       </div>
 
       {/* Order Statistics */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+        <h3 className="text-lg font-semibold text-white mb-4">
           Thống kê đơn hàng
         </h3>
 
@@ -392,33 +393,26 @@ export function CustomerDetail({ customerId, isEditing }: CustomerDetailProps) {
             <div className="text-2xl font-bold text-green-600">
               {customer._count?.orders || 0}
             </div>
-            <div className="text-sm text-gray-500">Tổng đơn hàng</div>
+            <div className="text-sm text-gray-400">Tổng đơn hàng</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">
               {customer.orders?.length || 0}
             </div>
-            <div className="text-sm text-gray-500">Đơn hàng gần đây</div>
+            <div className="text-sm text-gray-400">Đơn hàng gần đây</div>
           </div>
         </div>
 
         {customer.notes && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <h4 className="font-medium text-gray-900 mb-2">Ghi chú</h4>
-            <p className="text-sm text-gray-700">{customer.notes}</p>
+          <div className="mt-4 pt-4 border-t border-gray-600">
+            <h4 className="font-medium text-white mb-2">Ghi chú</h4>
+            <p className="text-sm text-gray-300">{customer.notes}</p>
           </div>
         )}
       </div>
 
       {/* Order History Section */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Lịch sử đơn hàng
-        </h3>
-        <div className="text-gray-500 text-center py-8">
-          Chưa có đơn hàng nào
-        </div>
-      </div>
+      <OrderHistory customerId={customerId} itemsPerPage={6} />
     </div>
   );
 }

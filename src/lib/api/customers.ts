@@ -1,4 +1,4 @@
-import { Customer, CreateCustomerData, UpdateCustomerData, CustomersFilter } from '@/store/slices/customersSlice';
+import { Customer, CreateCustomerData, CustomersFilter } from '@/store/slices/customersSlice';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
 
@@ -108,14 +108,14 @@ class CustomersAPI {
     return this.request(`/admin/customers/${customerId}/addresses`);
   }
 
-  async createCustomerAddress(customerId: string, addressData: any) {
+  async createCustomerAddress(customerId: string, addressData: Record<string, unknown>) {
     return this.request(`/admin/customers/${customerId}/addresses`, {
       method: 'POST',
       body: JSON.stringify(addressData),
     });
   }
 
-  async updateCustomerAddress(customerId: string, addressId: string, addressData: any) {
+  async updateCustomerAddress(customerId: string, addressId: string, addressData: Record<string, unknown>) {
     return this.request(`/admin/customers/${customerId}/addresses/${addressId}`, {
       method: 'PUT',
       body: JSON.stringify(addressData),
@@ -133,14 +133,14 @@ class CustomersAPI {
     return this.request(`/admin/customers/${customerId}/social-accounts`);
   }
 
-  async createCustomerSocialAccount(customerId: string, socialData: any) {
+  async createCustomerSocialAccount(customerId: string, socialData: Record<string, unknown>) {
     return this.request(`/admin/customers/${customerId}/social-accounts`, {
       method: 'POST',
       body: JSON.stringify(socialData),
     });
   }
 
-  async updateCustomerSocialAccount(customerId: string, socialId: string, socialData: any) {
+  async updateCustomerSocialAccount(customerId: string, socialId: string, socialData: Record<string, unknown>) {
     return this.request(`/admin/customers/${customerId}/social-accounts/${socialId}`, {
       method: 'PUT',
       body: JSON.stringify(socialData),

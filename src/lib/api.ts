@@ -10,6 +10,7 @@ import type {
   Consultation,
   ProductFilters,
 } from "@/types";
+import type { NotificationData } from "@/types/notification.types";
 import { TokenRefreshNotification } from "@/utils/tokenNotification";
 
 class ApiService {
@@ -22,10 +23,7 @@ class ApiService {
 
   constructor() {
     this.api = axios.create({
-      baseURL:
-        typeof window !== "undefined"
-          ? "/api"
-          : process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api",
+      baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api",
       timeout: 10000,
       headers: {
         "Content-Type": "application/json",
@@ -144,16 +142,16 @@ class ApiService {
     try {
       // Check if refresh token cookie exists before making request
       const refreshTokenCookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('admin_refresh_token='));
-      
+        .split("; ")
+        .find((row) => row.startsWith("admin_refresh_token="));
+
       if (!refreshTokenCookie) {
         console.error("No admin_refresh_token cookie found");
         throw new Error("No refresh token available");
       }
 
       console.log("Attempting token refresh with cookie present");
-      
+
       // Backend có thể lấy refresh token từ cookie hoặc body
       // Gửi empty body để dựa vào cookie
       const response = await axios.post(
@@ -177,13 +175,13 @@ class ApiService {
         throw new Error("Invalid refresh response");
       }
     } catch (error: unknown) {
-      const axiosError = error as any;
+      const axiosError = error as { response?: { status: number; statusText?: string; data?: unknown }; message?: string };
       console.error("Token refresh error details:", {
         status: axiosError.response?.status,
         statusText: axiosError.response?.statusText,
         data: axiosError.response?.data,
         message: axiosError.message,
-        cookiePresent: document.cookie.includes('admin_refresh_token')
+        cookiePresent: document.cookie.includes("admin_refresh_token"),
       });
       throw error;
     }
@@ -505,6 +503,30 @@ class ApiService {
 
   async adminDeleteProduct(productId: string): Promise<ApiResponse<null>> {
     const response = await this.api.delete(`/admin/products/${productId}`);
+    return response.data;
+  }
+
+  // Notifications
+  async getNotifications(params?: {
+    page?: number;
+    limit?: number;
+    type?: string;
+  }): Promise<ApiResponse<NotificationData[]>> {
+    const response = await this.api.get("/admin/notifications", { params });
+    return response.data;
+  }
+
+  async markNotificationAsRead(
+    notificationId: string
+  ): Promise<ApiResponse<NotificationData>> {
+    const response = await this.api.put(
+      `/admin/notifications/${notificationId}/read`
+    );
+    return response.data;
+  }
+
+  async getUnreadCount(): Promise<ApiResponse<{ unreadCount: number }>> {
+    const response = await this.api.get("/admin/notifications/unread/count");
     return response.data;
   }
 

@@ -1,0 +1,41 @@
+import { NextRequest, NextResponse } from "next/server";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+
+// Helper function to forward auth headers
+function getAuthHeaders(request: NextRequest): Record<string, string> {
+  const headers: Record<string, string> = {};
+
+  // Forward authorization header from client request
+  const authHeader = request.headers.get("authorization");
+  if (authHeader) {
+    headers["authorization"] = authHeader;
+  }
+
+  return headers;
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const response = await fetch(`${BACKEND_URL}/api/admin/hero-images/reorder`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(request),
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json();
+
+    return NextResponse.json(data, { status: response.status });
+  } catch (error) {
+    console.error("Reorder hero images API error:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to reorder hero images" },
+      { status: 500 }
+    );
+  }
+}

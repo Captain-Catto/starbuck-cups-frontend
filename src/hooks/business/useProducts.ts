@@ -105,11 +105,11 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
   });
   const [filters, setFiltersState] = useState<ProductFilters>(initialFilters);
 
-  const getAuthHeaders = (): Record<string, string> => {
+  const getAuthHeaders = useCallback((): Record<string, string> => {
     console.log("getAuthHeaders: Redux token exists?", !!token);
     console.log("getAuthHeaders: Redux token preview:", token?.substring(0, 20) + "...");
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  }, [token]);
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -162,7 +162,7 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, filters]);
+  }, [pagination.page, pagination.limit, filters, getAuthHeaders]);
 
   const setPage = useCallback((page: number) => {
     setPagination(prev => ({ ...prev, page }));
@@ -227,7 +227,7 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
       toast.error(errorMsg);
       throw err;
     }
-  }, [products]);
+  }, [products, getAuthHeaders]);
 
   const createProduct = useCallback(async (data: CreateProductData): Promise<Product> => {
     try {
@@ -259,7 +259,7 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
       toast.error(errorMsg);
       throw err;
     }
-  }, []);
+  }, [getAuthHeaders]);
 
   const updateProduct = useCallback(async (data: UpdateProductData): Promise<Product> => {
     try {
@@ -295,7 +295,7 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
       toast.error(errorMsg);
       throw err;
     }
-  }, []);
+  }, [getAuthHeaders]);
 
   const deleteProduct = useCallback(async (productId: string): Promise<void> => {
     try {
@@ -326,13 +326,13 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
       toast.error(errorMsg);
       throw err;
     }
-  }, []);
+  }, [getAuthHeaders]);
 
   useEffect(() => {
     if (autoFetch) {
       fetchProducts();
     }
-  }, [pagination.page, pagination.limit, filters]);
+  }, [pagination.page, pagination.limit, filters, autoFetch, fetchProducts]);
 
   return {
     products,

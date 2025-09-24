@@ -1,11 +1,20 @@
 import { Metadata } from "next";
-import { generateSEO, generateBreadcrumbStructuredData } from "@/lib/seo";
-import HomePage from "@/components/pages/HomePage";
-import { Product, Category } from "@/types";
+import { generateSEO } from "@/lib/seo";
+import HomePageComponent from "@/components/pages/HomePage";
+import { Category } from "@/types";
+
+interface HeroImageData {
+  id: string;
+  title: string;
+  imageUrl: string;
+  altText: string;
+  order: number;
+  isActive: boolean;
+}
 
 interface HomePageProps {
-  featuredProducts: Product[];
   categories: Category[];
+  heroImages: HeroImageData[];
 }
 
 export const metadata: Metadata = generateSEO({
@@ -25,98 +34,78 @@ export const metadata: Metadata = generateSEO({
 // Server-side data fetching
 async function getHomePageData(): Promise<HomePageProps> {
   try {
-    // Mock data for development
-    const mockProducts: Product[] = [
+    // Fetch categories from API
+    const categoriesResponse = await fetch(
+      `${
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+      }/categories/public/`,
       {
-        id: "1",
-        name: "Starbucks Classic Tumbler",
-        description: "Ly giữ nhiệt Starbucks kinh điển, chất liệu cao cấp",
-        slug: "starbucks-classic-tumbler",
-        images: ["/images/products/tumbler-1.jpg"],
-        stockQuantity: 50,
-        categoryId: "1",
-        colorId: "1",
-        capacityId: "1",
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        category: {
-          id: "1",
-          name: "Tumbler",
-          slug: "tumbler",
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        color: {
-          id: "1",
-          name: "Xanh lá",
-          hexCode: "#00704A",
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        capacity: {
-          id: "1",
-          name: "Grande",
-          volumeMl: 473,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      },
-    ];
+        cache: "no-store", // Ensure fresh data
+      }
+    );
+    console.log("Fetched categories response:", categoriesResponse);
 
-    const mockCategories: Category[] = [
-      {
-        id: "1",
-        name: "Tumbler",
-        slug: "tumbler",
-        description: "Ly giữ nhiệt cao cấp",
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: "2",
-        name: "Mug",
-        slug: "mug",
-        description: "Cốc uống nóng truyền thống",
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ];
+    let categories: Category[] = [];
+
+    if (categoriesResponse.ok) {
+      const categoriesData = await categoriesResponse.json();
+      console.log("Fetched categories data:", categoriesData);
+      if (categoriesData.success && categoriesData.data?.items) {
+        categories = categoriesData.data.items;
+      }
+    }
+
+    // Fetch hero images from API
+    let heroImages: HeroImageData[] = [];
+    try {
+      const heroImagesResponse = await fetch(
+        `${
+          process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+        }/api/hero-images/public`,
+        {
+          cache: "no-store", // Ensure fresh data
+        }
+      );
+      console.log("Fetched hero images response:", heroImagesResponse);
+
+      if (heroImagesResponse.ok) {
+        const heroImagesData = await heroImagesResponse.json();
+        console.log("✅ Fetched hero images data:", heroImagesData);
+        console.log("✅ Hero images count:", heroImagesData.data?.length || 0);
+        if (heroImagesData.success && heroImagesData.data) {
+          heroImages = heroImagesData.data;
+        }
+      } else {
+        console.error(
+          "❌ Hero images API failed:",
+          heroImagesResponse.status,
+          heroImagesResponse.statusText
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching hero images:", error);
+    }
 
     return {
-      featuredProducts: mockProducts,
-      categories: mockCategories,
+      categories,
+      heroImages,
     };
   } catch (error) {
     console.error("Error fetching home page data:", error);
     return {
-      featuredProducts: [],
       categories: [],
+      heroImages: [],
     };
   }
 }
 
-export default async function Page() {
-  const { featuredProducts, categories } = await getHomePageData();
-
-  const breadcrumbData = generateBreadcrumbStructuredData([
-    { name: "Trang chủ", url: "/" },
-  ]);
+export default async function HomePage() {
+  const homePageData = await getHomePageData();
 
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbData),
-        }}
-      />
-      <HomePage featuredProducts={featuredProducts} categories={categories} />
-    </>
+    <HomePageComponent
+      categories={homePageData.categories || []}
+      heroImages={homePageData.heroImages || []}
+    />
   );
 }

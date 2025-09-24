@@ -4,7 +4,6 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/redux";
-import type { CreateProductData, UpdateProductData } from "./useProducts";
 
 export interface ProductFormData {
   name: string;
@@ -27,7 +26,7 @@ export interface UseProductFormOptions {
   initialData?: Partial<ProductFormData>;
   isEditing?: boolean;
   productId?: string;
-  onSuccess?: (product: any) => void;
+  onSuccess?: (product: unknown) => void;
   onError?: (error: string) => void;
 }
 
@@ -36,7 +35,7 @@ export interface UseProductFormReturn {
   errors: ValidationErrors;
   loading: boolean;
   isSubmitting: boolean;
-  updateField: (field: keyof ProductFormData, value: any) => void;
+  updateField: (field: keyof ProductFormData, value: unknown) => void;
   toggleArrayField: (
     field: "colorIds" | "capacityIds" | "categoryIds",
     value: string
@@ -75,20 +74,20 @@ export function useProductForm(
   });
 
   const [errors, setErrors] = useState<ValidationErrors>({});
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const getAuthHeaders = (): Record<string, string> => {
+  const getAuthHeaders = useCallback((): Record<string, string> => {
     console.log("getAuthHeaders: Redux token exists?", !!token);
     console.log(
       "getAuthHeaders: Redux token preview:",
       token?.substring(0, 20) + "..."
     );
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  }, [token]);
 
   const updateField = useCallback(
-    (field: keyof ProductFormData, value: any) => {
+    (field: keyof ProductFormData, value: unknown) => {
       setFormData((prev) => ({
         ...prev,
         [field]: value,
@@ -196,10 +195,10 @@ export function useProductForm(
       const payload = {
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
-        images: imagesWithOrder,
-        colorId: formData.colorIds[0] || "",
+        productImages: imagesWithOrder,
+        colorIds: formData.colorIds,
         capacityId: formData.capacityIds[0] || "",
-        categoryId: formData.categoryIds[0] || "",
+        categoryIds: formData.categoryIds,
         stockQuantity: formData.stockQuantity,
         productUrl: formData.productUrl.trim() || undefined,
         ...(isEditing && productId && { id: productId }),
@@ -268,6 +267,38 @@ export function useProductForm(
     getAuthHeaders,
   ]);
 
+  const validateFormData = useCallback((data: ProductFormData): boolean => {
+    const newErrors: ValidationErrors = {};
+
+    if (!data.name.trim()) {
+      newErrors.name = "Tên sản phẩm là bắt buộc";
+    }
+
+    if (data.colorIds.length === 0) {
+      newErrors.colorIds = "Phải chọn ít nhất một màu sắc";
+    }
+
+    if (data.capacityIds.length === 0) {
+      newErrors.capacityIds = "Phải chọn ít nhất một dung tích";
+    }
+
+    if (data.categoryIds.length === 0) {
+      newErrors.categoryIds = "Phải chọn ít nhất một danh mục";
+    }
+
+    // Validate that at least one image is provided
+    if (data.images.length === 0 && !data.imageUrl.trim()) {
+      newErrors.images = "Phải có ít nhất một hình ảnh sản phẩm";
+    }
+
+    if (data.imageUrl && !isValidUrl(data.imageUrl)) {
+      newErrors.imageUrl = "URL hình ảnh không hợp lệ";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, []);
+
   const submitFormWithImages = useCallback(
     async (images: string[]) => {
       // Create temporary form data with provided images
@@ -308,10 +339,10 @@ export function useProductForm(
         const payload = {
           name: tempFormData.name.trim(),
           description: tempFormData.description.trim() || undefined,
-          images: imagesWithOrder,
-          colorId: tempFormData.colorIds[0] || "",
+          productImages: imagesWithOrder,
+          colorIds: tempFormData.colorIds,
           capacityId: tempFormData.capacityIds[0] || "",
-          categoryId: tempFormData.categoryIds[0] || "",
+          categoryIds: tempFormData.categoryIds,
           stockQuantity: tempFormData.stockQuantity,
           productUrl: tempFormData.productUrl.trim() || undefined,
           ...(isEditing && productId && { id: productId }),
@@ -371,40 +402,9 @@ export function useProductForm(
         setIsSubmitting(false);
       }
     },
-    [formData, isEditing, productId, onSuccess, onError, router, getAuthHeaders]
+    [formData, isEditing, productId, onSuccess, onError, router, getAuthHeaders, validateFormData]
   );
 
-  const validateFormData = useCallback((data: ProductFormData): boolean => {
-    const newErrors: ValidationErrors = {};
-
-    if (!data.name.trim()) {
-      newErrors.name = "Tên sản phẩm là bắt buộc";
-    }
-
-    if (data.colorIds.length === 0) {
-      newErrors.colorIds = "Phải chọn ít nhất một màu sắc";
-    }
-
-    if (data.capacityIds.length === 0) {
-      newErrors.capacityIds = "Phải chọn ít nhất một dung tích";
-    }
-
-    if (data.categoryIds.length === 0) {
-      newErrors.categoryIds = "Phải chọn ít nhất một danh mục";
-    }
-
-    // Validate that at least one image is provided
-    if (data.images.length === 0 && !data.imageUrl.trim()) {
-      newErrors.images = "Phải có ít nhất một hình ảnh sản phẩm";
-    }
-
-    if (data.imageUrl && !isValidUrl(data.imageUrl)) {
-      newErrors.imageUrl = "URL hình ảnh không hợp lệ";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, []);
 
   const resetForm = useCallback(() => {
     setFormData({
