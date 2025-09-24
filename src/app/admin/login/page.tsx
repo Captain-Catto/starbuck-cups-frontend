@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { loginAdmin } from "@/store/slices/authSlice";
+import { useStandardAuth } from "@/hooks/useStandardAuth";
 import { Eye, EyeOff, Lock, Mail, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -17,16 +18,15 @@ export default function AdminLoginPage() {
 
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { loading, error, isAuthenticated } = useAppSelector(
-    (state) => state.auth
-  );
+  const { loading, error } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, isReady } = useStandardAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isReady && isAuthenticated) {
       router.push("/admin/dashboard");
     }
-  }, [isAuthenticated, router]);
+  }, [isReady, isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

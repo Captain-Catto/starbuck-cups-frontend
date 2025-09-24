@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, use, useEffect } from "react";
-import { useAppSelector } from "@/store";
+import { useState, use } from "react";
 import { ArrowLeft, Edit, Trash2, MapPin } from "lucide-react";
 import Link from "next/link";
 import { CustomerDetail } from "@/components/admin/customers/CustomerDetail";

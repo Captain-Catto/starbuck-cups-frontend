@@ -7,6 +7,7 @@ import {
 } from "@/store/slices/authSlice";
 import { decodeJWT, isTokenExpired } from "@/lib/jwt";
 import { TokenRefreshNotification } from "@/utils/tokenNotification";
+import { AuthDebug } from "@/utils/authDebug";
 
 export function useAuthRefresh() {
   const dispatch = useAppDispatch();
@@ -59,16 +60,22 @@ export function useAuthRefresh() {
       try {
         // Kiểm tra token có hết hạn không
         if (isTokenExpired(storedToken)) {
-          console.log("Token expired, attempting refresh...");
+          console.log("Token expired, attempting silent refresh...");
+          AuthDebug.logEvent("Token Expired", { storedToken: !!storedToken });
           TokenRefreshNotification.showTokenExpiring();
 
           try {
-            const result = await dispatch(refreshAuthToken()).unwrap();
+            const result = await AuthDebug.timeOperation("Token Refresh (Expired)", async () => {
+              return await dispatch(refreshAuthToken()).unwrap();
+            });
+
             TokenRefreshNotification.showRefreshSuccess();
-            console.log("Token refreshed successfully");
+            AuthDebug.logEvent("Token Refresh Success", { method: "expired" });
+            console.log("Token refreshed silently");
             return result;
           } catch (error) {
-            console.error("Token refresh failed:", error);
+            console.error("Silent token refresh failed:", error);
+            AuthDebug.logEvent("Token Refresh Failed", { method: "expired", error });
             TokenRefreshNotification.showRefreshError();
             dispatch(logout());
             throw error;
@@ -81,18 +88,18 @@ export function useAuthRefresh() {
           const currentTime = Date.now() / 1000;
           const timeUntilExpiry = payload.exp - currentTime;
 
-          if (timeUntilExpiry < 300) {
-            // 5 phút = 300 giây
-            console.log("Token expiring soon, attempting refresh...");
+          if (timeUntilExpiry < 600) {
+            // 10 phút = 600 giây - refresh sớm hơn để đảm bảo mượt mà
+            console.log("Token expiring soon, attempting silent refresh...");
             TokenRefreshNotification.showTokenExpiring();
 
             try {
               const result = await dispatch(refreshAuthToken()).unwrap();
               TokenRefreshNotification.showRefreshSuccess();
-              console.log("Token refreshed successfully");
+              console.log("Token refreshed silently");
               return result;
             } catch (error) {
-              console.error("Proactive token refresh failed:", error);
+              console.error("Proactive silent token refresh failed:", error);
               TokenRefreshNotification.showRefreshError();
               dispatch(logout());
               throw error;
@@ -133,13 +140,13 @@ export function useAuthRefresh() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Intentionally empty để chỉ chạy 1 lần
 
-  // Setup interval để check token định kỳ (mỗi 4 phút)
+  // Setup interval để check token định kỳ (mỗi 3 phút) - check thường xuyên hơn
   useEffect(() => {
     if (!isAuthenticated) return;
 
     const interval = setInterval(() => {
       checkAndRefreshToken();
-    }, 4 * 60 * 1000); // 4 phút
+    }, 3 * 60 * 1000); // 3 phút - check thường xuyên hơn để đảm bảo mượt mà
 
     return () => clearInterval(interval);
   }, [isAuthenticated, checkAndRefreshToken]);
@@ -148,16 +155,38 @@ export function useAuthRefresh() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
+    let focusTimer: NodeJS.Timeout | null = null;
+
     const handleFocus = () => {
+      // Clear existing timer nếu có
+      if (focusTimer) {
+        clearTimeout(focusTimer);
+      }
+
       // Debounce để tránh multiple calls
-      setTimeout(() => {
+      focusTimer = setTimeout(() => {
         checkAndRefreshToken();
+        focusTimer = null;
       }, 200);
     };
 
     window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      if (focusTimer) {
+        clearTimeout(focusTimer);
+      }
+    };
   }, [isAuthenticated, checkAndRefreshToken]);
+
+  // Cleanup timers khi component unmount
+  useEffect(() => {
+    return () => {
+      AuthDebug.logEvent("Component Unmounting", { cleanup: true });
+      TokenRefreshNotification.cleanup();
+    };
+  }, []);
 
   return {
     isAuthenticated,

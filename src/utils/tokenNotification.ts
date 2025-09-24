@@ -4,20 +4,24 @@ import { toast } from "sonner";
 export class TokenRefreshNotification {
   private static hasShownRefreshNotification = false;
   private static isRedirecting = false; // Flag để prevent multiple redirects
+  private static refreshSuccessTimer: NodeJS.Timeout | null = null;
+  private static redirectTimer: NodeJS.Timeout | null = null;
 
   static showRefreshSuccess() {
-    if (!this.hasShownRefreshNotification) {
-      toast.success("Phiên đăng nhập đã được gia hạn tự động", {
-        duration: 2000,
-        position: "bottom-right",
-      });
-      this.hasShownRefreshNotification = true;
+    // Silent refresh - không hiển thị thông báo
+    console.log("Token refreshed successfully (silent)");
+    this.hasShownRefreshNotification = true;
 
-      // Reset flag sau 5 phút
-      setTimeout(() => {
-        this.hasShownRefreshNotification = false;
-      }, 5 * 60 * 1000);
+    // Clear existing timer trước khi tạo mới
+    if (this.refreshSuccessTimer) {
+      clearTimeout(this.refreshSuccessTimer);
     }
+
+    // Reset flag sau 5 phút
+    this.refreshSuccessTimer = setTimeout(() => {
+      this.hasShownRefreshNotification = false;
+      this.refreshSuccessTimer = null;
+    }, 5 * 60 * 1000);
   }
 
   static showRefreshError() {
@@ -41,9 +45,16 @@ export class TokenRefreshNotification {
       position: "bottom-right",
     });
 
+    // Clear existing redirect timer
+    if (this.redirectTimer) {
+      clearTimeout(this.redirectTimer);
+    }
+
     // Delay redirect để user có thể đọc thông báo
-    setTimeout(() => {
+    this.redirectTimer = setTimeout(() => {
       window.location.href = redirectUrl;
+      this.redirectTimer = null;
+      this.isRedirecting = false; // Reset sau khi redirect
     }, 3500); // 3.5 giây sau khi toast hiện
   }
 
@@ -61,17 +72,51 @@ export class TokenRefreshNotification {
       position: "bottom-right",
     });
 
+    // Clear existing redirect timer
+    if (this.redirectTimer) {
+      clearTimeout(this.redirectTimer);
+    }
+
     // Delay redirect để user có thể đọc thông báo
-    setTimeout(() => {
+    this.redirectTimer = setTimeout(() => {
       window.location.href = redirectUrl;
+      this.redirectTimer = null;
+      this.isRedirecting = false; // Reset sau khi redirect
     }, 3500); // 3.5 giây sau khi toast hiện
   }
 
   static showTokenExpiring() {
-    toast.warning("Phiên đăng nhập sắp hết hạn. Đang gia hạn tự động...", {
-      duration: 3000,
-      position: "bottom-right",
-    });
+    // Silent token expiration handling - không hiển thị thông báo
+    console.log("Token expiring, refreshing silently...");
+  }
+
+  // Method để cleanup tất cả timers - gọi khi logout hoặc unmount
+  static cleanup() {
+    if (this.refreshSuccessTimer) {
+      clearTimeout(this.refreshSuccessTimer);
+      this.refreshSuccessTimer = null;
+    }
+
+    if (this.redirectTimer) {
+      clearTimeout(this.redirectTimer);
+      this.redirectTimer = null;
+    }
+
+    // Reset tất cả flags
+    this.hasShownRefreshNotification = false;
+    this.isRedirecting = false;
+
+    console.log("TokenRefreshNotification: All timers cleared");
+  }
+
+  // Method để check timer status (useful for debugging)
+  static getTimerStatus() {
+    return {
+      refreshSuccessTimer: !!this.refreshSuccessTimer,
+      redirectTimer: !!this.redirectTimer,
+      hasShownRefreshNotification: this.hasShownRefreshNotification,
+      isRedirecting: this.isRedirecting
+    };
   }
 }
 
@@ -85,5 +130,7 @@ export function useTokenStatus() {
     showSessionExpiredWithRedirect:
       TokenRefreshNotification.showSessionExpiredWithRedirect,
     showTokenExpiring: TokenRefreshNotification.showTokenExpiring,
+    cleanup: TokenRefreshNotification.cleanup,
+    getTimerStatus: TokenRefreshNotification.getTimerStatus,
   };
 }

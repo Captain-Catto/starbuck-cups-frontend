@@ -61,7 +61,7 @@ class ApiService {
             this.refreshPromise = this.performTokenRefresh();
             const result = await this.refreshPromise;
             if (result.success) {
-              TokenRefreshNotification.showRefreshSuccess();
+              TokenRefreshNotification.showRefreshSuccess(); // Silent refresh
             }
           } catch (error) {
             console.error("Background token refresh failed:", error);
@@ -99,7 +99,7 @@ class ApiService {
 
               const result = await this.refreshPromise;
               if (result.success) {
-                TokenRefreshNotification.showRefreshSuccess();
+                TokenRefreshNotification.showRefreshSuccess(); // Silent refresh
                 // Token refresh thành công, retry request gốc
                 originalRequest.headers.Authorization = `Bearer ${result.accessToken}`;
                 return this.api(originalRequest);

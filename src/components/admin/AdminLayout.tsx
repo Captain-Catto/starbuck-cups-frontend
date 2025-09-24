@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/store";
-import { logout } from "@/store/slices/authSlice";
-import { useAdminAuth } from "@/hooks/useAuthRefresh";
+import { usePathname } from "next/navigation";
+import { useAppSelector } from "@/store";
+import { useAdminAuth } from "@/hooks/useStandardAuth";
 import { useSocket } from "@/hooks/useSocket";
 import { usePendingConsultations } from "@/hooks/admin/usePendingConsultations";
 import { useConsultationSocket } from "@/hooks/useConsultationSocket";
@@ -47,12 +46,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [notificationDropdownOpen, setNotificationDropdownOpen] =
     useState(false);
   const pathname = usePathname();
-  const router = useRouter();
-  const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
 
-  // Sử dụng hook auto refresh token
-  const { isAuthenticated, isLoading } = useAdminAuth();
+  // Sử dụng standardized admin authentication hook
+  const { isAdminReady, logout: performLogout } = useAdminAuth();
 
   // Initialize Socket.IO for real-time notifications
   const { isConnected, unreadCount } = useSocket();
@@ -124,12 +121,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const sidebarItems = getSidebarItems();
 
-  // Check authentication với auto refresh
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push("/admin/login");
-    }
-  }, [isAuthenticated, isLoading, router]);
+  // Authentication check is handled by useAdminAuth hook automatically
+  // No need for manual redirect logic here
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -152,9 +145,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     };
   }, [profileDropdownOpen, notificationDropdownOpen]);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    router.push("/admin/login");
+  const handleLogout = async () => {
+    await performLogout();
+    // Redirect is handled automatically by the standardized hook
   };
 
   const toggleSubmenu = (path: string) => {
@@ -185,16 +178,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     }
   };
 
-  if (isLoading) {
+  if (!isAdminReady) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
       </div>
     );
-  }
-
-  if (!isAuthenticated) {
-    return null; // Will redirect to login
   }
 
   return (
