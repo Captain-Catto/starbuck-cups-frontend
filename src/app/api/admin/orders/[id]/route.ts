@@ -25,9 +25,7 @@ export async function GET(
     }
 
     // Forward request to backend API
-    const backendUrl = `${
-      process.env.BACKEND_URL || "http://localhost:8000"
-    }/api/admin/orders/${id}`;
+    const backendUrl = getApiUrl(`admin/orders/${id}`);
 
     const response = await fetch(backendUrl, {
       method: "GET",
@@ -86,9 +84,7 @@ export async function PUT(
     const body = await request.json();
 
     // Forward request to backend API
-    const backendUrl = `${
-      process.env.BACKEND_URL || "http://localhost:8000"
-    }/api/admin/orders/${id}`;
+    const backendUrl = getApiUrl(`admin/orders/${id}`);
 
     const response = await fetch(backendUrl, {
       method: "PUT",

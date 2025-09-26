@@ -203,21 +203,16 @@ export function useColors(): UseColorsReturn {
   };
 
   const handleDelete = async (color: ColorWithCount) => {
-    const productCount = color._count?.productColors || 0;
-    if (productCount > 0) {
-      setConfirmModal({
-        show: true,
-        color: color,
-        action: "delete",
-      });
-      return;
-    }
-
-    // Nếu không có products, thực hiện xóa ngay
-    await performDelete(color);
+    // Luôn hiển thị confirmation modal
+    setConfirmModal({
+      show: true,
+      color: color,
+      action: "delete",
+    });
   };
 
   const performDelete = async (color: ColorWithCount) => {
+    console.log("performDelete called for color:", color.id, color.name);
     setActionLoading(`delete-${color.id}`);
     try {
       const response = await fetch(`/api/admin/colors/${color.id}`, {
@@ -225,7 +220,9 @@ export function useColors(): UseColorsReturn {
         headers: getAuthHeaders(),
       });
 
+      console.log("Delete response status:", response.status);
       const data = await response.json();
+      console.log("Delete response data:", data);
 
       if (data.success) {
         toast.success(`Đã xóa màu "${color.name}" thành công`);

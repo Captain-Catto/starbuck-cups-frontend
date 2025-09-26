@@ -20,6 +20,12 @@ interface CapacityFormErrors {
   isActive?: string;
 }
 
+interface ConfirmModal {
+  show: boolean;
+  capacity: CapacityWithCount | null;
+  action: "delete" | "toggle";
+}
+
 export interface UseCapacitiesReturn {
   // Data
   capacities: CapacityWithCount[];
@@ -42,6 +48,9 @@ export interface UseCapacitiesReturn {
   deleteId: string | null;
   deleteName: string;
 
+  // Confirmation modal state
+  confirmModal: ConfirmModal;
+
   // Actions
   setSearchQuery: (query: string) => void;
   setStatusFilter: (filter: "all" | "active" | "inactive") => void;
@@ -49,12 +58,14 @@ export interface UseCapacitiesReturn {
   handleEdit: (capacity: Capacity) => void;
   handleDelete: (capacity: CapacityWithCount) => void;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
-  handleToggleStatus: (id: string) => Promise<void>;
+  handleToggleStatus: (capacity: CapacityWithCount) => void;
+  performToggleStatus: (capacity: CapacityWithCount) => Promise<void>;
   handleCloseModal: () => void;
   handleAddCapacity: () => void;
   confirmDelete: () => Promise<void>;
   cancelDelete: () => void;
   setFormData: (data: CapacityFormData) => void;
+  setConfirmModal: React.Dispatch<React.SetStateAction<ConfirmModal>>;
 }
 
 export function useCapacities(): UseCapacitiesReturn {
@@ -80,6 +91,13 @@ export function useCapacities(): UseCapacitiesReturn {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteName, setDeleteName] = useState<string>("");
+
+  // Confirmation modal state
+  const [confirmModal, setConfirmModal] = useState<ConfirmModal>({
+    show: false,
+    capacity: null,
+    action: "toggle",
+  });
 
   const getAuthHeaders = (): Record<string, string> => {
     const token = localStorage.getItem("admin_token");
@@ -222,21 +240,34 @@ export function useCapacities(): UseCapacitiesReturn {
     setDeleteName("");
   };
 
-  const handleToggleStatus = async (id: string) => {
-    const capacity = capacities.find((c) => c.id === id);
-    if (!capacity) return;
+  const handleToggleStatus = (capacity: CapacityWithCount) => {
+    // Nếu đang tắt dung tích có products sử dụng, hiển thị modal xác nhận
+    const productCount = capacity._count?.products || 0;
+    if (capacity.isActive && productCount > 0) {
+      setConfirmModal({
+        show: true,
+        capacity: capacity,
+        action: "toggle",
+      });
+      return;
+    }
 
-    setActionLoading(id);
+    // Nếu không có products hoặc đang kích hoạt lại, thực hiện ngay
+    performToggleStatus(capacity);
+  };
+
+  const performToggleStatus = async (capacity: CapacityWithCount) => {
+    setActionLoading(capacity.id);
 
     // Optimistic update
     const updatedCapacities = capacities.map((c) =>
-      c.id === id ? { ...c, isActive: !c.isActive } : c
+      c.id === capacity.id ? { ...c, isActive: !c.isActive } : c
     );
     setCapacities(updatedCapacities);
 
     try {
       const response = await fetch(
-        `/api/admin/capacities/${id}/toggle-status`,
+        `/api/admin/capacities/${capacity.id}/toggle-status`,
         {
           method: "PATCH",
           headers: getAuthHeaders(),
@@ -320,6 +351,9 @@ export function useCapacities(): UseCapacitiesReturn {
     deleteId,
     deleteName,
 
+    // Confirmation modal state
+    confirmModal,
+
     // Actions
     setSearchQuery,
     setStatusFilter,
@@ -328,10 +362,12 @@ export function useCapacities(): UseCapacitiesReturn {
     handleDelete,
     handleSubmit,
     handleToggleStatus,
+    performToggleStatus,
     handleCloseModal,
     handleAddCapacity,
     confirmDelete,
     cancelDelete,
     setFormData,
+    setConfirmModal,
   };
 }

@@ -6,6 +6,7 @@ import { CapacitiesSearchFilter } from "@/components/admin/capacities/Capacities
 import { CapacitiesTable } from "@/components/admin/capacities/CapacitiesTable";
 import { CapacityFormModal } from "@/components/admin/capacities/CapacityFormModal";
 import { CapacityDeleteModal } from "@/components/admin/capacities/CapacityDeleteModal";
+import { CapacityConfirmModal } from "@/components/admin/capacities/CapacityConfirmModal";
 
 export default function CapacitiesManagement() {
   const {
@@ -29,6 +30,9 @@ export default function CapacitiesManagement() {
     deleteId,
     deleteName,
 
+    // Confirmation modal state
+    confirmModal,
+
     // Actions
     setSearchQuery,
     setStatusFilter,
@@ -41,6 +45,8 @@ export default function CapacitiesManagement() {
     confirmDelete,
     cancelDelete,
     setFormData,
+    performToggleStatus,
+    setConfirmModal,
   } = useCapacities();
 
   return (
@@ -89,6 +95,28 @@ export default function CapacitiesManagement() {
         deleteId={deleteId}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
+      />
+
+      {/* Toggle Confirmation Modal */}
+      <CapacityConfirmModal
+        confirmModal={confirmModal}
+        onCancel={() =>
+          setConfirmModal({
+            show: false,
+            capacity: null,
+            action: "toggle",
+          })
+        }
+        onConfirm={() => {
+          if (confirmModal.capacity) {
+            performToggleStatus(confirmModal.capacity);
+            setConfirmModal({
+              show: false,
+              capacity: null,
+              action: "toggle",
+            });
+          }
+        }}
       />
     </div>
   );

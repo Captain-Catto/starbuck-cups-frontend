@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiUrl } from "@/lib/api-config";
 
 export async function GET(
   request: NextRequest,
@@ -6,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products/${slug}`;
+    const backendUrl = getApiUrl(`products/${slug}`);
 
     const response = await fetch(backendUrl, {
       method: "GET",

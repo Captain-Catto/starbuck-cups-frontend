@@ -104,7 +104,7 @@ export function useUpdateProduct(
         colorIds: product.productColors?.map((pc: { color: { id: string } }) => pc.color.id) || [],
         capacityId: product.capacity?.id || "",
         stockQuantity: product.stockQuantity || 0,
-        images: Array.isArray(product.images) ? product.images : [],
+        images: product.productImages?.map((img: { url: string }) => img.url) || [],
         productUrl: product.productUrl || "",
         isActive: product.isActive ?? true,
         newImages: [],

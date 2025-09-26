@@ -14,7 +14,7 @@ interface CapacitiesTableProps {
   searchQuery: string;
   onEdit: (capacity: Capacity) => void;
   onDelete: (capacity: CapacityWithCount) => void;
-  onToggleStatus: (id: string) => void;
+  onToggleStatus: (capacity: CapacityWithCount) => void;
 }
 
 export function CapacitiesTable({
@@ -109,9 +109,7 @@ export function CapacitiesTable({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-white">
-                      {new Date(capacity.createdAt).toLocaleDateString(
-                        "vi-VN"
-                      )}
+                      {new Date(capacity.createdAt).toLocaleDateString("vi-VN")}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -125,12 +123,10 @@ export function CapacitiesTable({
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => onToggleStatus(capacity.id)}
+                        onClick={() => onToggleStatus(capacity)}
                         disabled={actionLoading === capacity.id}
                         className="text-white hover:bg-gray-700 p-1 rounded transition-colors"
-                        title={
-                          capacity.isActive ? "Vô hiệu hóa" : "Kích hoạt"
-                        }
+                        title={capacity.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
                       >
                         {actionLoading === capacity.id ? (
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

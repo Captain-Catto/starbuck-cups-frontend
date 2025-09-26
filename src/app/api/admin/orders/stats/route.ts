@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+import { getApiUrl } from "@/lib/api-config";
 
 // Helper function to forward auth headers
 function getAuthHeaders(request: NextRequest): Record<string, string> {
@@ -19,7 +18,7 @@ export async function GET(request: NextRequest) {
   try {
     console.log(`[DEBUG] Fetching order statistics`);
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/orders/stats`, {
+    const response = await fetch(getApiUrl("admin/orders/stats"), {
       method: "GET",
       headers: getAuthHeaders(request),
     });

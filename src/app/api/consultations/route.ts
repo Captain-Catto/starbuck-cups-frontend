@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getApiUrl } from '@/lib/api-config';
 
 export interface ConsultationOrderData {
   customer: {
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Forward to backend API
-    const backendResponse = await fetch(`${process.env.BACKEND_URL}/api/consultations`, {
+    const backendResponse = await fetch(getApiUrl('consultations'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

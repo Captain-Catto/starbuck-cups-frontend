@@ -39,6 +39,7 @@ export default function ColorsManagement() {
     setFormData,
     setConfirmModal,
     performToggleStatus,
+    performDelete,
   } = useColors();
 
   return (
@@ -89,7 +90,11 @@ export default function ColorsManagement() {
         }
         onConfirm={() => {
           if (confirmModal.color) {
-            performToggleStatus(confirmModal.color);
+            if (confirmModal.action === "delete") {
+              performDelete(confirmModal.color);
+            } else if (confirmModal.action === "toggle") {
+              performToggleStatus(confirmModal.color);
+            }
             setConfirmModal({
               show: false,
               color: null,

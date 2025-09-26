@@ -78,36 +78,52 @@ export function ColorConfirmModal({
               .
             </p>
 
-            <div
-              className={`border rounded-lg p-3 ${
-                action === "delete"
-                  ? "bg-gray-700 border-red-600"
-                  : "bg-yellow-900 border-yellow-600"
-              }`}
-            >
-              {action === "delete" ? (
-                <>
-                  <h4 className="font-medium text-gray-200 mb-2">
-                    ⚠️ Không thể xóa màu đang được sử dụng!
+            {(color._count?.productColors || 0) > 0 && (
+              <div
+                className={`border rounded-lg p-3 ${
+                  action === "delete"
+                    ? "bg-gray-700 border-red-600"
+                    : "bg-yellow-900 border-yellow-600"
+                }`}
+              >
+                {action === "delete" ? (
+                  <>
+                    <h4 className="font-medium text-gray-200 mb-2">
+                      ⚠️ Không thể xóa màu đang được sử dụng!
+                    </h4>
+                    <p className="text-sm text-gray-300">
+                      Bạn cần xóa hoặc thay đổi màu của tất cả sản phẩm trước
+                      khi có thể xóa màu này.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h4 className="font-medium text-yellow-200 mb-2">
+                      Khi tắt màu này:
+                    </h4>
+                    <ul className="text-sm text-yellow-300 space-y-1">
+                      <li>• Các sản phẩm hiện tại vẫn giữ màu này</li>
+                      <li>• Màu sẽ không hiển thị khi tạo sản phẩm mới</li>
+                      <li>• Bạn có thể kích hoạt lại bất cứ lúc nào</li>
+                    </ul>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Show confirmation message for deletable colors */}
+            {action === "delete" &&
+              (color._count?.productColors || 0) === 0 && (
+                <div className="border rounded-lg p-3 bg-red-900 border-red-600">
+                  <h4 className="font-medium text-red-200 mb-2">
+                    ⚠️ Xác nhận xóa màu
                   </h4>
-                  <p className="text-sm text-gray-300">
-                    Bạn cần xóa hoặc thay đổi màu của tất cả sản phẩm trước khi
-                    có thể xóa màu này.
+                  <p className="text-sm text-red-300">
+                    Màu này sẽ bị xóa vĩnh viễn và không thể khôi phục. Bạn có
+                    chắc chắn muốn xóa?
                   </p>
-                </>
-              ) : (
-                <>
-                  <h4 className="font-medium text-yellow-200 mb-2">
-                    Khi tắt màu này:
-                  </h4>
-                  <ul className="text-sm text-yellow-300 space-y-1">
-                    <li>• Các sản phẩm hiện tại vẫn giữ màu này</li>
-                    <li>• Màu sẽ không hiển thị khi tạo sản phẩm mới</li>
-                    <li>• Bạn có thể kích hoạt lại bất cứ lúc nào</li>
-                  </ul>
-                </>
+                </div>
               )}
-            </div>
           </div>
 
           {/* Actions */}
@@ -116,8 +132,10 @@ export function ColorConfirmModal({
               onClick={onCancel}
               className="flex-1 px-4 py-2 border border-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
             >
-              {action === "delete" ? "Đóng" : "Hủy"}
+              {action === "delete" ? "Hủy" : "Hủy"}
             </button>
+
+            {/* Toggle action */}
             {action === "toggle" && (
               <button
                 onClick={onConfirm}
@@ -126,6 +144,17 @@ export function ColorConfirmModal({
                 Xác nhận tắt
               </button>
             )}
+
+            {/* Delete action - only show confirm button if color is not in use */}
+            {action === "delete" &&
+              (color._count?.productColors || 0) === 0 && (
+                <button
+                  onClick={onConfirm}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition-colors"
+                >
+                  Xác nhận xóa
+                </button>
+              )}
           </div>
         </div>
       </div>

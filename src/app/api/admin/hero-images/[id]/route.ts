@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+import { getApiUrl } from "@/lib/api-config";
 
 // Helper function to forward auth headers
 function getAuthHeaders(request: NextRequest): Record<string, string> {
@@ -21,7 +20,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const response = await fetch(`${BACKEND_URL}/api/admin/hero-images/${id}`, {
+    const response = await fetch(getApiUrl(`admin/hero-images/${id}`), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -68,7 +67,7 @@ export async function PUT(
       };
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/hero-images/${id}`, {
+    const response = await fetch(getApiUrl(`admin/hero-images/${id}`), {
       method: "PUT",
       headers,
       body,
@@ -92,7 +91,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const response = await fetch(`${BACKEND_URL}/api/admin/hero-images/${id}`, {
+    const response = await fetch(getApiUrl(`admin/hero-images/${id}`), {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

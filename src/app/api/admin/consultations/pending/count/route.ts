@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiUrl } from "@/lib/api-config";
 
 export async function GET(request: NextRequest) {
   try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:5000";
 
     // Get authorization header from the request
     const authHeader = request.headers.get("authorization");
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await fetch(
-      `${backendUrl}/api/consultations/pending/count`,
+      getApiUrl("consultations/pending/count"),
       {
         method: "GET",
         headers: {

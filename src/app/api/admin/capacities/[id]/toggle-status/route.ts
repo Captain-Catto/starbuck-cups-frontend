@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+import { getApiUrl } from "@/lib/api-config";
 
 // Helper function to forward auth headers
 function getAuthHeaders(request: NextRequest): Record<string, string> {
@@ -22,7 +21,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const response = await fetch(
-      `${BACKEND_URL}/api/admin/capacities/${id}/toggle-status`,
+      getApiUrl(`admin/capacities/${id}/toggle-status`),
       {
         method: "PATCH",
         headers: {

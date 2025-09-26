@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+import { getApiUrl } from "@/lib/api-config";
 
 // Helper function to forward auth headers
 function getAuthHeaders(request: NextRequest): Record<string, string> {
@@ -18,7 +17,7 @@ function getAuthHeaders(request: NextRequest): Record<string, string> {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const url = new URL(`${BACKEND_URL}/api/admin/consultations`);
+    const url = new URL(getApiUrl("admin/consultations"));
 
     // Forward all query parameters
     searchParams.forEach((value, key) => {

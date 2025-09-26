@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+import { getApiUrl } from "@/lib/api-config";
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +8,7 @@ export async function GET(
   try {
     const { id } = await params;
     const searchParams = request.nextUrl.searchParams;
-    const url = new URL(`${BACKEND_URL}/api/admin/products/${id}`);
+    const url = new URL(getApiUrl(`admin/products/${id}`));
 
     // Forward query parameters
     searchParams.forEach((value, key) => {
@@ -49,7 +48,7 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/products/${id}`, {
+    const response = await fetch(getApiUrl(`admin/products/${id}`), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -82,7 +81,7 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/products/${id}`, {
+    const response = await fetch(getApiUrl(`admin/products/${id}`), {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

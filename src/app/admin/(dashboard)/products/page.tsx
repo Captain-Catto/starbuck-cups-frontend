@@ -7,6 +7,7 @@ import { ProductsBulkActions } from "@/components/admin/products/ProductsBulkAct
 import { ProductsTable } from "@/components/admin/products/ProductsTable";
 import { ProductsPagination } from "@/components/admin/products/ProductsPagination";
 import ProductModal from "@/components/admin/ProductModal";
+import { ProductConfirmModal } from "@/components/admin/products/ProductConfirmModal";
 
 export default function AdminProductsPage() {
   const {
@@ -27,10 +28,14 @@ export default function AdminProductsPage() {
     isModalOpen,
     editingProduct,
 
+    // Confirmation modal state
+    confirmModal,
+
     // Actions
     handleFilterChange,
     handleBulkAction,
     handleProductAction,
+    performProductAction,
     handleCreateProduct,
     handleEditProduct,
     handleCloseModal,
@@ -38,6 +43,7 @@ export default function AdminProductsPage() {
     getProductStatus,
     setSelectedProducts,
     setPagination,
+    setConfirmModal,
 
     // Selection helpers
     isAllSelected,
@@ -114,6 +120,31 @@ export default function AdminProductsPage() {
         categories={Array.isArray(categories) ? categories : []}
         colors={Array.isArray(colors) ? colors : []}
         capacities={Array.isArray(capacities) ? capacities : []}
+      />
+
+      {/* Product Confirmation Modal */}
+      <ProductConfirmModal
+        confirmModal={confirmModal}
+        onCancel={() => {
+          setConfirmModal({
+            show: false,
+            product: null,
+            action: "delete",
+          });
+        }}
+        onConfirm={() => {
+          if (confirmModal.product) {
+            performProductAction(
+              confirmModal.product.id,
+              confirmModal.action === "toggle" ? "deactivate" : "delete"
+            );
+            setConfirmModal({
+              show: false,
+              product: null,
+              action: "delete",
+            });
+          }
+        }}
       />
     </div>
   );

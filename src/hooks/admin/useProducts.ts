@@ -40,6 +40,13 @@ export interface UseProductsReturn {
   isModalOpen: boolean;
   editingProduct: ProductListItem | null;
 
+  // Confirmation modal state
+  confirmModal: {
+    show: boolean;
+    product: ProductListItem | null;
+    action: "toggle" | "delete";
+  };
+
   // Actions
   loadProducts: () => Promise<void>;
   loadFilterOptions: () => Promise<void>;
@@ -48,6 +55,10 @@ export interface UseProductsReturn {
     action: "activate" | "deactivate" | "delete"
   ) => Promise<void>;
   handleProductAction: (
+    productId: string,
+    action: "activate" | "deactivate" | "delete"
+  ) => Promise<void>;
+  performProductAction: (
     productId: string,
     action: "activate" | "deactivate" | "delete"
   ) => Promise<void>;
@@ -61,6 +72,13 @@ export interface UseProductsReturn {
   };
   setSelectedProducts: React.Dispatch<React.SetStateAction<string[]>>;
   setPagination: React.Dispatch<React.SetStateAction<PaginationMeta>>;
+  setConfirmModal: React.Dispatch<
+    React.SetStateAction<{
+      show: boolean;
+      product: ProductListItem | null;
+      action: "toggle" | "delete";
+    }>
+  >;
 
   // Selection helpers
   isAllSelected: boolean;
@@ -81,6 +99,17 @@ export function useProducts(): UseProductsReturn {
   const [editingProduct, setEditingProduct] = useState<ProductListItem | null>(
     null
   );
+
+  // Confirmation modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    show: boolean;
+    product: ProductListItem | null;
+    action: "toggle" | "delete";
+  }>({
+    show: false,
+    product: null,
+    action: "toggle",
+  });
 
   const [filters, setFilters] = useState<ProductFilters>({
     search: "",
@@ -275,6 +304,34 @@ export function useProducts(): UseProductsReturn {
     productId: string,
     action: "activate" | "deactivate" | "delete"
   ) => {
+    const product = products.find((p) => p.id === productId);
+    if (!product) return;
+
+    if (action === "delete") {
+      // Show confirmation modal for delete
+      setConfirmModal({
+        show: true,
+        product,
+        action: "delete",
+      });
+      return;
+    }
+
+    if (action === "activate" || action === "deactivate") {
+      // Show confirmation modal for status toggle
+      setConfirmModal({
+        show: true,
+        product,
+        action: "toggle",
+      });
+      return;
+    }
+  };
+
+  const performProductAction = async (
+    productId: string,
+    action: "activate" | "deactivate" | "delete"
+  ) => {
     // Prevent double clicks by checking if already loading
     if (actionLoading) {
       console.log(`[DEBUG] Action already in progress: ${actionLoading}`);
@@ -424,12 +481,16 @@ export function useProducts(): UseProductsReturn {
     isModalOpen,
     editingProduct,
 
+    // Confirmation modal state
+    confirmModal,
+
     // Actions
     loadProducts,
     loadFilterOptions,
     handleFilterChange,
     handleBulkAction,
     handleProductAction,
+    performProductAction,
     handleCreateProduct,
     handleEditProduct,
     handleCloseModal,
@@ -437,6 +498,7 @@ export function useProducts(): UseProductsReturn {
     getProductStatus,
     setSelectedProducts,
     setPagination,
+    setConfirmModal,
 
     // Selection helpers
     isAllSelected,

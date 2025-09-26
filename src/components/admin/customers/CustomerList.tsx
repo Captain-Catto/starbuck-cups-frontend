@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 import { Eye, Edit, Trash2, Phone, MapPin } from "lucide-react";
-import { Pagination } from "@/components/ui/Pagination";
-import { useCustomers } from "@/hooks/business/useCustomers";
+
+import { useAdminCustomers } from "@/hooks/admin/useCustomers";
+import { CustomerConfirmModal } from "./CustomerConfirmModal";
 
 interface CustomerListProps {
   searchTerm: string;
@@ -21,19 +21,19 @@ export function CustomerList({
   dateTo,
   refreshTrigger,
 }: CustomerListProps) {
-  const { customers, pagination, loading, fetchCustomers, setPage } =
-    useCustomers({ autoFetch: true });
+  const {
+    customers,
+    loading,
+    actionLoading,
+    confirmModal,
+    handleDelete,
+    performDelete,
+    setConfirmModal,
+  } = useAdminCustomers();
   console.log("CustomerList render - customers:", customers);
 
-  useEffect(() => {
-    fetchCustomers(searchTerm, vipStatus, dateFrom, dateTo);
-  }, [searchTerm, vipStatus, dateFrom, dateTo, fetchCustomers]);
-
-  useEffect(() => {
-    if (refreshTrigger && refreshTrigger > 0) {
-      fetchCustomers();
-    }
-  }, [refreshTrigger, fetchCustomers]);
+  // TODO: Implement search filtering later
+  // For now, just load all customers
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("vi-VN", {
@@ -45,13 +45,20 @@ export function CustomerList({
     });
   };
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
+
   if (loading) {
     return (
       <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
         <div className="animate-pulse">
           {/* Table Header Skeleton */}
           <div className="bg-gray-700 px-6 py-3">
-            <div className="grid grid-cols-6 gap-4">
+            <div className="grid grid-cols-7 gap-4">
               <div className="h-4 bg-gray-600 rounded w-32"></div>
               <div className="h-4 bg-gray-600 rounded w-24"></div>
               <div className="h-4 bg-gray-600 rounded w-20"></div>
@@ -64,7 +71,7 @@ export function CustomerList({
           <div className="divide-y divide-gray-700">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="px-6 py-4 bg-gray-800">
-                <div className="grid grid-cols-6 gap-4 items-center">
+                <div className="grid grid-cols-7 gap-4 items-center">
                   {/* Customer Info */}
                   <div className="space-y-2">
                     <div className="h-4 bg-gray-700 rounded w-36"></div>
@@ -125,6 +132,9 @@ export function CustomerList({
                 Được tạo
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                Tổng tiền chi tiêu
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Đơn hàng cuối
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">
@@ -172,7 +182,7 @@ export function CustomerList({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-white max-w-32">
-                    {customer.addresses.length > 0 ? (
+                    {customer.addresses && customer.addresses.length > 0 ? (
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         <div className="min-w-0">
@@ -201,16 +211,16 @@ export function CustomerList({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-white">
+                    {formatCurrency(customer.totalSpent || 0)}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-white">
                     {customer.lastOrderDate
                       ? formatDate(customer.lastOrderDate)
                       : "Chưa có đơn"}
                   </div>
-                  {customer.lastOrderDate && (
-                    <div className="text-sm text-gray-300">
-                      {customer._count.orders} đơn hàng
-                    </div>
-                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end gap-2">
@@ -229,10 +239,16 @@ export function CustomerList({
                       <Edit className="w-4 h-4" />
                     </Link>
                     <button
+                      onClick={() => handleDelete(customer)}
+                      disabled={actionLoading === `delete-${customer.id}`}
                       className="text-white hover:bg-gray-700 p-1 rounded transition-colors"
                       title="Xóa"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      {actionLoading === `delete-${customer.id}` ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </td>
@@ -241,17 +257,6 @@ export function CustomerList({
           </tbody>
         </table>
       </div>
-
-      {/* Pagination */}
-      {pagination.total_pages > 1 && (
-        <div className="px-6 py-4 border-t border-gray-700">
-          <Pagination
-            data={pagination}
-            onPageChange={setPage}
-            className="justify-center"
-          />
-        </div>
-      )}
 
       {/* Empty State */}
       {customers.length === 0 && (
@@ -263,6 +268,28 @@ export function CustomerList({
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <CustomerConfirmModal
+        confirmModal={confirmModal}
+        onCancel={() =>
+          setConfirmModal({
+            show: false,
+            customer: null,
+            action: "delete",
+          })
+        }
+        onConfirm={() => {
+          if (confirmModal.customer) {
+            performDelete(confirmModal.customer);
+            setConfirmModal({
+              show: false,
+              customer: null,
+              action: "delete",
+            });
+          }
+        }}
+      />
     </div>
   );
 }

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+import { getApiUrl } from "@/lib/api-config";
 
 export async function GET() {
   try {
-    const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/colors/public`;
+    const backendUrl = getApiUrl("colors/public");
 
     const response = await fetch(backendUrl, {
       method: "GET",

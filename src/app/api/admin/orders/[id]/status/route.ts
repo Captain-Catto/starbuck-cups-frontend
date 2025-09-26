@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiUrl } from "@/lib/api-config";
 
 interface StatusUpdateRequest {
   status: string;
@@ -45,7 +46,7 @@ export async function PATCH(
 
     // Here you would call your backend API
     const backendResponse = await fetch(
-      `${process.env.BACKEND_URL}/api/admin/orders/${orderId}/status`,
+      `${getApiUrl("admin/orders")}/api/admin/orders/${orderId}/status`,
       {
         method: "PATCH",
         headers: {

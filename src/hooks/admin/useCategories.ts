@@ -187,17 +187,12 @@ export function useCategories(): UseCategoriesReturn {
   };
 
   const handleDelete = async (category: CategoryWithCount) => {
-    const productCount = category._count?.products || 0;
-    if (productCount > 0) {
-      // Thay vì confirm modal, hiển thị toast thông báo không thể xóa
-      toast.error(
-        `Không thể xóa danh mục "${category.name}" đang được ${productCount} sản phẩm sử dụng. Hãy tắt danh mục thay vì xóa.`
-      );
-      return;
-    }
-
-    // Nếu không có products, thực hiện xóa ngay
-    await performDelete(category);
+    // Luôn hiển thị confirmation modal
+    setConfirmModal({
+      show: true,
+      category,
+      action: "delete",
+    });
   };
 
   const performDelete = async (category: CategoryWithCount) => {

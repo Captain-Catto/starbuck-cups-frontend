@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiUrl } from "@/lib/api-config";
 
 export async function POST(request: NextRequest) {
   try {
@@ -6,9 +7,7 @@ export async function POST(request: NextRequest) {
     const { email, password } = body;
 
     // Proxy request to backend
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
-
-    const response = await fetch(`${backendUrl}/api/auth/admin/login`, {
+    const response = await fetch(getApiUrl("auth/admin/login"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

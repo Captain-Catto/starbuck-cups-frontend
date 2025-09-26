@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+import { getApiUrl } from "@/lib/api-config";
 
 // Helper function to forward auth headers
 function getAuthHeaders(request: NextRequest): Record<string, string> {
@@ -31,12 +30,12 @@ export async function GET(
 
     console.log(
       "API Route - Calling backend with URL:",
-      `${BACKEND_URL}/api/admin/customers/${customerId}`
+      getApiUrl(`admin/customers/${customerId}`)
     );
     console.log("API Route - Headers being sent:", authHeaders);
 
     const response = await fetch(
-      `${BACKEND_URL}/api/admin/customers/${customerId}`,
+      getApiUrl(`admin/customers/${customerId}`),
       {
         method: "GET",
         headers: {
@@ -70,7 +69,7 @@ export async function PUT(
     const body = await request.json();
 
     const response = await fetch(
-      `${BACKEND_URL}/api/admin/customers/${customerId}`,
+      getApiUrl(`admin/customers/${customerId}`),
       {
         method: "PUT",
         headers: {
@@ -101,7 +100,7 @@ export async function DELETE(
     const { customerId } = await params;
 
     const response = await fetch(
-      `${BACKEND_URL}/api/admin/customers/${customerId}`,
+      getApiUrl(`admin/customers/${customerId}`),
       {
         method: "DELETE",
         headers: {

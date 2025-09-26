@@ -14,6 +14,7 @@ export interface CustomerAdmin {
   createdAt: string;
   updatedAt: string;
   lastOrderDate?: string;
+  totalSpent?: number;
   createdByAdmin: {
     id: string;
     username: string;

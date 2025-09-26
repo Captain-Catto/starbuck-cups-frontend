@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+import { getApiUrl } from "@/lib/api-config";
 
 // Helper function to forward auth headers
 function getAuthHeaders(request: NextRequest): Record<string, string> {
@@ -23,7 +22,7 @@ export async function GET(request: NextRequest) {
     console.log(`[DEBUG] Fetching orders with params: ${queryString}`);
 
     const response = await fetch(
-      `${BACKEND_URL}/api/admin/orders${queryString ? `?${queryString}` : ""}`,
+      `${getApiUrl("admin/orders")}${queryString ? `?${queryString}` : ""}`,
       {
         method: "GET",
         headers: getAuthHeaders(request),
@@ -55,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`[DEBUG] Creating order with data:`, body);
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/orders`, {
+    const response = await fetch(getApiUrl("admin/orders"), {
       method: "POST",
       headers: getAuthHeaders(request),
       body: JSON.stringify(body),

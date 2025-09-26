@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+import { getApiUrl } from "@/lib/api-config";
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +8,7 @@ export async function GET(
   try {
     const { slug } = await params;
 
-    const response = await fetch(`${BACKEND_URL}/api/products/public/${slug}`, {
+    const response = await fetch(getApiUrl(`products/public/${slug}`), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

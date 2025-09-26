@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+import { getApiUrl } from "@/lib/api-config";
 
 export async function PATCH(
   request: NextRequest,
@@ -11,7 +10,7 @@ export async function PATCH(
     const body = await request.json();
 
     const response = await fetch(
-      `${BACKEND_URL}/api/admin/products/${id}/stock`,
+      getApiUrl(`admin/products/${id}/stock`),
       {
         method: "PATCH",
         headers: {

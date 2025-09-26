@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiUrl } from "@/lib/api-config";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,9 +11,7 @@ export async function GET(request: NextRequest) {
       query.append(key, value);
     });
 
-    const backendUrl = `${
-      process.env.NEXT_PUBLIC_BACKEND_URL
-    }/api/products/public${query.toString() ? "?" + query.toString() : ""}`;
+    const backendUrl = `${getApiUrl("products/public")}${query.toString() ? "?" + query.toString() : ""}`;
 
     const response = await fetch(backendUrl, {
       method: "GET",

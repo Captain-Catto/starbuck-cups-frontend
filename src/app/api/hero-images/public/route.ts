@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+import { getApiUrl } from "@/lib/api-config";
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const url = new URL(`${BACKEND_URL}/api/hero-images/public`);
+    const url = new URL(getApiUrl("hero-images/public"));
 
     // Forward all query parameters
     searchParams.forEach((value, key) => {

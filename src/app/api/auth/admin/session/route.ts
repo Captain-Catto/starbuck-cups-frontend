@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+import { getApiUrl } from "@/lib/api-config";
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +12,7 @@ export async function GET(request: NextRequest) {
       allHeaders: Object.fromEntries(request.headers.entries()),
     });
 
-    const response = await fetch(`${BACKEND_URL}/api/auth/admin/session`, {
+    const response = await fetch(getApiUrl("auth/admin/session"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
