@@ -49,9 +49,15 @@ class SocketManager {
 
       this.isConnecting = true;
 
-      const serverUrl =
-        process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") ||
-        "http://localhost:8080";
+      // Fix for production URL
+      let serverUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:8080";
+
+      // Handle malformed URLs
+      if (serverUrl.includes("https://https") || serverUrl === "https") {
+        serverUrl = "https://api-starbuck-cups.lequangtridat.com";
+      }
+
+      console.log("🔧 Socket serverUrl:", serverUrl, "from env:", process.env.NEXT_PUBLIC_API_URL);
 
       this.socket = io(serverUrl, {
         auth: {
