@@ -49,12 +49,19 @@ class SocketManager {
 
       this.isConnecting = true;
 
-      // Fix for production URL
-      let serverUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:8080";
+      // Extract base URL for Socket.IO connection
+      let serverUrl: string;
 
-      // Handle malformed URLs
-      if (serverUrl.includes("https://https") || serverUrl === "https") {
-        serverUrl = "https://api-starbuck-cups.lequangtridat.com";
+      if (process.env.NEXT_PUBLIC_API_URL) {
+        // Remove /api suffix and ensure proper URL format
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        if (apiUrl.endsWith("/api")) {
+          serverUrl = apiUrl.slice(0, -4); // Remove "/api"
+        } else {
+          serverUrl = apiUrl;
+        }
+      } else {
+        serverUrl = "http://localhost:8080";
       }
 
       console.log("🔧 Socket serverUrl:", serverUrl, "from env:", process.env.NEXT_PUBLIC_API_URL);
