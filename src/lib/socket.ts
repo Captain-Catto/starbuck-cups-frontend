@@ -64,8 +64,6 @@ class SocketManager {
         serverUrl = "http://localhost:8080";
       }
 
-      console.log("🔧 Socket serverUrl:", serverUrl, "from env:", process.env.NEXT_PUBLIC_API_URL);
-
       this.socket = io(serverUrl, {
         auth: {
           token: token,
@@ -76,7 +74,6 @@ class SocketManager {
       });
 
       this.socket.on("connect", () => {
-        console.log("🔌 Socket.IO connected");
         this.isConnecting = false;
 
         // Join admin room
@@ -86,19 +83,16 @@ class SocketManager {
       });
 
       this.socket.on("connect_error", (error) => {
-        console.error("🔌 Socket.IO connection error:", error);
         this.isConnecting = false;
         reject(error);
       });
 
       this.socket.on("disconnect", (reason) => {
-        console.log("🔌 Socket.IO disconnected:", reason);
         this.isConnecting = false;
       });
 
       // Set up error handling
       this.socket.on("connect_error", (error: Error) => {
-        console.error("🔌 Socket.IO connection error:", error);
         this.isConnecting = false;
         reject(error);
       });
@@ -133,14 +127,12 @@ class SocketManager {
 
   public joinAdminRoom(): void {
     if (this.socket?.connected) {
-      console.log("🏠 Emitting admin:join event");
       this.socket.emit("admin:join");
     }
   }
 
   public leaveAdminRoom(): void {
     if (this.socket?.connected) {
-      console.log("🚪 Emitting admin:leave event");
       this.socket.emit("admin:leave");
     }
   }

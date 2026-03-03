@@ -51,7 +51,6 @@ export function UpdateProductForm({
           updateField("images", newImages);
         }
       } catch (error) {
-        console.error("Upload failed:", error);
       } finally {
         setIsUploading(false);
       }
@@ -62,13 +61,6 @@ export function UpdateProductForm({
   // Image reorder handler - similar to ProductModal
   const handleImageReorder = useCallback(
     (newImageUrls: string[]) => {
-      console.log("🔄 [UpdateProductForm] Image reorder triggered");
-      console.log("📊 Old images order:", formData.images);
-      console.log("📊 New images order:", newImageUrls);
-      console.log(
-        "📊 Images changed:",
-        JSON.stringify(formData.images) !== JSON.stringify(newImageUrls)
-      );
       updateField("images", newImageUrls);
     },
     [updateField, formData.images]
@@ -92,13 +84,6 @@ export function UpdateProductForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("🚀 [UpdateProductForm] Form submission started");
-    console.log("📋 Current form data:", {
-      productId,
-      name: formData.name,
-      images: formData.images,
-      imageCount: formData.images.length,
-    });
     await submitForm();
   };
 

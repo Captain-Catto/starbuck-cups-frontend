@@ -7,13 +7,10 @@ function getAuthHeaders(request: NextRequest): Record<string, string> {
 
   // Forward authorization header from client request
   const authHeader = request.headers.get("authorization");
-  console.log("API Route - Received auth header:", authHeader);
 
   if (authHeader) {
     headers["authorization"] = authHeader;
-    console.log("API Route - Forwarding auth header to backend");
   } else {
-    console.warn("API Route - No authorization header received from client");
   }
 
   return headers;
@@ -28,11 +25,6 @@ export async function GET(
     const { customerId } = await params;
     const authHeaders = getAuthHeaders(request);
 
-    console.log(
-      "API Route - Calling backend with URL:",
-      getApiUrl(`admin/customers/${customerId}`)
-    );
-    console.log("API Route - Headers being sent:", authHeaders);
 
     const response = await fetch(
       getApiUrl(`admin/customers/${customerId}`),
@@ -46,12 +38,9 @@ export async function GET(
     );
 
     const data = await response.json();
-    console.log("API Route - Backend response status:", response.status);
-    console.log("API Route - Backend response data:", data);
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Get customer API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch customer" },
       { status: 500 }
@@ -83,7 +72,6 @@ export async function PUT(
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Update customer API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to update customer" },
       { status: 500 }
@@ -113,7 +101,6 @@ export async function DELETE(
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Delete customer API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to delete customer" },
       { status: 500 }

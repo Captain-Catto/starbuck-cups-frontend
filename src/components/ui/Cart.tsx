@@ -12,6 +12,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { getFirstProductImageUrl } from "@/lib/utils/image";
+import Link from "next/link";
 
 interface CartProps {
   className?: string;
@@ -149,7 +150,10 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
   return (
     <div className="flex gap-3 p-3 bg-zinc-800 rounded-lg">
       {/* Product Image */}
-      <div className="w-16 h-16 bg-zinc-700 rounded-lg overflow-hidden flex-shrink-0">
+      <Link
+        href={`/products/${product.slug}`}
+        className="w-16 h-16 bg-zinc-700 rounded-lg overflow-hidden flex-shrink-0 hover:opacity-80 transition-opacity"
+      >
         {getFirstProductImageUrl(product.productImages) ? (
           <Image
             src={getFirstProductImageUrl(product.productImages)}
@@ -165,13 +169,16 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
             </span>
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Product Info */}
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-white text-sm line-clamp-2 mb-1">
+        <Link
+          href={`/products/${product.slug}`}
+          className="font-medium text-white text-sm line-clamp-2 mb-1 hover:text-zinc-300 transition-colors block"
+        >
           {product.name}
-        </h4>
+        </Link>
 
         <div className="flex items-center gap-2 mb-2">
           <div className="flex items-center gap-1">

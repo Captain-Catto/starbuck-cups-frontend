@@ -45,29 +45,15 @@ export default function ProductInfo() {
 
 
   // Debug logs
-  console.log("=== ProductInfo Debug ===");
-  console.log("Params:", params);
-  console.log("Slug:", params.slug);
-  console.log("Product:", product?.name || "null");
-  console.log("Loading:", loading);
-  console.log("Error:", error);
-  console.log("Has attempted fetch:", hasAttemptedFetch);
 
   // Fetch product data
   useEffect(() => {
-    console.log("useEffect triggered!");
 
     const slug = params.slug;
     if (typeof slug === "string" && !hasAttemptedFetch) {
-      console.log("Fetching product for slug:", slug);
       setHasAttemptedFetch(true);
       dispatch(fetchProductBySlug(slug));
     } else {
-      console.log(
-        "Invalid slug or already attempted:",
-        slug,
-        hasAttemptedFetch
-      );
     }
   }, [params.slug, dispatch, hasAttemptedFetch]);
 
@@ -92,7 +78,6 @@ export default function ProductInfo() {
 
   // Show error page if product not found AFTER we tried to fetch
   if (error && !loading && hasAttemptedFetch) {
-    console.log("Product not found after fetch attempt, redirecting to 404");
     notFound();
   }
 
@@ -135,23 +120,19 @@ export default function ProductInfo() {
   };
 
   const handleColorClick = (colorSlug: string) => {
-    console.log("Color clicked:", colorSlug);
     if (colorSlug) {
       router.push(`/products?color=${colorSlug}`);
     } else {
-      console.error("Color slug is undefined or empty");
     }
   };
 
   // Only redirect to 404 if we've attempted fetch and got error, or if no product after successful fetch
   if (!product && !loading && hasAttemptedFetch && !error) {
-    console.log("No product found after successful fetch, redirecting to 404");
     return notFound();
   }
 
   // Show skeleton loading if we haven't attempted fetch yet or if loading
   if (!hasAttemptedFetch || loading) {
-    console.log("Showing skeleton loading state");
     return (
       <SkeletonTheme baseColor="#18181b" highlightColor="#27272a">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -244,7 +225,6 @@ export default function ProductInfo() {
   }
 
   if (!product) {
-    console.log("No product to render");
     return (
       <div className="text-center text-white py-8">
         <p>Không tìm thấy sản phẩm</p>
@@ -252,7 +232,6 @@ export default function ProductInfo() {
     );
   }
 
-  console.log("Rendering product:", product.name);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -279,7 +258,6 @@ export default function ProductInfo() {
             </label>
             <div className="flex flex-wrap gap-2">
               {product.productColors?.map((pc: ProductColor) => {
-                console.log("Color object:", pc.color);
                 return (
                   <button
                     key={pc.color.id}

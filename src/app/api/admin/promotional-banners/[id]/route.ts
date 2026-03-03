@@ -48,7 +48,6 @@ export async function GET(
 
     return NextResponse.json(data);
   } catch (error: unknown) {
-    console.error("Error fetching promotional banner:", error);
     return NextResponse.json(
       {
         success: false,
@@ -97,7 +96,6 @@ export async function PUT(
 
     return NextResponse.json(data);
   } catch (error: unknown) {
-    console.error("Error updating promotional banner:", error);
     return NextResponse.json(
       {
         success: false,
@@ -143,7 +141,6 @@ export async function DELETE(
 
     return NextResponse.json(data);
   } catch (error: unknown) {
-    console.error("Error deleting promotional banner:", error);
     return NextResponse.json(
       {
         success: false,

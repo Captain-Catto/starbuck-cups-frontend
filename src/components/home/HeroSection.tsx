@@ -81,12 +81,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 }) => {
   const [showSwiper, setShowSwiper] = useState(false);
 
-  console.log("🎯 HeroSection props:", {
-    loading,
-    heroImagesCount: heroImages.length,
-    heroImages,
-    promotionalBanner,
-  });
 
   // Delay Swiper load để tối ưu LCP - load static content trước
   useEffect(() => {
@@ -140,7 +134,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   };
 
   const bannerData = promotionalBanner || defaultBanner;
-  console.log("🏷️ Banner Data:", bannerData);
 
   return (
     <section className="py-4 md:py-8">

@@ -52,7 +52,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     }
   } catch (error) {
-    console.error("Error fetching products for sitemap:", error);
     // Fallback to empty array if API fails
   }
 

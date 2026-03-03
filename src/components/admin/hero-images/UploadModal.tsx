@@ -97,7 +97,6 @@ export function UploadModal({ onClose, onSuccess }: UploadModalProps) {
         toast.error(data.message || "Không thể thêm hero image");
       }
     } catch (error) {
-      console.error("Error uploading hero image:", error);
       toast.error("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       setUploading(false);

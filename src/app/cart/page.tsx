@@ -144,7 +144,6 @@ export default function CartPage() {
         throw new Error(errorMessage);
       }
     } catch (error) {
-      console.error("Error creating consultation:", error);
       const errorMessage =
         error instanceof Error
           ? error.message

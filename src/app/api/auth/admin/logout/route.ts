@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
 
     return nextResponse;
   } catch (error) {
-    console.error("Admin logout error:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 }

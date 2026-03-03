@@ -103,7 +103,6 @@ export function useProducts(): UseProductsReturn {
         // Fetch categories
         const categoriesRes = await fetch("/api/categories");
         const categoriesData = await categoriesRes.json();
-        console.log("categoriesData", categoriesData);
         if (
           categoriesData.success &&
           categoriesData.data?.items &&
@@ -115,7 +114,6 @@ export function useProducts(): UseProductsReturn {
         // Fetch colors
         const colorsRes = await fetch("/api/colors");
         const colorsData = await colorsRes.json();
-        console.log("colorsData", colorsData);
         if (
           colorsData.success &&
           colorsData.data?.items &&
@@ -127,7 +125,6 @@ export function useProducts(): UseProductsReturn {
         // Fetch capacities
         const capacitiesRes = await fetch("/api/capacities");
         const capacitiesData = await capacitiesRes.json();
-        console.log("capacitiesData", capacitiesData);
         if (
           capacitiesData.success &&
           capacitiesData.data?.items &&
@@ -136,7 +133,6 @@ export function useProducts(): UseProductsReturn {
           setCapacities(capacitiesData.data.items);
         }
       } catch (error) {
-        console.error("Error fetching filter options:", error);
       }
     };
 
@@ -185,7 +181,6 @@ export function useProducts(): UseProductsReturn {
 
         const response = await fetch(`/api/products?${params.toString()}`);
         const data = await response.json();
-        console.log("productsData", data);
 
         if (data.success) {
           // Normalize products data to handle both old and new image structure
@@ -203,11 +198,9 @@ export function useProducts(): UseProductsReturn {
           setTotalItems(data.data?.pagination?.total_items || 0);
           setPaginationData(data.data?.pagination || null);
         } else {
-          console.error("Error fetching products:", data.message);
           setProducts([]);
         }
       } catch (error) {
-        console.error("Error fetching products:", error);
         setProducts([]);
       } finally {
         setLoading(false);

@@ -132,7 +132,7 @@ export default function ProductsGrid({
         params.append("page", currentPage.toString());
         params.append("limit", gridConfig.productsPerPage.toString());
 
-        const response = await fetch(`/api/products?${params.toString()}`);
+        const response = await fetch(`/api/products/public?${params.toString()}`);
         const data = await response.json();
 
         if (data.success && data.data?.items) {
@@ -147,7 +147,6 @@ export default function ProductsGrid({
           setPaginationData(null);
         }
       } catch (error) {
-        console.error("Error fetching products:", error);
         setProducts([]);
         setPaginationData(null);
       } finally {

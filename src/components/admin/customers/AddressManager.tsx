@@ -83,7 +83,6 @@ export function AddressManager({ customerId }: AddressManagerProps) {
         setAddresses(result.data.addresses);
       }
     } catch (error) {
-      console.error("Error fetching addresses:", error);
       setAddresses([]);
     } finally {
       setLoading(false);
@@ -144,14 +143,9 @@ export function AddressManager({ customerId }: AddressManagerProps) {
 
   const handleSave = async () => {
     if (!validateForm() || !token) {
-      console.log("❌ Validation failed or no token:", {
-        validationPassed: validateForm(),
-        hasToken: !!token,
-      });
       return;
     }
 
-    console.log("🔍 Sending address data:", formData);
 
     // Map frontend format to backend format
     const backendData = {
@@ -163,7 +157,6 @@ export function AddressManager({ customerId }: AddressManagerProps) {
       isDefault: formData.isDefault,
     };
 
-    console.log("🔍 Mapped backend data:", backendData);
 
     try {
       if (isAdding) {
@@ -180,9 +173,7 @@ export function AddressManager({ customerId }: AddressManagerProps) {
           }
         );
 
-        console.log("📡 Response status:", response.status);
         const result = await response.json();
-        console.log("📡 Response data:", result);
 
         if (!response.ok) {
           throw new Error("Failed to create address");
@@ -231,7 +222,6 @@ export function AddressManager({ customerId }: AddressManagerProps) {
         isDefault: false,
       });
     } catch (error) {
-      console.error("Error saving address:", error);
       toast.error("Có lỗi xảy ra khi lưu địa chỉ");
     }
   };
@@ -284,7 +274,6 @@ export function AddressManager({ customerId }: AddressManagerProps) {
         toast.success("Đã xóa địa chỉ thành công");
       }
     } catch (error) {
-      console.error("Error deleting address:", error);
       toast.error("Có lỗi xảy ra khi xóa địa chỉ");
     }
   };
@@ -333,17 +322,14 @@ export function AddressManager({ customerId }: AddressManagerProps) {
       if (result.success) {
         // Success - the optimistic update was correct, no need to fetch again
         toast.success("Đã đặt làm địa chỉ mặc định thành công");
-        console.log("✅ Address set as default successfully");
       } else {
         // API returned success: false, rollback
         setAddresses(originalAddresses);
-        console.error("API error:", result.message);
         toast.error("Có lỗi xảy ra khi đặt địa chỉ mặc định");
       }
     } catch (error) {
       // Network error, rollback to original state
       setAddresses(originalAddresses);
-      console.error("Error setting default address:", error);
       toast.error("Có lỗi xảy ra khi đặt địa chỉ mặc định");
     } finally {
       setActionLoading(null);

@@ -179,21 +179,15 @@ export function useProducts(): UseProductsReturn {
           })
         );
 
-        console.log(
-          `[DEBUG] loadProducts - first few products:`,
-          mappedProducts.slice(0, 3)
-        );
 
         setProducts(mappedProducts);
         if (data.data?.pagination) {
           setPagination(data.data.pagination);
         }
       } else {
-        console.error("API Error:", data);
         toast.error(data.message || "Không thể tải danh sách sản phẩm");
       }
     } catch (error) {
-      console.error("Error loading products:", error);
       toast.error("Có lỗi xảy ra khi tải sản phẩm");
     } finally {
       setLoading(false);
@@ -235,7 +229,6 @@ export function useProducts(): UseProductsReturn {
         setCapacities(caps);
       }
     } catch (error) {
-      console.error("Error loading filter options:", error);
       // Set empty arrays as fallback
       setCategories([]);
       setColors([]);
@@ -291,7 +284,6 @@ export function useProducts(): UseProductsReturn {
       setSelectedProducts([]);
       loadProducts();
     } catch (error) {
-      console.error(`Bulk ${action} error:`, error);
       toast.error(
         `Lỗi khi ${
           action === "delete"
@@ -340,7 +332,6 @@ export function useProducts(): UseProductsReturn {
   ) => {
     // Prevent double clicks by checking if already loading
     if (actionLoading) {
-      console.log(`[DEBUG] Action already in progress: ${actionLoading}`);
       return;
     }
 
@@ -370,15 +361,9 @@ export function useProducts(): UseProductsReturn {
         );
         setProducts(optimisticProducts);
 
-        console.log(
-          `[DEBUG] Optimistic update for ${productId}: action=${action}, setting isActive=${
-            action === "activate"
-          }`
-        );
 
         const result = await apiService.toggleProductStatus(productId);
 
-        console.log(`[DEBUG] API response:`, result);
 
         if (result.success) {
           const actionText =
@@ -387,10 +372,6 @@ export function useProducts(): UseProductsReturn {
 
           // Update with actual data from server
           if (result.data) {
-            console.log(
-              `[DEBUG] Server response isActive:`,
-              result.data.isActive
-            );
             const serverUpdatedProducts = optimisticProducts.map((product) =>
               product.id === productId
                 ? { ...product, isActive: result.data.isActive }
@@ -406,11 +387,9 @@ export function useProducts(): UseProductsReturn {
       } catch (toggleError) {
         // Rollback on network error
         setProducts(originalProducts);
-        console.error("Product action error:", toggleError);
         toast.error("Có lỗi xảy ra khi thực hiện hành động");
       }
     } catch (error) {
-      console.error("General error:", error);
       toast.error("Có lỗi xảy ra");
     } finally {
       setActionLoading(null);
@@ -442,9 +421,6 @@ export function useProducts(): UseProductsReturn {
     type: "active" | "inactive" | "low-stock" | "out-of-stock";
     label: string;
   } => {
-    console.log(
-      `[DEBUG] getProductStatus for ${product.id}: isActive=${product.isActive}, stock=${product.stock}`
-    );
 
     if (!product.isActive) {
       return { type: "inactive", label: "Không hoạt động" };

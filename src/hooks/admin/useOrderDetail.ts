@@ -78,7 +78,6 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
       });
 
       const data = await response.json();
-      console.log("Order detail response:", data);
 
       if (data.success) {
         setOrder(data.data);
@@ -86,7 +85,6 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
         setError(data.message || "Không thể tải thông tin đơn hàng");
       }
     } catch (error) {
-      console.error("Error fetching order detail:", error);
       setError("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       setLoading(false);
@@ -114,7 +112,6 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
         });
 
         const data = await response.json();
-        console.log("Update status response:", data);
 
         if (data.success) {
           setOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
@@ -126,7 +123,6 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
           return false;
         }
       } catch (error) {
-        console.error("Error updating order status:", error);
         setError("Lỗi kết nối. Vui lòng thử lại.");
         return false;
       } finally {

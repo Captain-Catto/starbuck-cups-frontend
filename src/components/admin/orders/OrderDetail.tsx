@@ -240,7 +240,6 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
         });
 
         const data = await response.json();
-        console.log("Order detail API response:", data);
 
         if (data.success) {
           setOrder(data.data);
@@ -262,11 +261,9 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
               ) || [],
           });
         } else {
-          console.error("Failed to fetch order:", data.message);
           setOrder(null);
         }
       } catch (error) {
-        console.error("Error fetching order:", error);
         setOrder(null);
       } finally {
         setLoading(false);
@@ -306,10 +303,8 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
         } else {
           toast.error(data.message || "Có lỗi xảy ra khi cập nhật đơn hàng");
         }
-        console.log("lỗi", data);
       }
     } catch (error) {
-      console.error("Error updating order:", error);
       toast.error("Có lỗi xảy ra khi cập nhật đơn hàng");
     } finally {
       setSaving(false);
@@ -404,7 +399,6 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
       });
 
       const data = await response.json();
-      console.log("Products fetch response:", data);
       if (data.success && data.data && data.data.items) {
         setProducts(
           data.data.items.filter(
@@ -413,8 +407,11 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
         );
       }
     } catch (error) {
-      console.error("Error fetching products:", error);
-      toast.error("Có lỗi khi tải danh sách sản phẩm");
+      toast.error(
+        `Có lỗi khi tải danh sách sản phẩm: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
       setLoadingProducts(false);
     }

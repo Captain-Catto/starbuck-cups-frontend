@@ -57,7 +57,6 @@ export function NotificationDropdown({
         // Update server
         await apiWithAuth.markNotificationAsRead(notification.id);
       } catch (error) {
-        console.error("Failed to mark notification as read:", error);
       }
     }
 
@@ -78,9 +77,7 @@ export function NotificationDropdown({
       dispatch(markAllAsRead());
       // Update server
       await apiWithAuth.markAllNotificationsAsRead();
-      console.log("✅ Successfully marked all notifications as read");
     } catch (error) {
-      console.error("❌ Failed to mark all notifications as read:", error);
     }
   };
 

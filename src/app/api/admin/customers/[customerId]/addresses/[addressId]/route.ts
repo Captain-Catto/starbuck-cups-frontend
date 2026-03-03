@@ -38,7 +38,6 @@ export async function PUT(
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Update address API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to update address" },
       { status: 500 }
@@ -67,7 +66,6 @@ export async function DELETE(
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Delete address API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to delete address" },
       { status: 500 }

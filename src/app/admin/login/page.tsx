@@ -38,7 +38,6 @@ export default function AdminLoginPage() {
         router.push("/admin/dashboard");
       }
     } catch (error) {
-      console.error("Login failed:", error);
       toast.error("Đăng nhập thất bại. Vui lòng thử lại.");
     }
   };

@@ -99,7 +99,6 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
         toast.error(data.message || "Không thể cập nhật hero image");
       }
     } catch (error) {
-      console.error("Error updating hero image:", error);
       toast.error("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       setUpdating(false);

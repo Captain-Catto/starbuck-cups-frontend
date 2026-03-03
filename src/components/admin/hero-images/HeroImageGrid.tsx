@@ -81,16 +81,6 @@ export function HeroImageGrid({
       })
     );
 
-    console.log("🔄 Drag reorder:", {
-      oldIndex,
-      newIndex,
-      beforeOrder: localHeroImages.map(
-        (img) => `${img.id.slice(-4)}:${img.order}`
-      ),
-      afterOrder: reorderedItems.map(
-        (img) => `${img.id.slice(-4)}:${img.order}`
-      ),
-    });
 
     // Force React to re-render by clearing and setting
     setLocalHeroImages([]);

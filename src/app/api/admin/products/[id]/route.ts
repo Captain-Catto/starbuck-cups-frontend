@@ -32,7 +32,6 @@ export async function GET(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Get product API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch product" },
       { status: 500 }
@@ -66,7 +65,6 @@ export async function PUT(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Update product API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to update product" },
       { status: 500 }
@@ -98,7 +96,6 @@ export async function DELETE(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Delete product API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to delete product" },
       { status: 500 }

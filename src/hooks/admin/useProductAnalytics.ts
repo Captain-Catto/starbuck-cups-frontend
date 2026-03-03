@@ -55,7 +55,6 @@ export const useProductAnalytics = () => {
         throw new Error(data.message || "Failed to fetch analytics summary");
       }
     } catch (err) {
-      console.error("Analytics summary fetch error:", err);
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);
@@ -109,7 +108,6 @@ export const useTopClickedProducts = (limit: number = 10, page: number = 1) => {
         throw new Error(data.message || "Failed to fetch top clicked products");
       }
     } catch (err) {
-      console.error("Top clicked products fetch error:", err);
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);
@@ -165,7 +163,6 @@ export const useTopConversionProducts = (limit: number = 10, page: number = 1) =
         );
       }
     } catch (err) {
-      console.error("Top conversion products fetch error:", err);
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);

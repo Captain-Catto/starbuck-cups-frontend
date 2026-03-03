@@ -21,7 +21,6 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    console.log(`[DEBUG] Toggle color status for ID: ${id}`);
 
     const response = await fetch(
       getApiUrl(`admin/colors/${id}/toggle-status`),
@@ -36,11 +35,9 @@ export async function PATCH(
 
     const data = await response.json();
 
-    console.log(`[DEBUG] Backend response:`, data);
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Colors toggle status error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to toggle color status" },
       { status: 500 }

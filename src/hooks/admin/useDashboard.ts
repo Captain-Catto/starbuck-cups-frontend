@@ -62,12 +62,6 @@ export function useDashboard(): UseDashboardReturn {
           .catch(() => ({ count: 0 })),
       ]);
 
-      console.log("Fetched dashboard data:", {
-        statsResponse,
-        ordersResponse,
-        revenueResponse,
-        consultationsResponse,
-      });
 
       if (statsResponse) setDashboardStats(statsResponse);
       setRecentOrders(ordersResponse);

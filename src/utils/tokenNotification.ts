@@ -9,7 +9,6 @@ export class TokenRefreshNotification {
 
   static showRefreshSuccess() {
     // Silent refresh - không hiển thị thông báo
-    console.log("Token refreshed successfully (silent)");
     this.hasShownRefreshNotification = true;
 
     // Clear existing timer trước khi tạo mới
@@ -34,7 +33,6 @@ export class TokenRefreshNotification {
   static showRefreshErrorWithRedirect(redirectUrl: string = "/admin/login") {
     // Prevent multiple concurrent redirects
     if (this.isRedirecting) {
-      console.log("Redirect already in progress, skipping...");
       return;
     }
 
@@ -61,7 +59,6 @@ export class TokenRefreshNotification {
   static showSessionExpiredWithRedirect(redirectUrl: string = "/admin/login") {
     // Prevent multiple concurrent redirects
     if (this.isRedirecting) {
-      console.log("Redirect already in progress, skipping...");
       return;
     }
 
@@ -87,7 +84,6 @@ export class TokenRefreshNotification {
 
   static showTokenExpiring() {
     // Silent token expiration handling - không hiển thị thông báo
-    console.log("Token expiring, refreshing silently...");
   }
 
   // Method để cleanup tất cả timers - gọi khi logout hoặc unmount
@@ -105,8 +101,6 @@ export class TokenRefreshNotification {
     // Reset tất cả flags
     this.hasShownRefreshNotification = false;
     this.isRedirecting = false;
-
-    console.log("TokenRefreshNotification: All timers cleared");
   }
 
   // Method để check timer status (useful for debugging)

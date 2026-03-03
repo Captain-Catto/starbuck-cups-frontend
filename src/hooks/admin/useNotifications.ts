@@ -62,19 +62,9 @@ export function useNotifications(): UseNotificationsReturn {
       setLoading(true);
       const response = await apiWithAuth.getNotifications({ limit: 100 });
       if (response.success && response.data) {
-        console.log("📋 Loaded notifications data:", response.data);
-        console.log(
-          "📋 First notification read status:",
-          response.data[0]?.read
-        );
-        console.log(
-          "📋 Unread notifications:",
-          response.data.filter((n) => n.read !== true).length
-        );
         dispatch(setNotifications(response.data));
       }
     } catch (error) {
-      console.error("Failed to load notifications:", error);
     } finally {
       setLoading(false);
     }
@@ -140,7 +130,6 @@ export function useNotifications(): UseNotificationsReturn {
         }
       }
     } catch (error) {
-      console.error("Failed to handle notification click:", error);
     }
   };
 
@@ -149,7 +138,6 @@ export function useNotifications(): UseNotificationsReturn {
       await apiWithAuth.markAllNotificationsAsRead();
       dispatch(markAllAsRead());
     } catch (error) {
-      console.error("Failed to mark all as read:", error);
     }
   };
 
@@ -158,7 +146,6 @@ export function useNotifications(): UseNotificationsReturn {
       // Chỉ clear ở local store vì API không có clearAllNotifications
       dispatch(clearNotifications());
     } catch (error) {
-      console.error("Failed to clear all notifications:", error);
     }
   };
 

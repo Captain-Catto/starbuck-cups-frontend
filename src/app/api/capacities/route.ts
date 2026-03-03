@@ -20,7 +20,6 @@ export async function GET() {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching capacities:", error);
     return NextResponse.json(
       { error: "Failed to fetch capacities" },
       { status: 500 }

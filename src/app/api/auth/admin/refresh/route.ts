@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
 
     return nextResponse;
   } catch (error) {
-    console.error("Admin auth refresh error:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

@@ -102,14 +102,11 @@ export function useColors(): UseColorsReturn {
       const data = await response.json();
 
       if (data.success) {
-        console.log("Colors data from API:", data.data?.items);
         setColors(data.data?.items || []);
       } else {
-        console.error("API Error:", data);
         toast.error(data.message || "Không thể tải danh sách màu sắc");
       }
     } catch (error) {
-      console.error("Error fetching colors:", error);
       toast.error("Có lỗi xảy ra khi tải màu sắc");
     } finally {
       setLoading(false);
@@ -156,8 +153,6 @@ export function useColors(): UseColorsReturn {
       });
 
       const data = await response.json();
-      console.log("Response status:", response.status);
-      console.log("Response data:", data);
 
       if (data.success) {
         toast.success(
@@ -185,7 +180,6 @@ export function useColors(): UseColorsReturn {
         }
       }
     } catch (error) {
-      console.error("Error saving color:", error);
       toast.error("Có lỗi xảy ra khi lưu màu");
     } finally {
       setActionLoading(null);
@@ -212,7 +206,6 @@ export function useColors(): UseColorsReturn {
   };
 
   const performDelete = async (color: ColorWithCount) => {
-    console.log("performDelete called for color:", color.id, color.name);
     setActionLoading(`delete-${color.id}`);
     try {
       const response = await fetch(`/api/admin/colors/${color.id}`, {
@@ -220,9 +213,7 @@ export function useColors(): UseColorsReturn {
         headers: getAuthHeaders(),
       });
 
-      console.log("Delete response status:", response.status);
       const data = await response.json();
-      console.log("Delete response data:", data);
 
       if (data.success) {
         toast.success(`Đã xóa màu "${color.name}" thành công`);
@@ -231,7 +222,6 @@ export function useColors(): UseColorsReturn {
         toast.error(data.message || "Có lỗi xảy ra khi xóa");
       }
     } catch (error) {
-      console.error("Error deleting color:", error);
       toast.error("Có lỗi xảy ra khi xóa màu");
     } finally {
       setActionLoading(null);
@@ -288,7 +278,6 @@ export function useColors(): UseColorsReturn {
     } catch (error) {
       // Rollback nếu có lỗi network
       setColors(colors);
-      console.error("Error toggling color status:", error);
       toast.error("Có lỗi xảy ra khi thay đổi trạng thái màu");
     } finally {
       setActionLoading(null);

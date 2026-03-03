@@ -60,22 +60,15 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
 
   // Debug auth state
   useEffect(() => {
-    console.log("CustomerDetail - Auth state:", {
-      token: token ? `${token.substring(0, 20)}...` : "null",
-      isAuthenticated,
-      sessionChecked,
-    });
   }, [token, isAuthenticated, sessionChecked]);
 
   useEffect(() => {
     // Only fetch when session has been checked and we have a token
     if (!sessionChecked) {
-      console.log("CustomerDetail - Session not yet checked, waiting...");
       return;
     }
 
     if (!token) {
-      console.log("CustomerDetail - No token available after session check");
       setError("Authentication required");
       setLoading(false);
       return;
@@ -87,7 +80,6 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
         setError(null);
 
         // Debug: Check if token exists
-        console.log("CustomerDetail - Redux token:", token);
 
         // Include authorization header with Redux token
         const headers: HeadersInit = {
@@ -96,9 +88,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
 
         if (token) {
           headers.Authorization = `Bearer ${token}`;
-          console.log("CustomerDetail - Sending headers:", headers);
         } else {
-          console.warn("CustomerDetail - No token found in Redux store");
         }
 
         const response = await fetch(`/api/admin/customers/${customerId}`, {
@@ -106,8 +96,6 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
         });
         const data = await response.json();
 
-        console.log("CustomerDetail - Response status:", response.status);
-        console.log("CustomerDetail - Response data:", data);
 
         if (!response.ok || !data.success) {
           throw new Error(data.message || "Failed to fetch customer");
@@ -115,7 +103,6 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
 
         setCustomer(data.data);
       } catch (error) {
-        console.error("Error fetching customer:", error);
         setError(
           error instanceof Error ? error.message : "Failed to fetch customer"
         );

@@ -57,7 +57,6 @@ export function usePendingConsultations() {
         );
       }
     } catch (err) {
-      console.error("Error fetching pending consultations count:", err);
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);

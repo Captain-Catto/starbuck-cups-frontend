@@ -34,7 +34,6 @@ export function decodeJWT(token: string): JWTPayload | null {
 
     return data;
   } catch (error) {
-    console.error("Error decoding JWT:", error);
     return null;
   }
 }

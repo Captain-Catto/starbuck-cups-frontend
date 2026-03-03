@@ -118,7 +118,6 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
       });
 
       const data = await response.json();
-      console.log("Orders response:", data);
 
       if (data.success) {
         // API response structure: {success: true, data: {items: [...], pagination: {...}}}
@@ -132,7 +131,6 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
         setError(data.message || "Không thể tải danh sách đơn hàng");
       }
     } catch (error) {
-      console.error("Error fetching orders:", error);
       setError("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       // Đảm bảo skeleton hiển thị ít nhất 500ms để UX tốt hơn

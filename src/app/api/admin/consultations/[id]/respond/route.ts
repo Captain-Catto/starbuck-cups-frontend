@@ -38,7 +38,6 @@ export async function POST(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Respond to consultation API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to respond to consultation" },
       { status: 500 }

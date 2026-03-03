@@ -31,7 +31,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Reorder hero images API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to reorder hero images" },
       { status: 500 }

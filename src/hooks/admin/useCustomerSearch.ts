@@ -19,12 +19,10 @@ export function useCustomerSearch() {
   useEffect(() => {
     // Only fetch when session has been checked and we have a token
     if (!sessionChecked) {
-      console.log("useCustomerSearch - Session not yet checked, waiting...");
       return;
     }
 
     if (!token) {
-      console.log("useCustomerSearch - No token available after session check");
       setCustomers([]);
       setLoadingCustomers(false);
       return;
@@ -41,7 +39,6 @@ export function useCustomerSearch() {
 
         if (token) {
           headers.Authorization = `Bearer ${token}`;
-          console.log("useCustomerSearch - Sending request with auth token");
         }
 
         const response = await fetch(
@@ -50,18 +47,14 @@ export function useCustomerSearch() {
         );
         const data = await response.json();
 
-        console.log("useCustomerSearch - Response status:", response.status);
-        console.log("useCustomerSearch - Response data:", data);
 
         if (data.success && data.data && data.data.items) {
           setCustomers(data.data.items);
         } else {
-          console.error("Failed to fetch customers:", data.message);
           // Fallback to empty array
           setCustomers([]);
         }
       } catch (error) {
-        console.error("Error fetching customers:", error);
         setCustomers([]);
       } finally {
         setLoadingCustomers(false);
@@ -102,11 +95,9 @@ export function useCustomerSearch() {
       if (data.success && data.data && data.data.items) {
         setSearchResults(data.data.items);
       } else {
-        console.error("Failed to search customers:", data.message);
         setSearchResults([]);
       }
     } catch (error) {
-      console.error("Error searching customers:", error);
       setSearchResults([]);
     } finally {
       setSearchingCustomers(false);

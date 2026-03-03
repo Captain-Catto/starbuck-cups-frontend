@@ -91,14 +91,12 @@ export function useAdminCustomers() {
         }
 
         const data = await response.json();
-        console.log("Fetched customers:", data);
         if (data.success) {
           setCustomers(data.data.items || []);
         } else {
           throw new Error(data.message || "Failed to fetch customers");
         }
       } catch (error) {
-        console.error("Error fetching customers:", error);
         toast.error("Lỗi khi tải danh sách khách hàng");
       } finally {
         setLoading(false);
@@ -136,7 +134,6 @@ export function useAdminCustomers() {
         throw new Error(data.message || "Failed to delete customer");
       }
     } catch (error) {
-      console.error("Error deleting customer:", error);
       toast.error("Lỗi khi xóa khách hàng");
     } finally {
       setActionLoading(null);

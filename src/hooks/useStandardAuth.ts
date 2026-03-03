@@ -25,7 +25,6 @@ export function useStandardAuth() {
 
     try {
       initializationRef.current = true;
-      console.log("Initializing authentication state...");
 
       const storedToken = localStorage.getItem("admin_token");
       const hasRefreshCookie = document.cookie.includes("admin_refresh_token");
@@ -34,14 +33,12 @@ export function useStandardAuth() {
         await dispatch(checkAuthStatus()).unwrap();
       } else {
         // No tokens found - mark session as checked but not authenticated
-        console.log("No tokens found, marking session as checked");
         // Manually set sessionChecked to true by dispatching a rejected action
         dispatch(checkAuthStatus()).catch(() => {
           // Expected to fail when no tokens, this will set sessionChecked = true
         });
       }
     } catch (error) {
-      console.error("Auth initialization failed:", error);
     } finally {
       initializationRef.current = false;
     }
@@ -64,7 +61,6 @@ export function useStandardAuth() {
 
       // If we think we're authenticated but have no tokens, re-check auth
       if (isAuthenticated && !currentToken && !hasRefreshCookie) {
-        console.log("Tokens removed, re-checking auth status...");
         dispatch(checkAuthStatus());
       }
     }, 1000); // Check every second
@@ -82,9 +78,7 @@ export function useStandardAuth() {
       // Clear all local storage
       localStorage.removeItem("admin_token");
       // Cookie will be cleared by the backend
-      console.log("Logout completed successfully");
     } catch (error) {
-      console.error("Logout failed:", error);
       // Force clear local storage even if server call fails
       localStorage.removeItem("admin_token");
       TokenRefreshNotification.cleanup();
@@ -96,7 +90,6 @@ export function useStandardAuth() {
     try {
       await checkAndRefreshToken();
     } catch (error) {
-      console.error("Manual refresh failed:", error);
       throw error;
     }
   }, [checkAndRefreshToken]);
@@ -138,7 +131,6 @@ export function useRequireAuth(redirectUrl: string = "/admin/login") {
 
   useEffect(() => {
     if (auth.needsAuthentication) {
-      console.log("Authentication required, redirecting...");
       window.location.href = redirectUrl;
     }
   }, [auth.needsAuthentication, redirectUrl]);
@@ -157,7 +149,6 @@ export function useAdminAuth(redirectUrl: string = "/admin/login") {
 
   useEffect(() => {
     if (auth.isReady && auth.isAuthenticated && !hasAdminRole) {
-      console.log("Admin role required, redirecting...");
       window.location.href = redirectUrl;
     }
   }, [auth.isReady, auth.isAuthenticated, hasAdminRole, redirectUrl]);

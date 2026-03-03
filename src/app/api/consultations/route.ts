@@ -65,7 +65,6 @@ export async function POST(request: NextRequest) {
       error: null,
     });
   } catch (error) {
-    console.error("Consultation API Error:", error);
 
     return NextResponse.json(
       {

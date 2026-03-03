@@ -34,7 +34,6 @@ export default function ProductGrid({
           setProducts([]);
         }
       } catch (error) {
-        console.error("Error fetching products:", error);
         setProducts([]);
       } finally {
         setLoading(false);

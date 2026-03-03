@@ -36,7 +36,6 @@ export function CustomerList({
     setConfirmModal,
   } = useAdminCustomers();
 
-  console.log("CustomerList render - customers:", customers);
 
   // Filter and sort customers based on all criteria
   const filteredAndSortedCustomers = useMemo(() => {

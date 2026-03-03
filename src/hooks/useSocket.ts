@@ -26,20 +26,16 @@ export const useSocket = () => {
 
   const loadInitialNotifications = useCallback(async () => {
     if (hasLoadedNotifications.current) {
-      console.log("⏭️ Notifications already loaded, skipping...");
       return;
     }
 
     try {
-      console.log("🔄 Loading initial notifications...");
       hasLoadedNotifications.current = true;
       const response = await apiWithAuth.getNotifications({ limit: 20 });
       if (response.success && response.data) {
-        console.log("✅ Loaded notifications:", response.data.length);
         dispatch(setNotifications(response.data));
       }
     } catch (error) {
-      console.error("❌ Failed to load initial notifications:", error);
       hasLoadedNotifications.current = false;
     }
   }, [dispatch]);
@@ -56,15 +52,12 @@ export const useSocket = () => {
       const socket = await socketManager.connect(token);
       dispatch(setConnected(true));
 
-      console.log("🏠 Joining admin room...");
       socketManager.joinAdminRoom();
 
       socket.on("admin:joined", () => {
-        console.log("✅ Successfully joined admin room!");
       });
 
       socket.on("error", (error: string) => {
-        console.error("❌ Socket error:", error);
         toast.error("Lỗi quyền", {
           description: "Không có quyền nhận thông báo admin",
           duration: 4000,
@@ -73,7 +66,6 @@ export const useSocket = () => {
 
       // Listen for unified notification event
       socket.on("notification:new", (notification: NotificationPayload) => {
-        console.log("📡 Socket event: notification:new", notification);
         dispatch(addNotification(notification));
 
         // Show unified toast notification - all with default theme (white/black)
@@ -163,22 +155,14 @@ export const useSocket = () => {
       });
 
       socket.on("notification:count_update", (count: number) => {
-        console.log(
-          "📡 Socket event: notification:count_update with count:",
-          count
-        );
         dispatch(updateUnreadCount(count));
       });
 
       // Debug: Log all socket events
       socket.onAny((eventName, ...args) => {
-        console.log(`🔍 Socket event received: ${eventName}`, args);
       });
 
-      console.log("✅ Socket connected and event listeners set up");
-
       socket.on("disconnect", (reason) => {
-        console.log("Socket disconnected:", reason);
         dispatch(setConnected(false));
 
         if (reason === "io server disconnect") {
@@ -193,7 +177,6 @@ export const useSocket = () => {
       });
 
       socket.on("connect_error", (error) => {
-        console.error("Socket connection error:", error);
         dispatch(setConnected(false));
         dispatch(setConnecting(false));
 
@@ -203,7 +186,6 @@ export const useSocket = () => {
         });
       });
     } catch (error) {
-      console.error("Failed to connect socket:", error);
       dispatch(setConnected(false));
       dispatch(setConnecting(false));
 
@@ -215,7 +197,6 @@ export const useSocket = () => {
   }, [token, isConnected, isConnecting, dispatch, loadInitialNotifications]);
 
   const disconnect = useCallback(() => {
-    console.log("🔌 Disconnecting socket...");
     if (reconnectTimeout.current) {
       clearTimeout(reconnectTimeout.current);
     }
@@ -237,7 +218,6 @@ export const useSocket = () => {
           socketManager.markNotificationAsRead(notificationId);
         }
       } catch (error) {
-        console.error("Failed to mark notification as read:", error);
       }
     },
     [dispatch]
@@ -260,13 +240,10 @@ export const useSocket = () => {
   // Cleanup on token change (logout)
   useEffect(() => {
     if (!token && hasInitialized.current) {
-      console.log("🔓 Token removed, disconnecting socket...");
       disconnect();
       hasLoadedNotifications.current = false;
     }
   }, [token, disconnect]);
-
-  console.log("🎯 useSocket returning unreadCount:", unreadCount);
 
   return {
     isConnected,

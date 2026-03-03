@@ -20,7 +20,6 @@ export async function GET() {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching colors:", error);
     return NextResponse.json(
       { error: "Failed to fetch colors" },
       { status: 500 }

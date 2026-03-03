@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
       error: null,
     });
   } catch (error) {
-    console.error("API Error:", error);
     return NextResponse.json(
       {
         success: false,

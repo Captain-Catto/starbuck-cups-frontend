@@ -29,7 +29,6 @@ export function handleApiError(error: unknown, customMessage?: string): void {
     errorMessage = error;
   }
 
-  console.error("API Error:", error);
   toast.error(errorMessage);
 }
 

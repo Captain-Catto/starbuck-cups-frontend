@@ -26,7 +26,6 @@ export function useConsultationSocket({
     // Listen for new consultation notifications
     const handleNewNotification = (notification: NotificationPayload) => {
       if (notification.type === "consultation") {
-        console.log("🔔 New consultation notification:", notification.data);
         // Trigger refresh of pending count
         onConsultationUpdate();
       }
@@ -36,9 +35,6 @@ export function useConsultationSocket({
     socket.on("notification:new", handleNewNotification);
 
     listenersRegistered.current = true;
-    console.log(
-      "👂 Consultation socket listener registered for notification:new"
-    );
 
     // Cleanup function
     return () => {
@@ -46,7 +42,6 @@ export function useConsultationSocket({
         socket.off("notification:new", handleNewNotification);
       }
       listenersRegistered.current = false;
-      console.log("🧹 Consultation socket listener cleaned up");
     };
   }, [onConsultationUpdate, enabled]);
 

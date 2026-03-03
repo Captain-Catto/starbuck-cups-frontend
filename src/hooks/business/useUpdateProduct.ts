@@ -66,18 +66,12 @@ export function useUpdateProduct(
   const getAuthHeaders = (): Record<string, string> => {
     if (typeof window === "undefined") return {};
     const token = localStorage.getItem("admin_token");
-    console.log("[DEBUG] getAuthHeaders - token exists:", !!token);
-    console.log(
-      "[DEBUG] getAuthHeaders - token preview:",
-      token?.substring(0, 20) + "..."
-    );
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
   const loadProductData = useCallback(async () => {
     try {
       setLoading(true);
-      console.log("[DEBUG] loadProductData - loading product:", productId);
 
       const response = await fetch(`/api/admin/products/${productId}`, {
         headers: {
@@ -87,14 +81,12 @@ export function useUpdateProduct(
       });
 
       const data = await response.json();
-      console.log("[DEBUG] loadProductData - API response:", data);
 
       if (!response.ok || !data.success) {
         throw new Error(data.message || "Không thể tải thông tin sản phẩm");
       }
 
       const product = data.data;
-      console.log("[DEBUG] loadProductData - product data:", product);
 
       // Map API data to form format
       const mappedData = {
@@ -118,7 +110,6 @@ export function useUpdateProduct(
         keepExistingImages: true,
       };
 
-      console.log("[DEBUG] loadProductData - mapped form data:", mappedData);
 
       setFormData(mappedData);
     } catch (error) {
@@ -126,7 +117,6 @@ export function useUpdateProduct(
         error instanceof Error
           ? error.message
           : "Có lỗi xảy ra khi tải dữ liệu";
-      console.error("[DEBUG] loadProductData - error:", error);
       toast.error(errorMsg);
       if (onError) {
         onError(errorMsg);
@@ -235,9 +225,6 @@ export function useUpdateProduct(
   };
 
   const submitForm = useCallback(async () => {
-    console.log("🚀 [useUpdateProduct] submitForm started");
-    console.log("📋 [useUpdateProduct] Current formData:", formData);
-    console.log("📊 [useUpdateProduct] Images to submit:", formData.images);
 
     if (!validateForm()) {
       toast.error("Vui lòng kiểm tra lại thông tin");
@@ -249,11 +236,6 @@ export function useUpdateProduct(
 
       // Decide whether to use file upload endpoint or regular update
       const hasNewFiles = formData.newImages && formData.newImages.length > 0;
-      console.log("📁 [useUpdateProduct] Has new files:", hasNewFiles);
-      console.log(
-        "📁 [useUpdateProduct] New files count:",
-        formData.newImages?.length || 0
-      );
 
       if (hasNewFiles) {
         // Use multipart/form-data endpoint for file uploads
@@ -282,10 +264,6 @@ export function useUpdateProduct(
             formDataToSend.append("productUrl", productUrlValue);
           } catch {
             // If invalid URL, don't include it (will be empty string on backend)
-            console.warn(
-              "Invalid product URL format, skipping:",
-              productUrlValue
-            );
           }
         }
 
@@ -299,10 +277,6 @@ export function useUpdateProduct(
           formDataToSend.append("images", file);
         });
 
-        console.log(
-          "Uploading with files:",
-          formData.newImages?.map((f) => f.name) || []
-        );
 
         const response = await fetch(
           `/api/admin/products/${productId}/upload`,
@@ -317,13 +291,8 @@ export function useUpdateProduct(
         );
 
         const data = await response.json();
-        console.log("Update with upload response:", {
-          status: response.status,
-          data,
-        });
 
         if (!response.ok || !data.success) {
-          console.error("Update product error details:", data);
           throw new Error(data.message || "Không thể cập nhật sản phẩm");
         }
       } else {
@@ -344,11 +313,6 @@ export function useUpdateProduct(
           })),
         };
 
-        console.log("🚀 [useUpdateProduct] Update product payload:", payload);
-        console.log(
-          "📊 [useUpdateProduct] Images being sent:",
-          formData.images
-        );
 
         const response = await fetch(`/api/admin/products/${productId}`, {
           method: "PUT",
@@ -360,13 +324,8 @@ export function useUpdateProduct(
         });
 
         const data = await response.json();
-        console.log("✅ [useUpdateProduct] Update product response:", {
-          status: response.status,
-          data,
-        });
 
         if (!response.ok || !data.success) {
-          console.error("Update product error details:", data);
           throw new Error(data.message || "Không thể cập nhật sản phẩm");
         }
       }
@@ -384,7 +343,6 @@ export function useUpdateProduct(
         onError(errorMsg);
       }
 
-      console.error("Error updating product:", error);
     } finally {
       setIsSubmitting(false);
     }

@@ -20,12 +20,10 @@ export async function GET(
       );
     }
 
-    console.log("Customer Orders API Route - Received auth header:", authHeader);
 
     // Forward the request to the backend API
     const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/customers/${customerId}/orders?page=${page}&limit=${limit}`;
 
-    console.log("Customer Orders API Route - Forwarding to backend URL:", backendUrl);
 
     const response = await fetch(backendUrl, {
       method: "GET",
@@ -36,8 +34,6 @@ export async function GET(
 
     const data = await response.json();
 
-    console.log("Customer Orders API Route - Backend response status:", response.status);
-    console.log("Customer Orders API Route - Backend response data:", data);
 
     if (!response.ok) {
       return NextResponse.json(data, { status: response.status });
@@ -45,7 +41,6 @@ export async function GET(
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Customer Orders API Route error:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

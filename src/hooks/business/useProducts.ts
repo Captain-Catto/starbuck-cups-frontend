@@ -106,8 +106,6 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
   const [filters, setFiltersState] = useState<ProductFilters>(initialFilters);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    console.log("getAuthHeaders: Redux token exists?", !!token);
-    console.log("getAuthHeaders: Redux token preview:", token?.substring(0, 20) + "...");
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, [token]);
 
@@ -158,7 +156,6 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
       const errorMsg = "Có lỗi xảy ra khi tải danh sách sản phẩm";
       setError(errorMsg);
       toast.error(errorMsg);
-      console.error("Error fetching products:", err);
     } finally {
       setLoading(false);
     }

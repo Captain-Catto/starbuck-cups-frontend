@@ -31,7 +31,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Admin auth verify error:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

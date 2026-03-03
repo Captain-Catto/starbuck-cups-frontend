@@ -23,11 +23,6 @@ export default function HomeProductGrid({
   const dispatch = useAppDispatch();
 
   // Debug logs
-  console.log("=== HomeProductGrid Debug ===");
-  console.log("Selected category:", selectedCategory);
-  console.log("Products count:", products.length);
-  console.log("Loading:", loading);
-  console.log("Products:", products.slice(0, 2)); // First 2 products
 
   // Generate random delays for products when they're loaded
   useEffect(() => {
@@ -85,36 +80,27 @@ export default function HomeProductGrid({
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        console.log("🚀 Starting to fetch products...");
         setLoading(true);
         setVisibleRows(new Set());
 
-        let url = "/api/products?sortBy=createdAt&sortOrder=desc&limit=36";
+        let url = "/api/products/public?sortBy=createdAt&sortOrder=desc&limit=36";
         if (selectedCategory) {
-          url = `/api/products?category=${selectedCategory}&limit=36`;
+          url = `/api/products/public?category=${selectedCategory}&limit=36`;
         }
 
-        console.log("📡 Fetching from URL:", url);
         const response = await fetch(url);
         const data = await response.json();
 
-        console.log("📦 Response data:", data);
-        console.log("📊 Data success:", data.success);
-        console.log("📊 Data items:", data.data?.items?.length || 0);
 
         if (data.success && data.data?.items) {
           setProducts(data.data.items);
-          console.log("✅ Products set successfully:", data.data.items.length);
         } else {
           setProducts([]);
-          console.log("❌ No products found or API error");
         }
       } catch (error) {
-        console.error("❌ Error fetching products:", error);
         setProducts([]);
       } finally {
         setLoading(false);
-        console.log("🏁 Fetch completed, loading set to false");
       }
     };
 

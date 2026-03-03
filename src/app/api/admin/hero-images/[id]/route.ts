@@ -32,7 +32,6 @@ export async function GET(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Get hero image API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch hero image" },
       { status: 500 }
@@ -77,7 +76,6 @@ export async function PUT(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Update hero image API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to update hero image" },
       { status: 500 }
@@ -103,7 +101,6 @@ export async function DELETE(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Delete hero image API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to delete hero image" },
       { status: 500 }

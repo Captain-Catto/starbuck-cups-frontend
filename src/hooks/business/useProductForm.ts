@@ -78,11 +78,6 @@ export function useProductForm(
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    console.log("getAuthHeaders: Redux token exists?", !!token);
-    console.log(
-      "getAuthHeaders: Redux token preview:",
-      token?.substring(0, 20) + "..."
-    );
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, [token]);
 
@@ -178,9 +173,6 @@ export function useProductForm(
       setIsSubmitting(true);
 
       // Debug current form state
-      console.log("[DEBUG] submitForm - formData.images:", formData.images);
-      console.log("[DEBUG] submitForm - formData.imageUrl:", formData.imageUrl);
-      console.log("[DEBUG] submitForm - full formData:", formData);
 
       // Prepare images with order information
       const imagesWithOrder =
@@ -190,7 +182,6 @@ export function useProductForm(
           ? [{ url: formData.imageUrl.trim(), order: 0 }]
           : [];
 
-      console.log("[DEBUG] submitForm - imagesWithOrder:", imagesWithOrder);
 
       const payload = {
         name: formData.name.trim(),
@@ -204,7 +195,6 @@ export function useProductForm(
         ...(isEditing && productId && { id: productId }),
       };
 
-      console.log("[DEBUG] submitForm - final payload:", payload);
 
       const url =
         isEditing && productId
@@ -252,7 +242,6 @@ export function useProductForm(
         onError(errorMsg);
       }
 
-      console.error("Error submitting product form:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -317,11 +306,6 @@ export function useProductForm(
         setIsSubmitting(true);
 
         // Debug current form state
-        console.log("[DEBUG] submitFormWithImages - provided images:", images);
-        console.log(
-          "[DEBUG] submitFormWithImages - tempFormData:",
-          tempFormData
-        );
 
         // Prepare images with order information
         const imagesWithOrder =
@@ -331,10 +315,6 @@ export function useProductForm(
             ? [{ url: tempFormData.imageUrl.trim(), order: 0 }]
             : [];
 
-        console.log(
-          "[DEBUG] submitFormWithImages - imagesWithOrder:",
-          imagesWithOrder
-        );
 
         const payload = {
           name: tempFormData.name.trim(),
@@ -348,7 +328,6 @@ export function useProductForm(
           ...(isEditing && productId && { id: productId }),
         };
 
-        console.log("[DEBUG] submitFormWithImages - final payload:", payload);
 
         const url =
           isEditing && productId
@@ -397,7 +376,6 @@ export function useProductForm(
           onError(errorMsg);
         }
 
-        console.error("Error submitting product form with images:", error);
       } finally {
         setIsSubmitting(false);
       }

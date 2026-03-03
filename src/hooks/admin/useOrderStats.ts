@@ -54,7 +54,6 @@ export function useOrderStats(): UseOrderStatsReturn {
       });
 
       const data = await response.json();
-      console.log("Order stats response:", data);
 
       if (data.success) {
         setStats(data.data);
@@ -62,7 +61,6 @@ export function useOrderStats(): UseOrderStatsReturn {
         setError(data.message || "Không thể tải thống kê đơn hàng");
       }
     } catch (error) {
-      console.error("Error fetching order stats:", error);
       setError("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       setLoading(false);

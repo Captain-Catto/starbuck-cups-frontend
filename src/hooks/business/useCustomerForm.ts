@@ -227,7 +227,6 @@ export function useCustomerForm(
       });
 
       const data = await response.json();
-      console.log("Customer form submission response:", data);
 
       if (!response.ok || !data.success) {
         const errorMsg =
@@ -257,7 +256,6 @@ export function useCustomerForm(
         onError(errorMsg);
       }
 
-      console.error("Error submitting customer form:", error);
     } finally {
       setIsSubmitting(false);
     }

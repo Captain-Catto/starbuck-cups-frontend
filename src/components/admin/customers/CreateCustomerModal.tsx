@@ -72,7 +72,6 @@ export default function CreateCustomerModal({
         },
       };
 
-      console.log("Creating customer with payload:", payload);
 
       const response = await fetch("/api/admin/customers", {
         method: "POST",
@@ -84,7 +83,6 @@ export default function CreateCustomerModal({
       });
 
       const data = await response.json();
-      console.log("Create customer response:", data);
 
       if (data.success) {
         toast.success("Tạo khách hàng thành công!");
@@ -94,7 +92,6 @@ export default function CreateCustomerModal({
         toast.error(data.message || "Có lỗi xảy ra khi tạo khách hàng");
       }
     } catch (error) {
-      console.error("Error creating customer:", error);
       toast.error("Có lỗi xảy ra khi tạo khách hàng");
     } finally {
       setLoading(false);

@@ -17,7 +17,6 @@ import { TopConversionProducts } from "@/components/admin/analytics/TopConversio
 export default function StatisticsPage() {
   const [period, setPeriod] = useState<"week" | "month" | "year">("month");
   const { data, loading, error, fetchStatistics } = useStatistics(period);
-  console.log("data", data);
 
   const handlePeriodChange = (newPeriod: "week" | "month" | "year") => {
     setPeriod(newPeriod);
