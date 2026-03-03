@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+﻿import { useState, useCallback, useEffect } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 
@@ -131,6 +131,7 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
         setError(data.message || "Không thể tải danh sách đơn hàng");
       }
     } catch (error) {
+
       setError("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       // Đảm bảo skeleton hiển thị ít nhất 500ms để UX tốt hơn

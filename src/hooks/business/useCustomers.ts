@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
@@ -130,6 +130,7 @@ export function useCustomers(
         const errorMsg = "Có lỗi xảy ra khi tải danh sách khách hàng";
         setError(errorMsg);
         toast.error(errorMsg);
+
       } finally {
         setLoading(false);
       }

@@ -1,6 +1,6 @@
-import { StepProps, Product } from "@/types/orders";
+﻿import { StepProps, Product } from "@/types/orders";
 import { useProductSearch } from "@/hooks/admin/useProductSearch";
-import Image from "next/image";
+import OptimizedImage from "@/components/OptimizedImage";
 
 interface OrderDetailsStepProps extends StepProps {
   onAddItem: () => void;
@@ -240,7 +240,7 @@ export function OrderDetailsStep({
                               <div className="w-12 h-12 flex-shrink-0">
                                 {product.productImages &&
                                 product.productImages.length > 0 ? (
-                                  <Image
+                                  <OptimizedImage
                                     src={product.productImages[0].url}
                                     alt={product.name}
                                     width={48}
@@ -481,6 +481,11 @@ export function OrderDetailsStep({
                 >
                   {/* Debug logs */}
                   {(function () {
+
+
+
+
+
                     return null;
                   })()}
 
@@ -489,7 +494,7 @@ export function OrderDetailsStep({
                     <div className="w-16 h-16 flex-shrink-0">
                       {item.product.productImages &&
                       item.product.productImages.length > 0 ? (
-                        <Image
+                        <OptimizedImage
                           src={item.product.productImages[0].url}
                           alt={item.product.name}
                           width={64}
@@ -543,6 +548,7 @@ export function OrderDetailsStep({
                         <span className="text-xs text-gray-400">Màu:</span>
                         {(function () {
                           const productColors = item.product.productColors;
+
                           return null;
                         })()}
                         {item.product.productColors &&
@@ -584,6 +590,7 @@ export function OrderDetailsStep({
                         {(function () {
                           const productCategories =
                             item.product.productCategories;
+
                           return null;
                         })()}
                         {item.product.productCategories &&

@@ -13,11 +13,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .replace(/\b\w/g, (l) => l.toUpperCase());
 
   return {
-    title: `${productName} - Starbucks Cups Shop`,
+    title: `${productName} - H's shoucangpu`,
     description: `Mua ${productName} chính hãng với giá tốt nhất. Bảo hành 12 tháng, giao hàng miễn phí toàn quốc.`,
     keywords: `${productName}, starbucks, ly starbucks, cups, tumbler`,
     openGraph: {
-      title: `${productName} - Starbucks Cups Shop`,
+      title: `${productName} - H's shoucangpu`,
       description: `Mua ${productName} chính hãng với giá tốt nhất`,
       type: "website",
       locale: "vi_VN",

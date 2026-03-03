@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { useAppSelector } from "@/store";
@@ -82,7 +82,7 @@ export function AddressManager({ customerId }: AddressManagerProps) {
       if (result.success && result.data.addresses) {
         setAddresses(result.data.addresses);
       }
-    } catch (error) {
+    } catch {
       setAddresses([]);
     } finally {
       setLoading(false);
@@ -146,7 +146,6 @@ export function AddressManager({ customerId }: AddressManagerProps) {
       return;
     }
 
-
     // Map frontend format to backend format
     const backendData = {
       addressLine: formData.streetAddress,
@@ -156,7 +155,6 @@ export function AddressManager({ customerId }: AddressManagerProps) {
       postalCode: formData.postalCode,
       isDefault: formData.isDefault,
     };
-
 
     try {
       if (isAdding) {
@@ -222,7 +220,7 @@ export function AddressManager({ customerId }: AddressManagerProps) {
         isDefault: false,
       });
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi lưu địa chỉ");
+      toast.error(`Có lỗi xảy ra khi lưu địa chỉ, ${error}`);
     }
   };
 
@@ -274,7 +272,7 @@ export function AddressManager({ customerId }: AddressManagerProps) {
         toast.success("Đã xóa địa chỉ thành công");
       }
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi xóa địa chỉ");
+      toast.error(`Có lỗi xảy ra khi xóa địa chỉ, ${error}`);
     }
   };
 
@@ -325,12 +323,14 @@ export function AddressManager({ customerId }: AddressManagerProps) {
       } else {
         // API returned success: false, rollback
         setAddresses(originalAddresses);
+
         toast.error("Có lỗi xảy ra khi đặt địa chỉ mặc định");
       }
     } catch (error) {
       // Network error, rollback to original state
       setAddresses(originalAddresses);
-      toast.error("Có lỗi xảy ra khi đặt địa chỉ mặc định");
+
+      toast.error(`Có lỗi xảy ra khi đặt địa chỉ mặc định, ${error}`);
     } finally {
       setActionLoading(null);
     }

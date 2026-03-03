@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import type { Category } from "@/types";
 
@@ -31,6 +31,16 @@ export interface UseCategoriesReturn {
   categories: CategoryWithCount[];
   filteredCategories: CategoryWithCount[];
 
+  // Pagination
+  pagination: {
+    current_page: number;
+    has_next: boolean;
+    has_prev: boolean;
+    per_page: number;
+    total_items: number;
+    total_pages: number;
+  } | null;
+
   // State
   loading: boolean;
   searchQuery: string;
@@ -60,6 +70,9 @@ export interface UseCategoriesReturn {
   setConfirmModal: (modal: ConfirmModal) => void;
   performToggleStatus: (category: CategoryWithCount) => Promise<void>;
   performDelete: (category: CategoryWithCount) => Promise<void>;
+
+  // Pagination actions
+  onPageChange: (page: number) => void;
 }
 
 export function useCategories(): UseCategoriesReturn {
@@ -69,6 +82,17 @@ export function useCategories(): UseCategoriesReturn {
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "inactive"
   >("all");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<{
+    current_page: number;
+    has_next: boolean;
+    has_prev: boolean;
+    per_page: number;
+    total_items: number;
+    total_pages: number;
+  } | null>(null);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -96,22 +120,42 @@ export function useCategories(): UseCategoriesReturn {
   const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/categories", {
-        headers: getAuthHeaders(),
-      });
+
+      const response = await fetch(
+        `/api/admin/categories?page=${currentPage}&size=20`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
+
       const data = await response.json();
 
-      if (data.success) {
-        setCategories(data.data?.items || []);
+      if (data.success && data.data) {
+        const categoriesList = data.data.items || [];
+
+        // Set pagination data from response
+        const paginationInfo = data.data.pagination;
+        if (paginationInfo) {
+          setPagination({
+            current_page: paginationInfo.current_page,
+            has_next: paginationInfo.has_next,
+            has_prev: paginationInfo.has_prev,
+            per_page: paginationInfo.per_page,
+            total_items: paginationInfo.total_items,
+            total_pages: paginationInfo.total_pages,
+          });
+        }
+
+        setCategories(categoriesList);
       } else {
         toast.error(data.message || "Không thể tải danh sách danh mục");
       }
-    } catch (error) {
+    } catch {
       toast.error("Có lỗi xảy ra khi tải danh mục");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentPage]);
 
   const validateForm = (): boolean => {
     const errors: CategoryFormErrors = {};
@@ -165,7 +209,7 @@ export function useCategories(): UseCategoriesReturn {
       } else {
         toast.error(data.message || "Có lỗi xảy ra");
       }
-    } catch (error) {
+    } catch {
       toast.error("Có lỗi xảy ra khi lưu danh mục");
     } finally {
       setActionLoading(null);
@@ -221,7 +265,7 @@ export function useCategories(): UseCategoriesReturn {
           );
         }
       }
-    } catch (error) {
+    } catch {
       toast.error("Có lỗi xảy ra khi xóa danh mục");
     } finally {
       setActionLoading(null);
@@ -279,7 +323,7 @@ export function useCategories(): UseCategoriesReturn {
         setCategories(categories);
         toast.error(data.message || "Có lỗi xảy ra");
       }
-    } catch (error) {
+    } catch {
       // Rollback on network error
       setCategories(categories);
       toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
@@ -304,6 +348,11 @@ export function useCategories(): UseCategoriesReturn {
     setShowModal(true);
   };
 
+  // Pagination handler
+  const onPageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
   const filteredCategories = categories.filter((category) => {
     const matchesSearch = category.name
       .toLowerCase()
@@ -324,6 +373,9 @@ export function useCategories(): UseCategoriesReturn {
     // Data
     categories,
     filteredCategories,
+
+    // Pagination
+    pagination,
 
     // State
     loading,
@@ -354,5 +406,8 @@ export function useCategories(): UseCategoriesReturn {
     setConfirmModal,
     performToggleStatus,
     performDelete,
+
+    // Pagination actions
+    onPageChange,
   };
 }

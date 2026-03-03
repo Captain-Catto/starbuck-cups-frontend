@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/types";
 import { useAppDispatch } from "@/store";
@@ -34,6 +34,7 @@ export default function ProductGrid({
           setProducts([]);
         }
       } catch (error) {
+
         setProducts([]);
       } finally {
         setLoading(false);
@@ -96,6 +97,7 @@ export default function ProductGrid({
           key={product.id}
           product={product}
           onAddToCart={handleAddToCart}
+          showAddToCart={true}
         />
       ))}
     </div>

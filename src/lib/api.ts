@@ -1,4 +1,4 @@
-import axios from "axios";
+﻿import axios from "axios";
 import type { AxiosInstance, AxiosResponse } from "axios";
 import type {
   ApiResponse,
@@ -41,6 +41,10 @@ class ApiService {
             config.headers.Authorization = `Bearer ${token}`;
           }
 
+          // Debug log for cookie tracking
+          if (config.url?.includes('auth') || config.url?.includes('refresh')) {
+
+          }
         }
         return config;
       },
@@ -56,6 +60,7 @@ class ApiService {
           typeof window !== "undefined" &&
           !this.isRefreshing
         ) {
+
           try {
             this.isRefreshing = true;
             this.refreshPromise = this.performTokenRefresh();
@@ -64,7 +69,8 @@ class ApiService {
               TokenRefreshNotification.showRefreshSuccess(); // Silent refresh
             }
           } catch (error) {
-          } finally{
+
+          } finally {
             this.isRefreshing = false;
             this.refreshPromise = null;
           }
@@ -105,6 +111,7 @@ class ApiService {
               }
             }
           } catch (refreshError) {
+
             TokenRefreshNotification.showRefreshErrorWithRedirect(
               "/admin/login"
             );
@@ -144,6 +151,7 @@ class ApiService {
         .find((row) => row.startsWith("admin_refresh_token="));
 
       if (!refreshTokenCookie) {
+
         throw new Error("No refresh token available");
       }
 
@@ -170,6 +178,8 @@ class ApiService {
         throw new Error("Invalid refresh response");
       }
     } catch (error: unknown) {
+      const axiosError = error as { response?: { status: number; statusText?: string; data?: unknown }; message?: string };
+
       throw error;
     }
   }
@@ -472,6 +482,7 @@ class ApiService {
       token: string;
     }>
   > {
+
     const response = await this.api.get("/auth/admin/session");
     return response.data;
   }

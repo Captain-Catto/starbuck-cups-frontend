@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import type {
   Product,
@@ -16,6 +16,7 @@ interface ProductListItem extends Product {
 
 interface ProductFilters {
   search: string;
+  category: string;
   color: string;
   minCapacity: string;
   maxCapacity: string;
@@ -115,6 +116,7 @@ export function useProducts(): UseProductsReturn {
 
   const [filters, setFilters] = useState<ProductFilters>({
     search: "",
+    category: "",
     color: "",
     minCapacity: "",
     maxCapacity: "",
@@ -122,6 +124,10 @@ export function useProducts(): UseProductsReturn {
     sortBy: "createdAt",
     sortOrder: "desc",
   });
+
+  // Debounced search query
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const searchDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [pagination, setPagination] = useState<PaginationMeta>({
     current_page: 1,
@@ -137,6 +143,23 @@ export function useProducts(): UseProductsReturn {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
+  // Debounce search query (500ms delay)
+  useEffect(() => {
+    if (searchDebounceTimerRef.current) {
+      clearTimeout(searchDebounceTimerRef.current);
+    }
+
+    searchDebounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(filters.search);
+    }, 500);
+
+    return () => {
+      if (searchDebounceTimerRef.current) {
+        clearTimeout(searchDebounceTimerRef.current);
+      }
+    };
+  }, [filters.search]);
+
   const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
@@ -144,7 +167,8 @@ export function useProducts(): UseProductsReturn {
       const params = new URLSearchParams({
         page: pagination.current_page.toString(),
         limit: pagination.per_page.toString(),
-        ...(filters.search && { search: filters.search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
+        ...(filters.category && { categorySlug: filters.category }),
         ...(filters.color && { colorSlug: filters.color }),
         ...(filters.minCapacity && { minCapacity: filters.minCapacity }),
         ...(filters.maxCapacity && { maxCapacity: filters.maxCapacity }),
@@ -179,29 +203,30 @@ export function useProducts(): UseProductsReturn {
           })
         );
 
-
         setProducts(mappedProducts);
         if (data.data?.pagination) {
           setPagination(data.data.pagination);
         }
       } else {
+
         toast.error(data.message || "Không thể tải danh sách sản phẩm");
       }
     } catch (error) {
+
       toast.error("Có lỗi xảy ra khi tải sản phẩm");
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.current_page, pagination.per_page]);
+  }, [debouncedSearch, filters.category, filters.color, filters.minCapacity, filters.maxCapacity, filters.status, filters.sortBy, filters.sortOrder, pagination.current_page, pagination.per_page]);
 
   const loadFilterOptions = useCallback(async () => {
     try {
       const headers = getAuthHeaders();
 
       const [categoriesRes, colorsRes, capacitiesRes] = await Promise.all([
-        fetch("/api/admin/categories", { headers }),
-        fetch("/api/admin/colors", { headers }),
-        fetch("/api/admin/capacities", { headers }),
+        fetch("/api/admin/categories?limit=-1", { headers }),
+        fetch("/api/admin/colors?limit=-1", { headers }),
+        fetch("/api/admin/capacities?limit=-1", { headers }),
       ]);
 
       const [categoriesData, colorsData, capacitiesData] = await Promise.all([
@@ -229,6 +254,7 @@ export function useProducts(): UseProductsReturn {
         setCapacities(caps);
       }
     } catch (error) {
+
       // Set empty arrays as fallback
       setCategories([]);
       setColors([]);
@@ -284,6 +310,7 @@ export function useProducts(): UseProductsReturn {
       setSelectedProducts([]);
       loadProducts();
     } catch (error) {
+
       toast.error(
         `Lỗi khi ${
           action === "delete"
@@ -332,6 +359,7 @@ export function useProducts(): UseProductsReturn {
   ) => {
     // Prevent double clicks by checking if already loading
     if (actionLoading) {
+
       return;
     }
 
@@ -361,9 +389,7 @@ export function useProducts(): UseProductsReturn {
         );
         setProducts(optimisticProducts);
 
-
         const result = await apiService.toggleProductStatus(productId);
-
 
         if (result.success) {
           const actionText =
@@ -372,6 +398,7 @@ export function useProducts(): UseProductsReturn {
 
           // Update with actual data from server
           if (result.data) {
+
             const serverUpdatedProducts = optimisticProducts.map((product) =>
               product.id === productId
                 ? { ...product, isActive: result.data.isActive }
@@ -387,9 +414,11 @@ export function useProducts(): UseProductsReturn {
       } catch (toggleError) {
         // Rollback on network error
         setProducts(originalProducts);
+
         toast.error("Có lỗi xảy ra khi thực hiện hành động");
       }
     } catch (error) {
+
       toast.error("Có lỗi xảy ra");
     } finally {
       setActionLoading(null);

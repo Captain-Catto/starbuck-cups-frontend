@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -62,9 +62,13 @@ export function useNotifications(): UseNotificationsReturn {
       setLoading(true);
       const response = await apiWithAuth.getNotifications({ limit: 100 });
       if (response.success && response.data) {
+
+
+
         dispatch(setNotifications(response.data));
       }
     } catch (error) {
+
     } finally {
       setLoading(false);
     }
@@ -130,6 +134,7 @@ export function useNotifications(): UseNotificationsReturn {
         }
       }
     } catch (error) {
+
     }
   };
 
@@ -138,6 +143,7 @@ export function useNotifications(): UseNotificationsReturn {
       await apiWithAuth.markAllNotificationsAsRead();
       dispatch(markAllAsRead());
     } catch (error) {
+
     }
   };
 
@@ -146,6 +152,7 @@ export function useNotifications(): UseNotificationsReturn {
       // Chỉ clear ở local store vì API không có clearAllNotifications
       dispatch(clearNotifications());
     } catch (error) {
+
     }
   };
 

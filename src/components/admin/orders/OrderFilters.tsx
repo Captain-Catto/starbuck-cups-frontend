@@ -56,7 +56,7 @@ export function OrderFilters({
         <select
           value={statusFilter}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white"
+          className="px-3 py-2 pr-8 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white"
         >
           <option value="all">Tất cả trạng thái</option>
           <option value="pending">Chờ xử lý</option>
@@ -70,7 +70,7 @@ export function OrderFilters({
         <select
           value={typeFilter}
           onChange={(e) => onTypeChange(e.target.value)}
-          className="px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white"
+          className="px-3 py-2 pr-8 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white"
         >
           <option value="all">Tất cả loại</option>
           <option value="product">Đơn sản phẩm</option>
@@ -129,7 +129,7 @@ export function OrderFilters({
                 onChange={(e) =>
                   handleAdvancedFilterChange("priceRange", e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white"
+                className="w-full px-3 py-2 pr-8 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white"
               >
                 <option value="">Tất cả</option>
                 <option value="0-100">Dưới 100K</option>
@@ -147,7 +147,7 @@ export function OrderFilters({
                 onChange={(e) =>
                   handleAdvancedFilterChange("freeShipping", e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white"
+                className="w-full px-3 py-2 pr-8 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white"
               >
                 <option value="">Tất cả</option>
                 <option value="free">Miễn phí ship</option>

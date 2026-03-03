@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { X, User, MapPin, Save } from "lucide-react";
@@ -72,7 +72,6 @@ export default function CreateCustomerModal({
         },
       };
 
-
       const response = await fetch("/api/admin/customers", {
         method: "POST",
         headers: {
@@ -92,6 +91,7 @@ export default function CreateCustomerModal({
         toast.error(data.message || "Có lỗi xảy ra khi tạo khách hàng");
       }
     } catch (error) {
+
       toast.error("Có lỗi xảy ra khi tạo khách hàng");
     } finally {
       setLoading(false);

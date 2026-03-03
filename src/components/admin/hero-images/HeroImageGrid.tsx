@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import {
   DndContext,
   closestCorners,
@@ -80,7 +80,6 @@ export function HeroImageGrid({
         order: index + 1,
       })
     );
-
 
     // Force React to re-render by clearing and setting
     setLocalHeroImages([]);

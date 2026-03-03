@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -57,6 +57,7 @@ export function NotificationDropdown({
         // Update server
         await apiWithAuth.markNotificationAsRead(notification.id);
       } catch (error) {
+
       }
     }
 
@@ -77,7 +78,9 @@ export function NotificationDropdown({
       dispatch(markAllAsRead());
       // Update server
       await apiWithAuth.markAllNotificationsAsRead();
+
     } catch (error) {
+
     }
   };
 

@@ -16,6 +16,7 @@ export default function ProductsPage() {
 
     // State
     searchQuery,
+    debouncedSearchQuery,
     selectedCategory,
     selectedColor,
     capacityRange,
@@ -33,13 +34,15 @@ export default function ProductsPage() {
     setSortBy,
     setCurrentPage,
     updateURL,
+    debouncedUpdateURL,
     clearFilters,
   } = useProducts();
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     setCurrentPage(1);
-    updateURL({ search: value, page: 1 });
+    // Use debounced update for search - wait 300ms after user stops typing
+    debouncedUpdateURL({ search: value, page: 1 });
   };
 
   const handleCategoryChange = (value: string) => {
@@ -54,14 +57,14 @@ export default function ProductsPage() {
     updateURL({ color: value, page: 1 });
   };
 
-
   const handleCapacityRangeChange = (range: CapacityRange) => {
     setCapacityRange(range);
     setCurrentPage(1);
-    updateURL({
-      capacityMin: range.min > 0 ? range.min : undefined,
-      capacityMax: range.max < 9999 ? range.max : undefined,
-      page: 1
+    // Use debounced update for capacity - wait 300ms after user stops typing
+    debouncedUpdateURL({
+      minCapacity: range.min > 0 ? range.min : undefined,
+      maxCapacity: range.max < 9999 ? range.max : undefined,
+      page: 1,
     });
   };
 
@@ -80,9 +83,44 @@ export default function ProductsPage() {
     setShowFilters(!showFilters);
   };
 
+  const handleRemoveSearch = () => {
+    setSearchQuery("");
+    setCurrentPage(1);
+    // Immediate update when removing filter
+    updateURL({ search: "", page: 1 });
+  };
+
+  const handleRemoveCategory = () => {
+    setSelectedCategory("");
+    setCurrentPage(1);
+    updateURL({ category: "", page: 1 });
+  };
+
+  const handleRemoveColor = () => {
+    setSelectedColor("");
+    setCurrentPage(1);
+    updateURL({ color: "", page: 1 });
+  };
+
+  const handleRemoveCapacity = () => {
+    setCapacityRange({ min: 0, max: 9999 });
+    setCurrentPage(1);
+    updateURL({ minCapacity: undefined, maxCapacity: undefined, page: 1 });
+  };
+
+  const handleRemoveSort = () => {
+    setSortBy("newest");
+    setCurrentPage(1);
+    updateURL({ sort: "newest", page: 1 });
+  };
+
+  const handleClearAllFilters = () => {
+    clearFilters();
+  };
+
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 py-8 lg:px-8 pt-24">
+      <div className="container mx-auto px-4 py-8 lg:px-8 pt-20">
         {/* Mobile Filter Backdrop */}
         {showFilters && (
           <div
@@ -127,12 +165,21 @@ export default function ProductsPage() {
             {/* Products Grid */}
             <ProductsContent
               searchQuery={searchQuery}
+              debouncedSearchQuery={debouncedSearchQuery}
               selectedCategory={selectedCategory}
               selectedColor={selectedColor}
               capacityRange={capacityRange}
               sortBy={sortBy}
               currentPage={currentPage}
+              categories={categories}
+              colors={colors}
               onPageChange={handlePageChange}
+              onRemoveSearch={handleRemoveSearch}
+              onRemoveCategory={handleRemoveCategory}
+              onRemoveColor={handleRemoveColor}
+              onRemoveCapacity={handleRemoveCapacity}
+              onRemoveSort={handleRemoveSort}
+              onClearAll={handleClearAllFilters}
             />
           </div>
         </div>

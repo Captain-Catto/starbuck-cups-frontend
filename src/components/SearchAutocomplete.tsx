@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef, useEffect, useState } from "react";
 import { Search, X, Loader2 } from "lucide-react";
@@ -66,6 +66,7 @@ export function SearchAutocomplete({
           }
         }
       } catch (error) {
+
         setProducts([]);
       } finally {
         setIsLoading(false);

@@ -1,7 +1,6 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { toast } from "sonner";
 import { useAppSelector } from "@/store";
 import {
@@ -20,6 +19,7 @@ import {
   getFirstProductImageUrl,
   getProductSnapshotImageUrl,
 } from "@/lib/utils/image";
+import OptimizedImage from "@/components/OptimizedImage";
 
 interface ProductColor {
   color?: {
@@ -261,9 +261,11 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
               ) || [],
           });
         } else {
+
           setOrder(null);
         }
       } catch (error) {
+
         setOrder(null);
       } finally {
         setLoading(false);
@@ -303,8 +305,10 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
         } else {
           toast.error(data.message || "Có lỗi xảy ra khi cập nhật đơn hàng");
         }
+
       }
     } catch (error) {
+
       toast.error("Có lỗi xảy ra khi cập nhật đơn hàng");
     } finally {
       setSaving(false);
@@ -399,6 +403,7 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
       });
 
       const data = await response.json();
+
       if (data.success && data.data && data.data.items) {
         setProducts(
           data.data.items.filter(
@@ -407,11 +412,8 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
         );
       }
     } catch (error) {
-      toast.error(
-        `Có lỗi khi tải danh sách sản phẩm: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+
+      toast.error("Có lỗi khi tải danh sách sản phẩm");
     } finally {
       setLoadingProducts(false);
     }
@@ -748,7 +750,7 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
                       item.productSnapshot
                     );
                     return imageUrl ? (
-                      <Image
+                      <OptimizedImage
                         src={imageUrl}
                         alt={item.productSnapshot.name}
                         width={64}
@@ -1064,7 +1066,7 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
                           <div className="flex items-center gap-3">
                             {/* Product Image */}
                             {getFirstProductImageUrl(product.productImages) && (
-                              <Image
+                              <OptimizedImage
                                 src={getFirstProductImageUrl(
                                   product.productImages
                                 )}
@@ -1131,7 +1133,7 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
                       {getFirstProductImageUrl(
                         selectedProduct.productImages
                       ) && (
-                        <Image
+                        <OptimizedImage
                           src={getFirstProductImageUrl(
                             selectedProduct.productImages
                           )}

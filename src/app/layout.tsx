@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import React from "react";
 import "./globals.css";
 import StoreProvider from "@/components/StoreProvider";
 import ClientLayout from "@/components/layout/ClientLayout";
@@ -6,24 +7,35 @@ import { generateSEO, generateOrganizationStructuredData } from "@/lib/seo";
 
 export const metadata: Metadata = {
   ...generateSEO({
-    title: "Cửa hàng ly Starbucks",
+    title: "H's shoucangpu - Collectible Gift Shop",
     description:
-      "Khám phá bộ sưu tập ly Starbucks đa dạng với nhiều màu sắc và dung tích. Tư vấn miễn phí qua Messenger.",
+      "Ly ST@RBUCKS CHÍNH HÃNG các nước. 95% MẪU TRÊN PAGE là HÀNG SẴN SHIP HOẢ TỐC📍HCM📍 Quà tặng cao cấp Luxury. Có dịch vụ gói quà. FB: Hasron Leung. Dịch vụ ship hoả tốc 24/7",
     keywords:
-      "starbucks, ly starbucks, cups, tumbler, ly giữ nhiệt, starbucks vietnam",
+      "starbucks, ly starbucks, cups, tumbler, ly giữ nhiệt, starbucks vietnam, ly starbucks chính hãng, ly starbuck chính hãng, ly starbucks auth, starbuck chính hãng,  starbucks chính hãng, mua ly starbuck chính hãng, bình starbucks chính hãng, bình giữ nhiệt starbucks, ly giữ nhiệt starbucks, ly sứ starbucks, hasron.com, hasron, hasron starbucks chính hãng, hasron starbucks, hasron ly starbucks chính hãng, h's, h's shoucangpu, hasron leung",
     openGraph: {
-      title: "H's shoucangpu - Cửa hàng ly Starbucks",
+      title: "H's shoucangpu - Collectible Gift Shop",
       description:
-        "Khám phá bộ sưu tập ly Starbucks đa dạng với nhiều màu sắc và dung tích",
-      image: "/images/og-image.jpg",
+        "Ly ST@RBUCKS CHÍNH HÃNG các nước. 95% MẪU TRÊN PAGE là HÀNG SẴN SHIP HOẢ TỐC📍HCM📍 Quà tặng cao cấp Luxury. Có dịch vụ gói quà",
+      image: "/images/placeholder.webp",
       url: "/",
       type: "website",
     },
   }),
+  twitter: {
+    card: "summary",
+    title: "H's shoucangpu - Tiệm sưu tầm của H",
+    description:
+      "Ly ST@RBUCKS CHÍNH HÃNG các nước. 95% MẪU TRÊN PAGE là HÀNG SẴN SHIP HOẢ TỐC📍HCM📍 Quà tặng cao cấp Luxury",
+    images: ["/images/placeholder.webp"],
+  },
   icons: {
-    icon: "/logo.png",
+    icon: [
+      { url: "/logo.png", sizes: "any", type: "image/png" },
+      { url: "/logo.png", sizes: "16x16", type: "image/png" },
+      { url: "/logo.png", sizes: "32x32", type: "image/png" },
+    ],
     shortcut: "/logo.png",
-    apple: "/logo.png",
+    apple: [{ url: "/logo.png", sizes: "180x180", type: "image/png" }],
   },
 };
 
@@ -36,12 +48,15 @@ export default function RootLayout({
   const gaMeasurementId =
     process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-XXXXXXXXXX";
 
-  // Dynamic AWS resource hints
   const awsS3Url = process.env.NEXT_PUBLIC_AWS_S3_URL;
 
   return (
     <html lang="vi">
       <head>
+        {/* Resource hints for Google Drive images - early DNS resolution */}
+        <link rel="preconnect" href="https://lh3.googleusercontent.com" />
+        <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
+
         {/* Dynamic AWS resource hints nếu có */}
         {awsS3Url && (
           <>

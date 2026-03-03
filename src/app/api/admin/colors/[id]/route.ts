@@ -36,6 +36,7 @@ export async function PUT(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
+    console.error("Colors PUT error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to update color" },
       { status: 500 }
@@ -63,6 +64,7 @@ export async function DELETE(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
+    console.error("Colors DELETE error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to delete color" },
       { status: 500 }

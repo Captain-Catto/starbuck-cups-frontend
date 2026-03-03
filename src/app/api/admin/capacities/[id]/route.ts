@@ -32,6 +32,7 @@ export async function GET(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
+    console.error("Get capacity API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch capacity" },
       { status: 500 }
@@ -60,6 +61,7 @@ export async function PUT(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
+    console.error("Update capacity API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to update capacity" },
       { status: 500 }
@@ -85,6 +87,7 @@ export async function DELETE(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
+    console.error("Delete capacity API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to delete capacity" },
       { status: 500 }

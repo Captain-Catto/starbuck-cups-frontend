@@ -34,6 +34,7 @@ export async function GET(
       error: null,
     });
   } catch (error) {
+    console.error("API Error:", error);
     return NextResponse.json(
       {
         success: false,

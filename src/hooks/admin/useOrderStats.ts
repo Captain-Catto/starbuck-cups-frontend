@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+﻿import { useState, useCallback, useEffect } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 
@@ -61,6 +61,7 @@ export function useOrderStats(): UseOrderStatsReturn {
         setError(data.message || "Không thể tải thống kê đơn hàng");
       }
     } catch (error) {
+
       setError("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       setLoading(false);

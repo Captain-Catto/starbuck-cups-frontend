@@ -6,11 +6,15 @@ import { CategoriesSearchFilter } from "@/components/admin/categories/Categories
 import { CategoriesTable } from "@/components/admin/categories/CategoriesTable";
 import { CategoryFormModal } from "@/components/admin/categories/CategoryFormModal";
 import { CategoryConfirmModal } from "@/components/admin/categories/CategoryConfirmModal";
+import { Pagination } from "@/components/ui/Pagination";
 
 export default function CategoriesManagement() {
   const {
     // Data
     filteredCategories,
+
+    // Pagination
+    pagination,
 
     // State
     loading,
@@ -40,6 +44,9 @@ export default function CategoriesManagement() {
     setConfirmModal,
     performToggleStatus,
     performDelete,
+
+    // Pagination actions
+    onPageChange,
   } = useCategories();
 
   return (
@@ -66,6 +73,21 @@ export default function CategoriesManagement() {
           onDelete={handleDelete}
           onToggleStatus={handleToggleStatus}
         />
+
+        {/* Pagination */}
+        {pagination && !loading ? (
+          <div className="mt-6 flex justify-center">
+            <Pagination
+              data={pagination}
+              onPageChange={onPageChange}
+              className="bg-gray-800 rounded-lg"
+            />
+          </div>
+        ) : (
+          <div className="mt-6 text-center text-gray-400">
+            {loading ? "Đang tải..." : "Không có dữ liệu phân trang"}
+          </div>
+        )}
       </div>
 
       {/* Form Modal */}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { useAppSelector } from "@/store";
 import {
   dashboardAPI,
@@ -61,7 +61,6 @@ export function useDashboard(): UseDashboardReturn {
           .getPendingConsultationsCount(token)
           .catch(() => ({ count: 0 })),
       ]);
-
 
       if (statsResponse) setDashboardStats(statsResponse);
       setRecentOrders(ordersResponse);

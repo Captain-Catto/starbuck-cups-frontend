@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
@@ -13,6 +13,8 @@ export interface UpdateProductFormData {
   images: string[];
   productUrl: string;
   isActive: boolean;
+  isVip: boolean; // ✅ NEW FIELD
+  isFeatured: boolean; // ✅ NEW FIELD
   // For file uploads
   newImages?: File[];
   keepExistingImages?: boolean;
@@ -59,6 +61,8 @@ export function useUpdateProduct(
     images: [],
     productUrl: "",
     isActive: true,
+    isVip: false, // ✅ NEW FIELD - default false
+    isFeatured: false, // ✅ NEW FIELD - default false
     newImages: [],
     keepExistingImages: true,
   });
@@ -66,6 +70,7 @@ export function useUpdateProduct(
   const getAuthHeaders = (): Record<string, string> => {
     if (typeof window === "undefined") return {};
     const token = localStorage.getItem("admin_token");
+
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
@@ -106,10 +111,11 @@ export function useUpdateProduct(
           product.productImages?.map((img: { url: string }) => img.url) || [],
         productUrl: product.productUrl || "",
         isActive: product.isActive ?? true,
+        isVip: product.isVip ?? false, // ✅ NEW FIELD - default false
+        isFeatured: product.isFeatured ?? false, // ✅ NEW FIELD - default false
         newImages: [],
         keepExistingImages: true,
       };
-
 
       setFormData(mappedData);
     } catch (error) {
@@ -117,6 +123,7 @@ export function useUpdateProduct(
         error instanceof Error
           ? error.message
           : "Có lỗi xảy ra khi tải dữ liệu";
+
       toast.error(errorMsg);
       if (onError) {
         onError(errorMsg);
@@ -225,7 +232,6 @@ export function useUpdateProduct(
   };
 
   const submitForm = useCallback(async () => {
-
     if (!validateForm()) {
       toast.error("Vui lòng kiểm tra lại thông tin");
       return;
@@ -254,6 +260,9 @@ export function useUpdateProduct(
           "stockQuantity",
           formData.stockQuantity.toString()
         );
+        formDataToSend.append("isActive", formData.isActive.toString());
+        formDataToSend.append("isVip", formData.isVip.toString()); // ✅ NEW FIELD
+        formDataToSend.append("isFeatured", formData.isFeatured.toString()); // ✅ NEW FIELD
 
         // Only add productUrl if it's a valid URL or empty
         const productUrlValue = formData.productUrl.trim();
@@ -276,7 +285,6 @@ export function useUpdateProduct(
         formData.newImages?.forEach((file) => {
           formDataToSend.append("images", file);
         });
-
 
         const response = await fetch(
           `/api/admin/products/${productId}/upload`,
@@ -306,13 +314,14 @@ export function useUpdateProduct(
           stockQuantity: formData.stockQuantity,
           productUrl: formData.productUrl.trim() || "",
           isActive: formData.isActive,
+          isVip: formData.isVip, // ✅ NEW FIELD
+          isFeatured: formData.isFeatured, // ✅ NEW FIELD
           // Include images array for image reordering - convert URLs to proper format
           productImages: formData.images.map((url, index) => ({
             url,
             order: index,
           })),
         };
-
 
         const response = await fetch(`/api/admin/products/${productId}`, {
           method: "PUT",
@@ -342,7 +351,6 @@ export function useUpdateProduct(
       if (onError) {
         onError(errorMsg);
       }
-
     } finally {
       setIsSubmitting(false);
     }

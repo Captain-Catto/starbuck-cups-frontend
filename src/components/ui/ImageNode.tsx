@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   DecoratorNode,
   NodeKey,
@@ -6,7 +6,7 @@ import {
   SerializedLexicalNode,
   Spread,
 } from 'lexical';
-import Image from 'next/image';
+import OptimizedImage from '@/components/OptimizedImage';
 
 export interface ImagePayload {
   altText: string;
@@ -66,6 +66,7 @@ export class ImageNode extends DecoratorNode<React.ReactElement> {
       version: 1,
       width: this.__width === 'inherit' ? 0 : this.__width,
     };
+
     return json;
   }
 
@@ -119,6 +120,7 @@ export class ImageNode extends DecoratorNode<React.ReactElement> {
       img.setAttribute('height', this.__height.toString());
     }
     img.style.maxWidth = '100%';
+
     return { element: img };
   }
 
@@ -153,7 +155,7 @@ export class ImageNode extends DecoratorNode<React.ReactElement> {
 
   decorate(): React.ReactElement {
     return (
-      <Image
+      <OptimizedImage
         src={this.__src}
         alt={this.__altText}
         width={this.__width === 'inherit' ? 400 : (this.__width || 400)}

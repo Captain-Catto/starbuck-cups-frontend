@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { useAppSelector } from "@/store";
@@ -92,6 +92,7 @@ export function useConsultations(): UseConsultationsReturn {
 
       const headers = getAuthHeaders();
 
+
       const apiUrl =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
       const response = await fetch(`${apiUrl}/admin/consultations?${params}`, {
@@ -105,9 +106,11 @@ export function useConsultations(): UseConsultationsReturn {
           setPagination(data.data.pagination);
         }
       } else {
+
         toast.error(data.message || "Không thể tải danh sách tư vấn");
       }
     } catch (error) {
+
       toast.error("Có lỗi xảy ra khi tải danh sách tư vấn");
     } finally {
       setLoading(false);
@@ -145,7 +148,6 @@ export function useConsultations(): UseConsultationsReturn {
         }
       );
 
-
       const data = await response.json();
 
       if (data.success) {
@@ -158,6 +160,7 @@ export function useConsultations(): UseConsultationsReturn {
         toast.error(data.message || "Có lỗi xảy ra");
       }
     } catch (error) {
+
       toast.error("Có lỗi xảy ra khi cập nhật consultation");
     } finally {
       setActionLoading(null);
@@ -222,6 +225,7 @@ export function useConsultations(): UseConsultationsReturn {
         toast.error(data.message || "Có lỗi xảy ra khi xóa consultation");
       }
     } catch (error) {
+
       toast.error("Có lỗi xảy ra khi xóa consultation");
     } finally {
       setActionLoading(null);

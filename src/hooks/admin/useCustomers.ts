@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
@@ -91,12 +91,14 @@ export function useAdminCustomers() {
         }
 
         const data = await response.json();
+
         if (data.success) {
           setCustomers(data.data.items || []);
         } else {
           throw new Error(data.message || "Failed to fetch customers");
         }
       } catch (error) {
+
         toast.error("Lỗi khi tải danh sách khách hàng");
       } finally {
         setLoading(false);
@@ -134,6 +136,7 @@ export function useAdminCustomers() {
         throw new Error(data.message || "Failed to delete customer");
       }
     } catch (error) {
+
       toast.error("Lỗi khi xóa khách hàng");
     } finally {
       setActionLoading(null);

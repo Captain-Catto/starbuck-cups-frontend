@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
 
 // Helper function to forward auth headers
@@ -19,7 +19,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
 
-
     const response = await fetch(
       `${getApiUrl("admin/orders")}${queryString ? `?${queryString}` : ""}`,
       {
@@ -30,9 +29,8 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
-
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to fetch orders" },
       { status: 500 }
@@ -45,7 +43,6 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-
     const response = await fetch(getApiUrl("admin/orders"), {
       method: "POST",
       headers: getAuthHeaders(request),
@@ -54,9 +51,8 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
 
-
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to create order" },
       { status: 500 }

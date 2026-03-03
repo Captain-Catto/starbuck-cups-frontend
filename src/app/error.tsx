@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
@@ -12,6 +12,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
+
   }, [error]);
 
   return (

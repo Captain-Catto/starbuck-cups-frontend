@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+﻿import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import type { Product } from "@/types";
 
 // Types
@@ -50,15 +50,19 @@ export const fetchProductBySlug = createAsyncThunk(
   "products/fetchProductBySlug",
   async (slug: string, { rejectWithValue }) => {
     try {
+
       const response = await fetch(`/api/products/public/${slug}`);
+
       const data = await response.json();
 
       if (!data.success || !data.data) {
+
         return rejectWithValue("Product not found");
       }
 
       return data.data as Product;
     } catch (error) {
+
       return rejectWithValue("Failed to fetch product");
     }
   }

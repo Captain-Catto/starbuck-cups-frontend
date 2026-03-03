@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import Link from "next/link";
@@ -35,7 +35,6 @@ export function CustomerList({
     performDelete,
     setConfirmModal,
   } = useAdminCustomers();
-
 
   // Filter and sort customers based on all criteria
   const filteredAndSortedCustomers = useMemo(() => {

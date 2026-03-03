@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef } from "react";
@@ -76,6 +76,7 @@ function ValuePlugin({
   value: string;
   onChange: (value: string) => void;
 }) {
+
   const [editor] = useLexicalComposerContext();
   const isUpdatingFromExternalRef = useRef(false);
   const lastValueRef = useRef("");
@@ -83,8 +84,11 @@ function ValuePlugin({
   // Set initial value and update when value changes from external source
   useEffect(() => {
 
+
+
     // Avoid infinite loop: only update if value actually changed and not from internal change
     if (value !== lastValueRef.current && !isUpdatingFromExternalRef.current) {
+
       lastValueRef.current = value;
       isUpdatingFromExternalRef.current = true;
 
@@ -107,14 +111,17 @@ function ValuePlugin({
         editor.update(() => {
           const root = $getRoot();
           root.clear();
+
         });
       }
 
       // Reset flag after update
       setTimeout(() => {
         isUpdatingFromExternalRef.current = false;
+
       }, 100);
     } else {
+
     }
   }, [value, editor]); // Include value in dependencies to update when it changes
 
@@ -124,6 +131,7 @@ function ValuePlugin({
 
         // Skip onChange if we're updating from external source
         if (isUpdatingFromExternalRef.current) {
+
           return;
         }
 
@@ -135,6 +143,7 @@ function ValuePlugin({
           const imageCount = (htmlString.match(/<img/g) || []).length;
 
           if (hasImages) {
+
           }
 
           // Update last value ref to prevent unnecessary updates
@@ -152,6 +161,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   placeholder = "Nhập mô tả sản phẩm...",
   height = 400,
 }) => {
+
 
   const initialConfig = {
     namespace: "RichTextEditor",
@@ -219,6 +229,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       ImageNode,
     ],
     onError: (error: Error) => {
+
     },
   };
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
@@ -106,6 +106,8 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
   const [filters, setFiltersState] = useState<ProductFilters>(initialFilters);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
+
+
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, [token]);
 
@@ -156,6 +158,7 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
       const errorMsg = "Có lỗi xảy ra khi tải danh sách sản phẩm";
       setError(errorMsg);
       toast.error(errorMsg);
+
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from "react";
+﻿import { useEffect, useCallback, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
   checkAuthStatus,
@@ -23,6 +23,7 @@ export function useAuthRefresh() {
 
     // Prevent multiple concurrent checks
     if (isCheckingRef.current) {
+
       return;
     }
 
@@ -34,6 +35,7 @@ export function useAuthRefresh() {
       if (!storedToken) {
         // Kiểm tra có refresh token cookie không
         if (!document.cookie.includes("admin_refresh_token")) {
+
           if (isAuthenticated) {
             dispatch(logout());
           }
@@ -42,9 +44,12 @@ export function useAuthRefresh() {
 
         // Không có access token, thử check session bằng refresh token trong cookie
         try {
+
           const sessionResult = await dispatch(checkAuthStatus()).unwrap();
+
           return sessionResult;
         } catch {
+
           if (isAuthenticated) {
             dispatch(logout());
           }
@@ -55,6 +60,7 @@ export function useAuthRefresh() {
       try {
         // Kiểm tra token có hết hạn không
         if (isTokenExpired(storedToken)) {
+
           AuthDebug.logEvent("Token Expired", { storedToken: !!storedToken });
           TokenRefreshNotification.showTokenExpiring();
 
@@ -65,8 +71,10 @@ export function useAuthRefresh() {
 
             TokenRefreshNotification.showRefreshSuccess();
             AuthDebug.logEvent("Token Refresh Success", { method: "expired" });
+
             return result;
           } catch (error) {
+
             AuthDebug.logEvent("Token Refresh Failed", { method: "expired", error });
             TokenRefreshNotification.showRefreshError();
             dispatch(logout());
@@ -82,13 +90,16 @@ export function useAuthRefresh() {
 
           if (timeUntilExpiry < 600) {
             // 10 phút = 600 giây - refresh sớm hơn để đảm bảo mượt mà
+
             TokenRefreshNotification.showTokenExpiring();
 
             try {
               const result = await dispatch(refreshAuthToken()).unwrap();
               TokenRefreshNotification.showRefreshSuccess();
+
               return result;
             } catch (error) {
+
               TokenRefreshNotification.showRefreshError();
               dispatch(logout());
               throw error;
@@ -101,10 +112,12 @@ export function useAuthRefresh() {
           await dispatch(checkAuthStatus()).unwrap();
         }
       } catch (error) {
+
         TokenRefreshNotification.showRefreshError();
         dispatch(logout());
       }
     } catch (error) {
+
       TokenRefreshNotification.showRefreshError();
       dispatch(logout());
     } finally {

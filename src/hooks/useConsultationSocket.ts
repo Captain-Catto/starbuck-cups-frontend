@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import { socketManager } from "@/lib/socket";
 import { NotificationPayload } from "@/types/notification.types";
 
@@ -26,6 +26,7 @@ export function useConsultationSocket({
     // Listen for new consultation notifications
     const handleNewNotification = (notification: NotificationPayload) => {
       if (notification.type === "consultation") {
+
         // Trigger refresh of pending count
         onConsultationUpdate();
       }
@@ -42,6 +43,7 @@ export function useConsultationSocket({
         socket.off("notification:new", handleNewNotification);
       }
       listenersRegistered.current = false;
+
     };
   }, [onConsultationUpdate, enabled]);
 

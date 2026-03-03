@@ -1,4 +1,4 @@
-// Product-specific analytics with spam prevention
+﻿// Product-specific analytics with spam prevention
 // Tracks product clicks and add-to-cart actions with deduplication
 
 interface ClickTracker {
@@ -29,6 +29,7 @@ const MAX_CLICKS_PER_PRODUCT = 5; // Maximum clicks per product per session
 const resetSessionIfNeeded = () => {
   const now = Date.now();
   if (now - sessionTracker.sessionStart > SESSION_TIMEOUT_MS) {
+
     sessionTracker = {
       productClicks: new Map(),
       cartClicks: new Map(),
@@ -63,23 +64,27 @@ const shouldTrackClick = (
 
   // Check session-wide rate limit
   if (totalClicks >= MAX_CLICKS_PER_SESSION) {
+
     return false;
   }
 
   if (!tracker) {
     // First click cho product này
     clickMap.set(productId, { lastClickTime: now, clickCount: 1 });
+
     return true;
   }
 
   // Check product-specific rate limit
   if (tracker.clickCount >= MAX_CLICKS_PER_PRODUCT) {
+
     return false;
   }
 
   // Check debounce time
   const timeSinceLastClick = now - tracker.lastClickTime;
   if (timeSinceLastClick < CLICK_DEBOUNCE_MS) {
+
     return false; // Too soon, ignore click
   }
 
@@ -125,9 +130,11 @@ export const trackProductClick = async (product: {
       }),
     }).catch(error => {
       // Silent fail - không ảnh hưởng user experience
+
     });
 
   } catch (error) {
+
   }
 };
 
@@ -165,9 +172,11 @@ export const trackAddToCartClick = async (product: {
         timestamp: new Date().toISOString(),
       }),
     }).catch(error => {
+
     });
 
   } catch (error) {
+
   }
 };
 
@@ -202,6 +211,7 @@ export const resetSession = () => {
     cartClicks: new Map(),
     sessionStart: Date.now(),
   };
+
 };
 
 // Check if product đã được click trong session

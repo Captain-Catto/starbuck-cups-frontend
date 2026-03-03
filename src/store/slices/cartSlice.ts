@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+﻿import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { CartItem, Product } from "@/types";
 
@@ -6,8 +6,9 @@ interface CartState {
   items: CartItem[];
   isOpen: boolean;
   lastAction?: {
-    type: 'added' | 'already_exists' | 'removed';
+    type: "added" | "already_exists" | "removed";
     productName?: string;
+    colorRequest?: string;
   };
 }
 
@@ -17,7 +18,7 @@ const loadCartFromStorage = (): CartItem[] => {
   try {
     const saved = localStorage.getItem("starbucks-cart");
     return saved ? JSON.parse(saved) : [];
-  } catch (error) {
+  } catch {
     return [];
   }
 };
@@ -26,8 +27,7 @@ const saveCartToStorage = (items: CartItem[]) => {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem("starbucks-cart", JSON.stringify(items));
-  } catch (error) {
-  }
+  } catch {}
 };
 
 const initialState: CartState = {
@@ -42,35 +42,46 @@ const cartSlice = createSlice({
   reducers: {
     addToCart: (
       state,
-      action: PayloadAction<{ product: Product }>
+      action: PayloadAction<{ product: Product; colorRequest?: string }>
     ) => {
-      const { product } = action.payload;
+      const { product } = action.payload; // Remove colorRequest usage
+
+      // Check if product already exists (ignore color - all colors included)
       const existingItem = state.items.find(
         (item) => item.product.id === product.id
       );
 
-      if (!existingItem) {
-        state.items.push({ product });
+      if (existingItem) {
+        // Product already exists in cart (with all colors)
         state.lastAction = {
-          type: 'added',
-          productName: product.name
+          type: "already_exists",
+          productName: product.name,
+          colorRequest: undefined, // No specific color since all colors included
         };
-        saveCartToStorage(state.items);
-      } else {
-        state.lastAction = {
-          type: 'already_exists',
-          productName: product.name
-        };
+        return;
       }
-    },
 
-    removeFromCart: (state, action: PayloadAction<string>) => {
-      state.items = state.items.filter(
-        (item) => item.product.id !== action.payload
-      );
+      // Add product to cart (includes all available colors)
+      state.items.push({ product, colorRequest: undefined });
+      state.lastAction = {
+        type: "added",
+        productName: product.name,
+        colorRequest: undefined, // No specific color since all colors included
+      };
+
       saveCartToStorage(state.items);
     },
 
+    removeFromCart: (
+      state,
+      action: PayloadAction<{ productId: string; colorRequest?: string }>
+    ) => {
+      const { productId } = action.payload; // Remove colorRequest usage
+      state.items = state.items.filter(
+        (item) => item.product.id !== productId // Only check product ID
+      );
+      saveCartToStorage(state.items);
+    },
 
     clearCart: (state) => {
       state.items = [];

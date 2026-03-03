@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useAppSelector } from "@/store";
 
 export interface ProductAnalytics {
   productId: string;
@@ -55,6 +56,7 @@ export const useProductAnalytics = () => {
         throw new Error(data.message || "Failed to fetch analytics summary");
       }
     } catch (err) {
+
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);
@@ -74,9 +76,14 @@ export const useProductAnalytics = () => {
 };
 
 export const useTopClickedProducts = (limit: number = 10, page: number = 1) => {
+  const { token } = useAppSelector((state) => state.auth);
   const [products, setProducts] = useState<ProductAnalytics[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const getAuthHeaders = useCallback((): Record<string, string> => {
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }, [token]);
 
   const fetchTopClicked = useCallback(async () => {
     try {
@@ -90,6 +97,7 @@ export const useTopClickedProducts = (limit: number = 10, page: number = 1) => {
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            ...getAuthHeaders(),
           },
         }
       );
@@ -108,6 +116,7 @@ export const useTopClickedProducts = (limit: number = 10, page: number = 1) => {
         throw new Error(data.message || "Failed to fetch top clicked products");
       }
     } catch (err) {
+
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);
@@ -116,7 +125,7 @@ export const useTopClickedProducts = (limit: number = 10, page: number = 1) => {
 
   useEffect(() => {
     fetchTopClicked();
-  }, [limit, page, fetchTopClicked]);
+  }, [limit, page, fetchTopClicked, getAuthHeaders]);
 
   return {
     products,
@@ -127,9 +136,14 @@ export const useTopClickedProducts = (limit: number = 10, page: number = 1) => {
 };
 
 export const useTopConversionProducts = (limit: number = 10, page: number = 1) => {
+  const { token } = useAppSelector((state) => state.auth);
   const [products, setProducts] = useState<ProductAnalytics[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const getAuthHeaders = useCallback((): Record<string, string> => {
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }, [token]);
 
   const fetchTopConversion = useCallback(async () => {
     try {
@@ -143,6 +157,7 @@ export const useTopConversionProducts = (limit: number = 10, page: number = 1) =
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            ...getAuthHeaders(),
           },
         }
       );
@@ -163,6 +178,7 @@ export const useTopConversionProducts = (limit: number = 10, page: number = 1) =
         );
       }
     } catch (err) {
+
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);
@@ -171,7 +187,7 @@ export const useTopConversionProducts = (limit: number = 10, page: number = 1) =
 
   useEffect(() => {
     fetchTopConversion();
-  }, [limit, page, fetchTopConversion]);
+  }, [limit, page, fetchTopConversion, getAuthHeaders]);
 
   return {
     products,

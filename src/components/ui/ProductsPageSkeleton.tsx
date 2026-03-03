@@ -7,7 +7,7 @@ const ProductsPageSkeleton: React.FC = () => {
   return (
     <SkeletonTheme baseColor="#27272a" highlightColor="#3f3f46">
       <div className="min-h-screen bg-black text-white">
-        <div className="container mx-auto px-4 py-8 lg:px-8 pt-24">
+        <div className="container mx-auto px-4 py-8 lg:px-8 pt-20">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar Filters Skeleton */}
             <div className="lg:w-1/5">
@@ -57,7 +57,12 @@ const ProductsPageSkeleton: React.FC = () => {
               </div>
 
               {/* Products Grid Skeleton */}
-              <div className={getResponsiveGridClasses('products').replace('gap-4', 'gap-6')}>
+              <div
+                className={getResponsiveGridClasses("products").replace(
+                  "gap-4",
+                  "gap-6"
+                )}
+              >
                 {Array.from({ length: 20 }).map((_, index) => (
                   <div
                     key={index}

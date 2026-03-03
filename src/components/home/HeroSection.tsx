@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ArrowRight } from "lucide-react";
@@ -79,17 +79,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   heroImages = [],
   promotionalBanner = null,
 }) => {
-  const [showSwiper, setShowSwiper] = useState(false);
-
-
-  // Delay Swiper load để tối ưu LCP - load static content trước
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSwiper(true);
-    }, 1000); // Load Swiper sau 1 giây
-
-    return () => clearTimeout(timer);
-  }, []);
+  // Load Swiper immediately to enable priority loading for first hero image (LCP optimization)
+  const showSwiper = true;
 
   if (loading) {
     return <HeroSectionSkeleton />;
@@ -157,9 +148,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                 )}
               </h1>
             </div>
-            <p className="text-gray-300 text-sm md:text-base lg:text-lg mb-6 md:mb-8 leading-relaxed">
-              {bannerData.description}
-            </p>
+            <div
+              className="text-gray-300 text-sm md:text-base lg:text-lg mb-6 md:mb-8 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: bannerData.description }}
+            />
             <Link
               href={bannerData.buttonLink}
               className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-medium hover:bg-gray-200 transition-all duration-300 w-fit text-sm md:text-base"
@@ -171,7 +163,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
           {/* Hero carousel - lazy loaded sau LCP */}
           <div className="lg:col-span-2 order-1 lg:order-2">
-            <div className="h-64 md:h-96 lg:h-[500px] rounded-2xl md:rounded-3xl overflow-hidden bg-zinc-900">
+            <div className="h-64 md:h-96 lg:h-full rounded-2xl md:rounded-3xl overflow-hidden bg-zinc-900">
               {!showSwiper ? (
                 // Fast loading fallback - skeleton placeholder
                 <div className="relative h-full bg-gray-200 rounded-2xl md:rounded-3xl animate-pulse" />

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,8 @@ export interface ProductFormData {
   capacityIds: string[];
   categoryIds: string[];
   isActive: boolean;
+  isVip: boolean; // ✅ NEW FIELD
+  isFeatured: boolean; // ✅ NEW FIELD
   stockQuantity: number;
   productUrl: string;
 }
@@ -69,6 +71,8 @@ export function useProductForm(
     capacityIds: initialData?.capacityIds || [],
     categoryIds: initialData?.categoryIds || [],
     isActive: initialData?.isActive ?? true,
+    isVip: initialData?.isVip ?? false, // ✅ NEW FIELD - default false
+    isFeatured: initialData?.isFeatured ?? false, // ✅ NEW FIELD - default false
     stockQuantity: initialData?.stockQuantity || 0,
     productUrl: initialData?.productUrl || "",
   });
@@ -83,6 +87,16 @@ export function useProductForm(
 
   const updateField = useCallback(
     (field: keyof ProductFormData, value: unknown) => {
+      // Debug isVip changes
+      if (field === "isVip") {
+        console.log("🔍 DEBUG: isVip field updated:", {
+          field,
+          value,
+          valueType: typeof value,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
       setFormData((prev) => ({
         ...prev,
         [field]: value,
@@ -164,15 +178,26 @@ export function useProductForm(
   };
 
   const submitForm = useCallback(async () => {
+    console.log("🚨 SUBMIT FORM STARTED - Debug point 1");
+    console.log("🚨 Form data at start:", formData);
+
     if (!validateForm()) {
+      console.log("🚨 VALIDATION FAILED - Form not submitted");
       toast.error("Vui lòng kiểm tra lại thông tin");
       return;
     }
 
+    console.log("🚨 VALIDATION PASSED - Continuing with submission");
+
     try {
       setIsSubmitting(true);
 
-      // Debug current form state
+      // Debug form state before submission
+      console.log("🔍 DEBUG: Form state before submission:", {
+        formDataIsVip: formData.isVip,
+        formDataIsVipType: typeof formData.isVip,
+        fullFormData: formData,
+      });
 
       // Prepare images with order information
       const imagesWithOrder =
@@ -182,6 +207,13 @@ export function useProductForm(
           ? [{ url: formData.imageUrl.trim(), order: 0 }]
           : [];
 
+      // Debug isVip value before creating payload
+      console.log("🔍 DEBUG: isVip value check:", {
+        formDataIsVip: formData.isVip,
+        formDataIsVipType: typeof formData.isVip,
+        isVipValueBeforePayload: formData.isVip,
+        timestamp: new Date().toISOString(),
+      });
 
       const payload = {
         name: formData.name.trim(),
@@ -192,9 +224,18 @@ export function useProductForm(
         categoryIds: formData.categoryIds,
         stockQuantity: formData.stockQuantity,
         productUrl: formData.productUrl.trim() || undefined,
+        isVip: formData.isVip,
+        isFeatured: formData.isFeatured,
         ...(isEditing && productId && { id: productId }),
       };
 
+      // Debug payload immediately after creation
+      console.log("🔍 DEBUG: Payload immediately after creation:", {
+        payloadIsVip: payload.isVip,
+        payloadIsVipType: typeof payload.isVip,
+        hasIsVipProperty: payload.hasOwnProperty("isVip"),
+        payloadKeys: Object.keys(payload),
+      });
 
       const url =
         isEditing && productId
@@ -203,13 +244,36 @@ export function useProductForm(
 
       const method = isEditing ? "PUT" : "POST";
 
+      console.log("🔍 DEBUG: Payload being sent to API:", {
+        isVip: payload.isVip,
+        isVipType: typeof payload.isVip,
+        method,
+        url,
+        fullPayload: payload,
+      });
+
+      // Debug the actual JSON string being sent
+      const jsonPayload = JSON.stringify(payload);
+      console.log("🔍 DEBUG: JSON string being sent:", jsonPayload);
+      console.log(
+        "🔍 DEBUG: JSON contains isVip?",
+        jsonPayload.includes("isVip")
+      );
+
+      // Add alert to make sure we see this
+      alert(
+        `🚨 ABOUT TO SEND API REQUEST\nisVip: ${
+          payload.isVip
+        }\nJSON: ${jsonPayload.substring(0, 200)}...`
+      );
+
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
           ...getAuthHeaders(),
         },
-        body: JSON.stringify(payload),
+        body: jsonPayload,
       });
 
       const data = await response.json();
@@ -241,7 +305,6 @@ export function useProductForm(
       if (onError) {
         onError(errorMsg);
       }
-
     } finally {
       setIsSubmitting(false);
     }
@@ -290,6 +353,10 @@ export function useProductForm(
 
   const submitFormWithImages = useCallback(
     async (images: string[]) => {
+      console.log("🚨 SUBMIT FORM WITH IMAGES STARTED - Debug point 1");
+      console.log("🚨 Images provided:", images);
+      console.log("🚨 Form data at start:", formData);
+
       // Create temporary form data with provided images
       const tempFormData = {
         ...formData,
@@ -297,15 +364,25 @@ export function useProductForm(
         imageUrl: images.length > 0 ? images[0] : formData.imageUrl,
       };
 
+      console.log("🚨 Temp form data with images:", tempFormData);
+
       if (!validateFormData(tempFormData)) {
+        console.log("🚨 VALIDATION FAILED - Form not submitted");
         toast.error("Vui lòng kiểm tra lại thông tin");
         return;
       }
+
+      console.log("🚨 VALIDATION PASSED - Continuing with submission");
 
       try {
         setIsSubmitting(true);
 
         // Debug current form state
+        console.log("🔍 DEBUG: Form state before submission (WITH IMAGES):", {
+          tempFormDataIsVip: tempFormData.isVip,
+          tempFormDataIsVipType: typeof tempFormData.isVip,
+          fullTempFormData: tempFormData,
+        });
 
         // Prepare images with order information
         const imagesWithOrder =
@@ -315,6 +392,13 @@ export function useProductForm(
             ? [{ url: tempFormData.imageUrl.trim(), order: 0 }]
             : [];
 
+        // Debug isVip value before creating payload
+        console.log("🔍 DEBUG: isVip value check (WITH IMAGES):", {
+          tempFormDataIsVip: tempFormData.isVip,
+          tempFormDataIsVipType: typeof tempFormData.isVip,
+          isVipValueBeforePayload: tempFormData.isVip,
+          timestamp: new Date().toISOString(),
+        });
 
         const payload = {
           name: tempFormData.name.trim(),
@@ -325,9 +409,22 @@ export function useProductForm(
           categoryIds: tempFormData.categoryIds,
           stockQuantity: tempFormData.stockQuantity,
           productUrl: tempFormData.productUrl.trim() || undefined,
+          isVip: tempFormData.isVip, // ✅ ADDED: isVip field
+          isFeatured: tempFormData.isFeatured, // ✅ ADDED: isFeatured field
           ...(isEditing && productId && { id: productId }),
         };
 
+        // Debug payload immediately after creation
+        console.log(
+          "🔍 DEBUG: Payload immediately after creation (WITH IMAGES):",
+          {
+            payloadIsVip: payload.isVip,
+            payloadIsVipType: typeof payload.isVip,
+            hasIsVipProperty: payload.hasOwnProperty("isVip"),
+            payloadKeys: Object.keys(payload),
+            fullPayload: payload,
+          }
+        );
 
         const url =
           isEditing && productId
@@ -375,14 +472,21 @@ export function useProductForm(
         if (onError) {
           onError(errorMsg);
         }
-
       } finally {
         setIsSubmitting(false);
       }
     },
-    [formData, isEditing, productId, onSuccess, onError, router, getAuthHeaders, validateFormData]
+    [
+      formData,
+      isEditing,
+      productId,
+      onSuccess,
+      onError,
+      router,
+      getAuthHeaders,
+      validateFormData,
+    ]
   );
-
 
   const resetForm = useCallback(() => {
     setFormData({
@@ -394,6 +498,8 @@ export function useProductForm(
       capacityIds: initialData?.capacityIds || [],
       categoryIds: initialData?.categoryIds || [],
       isActive: initialData?.isActive ?? true,
+      isVip: initialData?.isVip ?? false, // ✅ NEW FIELD - default false
+      isFeatured: initialData?.isFeatured ?? false, // ✅ NEW FIELD - default false
       stockQuantity: initialData?.stockQuantity || 0,
       productUrl: initialData?.productUrl || "",
     });

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { PageHeader } from "@/components/admin/PageHeader";
@@ -13,13 +13,35 @@ import { RevenueTrend } from "@/components/admin/statistics/RevenueTrend";
 import { AnalyticsOverview } from "@/components/admin/analytics/AnalyticsOverview";
 import { TopClickedProducts } from "@/components/admin/analytics/TopClickedProducts";
 import { TopConversionProducts } from "@/components/admin/analytics/TopConversionProducts";
+import { useTopClickedProducts, useTopConversionProducts } from "@/hooks/admin/useProductAnalytics";
 
 export default function StatisticsPage() {
   const [period, setPeriod] = useState<"week" | "month" | "year">("month");
+  const [clickedProductsPage, setClickedProductsPage] = useState(1);
+  const [conversionProductsPage, setConversionProductsPage] = useState(1);
   const { data, loading, error, fetchStatistics } = useStatistics(period);
+
+  // Fetch paginated analytics data
+  const {
+    products: clickedProducts,
+    loading: clickedLoading,
+  } = useTopClickedProducts(10, clickedProductsPage);
+
+  const {
+    products: conversionProducts,
+    loading: conversionLoading,
+  } = useTopConversionProducts(10, conversionProductsPage);
 
   const handlePeriodChange = (newPeriod: "week" | "month" | "year") => {
     setPeriod(newPeriod);
+  };
+
+  const handleClickedProductsPageChange = (page: number) => {
+    setClickedProductsPage(page);
+  };
+
+  const handleConversionProductsPageChange = (page: number) => {
+    setConversionProductsPage(page);
   };
 
   if (loading) {
@@ -86,7 +108,7 @@ export default function StatisticsPage() {
       <OverviewCards
         data={data.overview}
         period={period}
-        lowStockCount={data.lowStockProducts.length}
+        lowStockCount={data.lowStockProducts?.length || 0}
       />
 
       {/* Revenue Trend */}
@@ -99,7 +121,7 @@ export default function StatisticsPage() {
       </div>
 
       {/* Low Stock Products Alert */}
-      <LowStockAlert products={data.lowStockProducts} />
+      <LowStockAlert />
 
       {/* Product Analytics Section */}
       {data.productAnalytics && (
@@ -124,16 +146,16 @@ export default function StatisticsPage() {
           {/* Top Clicked Products & Top Conversion Products */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <TopClickedProducts
-              page={1}
-              onPageChange={() => {}}
-              products={data.productAnalytics.topClickedProducts}
-              loading={false}
+              page={clickedProductsPage}
+              onPageChange={handleClickedProductsPageChange}
+              products={clickedProducts}
+              loading={clickedLoading}
             />
             <TopConversionProducts
-              page={1}
-              onPageChange={() => {}}
-              products={data.productAnalytics.topConversionProducts}
-              loading={false}
+              page={conversionProductsPage}
+              onPageChange={handleConversionProductsPageChange}
+              products={conversionProducts}
+              loading={conversionLoading}
             />
           </div>
         </>

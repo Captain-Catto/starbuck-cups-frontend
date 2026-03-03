@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
 
 export async function GET() {
@@ -18,8 +18,13 @@ export async function GET() {
 
     const data = await response.json();
 
-    return NextResponse.json(data);
-  } catch (error) {
+    return NextResponse.json(data, {
+      headers: {
+        // Cache for 1 hour on CDN, revalidate in background for 24 hours
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    });
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch categories" },
       { status: 500 }

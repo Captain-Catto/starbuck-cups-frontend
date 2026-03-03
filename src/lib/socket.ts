@@ -1,4 +1,4 @@
-import { io, Socket } from "socket.io-client";
+﻿import { io, Socket } from "socket.io-client";
 import { NotificationPayload } from "@/types/notification.types";
 
 interface ServerToClientEvents {
@@ -87,7 +87,7 @@ class SocketManager {
         reject(error);
       });
 
-      this.socket.on("disconnect", (reason) => {
+      this.socket.on("disconnect", () => {
         this.isConnecting = false;
       });
 

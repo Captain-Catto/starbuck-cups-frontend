@@ -1,4 +1,4 @@
-// JWT token utilities
+﻿// JWT token utilities
 export interface JWTPayload {
   id: string;
   email: string;
@@ -34,6 +34,7 @@ export function decodeJWT(token: string): JWTPayload | null {
 
     return data;
   } catch (error) {
+
     return null;
   }
 }

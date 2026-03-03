@@ -7,10 +7,12 @@ import {
   Image as ImageIcon,
   Loader2,
 } from "lucide-react";
-import Image from "next/image";
 import type { Product } from "@/types";
 import { ProductStatusBadge } from "@/components/admin/products/ProductStatusBadge";
 import { getFirstProductImage } from "@/lib/utils/image";
+import { ConditionalVipBadge } from "@/components/ui/VipBadge";
+import { ConditionalFeaturedBadge } from "@/components/ui/FeaturedBadge";
+import OptimizedImage from "@/components/OptimizedImage";
 
 interface ProductCategory {
   category: {
@@ -185,9 +187,9 @@ export function ProductsTable({
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 h-12 w-12">
+                      <div className="flex-shrink-0 h-12 w-12 relative">
                         {firstImage ? (
-                          <Image
+                          <OptimizedImage
                             src={firstImage.url}
                             alt={product.name}
                             width={48}
@@ -210,6 +212,14 @@ export function ProductsTable({
                           }}
                         >
                           <ImageIcon className="w-6 h-6 text-gray-400" />
+                        </div>
+                        {/* Featured Badge - TOP LEFT */}
+                        <div className="absolute -top-1 -left-1 z-10">
+                          <ConditionalFeaturedBadge product={product} size="sm" />
+                        </div>
+                        {/* VIP Badge - TOP RIGHT */}
+                        <div className="absolute -top-1 -right-1 z-10">
+                          <ConditionalVipBadge product={product} size="sm" />
                         </div>
                       </div>
                       <div className="ml-4">

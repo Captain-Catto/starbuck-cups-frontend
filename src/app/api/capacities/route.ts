@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
 
 export async function GET() {
@@ -19,7 +19,7 @@ export async function GET() {
     const data = await response.json();
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch capacities" },
       { status: 500 }

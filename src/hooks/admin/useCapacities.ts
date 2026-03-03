@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import type { Capacity } from "@/types";
+import type { Capacity, PaginationMeta } from "@/types";
 
 interface CapacityWithCount extends Capacity {
   _count?: {
@@ -30,6 +30,9 @@ export interface UseCapacitiesReturn {
   // Data
   capacities: CapacityWithCount[];
   filteredCapacities: CapacityWithCount[];
+
+  // Pagination
+  pagination: PaginationMeta | null;
 
   // State
   loading: boolean;
@@ -66,6 +69,9 @@ export interface UseCapacitiesReturn {
   cancelDelete: () => void;
   setFormData: (data: CapacityFormData) => void;
   setConfirmModal: React.Dispatch<React.SetStateAction<ConfirmModal>>;
+
+  // Pagination actions
+  onPageChange: (page: number) => void;
 }
 
 export function useCapacities(): UseCapacitiesReturn {
@@ -75,6 +81,10 @@ export function useCapacities(): UseCapacitiesReturn {
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "inactive"
   >("all");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -107,22 +117,42 @@ export function useCapacities(): UseCapacitiesReturn {
   const fetchCapacities = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/capacities", {
-        headers: getAuthHeaders(),
-      });
+
+      const response = await fetch(
+        `/api/admin/capacities?page=${currentPage}&size=20`,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
+
       const data = await response.json();
 
-      if (data.success) {
-        setCapacities(data.data?.items || []);
+      if (data.success && data.data) {
+        const capacitiesList = data.data.items || [];
+
+        // Set pagination data from response
+        const paginationInfo = data.data.pagination;
+        if (paginationInfo) {
+          setPagination({
+            current_page: paginationInfo.current_page,
+            has_next: paginationInfo.has_next,
+            has_prev: paginationInfo.has_prev,
+            per_page: paginationInfo.per_page,
+            total_items: paginationInfo.total_items,
+            total_pages: paginationInfo.total_pages,
+          });
+        }
+
+        setCapacities(capacitiesList);
       } else {
         toast.error(data.message || "Không thể tải danh sách dung tích");
       }
-    } catch (error) {
+    } catch {
       toast.error("Có lỗi xảy ra khi tải dung tích");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentPage]);
 
   const validateForm = (): boolean => {
     const errors: CapacityFormErrors = {};
@@ -179,6 +209,7 @@ export function useCapacities(): UseCapacitiesReturn {
         toast.error(data.message || "Có lỗi xảy ra");
       }
     } catch (error) {
+
       toast.error("Có lỗi xảy ra khi lưu dung tích");
     } finally {
       setActionLoading(null);
@@ -224,6 +255,7 @@ export function useCapacities(): UseCapacitiesReturn {
         toast.error(data.message || "Có lỗi xảy ra khi xóa");
       }
     } catch (error) {
+
       toast.error("Có lỗi xảy ra khi xóa dung tích");
     } finally {
       setActionLoading(null);
@@ -286,6 +318,7 @@ export function useCapacities(): UseCapacitiesReturn {
     } catch (error) {
       // Rollback on network error
       setCapacities(capacities);
+
       toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
     } finally {
       setActionLoading(null);
@@ -308,6 +341,11 @@ export function useCapacities(): UseCapacitiesReturn {
     setShowModal(true);
   };
 
+  // Pagination handler
+  const onPageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
   const filteredCapacities = capacities.filter((capacity) => {
     const matchesSearch = capacity.name
       .toLowerCase()
@@ -328,6 +366,9 @@ export function useCapacities(): UseCapacitiesReturn {
     // Data
     capacities,
     filteredCapacities,
+
+    // Pagination
+    pagination,
 
     // State
     loading,
@@ -364,5 +405,8 @@ export function useCapacities(): UseCapacitiesReturn {
     cancelDelete,
     setFormData,
     setConfirmModal,
+
+    // Pagination actions
+    onPageChange,
   };
 }

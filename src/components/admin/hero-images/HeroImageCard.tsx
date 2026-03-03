@@ -1,8 +1,8 @@
 import { Eye, Edit, Trash2, GripVertical } from "lucide-react";
-import Image from "next/image";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { HeroImage } from "@/hooks/admin/useHeroImages";
+import OptimizedImage from "@/components/OptimizedImage";
 
 interface HeroImageCardProps {
   image: HeroImage;
@@ -52,11 +52,12 @@ export function HeroImageCard({
 
       {/* Image Preview */}
       <div className="relative h-48 bg-gray-700">
-        <Image
+        <OptimizedImage
           src={image.imageUrl}
           alt={image.altText}
           fill
           className="object-contain"
+          style={{ objectFit: "contain" }}
         />
         <div className="absolute top-2 right-2 flex gap-1">
           <span

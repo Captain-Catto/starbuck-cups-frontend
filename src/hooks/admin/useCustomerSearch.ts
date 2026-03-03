@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useAppSelector } from "@/store";
 import { Customer } from "@/types/orders";
 
@@ -19,10 +19,12 @@ export function useCustomerSearch() {
   useEffect(() => {
     // Only fetch when session has been checked and we have a token
     if (!sessionChecked) {
+
       return;
     }
 
     if (!token) {
+
       setCustomers([]);
       setLoadingCustomers(false);
       return;
@@ -39,6 +41,7 @@ export function useCustomerSearch() {
 
         if (token) {
           headers.Authorization = `Bearer ${token}`;
+
         }
 
         const response = await fetch(
@@ -51,10 +54,12 @@ export function useCustomerSearch() {
         if (data.success && data.data && data.data.items) {
           setCustomers(data.data.items);
         } else {
+
           // Fallback to empty array
           setCustomers([]);
         }
       } catch (error) {
+
         setCustomers([]);
       } finally {
         setLoadingCustomers(false);
@@ -95,9 +100,11 @@ export function useCustomerSearch() {
       if (data.success && data.data && data.data.items) {
         setSearchResults(data.data.items);
       } else {
+
         setSearchResults([]);
       }
     } catch (error) {
+
       setSearchResults([]);
     } finally {
       setSearchingCustomers(false);

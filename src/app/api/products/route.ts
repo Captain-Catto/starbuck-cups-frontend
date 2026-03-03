@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
 
 export async function GET(request: NextRequest) {
@@ -11,7 +11,15 @@ export async function GET(request: NextRequest) {
       query.append(key, value);
     });
 
-    const backendUrl = `${getApiUrl("products/public")}${query.toString() ? "?" + query.toString() : ""}`;
+    const backendUrl = `${getApiUrl("products/public")}${
+      query.toString() ? "?" + query.toString() : ""
+    }`;
+
+    console.log("🔍 [Products API] Making request to:", {
+      backendUrl,
+      queryParams: query.toString(),
+      allParams: [...query.entries()],
+    });
 
     const response = await fetch(backendUrl, {
       method: "GET",
@@ -27,7 +35,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch products" },
       { status: 500 }

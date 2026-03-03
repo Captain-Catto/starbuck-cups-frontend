@@ -7,10 +7,10 @@ import {
   CheckCircle,
   MessageCircle,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import type { Consultation, ConsultationStatus } from "@/types";
 import { getFirstProductImageUrl } from "@/lib/utils/image";
+import OptimizedImage from "@/components/OptimizedImage";
 
 interface ConsultationDetailModalProps {
   isOpen: boolean;
@@ -139,9 +139,11 @@ export function ConsultationDetailModal({
                       <div className="flex-shrink-0">
                         {firstImage ? (
                           <div className="w-16 h-16 relative bg-gray-800 rounded-lg overflow-hidden border border-gray-600">
-                            <Image
+                            <OptimizedImage
                               src={firstImage}
                               alt={item.productName}
+                              width={64}
+                              height={64}
                               fill
                               className="object-cover"
                               sizes="64px"
@@ -156,7 +158,7 @@ export function ConsultationDetailModal({
 
                       {/* Product Info */}
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-2">
                           <Link
                             href={`/products/${
                               item.product?.slug || item.productId
@@ -168,9 +170,17 @@ export function ConsultationDetailModal({
                             <ExternalLink className="w-3 h-3" />
                           </Link>
                         </div>
-                        <p className="text-xs text-gray-400">
-                          {item.category} • {item.color} • {item.capacity}
-                        </p>
+                        <div className="space-y-1">
+                          <p className="text-xs text-gray-400">
+                            <span className="text-gray-300">Danh mục:</span> {item.category}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            <span className="text-gray-300">Màu sắc:</span> {item.color}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            <span className="text-gray-300">Dung tích:</span> {item.capacity}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   );

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "C:\\Users\\LenovoLegion5\\.local\\bin\\serena-mcp-server.exe",
+      "args": [],
+      "env": {}
+    }
+  }
+}

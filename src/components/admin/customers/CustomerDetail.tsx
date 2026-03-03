@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useAppSelector } from "@/store";
@@ -60,15 +60,18 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
 
   // Debug auth state
   useEffect(() => {
+
   }, [token, isAuthenticated, sessionChecked]);
 
   useEffect(() => {
     // Only fetch when session has been checked and we have a token
     if (!sessionChecked) {
+
       return;
     }
 
     if (!token) {
+
       setError("Authentication required");
       setLoading(false);
       return;
@@ -88,7 +91,9 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
 
         if (token) {
           headers.Authorization = `Bearer ${token}`;
+
         } else {
+
         }
 
         const response = await fetch(`/api/admin/customers/${customerId}`, {
@@ -103,6 +108,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
 
         setCustomer(data.data);
       } catch (error) {
+
         setError(
           error instanceof Error ? error.message : "Failed to fetch customer"
         );

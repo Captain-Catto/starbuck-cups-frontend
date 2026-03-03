@@ -1,4 +1,4 @@
-import { toast } from "sonner";
+﻿import { toast } from "sonner";
 
 // Token refresh notification service
 export class TokenRefreshNotification {
@@ -9,6 +9,7 @@ export class TokenRefreshNotification {
 
   static showRefreshSuccess() {
     // Silent refresh - không hiển thị thông báo
+
     this.hasShownRefreshNotification = true;
 
     // Clear existing timer trước khi tạo mới
@@ -33,6 +34,7 @@ export class TokenRefreshNotification {
   static showRefreshErrorWithRedirect(redirectUrl: string = "/admin/login") {
     // Prevent multiple concurrent redirects
     if (this.isRedirecting) {
+
       return;
     }
 
@@ -59,6 +61,7 @@ export class TokenRefreshNotification {
   static showSessionExpiredWithRedirect(redirectUrl: string = "/admin/login") {
     // Prevent multiple concurrent redirects
     if (this.isRedirecting) {
+
       return;
     }
 
@@ -84,6 +87,7 @@ export class TokenRefreshNotification {
 
   static showTokenExpiring() {
     // Silent token expiration handling - không hiển thị thông báo
+
   }
 
   // Method để cleanup tất cả timers - gọi khi logout hoặc unmount
@@ -101,6 +105,7 @@ export class TokenRefreshNotification {
     // Reset tất cả flags
     this.hasShownRefreshNotification = false;
     this.isRedirecting = false;
+
   }
 
   // Method để check timer status (useful for debugging)

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
 
 // Track add to cart click
@@ -34,14 +34,13 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (error) {
-
+  } catch {
     // Return success even on error to prevent blocking user experience
     return NextResponse.json(
       {
         success: true,
         message: "Tracking request processed",
-        error: "Silent failure - tracking error logged"
+        error: "Silent failure - tracking error logged",
       },
       { status: 200 }
     );

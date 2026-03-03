@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useAppSelector } from "@/store";
 import { Product } from "@/types/orders";
 
@@ -101,9 +101,11 @@ export function useProductSearch() {
       if (data.success && data.data && data.data.items) {
         setProductSearchResults(data.data.items);
       } else {
+
         setProductSearchResults([]);
       }
     } catch (error) {
+
       setProductSearchResults([]);
     } finally {
       setSearchingProducts(false);

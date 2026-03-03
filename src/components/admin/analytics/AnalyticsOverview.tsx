@@ -26,7 +26,7 @@ export function AnalyticsOverview({ data }: AnalyticsOverviewProps) {
       description: `${data.uniqueProductsClicked} sản phẩm được click`,
     },
     {
-      title: "Tổng lượt thêm giỏ hàng",
+      title: "Tổng lượt thêm giỏ tư vấn",
       value: formatNumber(data.totalAddToCarts),
       icon: ShoppingCart,
       color: "text-green-400",

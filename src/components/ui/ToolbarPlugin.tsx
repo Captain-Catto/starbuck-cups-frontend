@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {
@@ -102,6 +102,7 @@ const ToolbarPlugin = () => {
 
 
   const handleLineHeightChange = (newLineHeight: string) => {
+
     setLineHeight(newLineHeight);
 
     editor.update(() => {
@@ -120,12 +121,12 @@ const ToolbarPlugin = () => {
           while (currentNode) {
             if (currentNode.getType() === 'paragraph') {
               paragraphNodes.add(currentNode);
+
               break;
             }
             currentNode = currentNode.getParent();
           }
         });
-
 
         // Áp dụng style cho từng paragraph
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -137,6 +138,7 @@ const ToolbarPlugin = () => {
             // Remove line-height style when "normal" is selected
             const newStyle = currentStyle.replace(/line-height:\s*[^;]+;?/g, '').trim();
             writableNode.setStyle(newStyle);
+
           } else {
             // Apply specific line-height value
             const styleWithoutLineHeight = currentStyle.replace(/line-height:\s*[^;]+;?/g, '').trim();
@@ -144,10 +146,12 @@ const ToolbarPlugin = () => {
               `${styleWithoutLineHeight}; line-height: ${newLineHeight}` :
               `line-height: ${newLineHeight}`;
             writableNode.setStyle(newStyle);
+
           }
         });
 
       } else {
+
       }
     });
   };
@@ -168,12 +172,14 @@ const ToolbarPlugin = () => {
         const tempSrc = URL.createObjectURL(file);
 
         // Insert image với URL tạm thời trước
+
         editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
           src: tempSrc,
           altText: `Đang tải lên ${file.name}...`,
         });
 
         // Upload lên AWS ngay
+
         const response = await uploadAPI.uploadSingle(file, 'uploads');
 
         if (response.success) {
@@ -181,6 +187,7 @@ const ToolbarPlugin = () => {
 
           if (awsUrl) {
             // Đơn giản hóa: Insert image mới với AWS URL
+
             editor.update(() => {
               // Xóa image cũ với blob URL và insert image mới với AWS URL
               const root = $getRoot();
@@ -194,6 +201,7 @@ const ToolbarPlugin = () => {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   paragraphChildren.forEach((grandChild: any) => {
                     if ($isImageNode(grandChild) && grandChild.getSrc() === tempSrc) {
+
                       grandChild.remove();
 
                       // Insert image mới với AWS URL
@@ -202,6 +210,7 @@ const ToolbarPlugin = () => {
                         altText: file.name,
                       });
                       child.append(newImageNode);
+
                     }
                   });
                 }
@@ -211,14 +220,17 @@ const ToolbarPlugin = () => {
             // Cleanup URL tạm thời sau khi đã thay thế
             setTimeout(() => {
               URL.revokeObjectURL(tempSrc);
+
             }, 100);
 
           }
         }
       } catch (error) {
+
         // Có thể thêm toast notification ở đây
       } finally {
         setIsUploading(false);
+
       }
 
       // Reset input

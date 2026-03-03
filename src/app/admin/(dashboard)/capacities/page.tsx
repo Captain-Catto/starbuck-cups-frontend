@@ -13,6 +13,9 @@ export default function CapacitiesManagement() {
     // Data
     filteredCapacities,
 
+    // Pagination
+    pagination,
+
     // State
     loading,
     searchQuery,
@@ -47,6 +50,7 @@ export default function CapacitiesManagement() {
     setFormData,
     performToggleStatus,
     setConfirmModal,
+    onPageChange,
   } = useCapacities();
 
   return (
@@ -69,9 +73,11 @@ export default function CapacitiesManagement() {
           loading={loading}
           actionLoading={actionLoading}
           searchQuery={searchQuery}
+          pagination={pagination}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onToggleStatus={handleToggleStatus}
+          onPageChange={onPageChange}
         />
       </div>
 

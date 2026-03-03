@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/store";
 import { OrderFormData, Product } from "@/types/orders";
@@ -329,12 +329,14 @@ export function useOrderCreation() {
       const data = await response.json();
 
       if (data.success) {
+
         toast.success("Đơn hàng đã được tạo thành công!");
         router.push("/admin/orders");
       } else {
         throw new Error(data.message || "Failed to create order");
       }
     } catch (error) {
+
       const errorMessage =
         error instanceof Error
           ? `Có lỗi xảy ra: ${error.message}`

@@ -37,6 +37,7 @@ export async function PUT(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
+    console.error("Upload product API error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to upload and update product" },
       { status: 500 }

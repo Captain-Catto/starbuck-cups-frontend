@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Cart } from "@/components/ui/Cart";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import ProductInfo from "@/components/ProductInfo";
 import ProductDescription from "@/components/ProductDescription";
 import RelatedProducts from "@/components/RelatedProducts";
@@ -18,27 +18,20 @@ export default function ProductDetailPage() {
       <Header />
 
       {/* Breadcrumb */}
-      <div className="pt-18 lg:pt-12">
+      <div className="pt-18 lg:pt-14">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-2 text-sm text-zinc-400">
-            <Link href="/" className="hover:text-white transition-colors">
-              Trang chủ
-            </Link>
-            <span>/</span>
-            <Link
-              href="/products"
-              className="hover:text-white transition-colors"
-            >
-              Sản phẩm
-            </Link>
-            <span>/</span>
-            <span className="text-white">Chi tiết sản phẩm</span>
-          </div>
+          <Breadcrumb
+            items={[
+              { label: "Trang chủ", href: "/" },
+              { label: "Sản phẩm", href: "/products" },
+              { label: "Chi tiết sản phẩm" },
+            ]}
+          />
         </div>
       </div>
 
       {/* Product Detail Content */}
-      <div className="grid grid-cols-1 lg:gap-6">
+      <div className="grid grid-cols-1 lg:gap-6 pb-4">
         <div className="container mx-auto px-4 pb-4">
           {/* Product Info Section */}
           <ProductInfo />

@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+﻿import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   NotificationData,
   NotificationState,
@@ -48,7 +48,10 @@ const notificationSlice = createSlice({
 
     // Update unread count from server
     updateUnreadCount: (state, action: PayloadAction<number>) => {
+
+
       state.unreadCount = action.payload;
+
     },
 
     // Mark notification as read
@@ -90,11 +93,14 @@ const notificationSlice = createSlice({
 
     // Set notifications (for initial load)
     setNotifications: (state, action: PayloadAction<NotificationData[]>) => {
+
       // Kiểm tra kỹ hơn: read === false hoặc read === undefined đều là unread
       const unreadCount = action.payload.filter((n) => n.read !== true).length;
 
+
       state.notifications = action.payload;
       state.unreadCount = unreadCount;
+
     },
   },
 });

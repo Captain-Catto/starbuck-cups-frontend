@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -29,8 +29,14 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        // Cache for 30 minutes on CDN, revalidate in background for 24 hours
+        'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=86400',
+      },
+    });
   } catch (error: unknown) {
+
     return NextResponse.json(
       {
         success: false,

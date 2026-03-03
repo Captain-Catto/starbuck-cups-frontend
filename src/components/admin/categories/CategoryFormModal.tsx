@@ -1,6 +1,15 @@
+"use client";
+
+import dynamic from "next/dynamic";
 import { X } from "lucide-react";
 import type { Category } from "@/types";
-import RichTextEditor from "@/components/ui/RichTextEditor";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+
+// Dynamic import for RichTextEditor to reduce initial bundle
+const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
+  ssr: false,
+  loading: () => <div className="w-full h-[200px] border rounded-md flex items-center justify-center"><LoadingSpinner /></div>
+});
 
 interface CategoryFormData {
   name: string;

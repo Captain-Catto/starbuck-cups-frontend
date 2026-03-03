@@ -1,12 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import { Product } from "@/types";
 import { getFirstProductImage, getSecondProductImage } from "@/lib/utils/image";
 import { trackProductClick, trackAddToCartClick } from "@/lib/productAnalytics";
+import { ConditionalVipBadge } from "@/components/ui/VipBadge";
+import { ConditionalFeaturedBadge } from "@/components/ui/FeaturedBadge";
+import OptimizedImage from "@/components/OptimizedImage";
 
 interface ProductCardProps {
   product: Product;
@@ -23,32 +25,63 @@ const ProductCard: React.FC<ProductCardProps> = ({
   showAddToCart = false,
   priority = false, // Thêm prop để control priority cho LCP
 }) => {
+  const [isInView, setIsInView] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Intersection Observer để lazy load second image khi card vào viewport
+  useEffect(() => {
+    if (!cardRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          // Unobserve sau khi đã vào viewport 1 lần
+          observer.disconnect();
+        }
+      },
+      {
+        rootMargin: '100px', // Preload 100px trước khi vào viewport
+        threshold: 0.1,
+      }
+    );
+
+    observer.observe(cardRef.current);
+
+    return () => observer.disconnect();
+  }, []);
   const renderProductVisual = () => {
     const firstImage = getFirstProductImage(product.productImages);
     const secondImage = getSecondProductImage(product.productImages);
     if (firstImage) {
       return (
         <>
-          <Image
+          <OptimizedImage
             src={firstImage.url}
             alt={product.name}
             fill
-            className="object-cover opacity-100 group-hover:opacity-0 transition-opacity duration-300"
+            width={600} // Hint for API: 300px display x2 for retina
+            className={`object-contain transition-opacity duration-300 ${
+              secondImage ? "opacity-100 group-hover:opacity-0" : "opacity-100"
+            }`}
             priority={priority}
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 300px"
-            quality={80}
+            quality={70}
+            style={{ objectFit: "contain" }}
           />
-          {secondImage && (
-            <Image
+          {secondImage && (priority || isInView) && (
+            <OptimizedImage
               src={secondImage.url}
               alt={`${product.name} alternate`}
               fill
-              className="object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              loading="lazy"
+              width={600} // Hint for API: 300px display x2 for retina
+              className="object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              loading="eager"
               sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 300px"
-              quality={80}
+              quality={70}
+              style={{ objectFit: "contain" }}
             />
           )}
         </>
@@ -81,12 +114,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
         trackProductClick({
           id: product.id,
           name: product.name,
-          category: product.productCategories?.[0]?.category?.name
+          category: product.productCategories?.[0]?.category?.name,
         });
       }}
     >
-      <div className="bg-zinc-900 rounded-2xl overflow-hidden hover:bg-zinc-800 transition-colors duration-300 relative">
+      <div ref={cardRef} className="bg-zinc-900 rounded-2xl overflow-hidden hover:bg-zinc-800 transition-colors duration-300 relative">
         <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
+          {/* Featured Badge - TOP LEFT */}
+          <div className="absolute top-3 left-3 z-10">
+            <ConditionalFeaturedBadge product={product} size="md" />
+          </div>
+
+          {/* VIP Badge - TOP RIGHT */}
+          <div className="absolute top-3 right-3 z-10">
+            <ConditionalVipBadge product={product} size="sm" />
+          </div>
+
           {product.productImages && product.productImages.length > 0 ? (
             renderProductVisual()
           ) : (
@@ -107,7 +150,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     trackAddToCartClick({
                       id: product.id,
                       name: product.name,
-                      category: product.productCategories?.[0]?.category?.name
+                      category: product.productCategories?.[0]?.category?.name,
                     });
                     onAddToCart(product);
                   }
@@ -131,24 +174,24 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
       {/* Product info */}
       <div className="mt-3">
-        <div className="text-xs text-zinc-500 font-mono mb-1">
-          {product.productCategories
-            ?.map((pc: { category: { name: string } }) => pc.category.name)
-            .join(", ") || "N/A"}{" "}
-          - {product.capacity?.name || "chưa có"}
-        </div>
         <h3
-          className={`text-sm font-medium mb-1 ${
+          className={`text-sm font-medium mb-1 line-clamp-2 ${
             product.stockQuantity === 0 ? "text-zinc-400" : "text-white"
           }`}
         >
           {product.name}
         </h3>
+        {/* <div className="text-xs text-zinc-500 font-mono mb-1">
+          {product.productCategories
+            ?.map((pc: { category: { name: string } }) => pc.category.name)
+            .join(", ") || "N/A"}{" "}
+          - {product.capacity?.name || "chưa có"}
+        </div>
         {product.stockQuantity === 0 && (
           <div className="flex items-center">
             <span className="text-xs text-zinc-400">Hết hàng</span>
           </div>
-        )}
+        )} */}
       </div>
     </Link>
   );

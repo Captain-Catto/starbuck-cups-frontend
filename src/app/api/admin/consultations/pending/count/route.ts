@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
 
 export async function GET(request: NextRequest) {
   try {
-
     // Get authorization header from the request
     const authHeader = request.headers.get("authorization");
     if (!authHeader) {
@@ -13,16 +12,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch(
-      getApiUrl("consultations/pending/count"),
-      {
-        method: "GET",
-        headers: {
-          Authorization: authHeader,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(getApiUrl("consultations/pending/count"), {
+      method: "GET",
+      headers: {
+        Authorization: authHeader,
+        "Content-Type": "application/json",
+      },
+    });
 
     const data = await response.json();
 
@@ -34,7 +30,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

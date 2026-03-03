@@ -1,18 +1,14 @@
 "use client";
 
 import { useAppDispatch, useAppSelector } from "@/store";
-import {
-  removeFromCart,
-  clearCart,
-  closeCart,
-} from "@/store/slices/cartSlice";
+import { removeFromCart, clearCart, closeCart } from "@/store/slices/cartSlice";
 import { X, ShoppingBag, FileText } from "lucide-react";
 import type { CartItem } from "@/types";
-import Image from "next/image";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { getFirstProductImageUrl } from "@/lib/utils/image";
 import Link from "next/link";
+import OptimizedImage from "@/components/OptimizedImage";
 
 interface CartProps {
   className?: string;
@@ -25,9 +21,8 @@ export function Cart({ className = "" }: CartProps) {
 
   const totalItems = items.length;
 
-
   const handleRemoveItem = (productId: string) => {
-    dispatch(removeFromCart(productId));
+    dispatch(removeFromCart({ productId }));
   };
 
   const handleClearCart = () => {
@@ -36,11 +31,31 @@ export function Cart({ className = "" }: CartProps) {
 
   const handleCreateConsultationOrder = () => {
     if (items.length === 0) {
-      toast.error("Giỏ hàng trống! Vui lòng thêm sản phẩm trước.", {
+      toast.error("Giỏ tư vấn trống! Vui lòng thêm sản phẩm trước.", {
         duration: 3000,
       });
       return;
     }
+
+    // Log cart items trước khi chuyển sang consultation
+    console.log("🛒 CART ITEMS BEFORE CONSULTATION:", {
+      totalItems: items.length,
+      items: items.map((item, index) => ({
+        index,
+        productId: item.product.id,
+        productName: item.product.name,
+        selectedColor: item.colorRequest,
+        productDetails: {
+          capacity: item.product.capacity?.name,
+          categories: item.product.productCategories?.map(
+            (pc) => pc.category.name
+          ),
+          availableColors: item.product.productColors?.map(
+            (pc) => pc.color.name
+          ),
+        },
+      })),
+    });
 
     // Close cart modal
     dispatch(closeCart());
@@ -105,13 +120,15 @@ export function Cart({ className = "" }: CartProps) {
             <>
               {/* Cart Items */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {items.map((item) => (
-                  <CartItemCard
-                    key={item.product.id}
-                    item={item}
-                    onRemove={handleRemoveItem}
-                  />
-                ))}
+                {items.map((item, index) => {
+                  return (
+                    <CartItemCard
+                      key={`${item.product.id}-${index}`}
+                      item={item}
+                      onRemove={() => handleRemoveItem(item.product.id)}
+                    />
+                  );
+                })}
               </div>
 
               {/* Footer Actions - Fixed at bottom */}
@@ -141,7 +158,7 @@ export function Cart({ className = "" }: CartProps) {
 
 interface CartItemCardProps {
   item: CartItem;
-  onRemove: (productId: string) => void;
+  onRemove: () => void;
 }
 
 function CartItemCard({ item, onRemove }: CartItemCardProps) {
@@ -155,7 +172,7 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
         className="w-16 h-16 bg-zinc-700 rounded-lg overflow-hidden flex-shrink-0 hover:opacity-80 transition-opacity"
       >
         {getFirstProductImageUrl(product.productImages) ? (
-          <Image
+          <OptimizedImage
             src={getFirstProductImageUrl(product.productImages)}
             alt={product.name}
             width={64}
@@ -175,25 +192,45 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
       <div className="flex-1 min-w-0">
         <Link
           href={`/products/${product.slug}`}
-          className="font-medium text-white text-sm line-clamp-2 mb-1 hover:text-zinc-300 transition-colors block"
+          className="hover:text-zinc-300 transition-colors"
         >
-          {product.name}
+          <h4 className="font-medium text-white text-sm line-clamp-2 mb-1">
+            {product.name}
+          </h4>
         </Link>
 
         <div className="flex items-center gap-2 mb-2">
-          <div className="flex items-center gap-1">
-            {product.productColors?.map((pc: { color: { id: string; name: string; hexCode?: string } }) => (
-              <div
-                key={pc.color.id}
-                className="w-3 h-3 rounded-full border border-zinc-600"
-                style={{ backgroundColor: pc.color.hexCode || "#ffffff" }}
-              />
-            ))}
-          </div>
-          <span className="text-xs text-zinc-400">
-            {product.productColors?.map((pc: { color: { name: string } }) => pc.color.name).join(", ") || "Chưa có"} •{" "}
-            {product.capacity?.name || "Chưa có"}
-          </span>
+          {product.productColors && product.productColors.length > 0 ? (
+            <div className="flex items-center gap-1">
+              <div className="flex -space-x-1">
+                {product.productColors.slice(0, 3).map((pc) => (
+                  <div
+                    key={pc.color.id}
+                    className="w-3 h-3 rounded-full border border-zinc-600"
+                    style={{
+                      backgroundColor: pc.color.hexCode || "#ffffff",
+                    }}
+                    title={pc.color.name}
+                  />
+                ))}
+                {product.productColors.length > 3 && (
+                  <div className="w-3 h-3 rounded-full border border-zinc-600 bg-zinc-700 flex items-center justify-center">
+                    <span className="text-[8px] text-zinc-300">
+                      +{product.productColors.length - 3}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <span className="text-xs text-zinc-400">
+                {product.productColors.length} màu •{" "}
+                {product.capacity?.name || "Chưa có"}
+              </span>
+            </div>
+          ) : (
+            <span className="text-xs text-zinc-400">
+              Chưa có màu • {product.capacity?.name || "Chưa có"}
+            </span>
+          )}
         </div>
 
         {/* Product Label */}
@@ -206,7 +243,7 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
 
       {/* Remove Button */}
       <button
-        onClick={() => onRemove(product.id)}
+        onClick={onRemove}
         className="p-1 hover:bg-zinc-700 rounded transition-colors self-start"
       >
         <X className="w-4 h-4 text-zinc-400" />

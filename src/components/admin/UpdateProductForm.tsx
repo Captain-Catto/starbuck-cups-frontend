@@ -1,12 +1,21 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { X, Upload, ImageIcon } from "lucide-react";
 import type { Category, Color, Capacity } from "@/types";
 import { useUpdateProduct } from "@/hooks/business/useUpdateProduct";
 import { uploadAPI } from "@/lib/api/upload";
 import ImageReorder from "./ImageReorder";
-import RichTextEditor from "@/components/ui/RichTextEditor";
+import { VipToggle } from "./VipRadio";
+import { FeaturedToggle } from "./FeaturedToggle";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+
+// Dynamic import for RichTextEditor to reduce initial bundle
+const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
+  ssr: false,
+  loading: () => <div className="w-full h-[300px] border rounded-md flex items-center justify-center"><LoadingSpinner /></div>
+});
 
 interface UpdateProductFormProps {
   productId: string;
@@ -27,11 +36,18 @@ export function UpdateProductForm({
 }: UpdateProductFormProps) {
   const [isUploading, setIsUploading] = useState(false);
 
-  const { formData, errors, loading, isSubmitting, updateField, toggleArrayField, submitForm } =
-    useUpdateProduct({
-      productId,
-      onSuccess,
-    });
+  const {
+    formData,
+    errors,
+    loading,
+    isSubmitting,
+    updateField,
+    toggleArrayField,
+    submitForm,
+  } = useUpdateProduct({
+    productId,
+    onSuccess,
+  });
 
   // Image upload handler - similar to ProductModal
   const handleImageSelect = useCallback(
@@ -50,7 +66,7 @@ export function UpdateProductForm({
           const newImages = [...currentImages, ...newImageUrls];
           updateField("images", newImages);
         }
-      } catch (error) {
+      } catch {
       } finally {
         setIsUploading(false);
       }
@@ -84,6 +100,7 @@ export function UpdateProductForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     await submitForm();
   };
 
@@ -160,16 +177,22 @@ export function UpdateProductForm({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Danh mục <span className="text-red-500">*</span>
             </label>
-            <div className={`space-y-2 max-h-32 overflow-y-auto border rounded-md p-2 ${
-              errors.categoryIds ? "border-red-500" : "border-gray-300"
-            }`}>
+            <div
+              className={`space-y-2 max-h-32 overflow-y-auto border rounded-md p-2 ${
+                errors.categoryIds ? "border-red-500" : "border-gray-300"
+              }`}
+            >
               {Array.isArray(categories) &&
                 categories.map((category) => (
                   <label key={category.id} className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={formData.categoryIds?.includes(category.id) || false}
-                      onChange={() => toggleArrayField("categoryIds", category.id)}
+                      checked={
+                        formData.categoryIds?.includes(category.id) || false
+                      }
+                      onChange={() =>
+                        toggleArrayField("categoryIds", category.id)
+                      }
                       className="rounded border-gray-300 text-green-600 focus:ring-green-500"
                     />
                     <span className="text-sm">{category.name}</span>
@@ -185,9 +208,11 @@ export function UpdateProductForm({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Màu sắc <span className="text-red-500">*</span>
             </label>
-            <div className={`space-y-2 max-h-32 overflow-y-auto border rounded-md p-2 ${
-              errors.colorIds ? "border-red-500" : "border-gray-300"
-            }`}>
+            <div
+              className={`space-y-2 max-h-32 overflow-y-auto border rounded-md p-2 ${
+                errors.colorIds ? "border-red-500" : "border-gray-300"
+              }`}
+            >
               {Array.isArray(colors) &&
                 colors.map((color) => (
                   <label key={color.id} className="flex items-center gap-2">
@@ -283,18 +308,34 @@ export function UpdateProductForm({
         </div>
 
         {/* Status */}
-        <div>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={formData.isActive}
-              onChange={(e) => updateField("isActive", e.target.checked)}
-              className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-            />
-            <span className="text-sm font-medium text-gray-700">
-              Sản phẩm đang hoạt động
-            </span>
-          </label>
+        <div className="space-y-4">
+          <div>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.isActive}
+                onChange={(e) => updateField("isActive", e.target.checked)}
+                className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                Sản phẩm đang hoạt động
+              </span>
+            </label>
+          </div>
+
+          {/* VIP Status */}
+          <VipToggle
+            value={formData.isVip || false}
+            onChange={(isVip) => updateField("isVip", isVip)}
+            disabled={loading}
+          />
+
+          {/* Featured Status */}
+          <FeaturedToggle
+            value={formData.isFeatured || false}
+            onChange={(isFeatured) => updateField("isFeatured", isFeatured)}
+            disabled={loading}
+          />
         </div>
 
         {/* Images */}

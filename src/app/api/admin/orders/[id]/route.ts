@@ -44,6 +44,7 @@ export async function GET(
 
     return NextResponse.json(data);
   } catch (error) {
+    console.error("Error fetching order:", error);
     return NextResponse.json(
       {
         success: false,
@@ -103,6 +104,7 @@ export async function PUT(
 
     return NextResponse.json(data);
   } catch (error) {
+    console.error("Error updating order:", error);
     return NextResponse.json(
       {
         success: false,

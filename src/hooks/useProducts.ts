@@ -1,33 +1,19 @@
-"use client";
+﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useAppDispatch } from "@/store";
-import { addToCart } from "@/store/slices/cartSlice";
-import type {
-  Product,
-  Category,
-  Color,
-  Capacity,
-  CapacityRange,
-  PaginationMeta,
-} from "@/types";
-import { toast } from "sonner";
+import type { Category, Color, Capacity, CapacityRange } from "@/types";
 
 interface UseProductsReturn {
-  // Data
-  products: Product[];
+  // Filter options data
   categories: Category[];
   colors: Color[];
   capacities: Capacity[];
-  totalItems: number;
-  paginationData: PaginationMeta | null;
-  totalPages: number;
 
   // State
-  loading: boolean;
   isHydrated: boolean;
   searchQuery: string;
+  debouncedSearchQuery: string;
   selectedCategory: string;
   selectedColor: string;
   capacityRange: CapacityRange;
@@ -46,14 +32,22 @@ interface UseProductsReturn {
   setShowFilters: React.Dispatch<React.SetStateAction<boolean>>;
   setSortBy: React.Dispatch<React.SetStateAction<string>>;
   setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
-  handleAddToCart: (product: Product) => void;
   clearFilters: () => void;
   updateURL: (newFilters: {
     search?: string;
     category?: string;
     color?: string;
-    capacityMin?: number;
-    capacityMax?: number;
+    minCapacity?: number;
+    maxCapacity?: number;
+    sort?: string;
+    page?: number;
+  }) => void;
+  debouncedUpdateURL: (newFilters: {
+    search?: string;
+    category?: string;
+    color?: string;
+    minCapacity?: number;
+    maxCapacity?: number;
     sort?: string;
     page?: number;
   }) => void;
@@ -62,10 +56,12 @@ interface UseProductsReturn {
 export function useProducts(): UseProductsReturn {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const dispatch = useAppDispatch();
 
   // Local state
   const [searchQuery, setSearchQuery] = useState(
+    searchParams.get("search") || ""
+  );
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(
     searchParams.get("search") || ""
   );
   const [selectedCategory, setSelectedCategory] = useState(
@@ -75,26 +71,24 @@ export function useProducts(): UseProductsReturn {
     searchParams.get("color") || ""
   );
   const [capacityRange, setCapacityRange] = useState<CapacityRange>({
-    min: parseInt(searchParams.get("capacityMin") || "0"),
-    max: parseInt(searchParams.get("capacityMax") || "9999"),
+    min: parseInt(searchParams.get("minCapacity") || "0"),
+    max: parseInt(searchParams.get("maxCapacity") || "9999"),
   });
   const [showFilters, setShowFilters] = useState(false);
-  const [sortBy, setSortBy] = useState(searchParams.get("sort") || "newest");
+  const [sortBy, setSortBy] = useState(searchParams.get("sort") || "featured");
   const [currentPage, setCurrentPage] = useState(
     parseInt(searchParams.get("page") || "1")
   );
-  const [loading, setLoading] = useState(true);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Real data from API
-  const [products, setProducts] = useState<Product[]>([]);
+  // Filter options data from API
   const [categories, setCategories] = useState<Category[]>([]);
   const [colors, setColors] = useState<Color[]>([]);
   const [capacities, setCapacities] = useState<Capacity[]>([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [paginationData, setPaginationData] = useState<PaginationMeta | null>(
-    null
-  );
+
+  // Debounce timer refs
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const searchDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch filter options (categories, colors, capacities)
   useEffect(() => {
@@ -103,6 +97,7 @@ export function useProducts(): UseProductsReturn {
         // Fetch categories
         const categoriesRes = await fetch("/api/categories");
         const categoriesData = await categoriesRes.json();
+
         if (
           categoriesData.success &&
           categoriesData.data?.items &&
@@ -114,6 +109,7 @@ export function useProducts(): UseProductsReturn {
         // Fetch colors
         const colorsRes = await fetch("/api/colors");
         const colorsData = await colorsRes.json();
+
         if (
           colorsData.success &&
           colorsData.data?.items &&
@@ -125,6 +121,7 @@ export function useProducts(): UseProductsReturn {
         // Fetch capacities
         const capacitiesRes = await fetch("/api/capacities");
         const capacitiesData = await capacitiesRes.json();
+
         if (
           capacitiesData.success &&
           capacitiesData.data?.items &&
@@ -132,146 +129,157 @@ export function useProducts(): UseProductsReturn {
         ) {
           setCapacities(capacitiesData.data.items);
         }
-      } catch (error) {
+      } catch {
+        // Silently handle fetch errors
       }
     };
 
     fetchFilterOptions();
   }, []);
 
-  // Fetch products when filters change
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const params = new URLSearchParams();
-
-        if (searchQuery) params.append("search", searchQuery);
-        if (selectedCategory) params.append("category", selectedCategory);
-        if (selectedColor) params.append("color", selectedColor);
-        if (capacityRange.min > 0)
-          params.append("capacityMin", capacityRange.min.toString());
-        if (capacityRange.max < 9999)
-          params.append("capacityMax", capacityRange.max.toString());
-        params.append("page", currentPage.toString());
-        params.append("limit", "20");
-
-        // Enhanced sorting options
-        switch (sortBy) {
-          case "name_asc":
-            params.append("sortBy", "name");
-            params.append("sortOrder", "asc");
-            break;
-          case "name_desc":
-            params.append("sortBy", "name");
-            params.append("sortOrder", "desc");
-            break;
-          case "newest":
-            params.append("sortBy", "createdAt");
-            params.append("sortOrder", "desc");
-            break;
-          case "oldest":
-            params.append("sortBy", "createdAt");
-            params.append("sortOrder", "asc");
-            break;
-          default:
-            params.append("sortBy", "name");
-            params.append("sortOrder", "asc");
-        }
-
-        const response = await fetch(`/api/products?${params.toString()}`);
-        const data = await response.json();
-
-        if (data.success) {
-          // Normalize products data to handle both old and new image structure
-          const normalizedProducts = (data.data?.items || []).map(
-            (product: Product) => ({
-              ...product,
-              // Ensure backward compatibility - convert productImages to images array
-              images: product.productImages?.map(
-                (img: { url: string; order: number }) => img.url
-              ),
-            })
-          );
-
-          setProducts(normalizedProducts);
-          setTotalItems(data.data?.pagination?.total_items || 0);
-          setPaginationData(data.data?.pagination || null);
-        } else {
-          setProducts([]);
-        }
-      } catch (error) {
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, [
-    searchQuery,
-    selectedCategory,
-    selectedColor,
-    capacityRange,
-    currentPage,
-    sortBy,
-  ]);
-
-  // Get pagination info from API response
-  const totalPages = paginationData?.total_pages || 1;
-
   // Wait for hydration to avoid mismatch
   useEffect(() => {
     setIsHydrated(true);
   }, []);
 
-  // Update URL with current filter state
-  const updateURL = (newFilters: {
-    search?: string;
-    category?: string;
-    color?: string;
-    capacityMin?: number;
-    capacityMax?: number;
-    sort?: string;
-    page?: number;
-  }) => {
-    const params = new URLSearchParams();
+  // Debounce search query for API calls (500ms delay)
+  useEffect(() => {
+    if (searchDebounceTimerRef.current) {
+      clearTimeout(searchDebounceTimerRef.current);
+    }
 
-    const search = newFilters.search ?? searchQuery;
-    const category = newFilters.category ?? selectedCategory;
-    const color = newFilters.color ?? selectedColor;
-    const capacityMin = newFilters.capacityMin ?? capacityRange.min;
-    const capacityMax = newFilters.capacityMax ?? capacityRange.max;
-    const sort = newFilters.sort ?? sortBy;
-    const page = newFilters.page ?? currentPage;
+    searchDebounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
 
-    if (search) params.set("search", search);
-    if (category) params.set("category", category);
-    if (color) params.set("color", color);
-    if (capacityMin > 0) params.set("capacityMin", capacityMin.toString());
-    if (capacityMax < 9999) params.set("capacityMax", capacityMax.toString());
-    if (sort && sort !== "newest") params.set("sort", sort);
-    if (page && page !== 1) params.set("page", page.toString());
+    return () => {
+      if (searchDebounceTimerRef.current) {
+        clearTimeout(searchDebounceTimerRef.current);
+      }
+    };
+  }, [searchQuery]);
 
-    const newURL = params.toString()
-      ? `/products?${params.toString()}`
-      : "/products";
-    router.replace(newURL, { scroll: false });
-  };
+  // Sync state with URL params when they change
+  useEffect(() => {
+    if (!isHydrated) return; // Wait for hydration
 
-  const handleAddToCart = (product: Product) => {
-    dispatch(addToCart({ product }));
-    toast.success(`Đã thêm ${product.name} vào giỏ hàng`, {
-      duration: 2000,
+    const search = searchParams.get("search") || "";
+    const category = searchParams.get("category") || "";
+    const color = searchParams.get("color") || "";
+    const minCapacity = parseInt(searchParams.get("minCapacity") || "0");
+    const maxCapacity = parseInt(searchParams.get("maxCapacity") || "9999");
+    const sort = searchParams.get("sort") || "featured";
+    const page = parseInt(searchParams.get("page") || "1");
+
+    // Update state to match URL params
+    setSearchQuery(search);
+    setDebouncedSearchQuery(search); // Also update debounced version immediately when URL changes
+    setSelectedCategory(category);
+    setSelectedColor(color);
+    //chỉ update khi capacity range thay đổi, nếu ko sẽ trigger render
+    setCapacityRange((prev) => {
+      if (prev.min !== minCapacity || prev.max !== maxCapacity) {
+        return { min: minCapacity, max: maxCapacity };
+      }
+      return prev;
     });
-  };
+    setSortBy(sort);
+    setCurrentPage(page);
+  }, [searchParams, isHydrated]);
+
+  // Update URL with current filter state
+  const updateURL = useCallback(
+    (newFilters: {
+      search?: string;
+      category?: string;
+      color?: string;
+      minCapacity?: number;
+      maxCapacity?: number;
+      sort?: string;
+      page?: number;
+    }) => {
+      const params = new URLSearchParams();
+
+      const search = "search" in newFilters ? newFilters.search : searchQuery;
+      const category =
+        "category" in newFilters ? newFilters.category : selectedCategory;
+      const color = "color" in newFilters ? newFilters.color : selectedColor;
+      const minCapacity =
+        "minCapacity" in newFilters
+          ? newFilters.minCapacity
+          : capacityRange.min;
+      const maxCapacity =
+        "maxCapacity" in newFilters
+          ? newFilters.maxCapacity
+          : capacityRange.max;
+      const sort = "sort" in newFilters ? newFilters.sort : sortBy;
+      const page = "page" in newFilters ? newFilters.page : currentPage;
+
+      if (search) params.set("search", search);
+      if (category) params.set("category", category);
+      if (color) params.set("color", color);
+      if (minCapacity !== undefined && minCapacity > 0)
+        params.set("minCapacity", minCapacity.toString());
+      if (maxCapacity !== undefined && maxCapacity < 9999)
+        params.set("maxCapacity", maxCapacity.toString());
+      if (sort && sort !== "featured") params.set("sort", sort);
+      if (page && page !== 1) params.set("page", page.toString());
+
+      const newURL = params.toString()
+        ? `/products?${params.toString()}`
+        : "/products";
+      router.replace(newURL, { scroll: false });
+    },
+    [
+      searchQuery,
+      selectedCategory,
+      selectedColor,
+      capacityRange,
+      sortBy,
+      currentPage,
+      router,
+    ]
+  );
+
+  // Debounced version of updateURL (300ms delay)
+  const debouncedUpdateURL = useCallback(
+    (newFilters: {
+      search?: string;
+      category?: string;
+      color?: string;
+      minCapacity?: number;
+      maxCapacity?: number;
+      sort?: string;
+      page?: number;
+    }) => {
+      // Clear previous timeout
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // Set new timeout
+      debounceTimerRef.current = setTimeout(() => {
+        updateURL(newFilters);
+      }, 300);
+    },
+    [updateURL]
+  );
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedCategory("");
     setSelectedColor("");
     setCapacityRange({ min: 0, max: 9999 });
-    setSortBy("newest");
+    setSortBy("featured");
     setCurrentPage(1);
     router.replace("/products", { scroll: false });
   };
@@ -282,22 +290,18 @@ export function useProducts(): UseProductsReturn {
     selectedColor !== "" ||
     capacityRange.min > 0 ||
     capacityRange.max < 9999 ||
-    sortBy !== "newest";
+    sortBy !== "featured";
 
   return {
-    // Data
-    products,
+    // Filter options data
     categories,
     colors,
     capacities,
-    totalItems,
-    paginationData,
-    totalPages,
 
     // State
-    loading,
     isHydrated,
     searchQuery,
+    debouncedSearchQuery,
     selectedCategory,
     selectedColor,
     capacityRange,
@@ -316,8 +320,8 @@ export function useProducts(): UseProductsReturn {
     setShowFilters,
     setSortBy,
     setCurrentPage,
-    handleAddToCart,
     clearFilters,
     updateURL,
+    debouncedUpdateURL,
   };
 }

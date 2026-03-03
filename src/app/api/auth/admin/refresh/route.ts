@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
 
 export async function POST(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Cookie": cookies, // Forward cookies to backend
+        Cookie: cookies, // Forward cookies to backend
       },
       body: JSON.stringify(body),
     });
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     return nextResponse;
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

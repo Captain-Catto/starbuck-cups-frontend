@@ -4,9 +4,9 @@ export function StructuredData() {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Store",
-    name: "Starbucks Cups Shop",
+    name: "H's shoucangpu - Collectible Gift Shop",
     description:
-      "Cửa hàng ly Starbucks chính thức với đa dạng màu sắc và dung tích. Tư vấn miễn phí qua Messenger.",
+      "Khám phá bộ sưu tập ly St@rbucks đa dạng với nhiều màu sắc và dung tích. Tư vấn miễn phí qua Zalo 0896686008.",
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://starbucks-cups.com",
     logo: {
       "@type": "ImageObject",
@@ -25,14 +25,16 @@ export function StructuredData() {
     ],
     hasOfferCatalog: {
       "@type": "OfferCatalog",
-      name: "Ly Starbucks",
+      name: "Ly St@rbucks",
       itemListElement: [
         {
           "@type": "Offer",
           itemOffered: {
             "@type": "Product",
-            name: "Ly Starbucks Tumbler",
+            name: "Ly St@rbucks Tumbler",
             category: "Drinkware",
+            keywords:
+              "starbucks, ly starbucks, cups, tumbler, ly giữ nhiệt, starbucks vietnam, ly starbucks chính hãng, ly starbuck chính hãng, ly starbucks auth, starbuck chính hãng, starbucks chính hãng, mua ly starbuck chính hãng, bình starbucks chính hãng, bình giữ nhiệt starbucks, ly giữ nhiệt starbucks, ly sứ starbucks",
           },
         },
       ],
@@ -46,10 +48,17 @@ export function StructuredData() {
     },
     priceRange: "₫₫",
     currenciesAccepted: "VND",
-    paymentAccepted: ["Cash", "Bank Transfer", "COD"],
+    paymentAccepted: ["Cash", "Bank Transfer", "COD", "Zalo Pay"],
     areaServed: {
       "@type": "Country",
       name: "Vietnam",
+    },
+    contactPoint: {
+      "@type": "ContactPoint",
+      telephone: "0896686008",
+      contactType: "Customer Service",
+      availableLanguage: "Vietnamese",
+      contactOption: "TollFree",
     },
   };
 

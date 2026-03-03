@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
-import Image from "next/image";
 import {
   DndContext,
   closestCenter,
@@ -22,6 +21,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, X } from "lucide-react";
+import OptimizedImage from "@/components/OptimizedImage";
 
 interface ImageItem {
   id: string;
@@ -66,7 +66,7 @@ function SortableImageItem({ image, onRemove }: SortableImageItemProps) {
         <GripVertical className="w-4 h-4" />
       </div>
 
-      <Image
+      <OptimizedImage
         src={image.url}
         alt={`Product image ${image.order + 1}`}
         width={48}

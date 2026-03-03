@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useAppSelector } from "@/store";
 
 export interface PendingConsultationsResponse {
@@ -57,6 +57,7 @@ export function usePendingConsultations() {
         );
       }
     } catch (err) {
+
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);

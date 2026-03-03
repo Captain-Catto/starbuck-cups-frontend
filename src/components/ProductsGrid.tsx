@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import ProductCard from "@/components/ProductCard";
@@ -8,10 +8,8 @@ import type { Product, CapacityRange } from "@/types";
 import { trackAddToCart, trackPagination } from "@/lib/analytics";
 import { Pagination } from "@/components/ui/Pagination";
 import {
-  calculateOptimalProductsPerPage,
   getResponsiveGridClasses,
-  getSSRSafeGridConfig,
-  type GridConfig,
+  getProductsPageLimit,
 } from "@/utils/layoutCalculator";
 
 interface PaginationData {
@@ -42,9 +40,6 @@ export default function ProductsGrid({
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
-  const [gridConfig, setGridConfig] = useState<GridConfig>(
-    getSSRSafeGridConfig()
-  );
   const [paginationData, setPaginationData] = useState<PaginationData | null>(
     null
   );
@@ -54,50 +49,6 @@ export default function ProductsGrid({
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  // Setup responsive products per page calculation after mounting
-  useEffect(() => {
-    if (!isMounted) return;
-
-    // Ensure we're only running on client-side
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const updateLayout = () => {
-      const config = calculateOptimalProductsPerPage();
-      setGridConfig((prevConfig) => {
-        // Only update if config actually changed
-        if (prevConfig.productsPerPage !== config.productsPerPage) {
-          return config;
-        }
-        return prevConfig;
-      });
-    };
-
-    // Initial calculation (only on client)
-    updateLayout();
-
-    // Setup resize listener with debouncing
-    const handleResize = () => {
-      // Debounce resize events
-      if (window.resizeTimeout) {
-        clearTimeout(window.resizeTimeout);
-      }
-      window.resizeTimeout = setTimeout(updateLayout, 150);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    // Return cleanup function
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      if (window.resizeTimeout) {
-        clearTimeout(window.resizeTimeout);
-      }
-    };
-  }, [isMounted]);
-
 
   useEffect(() => {
     // Don't fetch on server or before component is mounted
@@ -112,12 +63,16 @@ export default function ProductsGrid({
         if (selectedCategory) params.append("category", selectedCategory);
         if (selectedColor) params.append("color", selectedColor);
         if (capacityRange.min > 0)
-          params.append("capacityMin", capacityRange.min.toString());
+          params.append("minCapacity", capacityRange.min.toString());
         if (capacityRange.max < 9999)
-          params.append("capacityMax", capacityRange.max.toString());
+          params.append("maxCapacity", capacityRange.max.toString());
         if (sortBy) {
           let field, order;
-          if (sortBy === "newest") {
+          if (sortBy === "featured") {
+            // Featured products: sort by isFeatured desc (featured first), then by newest
+            field = "isFeatured";
+            order = "desc";
+          } else if (sortBy === "newest") {
             field = "createdAt";
             order = "desc";
           } else if (sortBy === "oldest") {
@@ -130,23 +85,41 @@ export default function ProductsGrid({
           params.append("sortOrder", order);
         }
         params.append("page", currentPage.toString());
-        params.append("limit", gridConfig.productsPerPage.toString());
 
-        const response = await fetch(`/api/products/public?${params.toString()}`);
+        // Use special limit for products page (36 on laptop)
+        const productsLimit = getProductsPageLimit();
+        params.append("limit", productsLimit.toString());
+
+        console.log("🔍 [ProductsGrid] Fetching products with params:", params.toString());
+        const response = await fetch(`/api/products?${params.toString()}`);
         const data = await response.json();
+        console.log("📦 [ProductsGrid] API Response:", {
+          success: data.success,
+          itemsCount: data.data?.items?.length,
+          error: data.error,
+          fullData: data
+        });
 
         if (data.success && data.data?.items) {
           setProducts(data.data.items);
+          const totalPages = data.data.pagination?.total_pages || 1;
           setPaginationData({
-            totalPages: data.data.pagination?.total_pages || 1,
+            totalPages,
             limit: data.data.pagination?.per_page || 20,
             totalItems: data.data.pagination?.total_items || 0,
           });
+
+          // Auto-reset to page 1 if current page exceeds total pages
+          if (currentPage > totalPages) {
+            onPageChange(1);
+          }
         } else {
+          console.warn("⚠️ [ProductsGrid] No items in response or unsuccessful");
           setProducts([]);
           setPaginationData(null);
         }
       } catch (error) {
+        console.error("❌ [ProductsGrid] Error fetching products:", error);
         setProducts([]);
         setPaginationData(null);
       } finally {
@@ -155,6 +128,7 @@ export default function ProductsGrid({
     };
 
     fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     searchQuery,
     selectedCategory,
@@ -162,8 +136,7 @@ export default function ProductsGrid({
     capacityRange,
     sortBy,
     currentPage,
-    gridConfig.productsPerPage,
-    isMounted, // Only fetch after client mount
+    isMounted, // ✅ FIXED: Cần thêm để fetch lần đầu khi component mount
   ]);
 
   const handleAddToCart = (product: Product) => {
@@ -189,10 +162,11 @@ export default function ProductsGrid({
 
   // Skeleton loading
   if (loading) {
+    const skeletonCount = isMounted ? getProductsPageLimit() : 6;
     return (
       <div className="space-y-6">
         <div className={getResponsiveGridClasses("products")}>
-          {[...Array(gridConfig.productsPerPage)].map((_, index) => (
+          {[...Array(skeletonCount)].map((_, index) => (
             <div
               key={index}
               className="animate-pulse bg-zinc-800 border border-zinc-700 rounded-lg overflow-hidden"

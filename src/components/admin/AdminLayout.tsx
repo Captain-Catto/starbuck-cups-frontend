@@ -123,6 +123,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       label: "Thống kê",
       path: "/admin/statistics",
     },
+    {
+      icon: Settings,
+      label: "Cấu hình Hiệu ứng",
+      path: "/admin/settings",
+    },
   ];
 
   const sidebarItems = getSidebarItems();

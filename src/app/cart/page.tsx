@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "@/store";
@@ -6,7 +6,6 @@ import { clearCart } from "@/store/slices/cartSlice";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ChevronLeft, FileText, Phone, User, MapPin, Mail } from "lucide-react";
-import Image from "next/image";
 import type { CartItem } from "@/types";
 import { Header } from "@/components/layout/Header";
 import { Cart } from "@/components/ui/Cart";
@@ -16,6 +15,7 @@ import {
   isValidPhoneNumber,
   getPhoneValidationErrorMessage,
 } from "@/lib/utils/phoneValidation";
+import OptimizedImage from "@/components/OptimizedImage";
 
 interface ConsultationFormData {
   customerName: string;
@@ -78,13 +78,33 @@ export default function CartPage() {
     if (!validateForm()) return;
 
     if (items.length === 0) {
-      toast.error("Giỏ hàng trống! Vui lòng thêm sản phẩm trước.");
+      toast.error("Giỏ tư vấn trống! Vui lòng thêm sản phẩm trước.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
+      // Log cart items để debug
+      console.log("🛒 CART ITEMS DEBUG:", {
+        totalItems: items.length,
+        items: items.map((item, index) => ({
+          index,
+          productId: item.product.id,
+          productName: item.product.name,
+          selectedColor: item.colorRequest,
+          availableColors: item.product.productColors?.map((pc) => ({
+            id: pc.color.id,
+            name: pc.color.name,
+            hexCode: pc.color.hexCode,
+          })),
+          capacity: item.product.capacity?.name,
+          categories: item.product.productCategories?.map(
+            (pc) => pc.category.name
+          ),
+        })),
+      });
+
       const consultationData = {
         customer: {
           ...formData,
@@ -93,9 +113,7 @@ export default function CartPage() {
         items: items.map((item) => ({
           productId: item.product.id,
           productName: item.product.name,
-          color:
-            item.product.productColors?.map((pc) => pc.color.name).join(", ") ||
-            "N/A",
+          color: item.colorRequest || "Chưa chọn",
           capacity: item.product.capacity?.name || "N/A",
           category:
             item.product.productCategories
@@ -104,6 +122,13 @@ export default function CartPage() {
         })),
         createdAt: new Date().toISOString(),
       };
+
+      // Log dữ liệu consultation sẽ gửi lên backend
+      console.log("📝 CONSULTATION DATA TO BACKEND:", consultationData);
+      console.log(
+        "📤 CONSULTATION JSON:",
+        JSON.stringify(consultationData, null, 2)
+      );
 
       const response = await fetch("/api/consultations", {
         method: "POST",
@@ -163,10 +188,10 @@ export default function CartPage() {
           <div className="max-w-4xl mx-auto px-4">
             <div className="text-center">
               <h1 className="text-2xl font-bold text-white mb-4">
-                Giỏ hàng trống
+                Giỏ tư vấn trống
               </h1>
               <p className="text-zinc-400 mb-8">
-                Bạn chưa có sản phẩm nào trong giỏ hàng.
+                Bạn chưa có sản phẩm nào trong giỏ tư vấn.
               </p>
               <button
                 onClick={() => router.push("/products")}
@@ -187,10 +212,10 @@ export default function CartPage() {
     <div className="min-h-screen bg-black text-white">
       <Header />
       <div className="pt-16">
-        <div className="max-w-6xl mx-auto px-4">
+        <div className="max-w-6xl mx-auto p-4">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white">Giỏ hàng</h1>
+            <h1 className="text-3xl font-bold text-white">Giỏ tư vấn</h1>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -201,9 +226,13 @@ export default function CartPage() {
               </h2>
 
               <div className="space-y-4">
-                {items.map((item) => (
-                  <CartItemRow key={item.product.id} item={item} />
-                ))}
+                {items.map((item, index) => {
+                  // Tạo unique key cho mỗi variant
+                  const uniqueKey = `${item.product.id}-${
+                    item.colorRequest || "no-color"
+                  }-${index}`;
+                  return <CartItemRow key={uniqueKey} item={item} />;
+                })}
               </div>
             </div>
 
@@ -329,7 +358,7 @@ function CartItemRow({ item }: { item: CartItem }) {
   return (
     <div className="flex items-center gap-4 p-4 border border-zinc-700 rounded-lg bg-zinc-800">
       <div className="relative w-16 h-16 flex-shrink-0">
-        <Image
+        <OptimizedImage
           src={
             getFirstProductImageUrl(item.product.productImages) ||
             "/placeholder-product.jpg"
@@ -343,9 +372,8 @@ function CartItemRow({ item }: { item: CartItem }) {
       <div className="flex-1 min-w-0">
         <h3 className="font-medium text-white truncate">{item.product.name}</h3>
         <p className="text-sm text-zinc-400">
-          {item.product.productColors?.map((pc) => pc.color.name).join(", ") ||
-            "Chưa có"}{" "}
-          • {item.product.capacity?.name || "Chưa có"}
+          Màu: {item.colorRequest || "Chưa chọn"} •{" "}
+          {item.product.capacity?.name || "Chưa có"}
         </p>
         <p className="text-sm text-zinc-400">
           Danh mục:{" "}

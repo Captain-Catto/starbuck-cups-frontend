@@ -1,5 +1,6 @@
 import { Edit2, Trash2, Eye, EyeOff, Package } from "lucide-react";
-import type { Capacity } from "@/types";
+import type { Capacity, PaginationMeta } from "@/types";
+import { Pagination } from "@/components/ui/Pagination";
 
 interface CapacityWithCount extends Capacity {
   _count?: {
@@ -12,9 +13,11 @@ interface CapacitiesTableProps {
   loading: boolean;
   actionLoading: string | null;
   searchQuery: string;
+  pagination: PaginationMeta | null;
   onEdit: (capacity: Capacity) => void;
   onDelete: (capacity: CapacityWithCount) => void;
   onToggleStatus: (capacity: CapacityWithCount) => void;
+  onPageChange: (page: number) => void;
 }
 
 export function CapacitiesTable({
@@ -22,9 +25,11 @@ export function CapacitiesTable({
   loading,
   actionLoading,
   searchQuery,
+  pagination,
   onEdit,
   onDelete,
   onToggleStatus,
+  onPageChange,
 }: CapacitiesTableProps) {
   return (
     <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
@@ -152,6 +157,13 @@ export function CapacitiesTable({
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {pagination && pagination.total_pages > 1 && (
+        <div className="px-6 py-4 border-t border-gray-700">
+          <Pagination data={pagination} onPageChange={onPageChange} />
+        </div>
+      )}
     </div>
   );
 }

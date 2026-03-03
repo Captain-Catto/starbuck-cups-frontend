@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $insertNodes, COMMAND_PRIORITY_EDITOR } from 'lexical';
 import { createCommand, LexicalCommand } from 'lexical';
@@ -20,8 +20,11 @@ export default function ImagePlugin(): React.ReactElement | null {
     return editor.registerCommand<ImagePayload>(
       INSERT_IMAGE_COMMAND,
       (payload) => {
+
         const imageNode = $createImageNode(payload);
+
         $insertNodes([imageNode]);
+
         return true;
       },
       COMMAND_PRIORITY_EDITOR,

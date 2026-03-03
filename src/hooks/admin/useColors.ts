@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import type { Color } from "@/types";
 
@@ -106,7 +106,7 @@ export function useColors(): UseColorsReturn {
       } else {
         toast.error(data.message || "Không thể tải danh sách màu sắc");
       }
-    } catch (error) {
+    } catch {
       toast.error("Có lỗi xảy ra khi tải màu sắc");
     } finally {
       setLoading(false);
@@ -179,7 +179,7 @@ export function useColors(): UseColorsReturn {
           toast.error(data.error?.message || data.message || "Có lỗi xảy ra");
         }
       }
-    } catch (error) {
+    } catch {
       toast.error("Có lỗi xảy ra khi lưu màu");
     } finally {
       setActionLoading(null);
@@ -278,6 +278,7 @@ export function useColors(): UseColorsReturn {
     } catch (error) {
       // Rollback nếu có lỗi network
       setColors(colors);
+
       toast.error("Có lỗi xảy ra khi thay đổi trạng thái màu");
     } finally {
       setActionLoading(null);

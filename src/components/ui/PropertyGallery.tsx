@@ -1,16 +1,132 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
+import React, { useState, useEffect, useCallback } from "react";
 import { ImageModal } from "./ImageModal";
+import { VipBadge } from "./VipBadge";
+import OptimizedImage from "@/components/OptimizedImage";
 
 interface PropertyGalleryProps {
   images: string[];
   title: string;
+  isVip?: boolean;
 }
 
-export function PropertyGallery({ images, title }: PropertyGalleryProps) {
+export function PropertyGallery({
+  images,
+  title,
+  isVip = false,
+}: PropertyGalleryProps) {
   const [currentImage, setCurrentImage] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Swipe states for all devices
+  const [isSwipping, setIsSwipping] = useState(false);
+  const [swipeStartX, setSwipeStartX] = useState(0);
+  const [swipeStartY, setSwipeStartY] = useState(0);
+  const [swipeCurrentX, setSwipeCurrentX] = useState(0);
+
+  // Navigation functions
+  const nextImage = useCallback(() => {
+    setCurrentImage((prev) => (prev < images.length - 1 ? prev + 1 : 0));
+  }, [images.length]);
+
+  const prevImage = useCallback(() => {
+    setCurrentImage((prev) => (prev > 0 ? prev - 1 : images.length - 1));
+  }, [images.length]);
+
+  // Touch handlers for swipe - enabled for all devices
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length !== 1) return;
+
+    const touch = e.touches[0];
+    setIsSwipping(true);
+    setSwipeStartX(touch.clientX);
+    setSwipeStartY(touch.clientY);
+    setSwipeCurrentX(touch.clientX);
+  }, []);
+
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isSwipping || e.touches.length !== 1) return;
+
+      const touch = e.touches[0];
+      setSwipeCurrentX(touch.clientX);
+    },
+    [isSwipping]
+  );
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isSwipping) return;
+
+      const deltaX = swipeCurrentX - swipeStartX;
+      const deltaY = Math.abs(e.changedTouches[0]?.clientY - swipeStartY);
+      const distance = Math.abs(deltaX);
+      const SWIPE_THRESHOLD = 50;
+
+      // Check if horizontal swipe with enough distance
+      if (distance > SWIPE_THRESHOLD && Math.abs(deltaX) > deltaY) {
+        if (deltaX > 0) {
+          // Swipe right - previous image
+          prevImage();
+        } else {
+          // Swipe left - next image
+          nextImage();
+        }
+      }
+
+      // Reset swipe states
+      setIsSwipping(false);
+      setSwipeStartX(0);
+      setSwipeStartY(0);
+      setSwipeCurrentX(0);
+    },
+    [isSwipping, swipeCurrentX, swipeStartX, swipeStartY, nextImage, prevImage]
+  );
+
+  // Mouse handlers for swipe on laptops
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsSwipping(true);
+    setSwipeStartX(e.clientX);
+    setSwipeStartY(e.clientY);
+    setSwipeCurrentX(e.clientX);
+  }, []);
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isSwipping) return;
+      setSwipeCurrentX(e.clientX);
+    },
+    [isSwipping]
+  );
+
+  const handleMouseUp = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isSwipping) return;
+
+      const deltaX = swipeCurrentX - swipeStartX;
+      const deltaY = Math.abs(e.clientY - swipeStartY);
+      const distance = Math.abs(deltaX);
+      const SWIPE_THRESHOLD = 50;
+
+      // Check if horizontal swipe with enough distance
+      if (distance > SWIPE_THRESHOLD && Math.abs(deltaX) > deltaY) {
+        if (deltaX > 0) {
+          // Swipe right - previous image
+          prevImage();
+        } else {
+          // Swipe left - next image
+          nextImage();
+        }
+      }
+
+      // Reset swipe states
+      setIsSwipping(false);
+      setSwipeStartX(0);
+      setSwipeStartY(0);
+      setSwipeCurrentX(0);
+    },
+    [isSwipping, swipeCurrentX, swipeStartX, swipeStartY, nextImage, prevImage]
+  );
 
   // Keyboard navigation
   useEffect(() => {
@@ -40,15 +156,6 @@ export function PropertyGallery({ images, title }: PropertyGalleryProps) {
     );
   }
 
-  const nextImage = () => {
-    setCurrentImage((prev) => (prev < images.length - 1 ? prev + 1 : 0));
-  };
-
-  const prevImage = () => {
-    setCurrentImage((prev) => (prev > 0 ? prev - 1 : images.length - 1));
-  };
-
-
   const handleThumbnailClick = (index: number, event: React.MouseEvent) => {
     setCurrentImage(index);
     // Remove focus from the clicked button to prevent hover state persistence
@@ -72,18 +179,32 @@ export function PropertyGallery({ images, title }: PropertyGalleryProps) {
           <div
             className="relative h-96 w-full group cursor-pointer"
             onClick={openModal}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
           >
-            <Image
+            <OptimizedImage
               src={images[currentImage]}
               alt={`${title} - Hình ${currentImage + 1}`}
               fill
               className="object-contain"
               priority
+              style={{ objectFit: "contain" }}
               onError={(e) => {
                 const target = e.currentTarget;
                 target.src = "/images/placeholder-product.jpg";
               }}
             />
+
+            {/* VIP Badge - positioned at top right */}
+            {isVip && (
+              <div className="absolute top-4 right-4 z-10">
+                <VipBadge size="lg" />
+              </div>
+            )}
 
             {/* Navigation buttons - Only show if more than 1 image */}
             {images.length > 1 && (
@@ -178,11 +299,12 @@ export function PropertyGallery({ images, title }: PropertyGalleryProps) {
                     }`}
                     style={{ minWidth: "5rem" }} // Force minimum width
                   >
-                    <Image
+                    <OptimizedImage
                       src={image}
                       alt={`${title} - Thumbnail ${index + 1}`}
                       fill
                       className="object-contain"
+                      style={{ objectFit: "contain" }}
                       onError={(e) => {
                         const target = e.currentTarget;
                         target.src = "/images/placeholder-product.jpg";

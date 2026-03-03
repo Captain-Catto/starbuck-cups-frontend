@@ -6,6 +6,7 @@ import customersReducer from "./slices/customersSlice";
 import ordersReducer from "./slices/ordersSlice";
 import productsReducer from "./slices/productsSlice";
 import notificationsReducer from "./slices/notificationSlice";
+import effectSettingsReducer from "./effectSettingsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
     orders: ordersReducer,
     products: productsReducer,
     notifications: notificationsReducer,
+    effectSettings: effectSettingsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

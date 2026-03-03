@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter, notFound } from "next/navigation";
+import { useParams, notFound, useRouter } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addToCart } from "@/store/slices/cartSlice";
@@ -43,12 +43,10 @@ export default function ProductInfo() {
     currentProductError: error,
   } = useAppSelector((state) => state.products);
 
-
   // Debug logs
 
   // Fetch product data
   useEffect(() => {
-
     const slug = params.slug;
     if (typeof slug === "string" && !hasAttemptedFetch) {
       setHasAttemptedFetch(true);
@@ -83,7 +81,20 @@ export default function ProductInfo() {
 
   const handleAddToCart = () => {
     if (product && product.stockQuantity > 0) {
-      dispatch(addToCart({ product }));
+      console.log("🛒 ADDING PRODUCT TO CART:", {
+        productId: product.id,
+        productName: product.name,
+        capacity: product.capacity,
+        categories: product.productCategories?.map((pc) => pc.category),
+      });
+
+      // Add to cart without specific color selection
+      dispatch(
+        addToCart({
+          product,
+          colorRequest: undefined, // No specific color selected
+        })
+      );
 
       // GA4 tracking
       trackAddToCart({
@@ -98,6 +109,8 @@ export default function ProductInfo() {
         name: product.name,
         category: product.productCategories?.[0]?.category?.name,
       });
+
+      // Toast will be handled by ClientLayout based on cart lastAction
     } else {
       toast.error("Sản phẩm hiện đã hết hàng", {
         duration: 3000,
@@ -105,25 +118,25 @@ export default function ProductInfo() {
     }
   };
 
-
-  const handleCategoryClick = (categorySlug: string) => {
-    if (categorySlug) {
-      router.push(`/products?category=${categorySlug}`);
-    }
-  };
-
-  const handleCapacityClick = () => {
-    if (product?.capacity?.volumeMl) {
-      const volume = product.capacity.volumeMl;
-      router.push(`/products?capacityMin=${volume}&capacityMax=${volume}`);
-    }
-  };
-
   const handleColorClick = (colorSlug: string) => {
-    if (colorSlug) {
-      router.push(`/products?color=${colorSlug}`);
-    } else {
-    }
+    // Navigate to products page with color filter
+    router.push(`/products?color=${colorSlug}`);
+  };
+
+  // Handle capacity click - navigate to products with capacity filter
+  const handleCapacityClick = (capacity: {
+    id: string;
+    name: string;
+    volumeMl: number;
+  }) => {
+    router.push(
+      `/products?minCapacity=${capacity.volumeMl}&maxCapacity=${capacity.volumeMl}`
+    );
+  };
+
+  // Handle category click - navigate to products with category filter
+  const handleCategoryClick = (categorySlug: string) => {
+    router.push(`/products?category=${categorySlug}`);
   };
 
   // Only redirect to 404 if we've attempted fetch and got error, or if no product after successful fetch
@@ -232,7 +245,6 @@ export default function ProductInfo() {
     );
   }
 
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Product Images */}
@@ -240,6 +252,7 @@ export default function ProductInfo() {
         <PropertyGallery
           images={product.productImages?.map((img) => img.url) || []}
           title={product.name}
+          isVip={product.isVip}
         />
       </div>
 
@@ -262,7 +275,7 @@ export default function ProductInfo() {
                   <button
                     key={pc.color.id}
                     onClick={() => handleColorClick(pc.color.slug)}
-                    className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:border-zinc-600 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-2 px-3 py-2 border bg-zinc-800 border-zinc-700 hover:bg-zinc-700 hover:border-zinc-600 rounded-lg transition-all cursor-pointer"
                   >
                     <div
                       className="w-4 h-4 rounded-full border border-zinc-600 flex-shrink-0"
@@ -270,7 +283,7 @@ export default function ProductInfo() {
                         backgroundColor: pc.color.hexCode || "#000000",
                       }}
                     />
-                    <span className="text-white font-medium">
+                    <span className="font-medium text-white">
                       {pc.color.name}
                     </span>
                   </button>
@@ -285,14 +298,22 @@ export default function ProductInfo() {
             <label className="block text-sm font-medium text-zinc-300 mb-2">
               Dung tích
             </label>
-            <button
-              onClick={handleCapacityClick}
-              className="inline-flex items-center px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:border-zinc-600 transition-colors cursor-pointer"
-            >
-              <span className="text-white font-medium">
-                {product.capacity?.name || "Không xác định"}
-              </span>
-            </button>
+            {product.capacity ? (
+              <button
+                onClick={() => handleCapacityClick(product.capacity!)}
+                className="inline-flex items-center px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:border-zinc-600 transition-colors cursor-pointer"
+              >
+                <span className="text-white font-medium">
+                  {product.capacity.name}
+                </span>
+              </button>
+            ) : (
+              <div className="inline-flex items-center px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg">
+                <span className="text-zinc-400 font-medium">
+                  Không xác định
+                </span>
+              </div>
+            )}
           </div>
 
           <div>
@@ -333,7 +354,6 @@ export default function ProductInfo() {
 
         {/* Add to Cart */}
         <div className="space-y-4">
-
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <button
               onClick={handleAddToCart}

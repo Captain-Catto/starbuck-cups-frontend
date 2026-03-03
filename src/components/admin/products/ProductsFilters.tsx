@@ -1,8 +1,9 @@
 import { Search } from "lucide-react";
-import type { Color, Capacity } from "@/types";
+import type { Color, Capacity, Category } from "@/types";
 
 interface ProductFilters {
   search: string;
+  category: string;
   color: string;
   minCapacity: string;
   maxCapacity: string;
@@ -13,6 +14,7 @@ interface ProductFilters {
 
 interface ProductsFiltersProps {
   filters: ProductFilters;
+  categories: Category[];
   colors: Color[];
   capacities: Capacity[];
   onFilterChange: (field: keyof ProductFilters, value: string) => void;
@@ -20,6 +22,7 @@ interface ProductsFiltersProps {
 
 export function ProductsFilters({
   filters,
+  categories,
   colors,
   capacities,
   onFilterChange,
@@ -41,8 +44,23 @@ export function ProductsFilters({
           </div>
         </div>
 
-        {/* Row 2: Color, Capacity Range */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Row 2: Category, Color, Capacity Range */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {/* Category Filter */}
+          <select
+            value={filters.category}
+            onChange={(e) => onFilterChange("category", e.target.value)}
+            className="w-full px-3 py-2.5 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-gray-700 text-white"
+          >
+            <option value="">Tất cả danh mục</option>
+            {Array.isArray(categories) &&
+              categories.map((category) => (
+                <option key={category.id} value={category.slug}>
+                  {category.name}
+                </option>
+              ))}
+          </select>
+
           {/* Color Filter */}
           <select
             value={filters.color}

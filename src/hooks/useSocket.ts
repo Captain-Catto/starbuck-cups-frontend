@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from "react";
+﻿import { useEffect, useCallback, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { socketManager } from "@/lib/socket";
 import {
@@ -26,16 +26,20 @@ export const useSocket = () => {
 
   const loadInitialNotifications = useCallback(async () => {
     if (hasLoadedNotifications.current) {
+
       return;
     }
 
     try {
+
       hasLoadedNotifications.current = true;
       const response = await apiWithAuth.getNotifications({ limit: 20 });
       if (response.success && response.data) {
+
         dispatch(setNotifications(response.data));
       }
     } catch (error) {
+
       hasLoadedNotifications.current = false;
     }
   }, [dispatch]);
@@ -55,9 +59,11 @@ export const useSocket = () => {
       socketManager.joinAdminRoom();
 
       socket.on("admin:joined", () => {
+
       });
 
       socket.on("error", (error: string) => {
+
         toast.error("Lỗi quyền", {
           description: "Không có quyền nhận thông báo admin",
           duration: 4000,
@@ -66,6 +72,7 @@ export const useSocket = () => {
 
       // Listen for unified notification event
       socket.on("notification:new", (notification: NotificationPayload) => {
+
         dispatch(addNotification(notification));
 
         // Show unified toast notification - all with default theme (white/black)
@@ -155,14 +162,17 @@ export const useSocket = () => {
       });
 
       socket.on("notification:count_update", (count: number) => {
+
         dispatch(updateUnreadCount(count));
       });
 
       // Debug: Log all socket events
       socket.onAny((eventName, ...args) => {
+
       });
 
       socket.on("disconnect", (reason) => {
+
         dispatch(setConnected(false));
 
         if (reason === "io server disconnect") {
@@ -177,6 +187,7 @@ export const useSocket = () => {
       });
 
       socket.on("connect_error", (error) => {
+
         dispatch(setConnected(false));
         dispatch(setConnecting(false));
 
@@ -186,6 +197,7 @@ export const useSocket = () => {
         });
       });
     } catch (error) {
+
       dispatch(setConnected(false));
       dispatch(setConnecting(false));
 
@@ -197,6 +209,7 @@ export const useSocket = () => {
   }, [token, isConnected, isConnecting, dispatch, loadInitialNotifications]);
 
   const disconnect = useCallback(() => {
+
     if (reconnectTimeout.current) {
       clearTimeout(reconnectTimeout.current);
     }
@@ -218,6 +231,7 @@ export const useSocket = () => {
           socketManager.markNotificationAsRead(notificationId);
         }
       } catch (error) {
+
       }
     },
     [dispatch]
@@ -240,6 +254,7 @@ export const useSocket = () => {
   // Cleanup on token change (logout)
   useEffect(() => {
     if (!token && hasInitialized.current) {
+
       disconnect();
       hasLoadedNotifications.current = false;
     }

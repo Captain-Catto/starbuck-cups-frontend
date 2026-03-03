@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { toast } from "sonner";
 import { X, Upload, ImageIcon } from "lucide-react";
 import type { Product, Category, Color, Capacity } from "@/types";
@@ -8,13 +9,23 @@ import { useProductForm } from "@/hooks/business/useProductForm";
 import { UpdateProductForm } from "./UpdateProductForm";
 import { useUpload } from "@/hooks/useUpload";
 import ImageReorder from "./ImageReorder";
-import RichTextEditor from "@/components/ui/RichTextEditor";
 import { getFirstProductImageUrl } from "@/lib/utils/image";
+import { VipToggle } from "./VipRadio";
+import { FeaturedToggle } from "./FeaturedToggle";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+
+// Dynamic import for RichTextEditor to reduce initial bundle
+const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
+  ssr: false,
+  loading: () => <div className="w-full h-[300px] border rounded-md flex items-center justify-center"><LoadingSpinner /></div>
+});
 
 // Extended product type for admin operations
 interface AdminProduct extends Omit<Product, "stockQuantity"> {
   stockQuantity?: number;
   productUrl?: string;
+  isVip?: boolean;
+  isFeatured?: boolean;
 }
 
 interface ProductModalProps {
@@ -176,7 +187,9 @@ export default function ProductModal({
         const response = await uploadProductImages(selectedFiles);
 
         if (response.success) {
-          const uploadedUrls = response.data.map((item: { url: string }) => item.url);
+          const uploadedUrls = response.data.map(
+            (item: { url: string }) => item.url
+          );
 
           // Replace blob URLs with actual uploaded URLs
           finalImageUrls = imageUrls.map((url) => {
@@ -460,6 +473,28 @@ export default function ProductModal({
             {errors.images && (
               <p className="text-red-500 text-sm mt-1">{errors.images}</p>
             )}
+          </div>
+
+          {/* VIP Status */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Trạng thái VIP
+            </label>
+            <VipToggle
+              value={formData.isVip}
+              onChange={(isVip) => updateField("isVip", isVip)}
+            />
+          </div>
+
+          {/* Featured Status */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Trạng thái Nổi bật
+            </label>
+            <FeaturedToggle
+              value={formData.isFeatured}
+              onChange={(isFeatured) => updateField("isFeatured", isFeatured)}
+            />
           </div>
 
           {/* Submit Buttons */}
