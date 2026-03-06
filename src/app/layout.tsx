@@ -53,13 +53,21 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <head>
-        <link rel="preconnect" href="https://api.hasron.vn" />
+        <link
+          rel="preconnect"
+          href="https://api.hasron.vn"
+          crossOrigin="anonymous"
+        />
         <link rel="dns-prefetch" href="https://api.hasron.vn" />
 
         {/* Dynamic AWS resource hints nếu có */}
         {awsS3Url && (
           <>
-            <link rel="preconnect" href={awsS3Url} />
+            <link
+              rel="preconnect"
+              href={awsS3Url}
+              crossOrigin="anonymous"
+            />
             <link rel="dns-prefetch" href={awsS3Url} />
           </>
         )}
