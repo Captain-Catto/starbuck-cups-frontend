@@ -191,6 +191,7 @@ export function SearchAutocomplete({
                         product={product}
                         onAddToCart={handleAddToCart}
                         showAddToCart={false}
+                        showSecondaryImage={false}
                       />
                     </div>
                   ))}

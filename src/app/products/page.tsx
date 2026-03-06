@@ -3,15 +3,8 @@ import { getApiUrl } from "@/lib/api-config";
 import { buildProductsQueryParams } from "@/lib/products-query";
 import type { Product } from "@/types";
 
-interface PageSearchParams {
-  search?: string;
-  category?: string;
-  color?: string;
-  minCapacity?: string;
-  maxCapacity?: string;
-  sort?: string;
-  page?: string;
-}
+export const revalidate = 60;
+export const dynamic = "force-static";
 
 interface ProductsApiResponse {
   success: boolean;
@@ -31,34 +24,20 @@ interface InitialPaginationData {
   totalItems: number;
 }
 
-const DEFAULT_PRODUCTS_LIMIT = 36;
+const DEFAULT_PRODUCTS_LIMIT = 24;
 
-function parseNumber(value: string | undefined, fallback: number): number {
-  if (!value) return fallback;
-  const parsed = Number.parseInt(value, 10);
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-async function getInitialProducts(searchParams: PageSearchParams): Promise<{
+async function getInitialProducts(): Promise<{
   products: Product[];
   pagination: InitialPaginationData | null;
   queryKey: string;
 }> {
-  const searchQuery = searchParams.search ?? "";
-  const selectedCategory = searchParams.category ?? "";
-  const selectedColor = searchParams.color ?? "";
-  const sortBy = searchParams.sort ?? "featured";
-  const currentPage = parseNumber(searchParams.page, 1);
-  const minCapacity = parseNumber(searchParams.minCapacity, 0);
-  const maxCapacity = parseNumber(searchParams.maxCapacity, 9999);
-
   const params = buildProductsQueryParams({
-    searchQuery,
-    selectedCategory,
-    selectedColor,
-    capacityRange: { min: minCapacity, max: maxCapacity },
-    sortBy,
-    currentPage,
+    searchQuery: "",
+    selectedCategory: "",
+    selectedColor: "",
+    capacityRange: { min: 0, max: 9999 },
+    sortBy: "featured",
+    currentPage: 1,
     limit: DEFAULT_PRODUCTS_LIMIT,
   });
 
@@ -87,15 +66,8 @@ async function getInitialProducts(searchParams: PageSearchParams): Promise<{
   }
 }
 
-export default async function ProductsPage({
-  searchParams,
-}: {
-  searchParams: Promise<PageSearchParams>;
-}) {
-  const resolvedSearchParams = await searchParams;
-  const { products, pagination, queryKey } = await getInitialProducts(
-    resolvedSearchParams
-  );
+export default async function ProductsPage() {
+  const { products, pagination, queryKey } = await getInitialProducts();
 
   return (
     <ProductsPageClient

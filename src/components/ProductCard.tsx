@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { Product } from "@/types";
@@ -17,6 +17,7 @@ interface ProductCardProps {
   showAddToCart?: boolean;
   priority?: boolean; // Thêm prop để control priority cho LCP
   imageSizes?: string;
+  showSecondaryImage?: boolean;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -26,35 +27,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
   showAddToCart = false,
   priority = false, // Thêm prop để control priority cho LCP
   imageSizes = "(max-width: 640px) calc((100vw - 3rem)/2), (max-width: 768px) calc((100vw - 4rem)/3), (max-width: 1024px) calc((100vw - 5rem)/3), (max-width: 1280px) calc((100vw - 8rem)/4), (max-width: 1536px) calc((100vw - 10rem)/5), calc((100vw - 12rem)/6)",
+  showSecondaryImage = true,
 }) => {
-  const [isInView, setIsInView] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  // Intersection Observer để lazy load second image khi card vào viewport
-  useEffect(() => {
-    if (!cardRef.current) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          // Unobserve sau khi đã vào viewport 1 lần
-          observer.disconnect();
-        }
-      },
-      {
-        rootMargin: '100px', // Preload 100px trước khi vào viewport
-        threshold: 0.1,
-      }
-    );
-
-    observer.observe(cardRef.current);
-
-    return () => observer.disconnect();
-  }, []);
   const renderProductVisual = () => {
     const firstImage = getFirstProductImage(product.productImages);
     const secondImage = getSecondProductImage(product.productImages);
+    const shouldRenderSecondary = showSecondaryImage && !!secondImage;
     if (firstImage) {
       return (
         <>
@@ -64,7 +42,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
             fill
             width={456}
             className={`object-contain transition-opacity duration-300 ${
-              secondImage ? "opacity-100 group-hover:opacity-0" : "opacity-100"
+              shouldRenderSecondary
+                ? "opacity-100 group-hover:opacity-0"
+                : "opacity-100"
             }`}
             priority={priority}
             loading={priority ? "eager" : "lazy"}
@@ -73,7 +53,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             quality={70}
             style={{ objectFit: "contain" }}
           />
-          {secondImage && isInView && (
+          {shouldRenderSecondary && secondImage && (
             <OptimizedImage
               src={secondImage.url}
               alt={`${product.name} alternate`}
@@ -121,7 +101,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         });
       }}
     >
-      <div ref={cardRef} className="bg-zinc-900 rounded-2xl overflow-hidden hover:bg-zinc-800 transition-colors duration-300 relative">
+      <div className="bg-zinc-900 rounded-2xl overflow-hidden hover:bg-zinc-800 transition-colors duration-300 relative">
         <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
           {/* Featured Badge - TOP LEFT */}
           <div className="absolute top-3 left-3 z-10">

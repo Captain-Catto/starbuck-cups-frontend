@@ -1,13 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { openCart } from "@/store/slices/cartSlice";
 import { Search, Menu as MenuIcon, X } from "lucide-react";
-import { SearchAutocomplete } from "@/components/SearchAutocomplete";
 import { trackCartAction, trackMobileMenu } from "@/lib/analytics";
+
+const SearchAutocomplete = dynamic(
+  () =>
+    import("@/components/SearchAutocomplete").then((mod) => ({
+      default: mod.SearchAutocomplete,
+    })),
+  {
+    ssr: false,
+  }
+);
 
 interface HeaderProps {
   className?: string;
@@ -343,11 +353,13 @@ export function Header({ className = "" }: HeaderProps) {
       </div>
 
       {/* Search Modal */}
-      <SearchAutocomplete
-        isOpen={isSearchModalOpen}
-        onClose={handleSearchClose}
-        onProductSelect={handleProductSelect}
-      />
+      {isSearchModalOpen && (
+        <SearchAutocomplete
+          isOpen={isSearchModalOpen}
+          onClose={handleSearchClose}
+          onProductSelect={handleProductSelect}
+        />
+      )}
     </>
   );
 }

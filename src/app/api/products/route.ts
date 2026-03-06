@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
       },
+      next: { revalidate: 60 },
     });
 
     if (!response.ok) {
@@ -28,7 +29,11 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600",
+      },
+    });
   } catch {
     return NextResponse.json(
       { error: "Failed to fetch products" },

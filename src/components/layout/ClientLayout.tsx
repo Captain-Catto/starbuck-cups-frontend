@@ -2,17 +2,19 @@
 
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Toaster, toast } from "sonner";
 import { useAppSelector, useAppDispatch } from "@/store";
 import { clearLastAction } from "@/store/slices/cartSlice";
 import { SettingsSocketProvider } from "@/components/providers/SettingsSocketProvider";
-import EffectManager from "@/components/effects/EffectManager";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 // Dynamic imports for non-critical interactive widgets
+const EffectManager = dynamic(() => import("@/components/effects/EffectManager"), {
+  ssr: false,
+});
 
 const Cart = dynamic(() => import("@/components/ui/Cart"), {
   ssr: false,
@@ -36,6 +38,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const isAdminRoute = pathname?.startsWith("/admin");
+  const [isRuntimeReady, setIsRuntimeReady] = useState(false);
 
   // Get cart state for global notifications
   const { lastAction } = useAppSelector((state) => state.cart);
@@ -59,12 +62,24 @@ export function ClientLayout({ children }: ClientLayoutProps) {
     }
   }, [lastAction, dispatch]);
 
+  useEffect(() => {
+    const idleCallback = window.requestIdleCallback;
+
+    if (idleCallback) {
+      const id = idleCallback(() => setIsRuntimeReady(true), { timeout: 1500 });
+      return () => window.cancelIdleCallback(id);
+    }
+
+    const timer = window.setTimeout(() => setIsRuntimeReady(true), 1200);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   // For admin routes, don't show customer header and cart
   if (isAdminRoute) {
     return (
       <div className="min-h-screen bg-gray-50">
         <SettingsSocketProvider>
-          <EffectManager />
+          {isRuntimeReady && <EffectManager />}
           <ErrorBoundary>{children}</ErrorBoundary>
         </SettingsSocketProvider>
         <Toaster
@@ -85,13 +100,13 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
-      <EffectManager />
+      {isRuntimeReady && <EffectManager />}
       <main className="flex-1">
         <ErrorBoundary>{children}</ErrorBoundary>
       </main>
       <Footer />
-      <Cart />
-      <FloatingContactButton />
+      {isRuntimeReady && <Cart />}
+      {isRuntimeReady && <FloatingContactButton />}
       <Toaster
         position="top-right"
         richColors

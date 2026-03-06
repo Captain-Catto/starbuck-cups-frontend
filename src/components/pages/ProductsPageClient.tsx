@@ -126,6 +126,8 @@ export default function ProductsPageClient({
     clearFilters();
   };
 
+  const useInitialServerData = !hasActiveFilters && currentPage === 1;
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-8 lg:px-8 pt-20">
@@ -180,9 +182,11 @@ export default function ProductsPageClient({
               onRemoveCapacity={handleRemoveCapacity}
               onRemoveSort={handleRemoveSort}
               onClearAll={handleClearAllFilters}
-              initialProducts={initialProducts}
-              initialPaginationData={initialPaginationData}
-              initialQueryKey={initialQueryKey}
+              initialProducts={useInitialServerData ? initialProducts : undefined}
+              initialPaginationData={
+                useInitialServerData ? initialPaginationData : undefined
+              }
+              initialQueryKey={useInitialServerData ? initialQueryKey : undefined}
             />
           </div>
         </div>

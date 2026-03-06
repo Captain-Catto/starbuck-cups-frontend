@@ -129,10 +129,10 @@ export const useResponsiveProductsPerPage = (
 
 /**
  * Get fixed limit for products page
- * Returns 36 products per page for consistent pagination
+ * Returns 24 products per page to reduce initial render/main-thread pressure
  */
 export const getProductsPageLimit = (): number => {
-  return 36;
+  return 24;
 };
 
 // Extend Window interface for TypeScript

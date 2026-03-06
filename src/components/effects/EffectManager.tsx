@@ -61,6 +61,8 @@ export default function EffectManager() {
   }, [socket, dispatch]);
 
   const isAdminPage = pathname?.startsWith("/admin");
+  const isPerformanceCriticalPage =
+    pathname === "/products" || pathname?.startsWith("/products/");
   
   // Check exclusions
   const isExcluded = excludedPaths?.some((path: string) => {
@@ -69,7 +71,14 @@ export default function EffectManager() {
     return false;
   });
 
-  if (isAdminPage || isExcluded || !enabled || !activeEffects || activeEffects.length === 0) {
+  if (
+    isAdminPage ||
+    isPerformanceCriticalPage ||
+    isExcluded ||
+    !enabled ||
+    !activeEffects ||
+    activeEffects.length === 0
+  ) {
     return null;
   }
 
