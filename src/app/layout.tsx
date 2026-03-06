@@ -53,9 +53,19 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <head>
-        {/* Resource hints for Google Drive images - early DNS resolution */}
+        {/* Resource hints - early DNS resolution and connection */}
         <link rel="preconnect" href="https://lh3.googleusercontent.com" />
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
+        <link
+          rel="preconnect"
+          href="https://hasron-starbucks-shop.s3.ap-southeast-1.amazonaws.com"
+        />
+        <link
+          rel="dns-prefetch"
+          href="https://hasron-starbucks-shop.s3.ap-southeast-1.amazonaws.com"
+        />
+        <link rel="preconnect" href="https://api.hasron.vn" />
+        <link rel="dns-prefetch" href="https://api.hasron.vn" />
 
         {/* Dynamic AWS resource hints nếu có */}
         {awsS3Url && (

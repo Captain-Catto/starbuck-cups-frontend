@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, ImgHTMLAttributes } from 'react';
+import { useMemo, ImgHTMLAttributes } from 'react';
 import { convertDriveUrl } from '@/utils/googleDriveHelper';
 
 interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'srcSet'> {
@@ -36,28 +36,42 @@ export default function OptimizedImage({
   style,
   ...props
 }: OptimizedImageProps) {
-  const [imageSrc, setImageSrc] = useState<string>('');
-
-  useEffect(() => {
-    // Convert Google Drive URLs
+  // Compute image src synchronously so the URL is available on first render
+  // This is critical for LCP — useEffect delays image discovery until after hydration
+  const imageSrc = useMemo(() => {
     const convertedSrc = convertDriveUrl(src);
 
-    // For local images (starting with /), use as-is
     if (convertedSrc.startsWith('/') || convertedSrc.startsWith('data:')) {
-      setImageSrc(convertedSrc);
-      return;
+      return convertedSrc;
     }
 
-    // For remote images, use optimization API
-    const optimizedUrl = getOptimizedUrl(convertedSrc, width, quality);
-    setImageSrc(optimizedUrl);
+    return getOptimizedUrl(convertedSrc, width, quality);
+  }, [src, width, quality]);
+
+  // Generate srcSet for responsive images
+  const srcSet = useMemo(() => {
+    const convertedSrc = convertDriveUrl(src);
+    if (convertedSrc.startsWith('/') || convertedSrc.startsWith('data:')) {
+      return undefined;
+    }
+
+    // Generate multiple sizes for responsive loading
+    const baseWidth = width || 800;
+    const widths = [
+      Math.round(baseWidth * 0.5),
+      baseWidth,
+      Math.round(baseWidth * 1.5),
+    ].filter(w => w <= 2048);
+
+    return widths
+      .map(w => `${getOptimizedUrl(convertedSrc, w, quality)} ${w}w`)
+      .join(', ');
   }, [src, width, quality]);
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     if (onError) {
       onError(e);
     } else {
-      // Fallback to placeholder
       const target = e.currentTarget;
       target.src = '/images/placeholder.webp';
     }
@@ -67,11 +81,14 @@ export default function OptimizedImage({
     return (
       <img
         src={imageSrc}
+        srcSet={srcSet}
+        sizes={sizes}
         alt={alt}
         className={className}
         onError={handleError}
         loading={priority ? 'eager' : 'lazy'}
         fetchPriority={fetchPriority}
+        decoding={priority ? 'sync' : 'async'}
         style={{
           position: 'absolute',
           width: '100%',
@@ -89,6 +106,8 @@ export default function OptimizedImage({
   return (
     <img
       src={imageSrc}
+      srcSet={srcSet}
+      sizes={sizes}
       alt={alt}
       width={width}
       height={height}
@@ -96,6 +115,7 @@ export default function OptimizedImage({
       onError={handleError}
       loading={priority ? 'eager' : 'lazy'}
       fetchPriority={fetchPriority}
+      decoding={priority ? 'sync' : 'async'}
       style={style}
       {...props}
     />
@@ -108,18 +128,18 @@ export default function OptimizedImage({
 function getOptimizedUrl(src: string, width?: number, quality?: number): string {
   const params = new URLSearchParams();
   params.set('url', src);
-  
+
   if (width) {
     params.set('w', width.toString());
   }
-  
+
   if (quality) {
     params.set('q', quality.toString());
   }
-  
+
   // Default to WebP format for best compression
   params.set('f', 'webp');
-  
+
   return `/api/image?${params.toString()}`;
 }
 
@@ -130,8 +150,8 @@ export function preloadImage(src: string, width?: number) {
   if (typeof window === 'undefined') return;
 
   const convertedSrc = convertDriveUrl(src);
-  const optimizedUrl = convertedSrc.startsWith('/') 
-    ? convertedSrc 
+  const optimizedUrl = convertedSrc.startsWith('/')
+    ? convertedSrc
     : getOptimizedUrl(convertedSrc, width, 85);
 
   const link = document.createElement('link');
