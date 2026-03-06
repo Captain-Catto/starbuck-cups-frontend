@@ -1,7 +1,8 @@
-﻿import { Metadata } from "next";
+import { Metadata } from "next";
 import { generateSEO } from "@/lib/seo";
 import HomePageComponent from "@/components/pages/HomePage";
 import { Category } from "@/types";
+import { getApiUrl } from "@/lib/api-config";
 
 // Enable static generation with revalidation for better performance
 export const revalidate = 300; // 5 minutes
@@ -32,10 +33,6 @@ interface HomePageProps {
   promotionalBanner: PromotionalBannerData | null;
 }
 
-const DEFAULT_API_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://api.hasron.vn/api"
-    : "http://localhost:8080/api";
 
 export const metadata: Metadata = generateSEO({
   title: "Trang chủ",
@@ -57,13 +54,10 @@ export const metadata: Metadata = generateSEO({
 async function getHomePageData(): Promise<HomePageProps> {
   try {
     // Fetch categories from API
-    const categoriesResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL}/categories/public/`,
-      {
-        next: { revalidate: 300 }, // Revalidate every 5 minutes
-        cache: "force-cache",
-      }
-    );
+    const categoriesResponse = await fetch(getApiUrl("categories/public/"), {
+      next: { revalidate: 300 }, // Revalidate every 5 minutes
+      cache: "force-cache",
+    });
 
     let categories: Category[] = [];
 
@@ -78,9 +72,7 @@ async function getHomePageData(): Promise<HomePageProps> {
     // Fetch hero images from API
     let heroImages: HeroImageData[] = [];
     try {
-      const heroImagesUrl = `${
-        process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL
-      }/hero-images/public`;
+      const heroImagesUrl = getApiUrl("hero-images/public");
 
       const heroImagesResponse = await fetch(heroImagesUrl, {
         next: { revalidate: 300 }, // Revalidate every 5 minutes
@@ -100,9 +92,7 @@ async function getHomePageData(): Promise<HomePageProps> {
     // Fetch promotional banner from API
     let promotionalBanner: PromotionalBannerData | null = null;
     try {
-      const bannerUrl = `${
-        process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL
-      }/promotional-banners`;
+      const bannerUrl = getApiUrl("promotional-banners");
 
       const bannerResponse = await fetch(bannerUrl, {
         next: { revalidate: 60 }, // Revalidate every 1 minute for promotional content
@@ -144,3 +134,4 @@ export default async function HomePage() {
     />
   );
 }
+

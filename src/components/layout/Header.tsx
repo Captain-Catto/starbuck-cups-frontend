@@ -65,9 +65,13 @@ export function Header({ className = "" }: HeaderProps) {
             <MenuIcon className="w-5 h-5" />
           </button>
 
-          {/* Center: Logo - Hidden on mobile */}
-          <Link href="/" aria-label="Về trang chủ" className="flex items-center gap-2">
-            {/* Logo hidden on mobile devices */}
+          {/* Center: Brand */}
+          <Link
+            href="/"
+            aria-label="Về trang chủ"
+            className="text-sm font-semibold text-white tracking-wide"
+          >
+            H&apos;s
           </Link>
 
           {/* Right: Search & Cart */}

@@ -45,33 +45,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const organizationData = generateOrganizationStructuredData();
-  const gaMeasurementId =
-    process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-XXXXXXXXXX";
-
-  const awsS3Url = process.env.NEXT_PUBLIC_AWS_S3_URL;
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const hasGoogleAnalytics =
+    !!gaMeasurementId && gaMeasurementId !== "G-XXXXXXXXXX";
 
   return (
     <html lang="vi">
       <head>
-        <link
-          rel="preconnect"
-          href="https://api.hasron.vn"
-          crossOrigin="anonymous"
-        />
-        <link rel="dns-prefetch" href="https://api.hasron.vn" />
-
-        {/* Dynamic AWS resource hints nếu có */}
-        {awsS3Url && (
-          <>
-            <link
-              rel="preconnect"
-              href={awsS3Url}
-              crossOrigin="anonymous"
-            />
-            <link rel="dns-prefetch" href={awsS3Url} />
-          </>
-        )}
-
         {/* Preload critical fonts để tối ưu LCP */}
         <link
           rel="preload"
@@ -99,26 +79,30 @@ export default function RootLayout({
         <meta httpEquiv="x-dns-prefetch-control" content="on" />
 
         {/* Google Analytics 4 */}
-        <script
-          async
-          src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${gaMeasurementId}', {
-                page_title: document.title,
-                page_location: window.location.href,
-                anonymize_ip: true,
-                allow_google_signals: false,
-                cookie_flags: 'SameSite=None;Secure'
-              });
-            `,
-          }}
-        />
+        {hasGoogleAnalytics && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${gaMeasurementId}', {
+                    page_title: document.title,
+                    page_location: window.location.href,
+                    anonymize_ip: true,
+                    allow_google_signals: false,
+                    cookie_flags: 'SameSite=None;Secure'
+                  });
+                `,
+              }}
+            />
+          </>
+        )}
 
         <script
           type="application/ld+json"

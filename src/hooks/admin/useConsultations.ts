@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAppSelector } from "@/store";
 import type { Consultation, ConsultationStatus, PaginationMeta } from "@/types";
 import { toast } from "sonner";
+import { getApiUrl } from "@/lib/api-config";
 
 interface ConsultationFilters {
   status: string;
@@ -44,6 +45,7 @@ export interface UseConsultationsReturn {
 }
 
 export function useConsultations(): UseConsultationsReturn {
+  const apiBaseUrl = getApiUrl("");
   const { token } = useAppSelector((state) => state.auth);
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,9 +95,7 @@ export function useConsultations(): UseConsultationsReturn {
       const headers = getAuthHeaders();
 
 
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
-      const response = await fetch(`${apiUrl}/admin/consultations?${params}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/consultations?${params}`, {
         headers,
       });
       const data = await response.json();
@@ -115,7 +115,7 @@ export function useConsultations(): UseConsultationsReturn {
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.current_page, pagination.per_page, getAuthHeaders]);
+  }, [apiBaseUrl, filters, pagination.current_page, pagination.per_page, getAuthHeaders]);
 
   useEffect(() => {
     fetchConsultations();
@@ -134,10 +134,8 @@ export function useConsultations(): UseConsultationsReturn {
       };
 
 
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
       const response = await fetch(
-        `${apiUrl}/admin/consultations/${selectedConsultation.id}/status`,
+        `${apiBaseUrl}/admin/consultations/${selectedConsultation.id}/status`,
         {
           method: "PUT",
           headers: {
@@ -199,10 +197,8 @@ export function useConsultations(): UseConsultationsReturn {
     try {
       setActionLoading("delete");
 
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
       const response = await fetch(
-        `${apiUrl}/consultations/${consultationToDelete}`,
+        `${apiBaseUrl}/consultations/${consultationToDelete}`,
         {
           method: "DELETE",
           headers: {

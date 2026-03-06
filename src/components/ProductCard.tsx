@@ -177,13 +177,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
       {/* Product info */}
       <div className="mt-3">
-        <h3
+        <p
           className={`text-sm font-medium mb-1 line-clamp-2 ${
             product.stockQuantity === 0 ? "text-zinc-400" : "text-white"
           }`}
         >
           {product.name}
-        </h3>
+        </p>
         {/* <div className="text-xs text-zinc-500 font-mono mb-1">
           {product.productCategories
             ?.map((pc: { category: { name: string } }) => pc.category.name)

@@ -12,6 +12,7 @@ import type {
 } from "@/types";
 import type { NotificationData } from "@/types/notification.types";
 import { TokenRefreshNotification } from "@/utils/tokenNotification";
+import { getApiUrl } from "@/lib/api-config";
 
 class ApiService {
   private api: AxiosInstance;
@@ -23,7 +24,7 @@ class ApiService {
 
   constructor() {
     this.api = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api",
+      baseURL: getApiUrl(""),
       timeout: 10000,
       headers: {
         "Content-Type": "application/json",

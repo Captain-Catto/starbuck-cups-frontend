@@ -15,6 +15,6 @@ export const getApiUrl = (endpoint: string) => {
 
 export const getBackendUrl = () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL;
-  // Remove /api suffix to get backend base URL
-  return apiUrl.replace("/api", "");
+  // Remove trailing /api suffix only to get backend base URL
+  return apiUrl.replace(/\/api\/?$/, "");
 };

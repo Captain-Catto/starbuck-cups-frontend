@@ -1,6 +1,5 @@
-﻿import { NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+import { NextResponse } from "next/server";
+import { getApiUrl } from "@/lib/api-config";
 
 /**
  * GET /api/promotional-banners
@@ -8,7 +7,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
  */
 export async function GET() {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/promotional-banners`, {
+    const response = await fetch(getApiUrl("promotional-banners"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -47,3 +46,4 @@ export async function GET() {
     );
   }
 }
+

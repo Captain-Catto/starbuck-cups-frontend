@@ -1,8 +1,9 @@
-﻿import { MetadataRoute } from "next";
+import { MetadataRoute } from "next";
+import { getApiUrl } from "@/lib/api-config";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn";
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+  const apiUrl = getApiUrl("");
 
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
@@ -65,3 +66,4 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [...staticPages, ...productPages];
 }
+

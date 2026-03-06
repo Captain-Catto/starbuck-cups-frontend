@@ -45,22 +45,23 @@ export default function OptimizedImage({
   // Compute image src synchronously so the URL is available on first render
   // This is critical for LCP — useEffect delays image discovery until after hydration
   const imageSrc = useMemo(() => {
-    const convertedSrc = normalizeSource(convertDriveUrl(src));
-
-    if (isLocalOrInlineSource(convertedSrc)) {
-      return convertedSrc;
+    const normalizedSrc = normalizeSource(src);
+    if (isLocalOrInlineSource(normalizedSrc)) {
+      return normalizedSrc;
     }
 
+    const convertedSrc = normalizeSource(convertDriveUrl(normalizedSrc));
     return getOptimizedUrl(convertedSrc, width, quality);
   }, [src, width, quality]);
 
   // Generate srcSet for responsive images
   const srcSet = useMemo(() => {
-    const convertedSrc = normalizeSource(convertDriveUrl(src));
-    if (isLocalOrInlineSource(convertedSrc)) {
+    const normalizedSrc = normalizeSource(src);
+    if (isLocalOrInlineSource(normalizedSrc)) {
       return undefined;
     }
 
+    const convertedSrc = normalizeSource(convertDriveUrl(normalizedSrc));
     const widths = getResponsiveWidths(width);
 
     return widths
@@ -149,10 +150,10 @@ function getOptimizedUrl(src: string, width?: number, quality?: number): string 
 export function preloadImage(src: string, width?: number) {
   if (typeof window === 'undefined') return;
 
-  const convertedSrc = normalizeSource(convertDriveUrl(src));
-  const optimizedUrl = isLocalOrInlineSource(convertedSrc)
-    ? convertedSrc
-    : getOptimizedUrl(convertedSrc, width, 85);
+  const normalizedSrc = normalizeSource(src);
+  const optimizedUrl = isLocalOrInlineSource(normalizedSrc)
+    ? normalizedSrc
+    : getOptimizedUrl(normalizeSource(convertDriveUrl(normalizedSrc)), width, 85);
 
   const link = document.createElement('link');
   link.rel = 'preload';

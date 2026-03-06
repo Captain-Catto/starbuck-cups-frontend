@@ -13,7 +13,7 @@ export function Footer() {
           {/* Company Info */}
           <div>
             <h3 className="text-lg font-bold mb-4">H&#39;s shoucangpu</h3>
-            <p className="text-zinc-300 text-sm mb-4">
+            <p className="text-zinc-200 text-sm mb-4">
               Ly ST@RBUCKS CHÍNH HÃNG các nước
               <br />
               95% MẪU TRÊN PAGE là HÀNG SẴN SHIP HOẢ TỐC📍HCM📍
@@ -31,7 +31,7 @@ export function Footer() {
                 href="https://www.facebook.com/p/Hs%E6%94%B6%E8%97%8F%E9%8B%AA-Hs-shoucangpu-61560973846348/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-zinc-300 transition-colors underline"
+                className="text-white hover:text-zinc-100 transition-colors underline"
               >
                 H&#39;s shoucangpu
               </Link>
@@ -41,7 +41,7 @@ export function Footer() {
                 href="https://www.facebook.com/hasron.luong"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-zinc-300 transition-colors underline"
+                className="text-white hover:text-zinc-100 transition-colors underline"
               >
                 Hasron Leung
               </Link>
@@ -66,20 +66,20 @@ export function Footer() {
             <h3 className="text-lg font-bold mb-4">Liên hệ</h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
-                <Phone className="w-5 h-5 text-zinc-300 flex-shrink-0 mt-0.5" />
+                <Phone className="w-5 h-5 text-zinc-200 flex-shrink-0 mt-0.5" />
                 <div>
                   <a
                     href="tel:0896686008"
-                    className="text-zinc-300 hover:text-white transition-colors text-sm"
+                    className="text-zinc-200 hover:text-white transition-colors text-sm"
                   >
                     0896 686 008
                   </a>
-                  <p className="text-xs text-zinc-300 mt-1">
+                  <p className="text-xs text-zinc-200 mt-1">
                     <a
                       href="https://zalo.me/84896686008"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-zinc-300 hover:text-white transition-colors"
+                      className="text-zinc-200 hover:text-white transition-colors"
                     >
                       Zalo:{" "}
                     </a>
@@ -87,7 +87,7 @@ export function Footer() {
                       href="https://zalo.me/84896686008"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-zinc-300 hover:text-white transition-colors"
+                      className="text-zinc-200 hover:text-white transition-colors"
                     >
                       0896 686 008
                     </a>
@@ -95,17 +95,17 @@ export function Footer() {
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <Mail className="w-5 h-5 text-zinc-300 flex-shrink-0 mt-0.5" />
+                <Mail className="w-5 h-5 text-zinc-200 flex-shrink-0 mt-0.5" />
                 <a
                   href="mailto:hasronleung@gmail.com"
-                  className="text-zinc-300 hover:text-white transition-colors text-sm"
+                  className="text-zinc-200 hover:text-white transition-colors text-sm"
                 >
                   hasronleung@gmail.com
                 </a>
               </li>
               <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-zinc-300 flex-shrink-0 mt-0.5" />
-                <span className="text-zinc-300 text-sm">
+                <MapPin className="w-5 h-5 text-zinc-200 flex-shrink-0 mt-0.5" />
+                <span className="text-zinc-200 text-sm">
                   254 Trần Hưng Đạo B, P.11, Q.5, TP.HCM
                 </span>
               </li>
@@ -116,7 +116,7 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-bold mb-4">Giờ làm việc</h3>
             <ul className="space-y-2 text-sm">
-              <li className="flex justify-between text-zinc-300">
+              <li className="flex justify-between text-zinc-200">
                 <span>Tất cả các ngày:</span>
                 <span>24/7</span>
               </li>
@@ -128,7 +128,7 @@ export function Footer() {
                   href="https://www.facebook.com/messages/e2ee/t/9870524003031490"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white font-medium hover:text-zinc-300 transition-colors"
+                  className="text-white font-medium hover:text-zinc-100 transition-colors"
                 >
                   Messenger
                 </a>{" "}
@@ -137,7 +137,7 @@ export function Footer() {
                   href="https://zalo.me/84896686008"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white font-medium hover:text-zinc-300 transition-colors"
+                  className="text-white font-medium hover:text-zinc-100 transition-colors"
                 >
                   Zalo
                 </a>{" "}
@@ -150,7 +150,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-8 pt-8 border-t border-zinc-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-zinc-300 text-sm text-center md:text-left">
+            <p className="text-zinc-200 text-sm text-center md:text-left">
               © {currentYear} H&#39;s shoucangpu. All rights reserved.
             </p>
           </div>

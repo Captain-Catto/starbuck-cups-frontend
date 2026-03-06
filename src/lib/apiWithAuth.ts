@@ -1,5 +1,6 @@
 import { store } from "@/store";
 import { apiService } from "./api";
+import { getApiUrl } from "@/lib/api-config";
 
 /**
  * API service wrapper that gets auth token from Redux store
@@ -92,18 +93,13 @@ class ApiWithAuth {
 
     try {
       // Directly call backend API since it's not in the main apiService yet
-      const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"
-        }/admin/notifications/mark-all-read`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(getApiUrl("admin/notifications/mark-all-read"), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

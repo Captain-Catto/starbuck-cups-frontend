@@ -1,12 +1,13 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ProductCard from "@/components/ProductCard";
 import { useAppDispatch } from "@/store";
 import { addToCart } from "@/store/slices/cartSlice";
 import type { Product, CapacityRange } from "@/types";
 import { trackAddToCart, trackPagination } from "@/lib/analytics";
 import { Pagination } from "@/components/ui/Pagination";
+import { buildProductsQueryParams } from "@/lib/products-query";
 import {
   getResponsiveGridClasses,
   getProductsPageLimit,
@@ -26,6 +27,9 @@ interface ProductsGridProps {
   sortBy: string;
   currentPage: number;
   onPageChange: (page: number) => void;
+  initialProducts?: Product[];
+  initialPaginationData?: PaginationData | null;
+  initialQueryKey?: string;
 }
 
 export default function ProductsGrid({
@@ -36,50 +40,43 @@ export default function ProductsGrid({
   sortBy,
   currentPage,
   onPageChange,
+  initialProducts = [],
+  initialPaginationData = null,
+  initialQueryKey,
 }: ProductsGridProps) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [loading, setLoading] = useState(initialProducts.length === 0);
   const [paginationData, setPaginationData] = useState<PaginationData | null>(
-    null
+    initialPaginationData
   );
+  const didSkipInitialFetch = useRef(false);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const params = new URLSearchParams();
-
-        if (searchQuery) params.append("search", searchQuery);
-        if (selectedCategory) params.append("category", selectedCategory);
-        if (selectedColor) params.append("color", selectedColor);
-        if (capacityRange.min > 0)
-          params.append("minCapacity", capacityRange.min.toString());
-        if (capacityRange.max < 9999)
-          params.append("maxCapacity", capacityRange.max.toString());
-        if (sortBy) {
-          let field, order;
-          if (sortBy === "featured") {
-            // Featured products: sort by isFeatured desc (featured first), then by newest
-            field = "isFeatured";
-            order = "desc";
-          } else if (sortBy === "newest") {
-            field = "createdAt";
-            order = "desc";
-          } else if (sortBy === "oldest") {
-            field = "createdAt";
-            order = "asc";
-          } else {
-            [field, order] = sortBy.split("_");
-          }
-          params.append("sortBy", field);
-          params.append("sortOrder", order);
-        }
-        params.append("page", currentPage.toString());
-
-        // Use special limit for products page (36 on laptop)
         const productsLimit = getProductsPageLimit();
-        params.append("limit", productsLimit.toString());
+        const params = buildProductsQueryParams({
+          searchQuery,
+          selectedCategory,
+          selectedColor,
+          capacityRange,
+          sortBy,
+          currentPage,
+          limit: productsLimit,
+        });
+
+        if (
+          !didSkipInitialFetch.current &&
+          initialQueryKey &&
+          initialQueryKey === params.toString()
+        ) {
+          didSkipInitialFetch.current = true;
+          setLoading(false);
+          return;
+        }
+        didSkipInitialFetch.current = true;
 
         const response = await fetch(`/api/products?${params.toString()}`);
         const data = await response.json();
@@ -119,6 +116,7 @@ export default function ProductsGrid({
     capacityRange,
     sortBy,
     currentPage,
+    initialQueryKey,
   ]);
 
   const handleAddToCart = (product: Product) => {
@@ -190,7 +188,7 @@ export default function ProductsGrid({
             onAddToCart={handleAddToCart}
             showAddToCart={true}
             priority={
-              index === 0 &&
+              index < 6 &&
               currentPage === 1 &&
               !searchQuery &&
               !selectedCategory &&

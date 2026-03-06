@@ -1,7 +1,13 @@
 import ProductsGrid from "@/components/ProductsGrid";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { FilterBadges } from "@/components/products/FilterBadges";
-import type { CapacityRange, Category, Color } from "@/types";
+import type { CapacityRange, Category, Color, Product } from "@/types";
+
+interface InitialPaginationData {
+  totalPages: number;
+  limit: number;
+  totalItems: number;
+}
 
 interface ProductsContentProps {
   searchQuery: string;
@@ -20,6 +26,9 @@ interface ProductsContentProps {
   onRemoveCapacity: () => void;
   onRemoveSort: () => void;
   onClearAll: () => void;
+  initialProducts?: Product[];
+  initialPaginationData?: InitialPaginationData | null;
+  initialQueryKey?: string;
 }
 
 export function ProductsContent({
@@ -39,6 +48,9 @@ export function ProductsContent({
   onRemoveCapacity,
   onRemoveSort,
   onClearAll,
+  initialProducts,
+  initialPaginationData,
+  initialQueryKey,
 }: ProductsContentProps) {
   return (
     <div className="lg:w-full space-y-6">
@@ -73,6 +85,9 @@ export function ProductsContent({
         sortBy={sortBy}
         currentPage={currentPage}
         onPageChange={onPageChange}
+        initialProducts={initialProducts}
+        initialPaginationData={initialPaginationData}
+        initialQueryKey={initialQueryKey}
       />
     </div>
   );

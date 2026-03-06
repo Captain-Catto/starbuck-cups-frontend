@@ -1,5 +1,6 @@
-﻿import { io, Socket } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import { NotificationPayload } from "@/types/notification.types";
+import { getBackendUrl } from "@/lib/api-config";
 
 interface ServerToClientEvents {
   "notification:new": (notification: NotificationPayload) => void;
@@ -61,7 +62,7 @@ class SocketManager {
           serverUrl = apiUrl;
         }
       } else {
-        serverUrl = "http://localhost:8080";
+        serverUrl = getBackendUrl();
       }
 
       this.socket = io(serverUrl, {
@@ -140,3 +141,4 @@ class SocketManager {
 
 // Export singleton instance
 export const socketManager = new SocketManager();
+

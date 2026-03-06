@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
+import { getApiUrl } from "@/lib/api-config";
 
 // Types
 export type EffectType = "snow" | "redEnvelope";
@@ -71,15 +72,14 @@ const initialState: EffectSettingsState = {
   error: null,
 };
 
-// API URL
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const EFFECT_SETTINGS_API_URL = getApiUrl("settings/effect-settings");
 
 // Thunks
 export const fetchEffectSettings = createAsyncThunk(
   "effectSettings/fetch",
   async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/settings/effect-settings`);
+      const response = await axios.get(EFFECT_SETTINGS_API_URL);
       return response.data.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || "Failed to fetch settings");
@@ -91,7 +91,7 @@ export const updateEffectSettings = createAsyncThunk(
   "effectSettings/update",
   async (settings: EffectSettings) => {
     try {
-      const response = await axios.put(`${API_URL}/api/settings/effect-settings`, settings);
+      const response = await axios.put(EFFECT_SETTINGS_API_URL, settings);
       return response.data.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || "Failed to update settings");

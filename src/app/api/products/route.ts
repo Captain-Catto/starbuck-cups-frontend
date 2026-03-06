@@ -15,12 +15,6 @@ export async function GET(request: NextRequest) {
       query.toString() ? "?" + query.toString() : ""
     }`;
 
-    console.log("🔍 [Products API] Making request to:", {
-      backendUrl,
-      queryParams: query.toString(),
-      allParams: [...query.entries()],
-    });
-
     const response = await fetch(backendUrl, {
       method: "GET",
       headers: {

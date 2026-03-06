@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAppSelector } from "@/store";
+import { getBackendUrl } from "@/lib/api-config";
 
 interface SettingsSocketContextType {
   socket: Socket | null;
@@ -39,7 +40,7 @@ export function SettingsSocketProvider({
       ? apiUrl.endsWith("/api")
         ? apiUrl.slice(0, -4)
         : apiUrl
-      : "http://localhost:8080";
+      : getBackendUrl();
 
     const socketInstance = io(baseUrl, {
       auth: {
