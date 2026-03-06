@@ -17,6 +17,15 @@ export function convertDriveUrl(originalUrl: string): string {
     return originalUrl;
   }
 
+  // Local/static or inline sources are not URLs for URL parser
+  if (
+    originalUrl.startsWith('/') ||
+    originalUrl.startsWith('data:') ||
+    originalUrl.startsWith('blob:')
+  ) {
+    return originalUrl;
+  }
+
   try {
     const url = new URL(originalUrl);
 
@@ -50,8 +59,7 @@ export function convertDriveUrl(originalUrl: string): string {
 
     // Convert to direct googleusercontent URL
     return `https://lh3.googleusercontent.com/d/${id}`;
-  } catch (error) {
-    console.warn('convertDriveUrl failed for url:', originalUrl, error);
+  } catch {
     return originalUrl;
   }
 }

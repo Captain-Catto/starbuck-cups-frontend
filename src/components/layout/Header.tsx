@@ -8,7 +8,6 @@ import { openCart } from "@/store/slices/cartSlice";
 import { Search, Menu as MenuIcon, X } from "lucide-react";
 import { SearchAutocomplete } from "@/components/SearchAutocomplete";
 import { trackCartAction, trackMobileMenu } from "@/lib/analytics";
-import OptimizedImage from "@/components/OptimizedImage";
 
 interface HeaderProps {
   className?: string;
@@ -103,7 +102,7 @@ export function Header({ className = "" }: HeaderProps) {
           {/* Logo thay thế Menu Button */}
           <Link href="/" className="flex items-center gap-3">
             {isHydrated && (
-              <OptimizedImage
+              <img
                 src="/logo-32.png"
                 alt="Starbucks Logo"
                 width={32}
@@ -111,8 +110,7 @@ export function Header({ className = "" }: HeaderProps) {
                 className="w-8 h-8 brightness-0 invert"
                 onError={(e) => {
                   // Fallback to text if image fails
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = "none";
+                  e.currentTarget.style.display = "none";
                 }}
               />
             )}
@@ -200,7 +198,7 @@ export function Header({ className = "" }: HeaderProps) {
             {/* Logo trong sidebar */}
             <div className="flex items-center gap-3">
               {isHydrated && (
-                <OptimizedImage
+                <img
                   src="/logo-32.png"
                   alt="Starbucks Logo"
                   width={32}
@@ -208,8 +206,7 @@ export function Header({ className = "" }: HeaderProps) {
                   className="w-8 h-8 brightness-0 invert"
                   onError={(e) => {
                     // Fallback to text if image fails
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = "none";
+                    e.currentTarget.style.display = "none";
                   }}
                 />
               )}
