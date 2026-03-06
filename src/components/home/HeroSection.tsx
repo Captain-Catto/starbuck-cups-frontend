@@ -4,7 +4,6 @@ import React from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ArrowRight } from "lucide-react";
-import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
 // Dynamic import toàn bộ Swiper bundle
 const SwiperCarousel = dynamic(() => import("./SwiperCarousel"), {
@@ -40,38 +39,30 @@ interface HeroSectionProps {
 }
 
 const HeroSectionSkeleton = () => (
-  <SkeletonTheme baseColor="#18181b" highlightColor="#27272a">
-    <section className="py-4 md:py-8">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-          {/* Left text card skeleton */}
-          <div className="bg-zinc-900 rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-12 flex flex-col justify-center order-2 lg:order-1">
-            <div className="mb-4 md:mb-6">
-              <Skeleton height={32} width="80%" className="mb-2 md:mb-2" />
-              <Skeleton height={32} width="60%" className="md:h-14" />
-            </div>
-            <div className="mb-6 md:mb-8">
-              <Skeleton height={16} className="mb-2 md:h-5 md:mb-2" />
-              <Skeleton height={16} className="mb-2 md:h-5 md:mb-2" />
-              <Skeleton height={16} width="70%" className="md:h-5" />
-            </div>
-            <Skeleton
-              height={40}
-              width={180}
-              className="rounded-full md:h-12 md:w-48"
-            />
+  <section className="py-4 md:py-8">
+    <div className="container mx-auto px-4 md:px-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+        {/* Left text card skeleton */}
+        <div className="bg-zinc-900 rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-12 flex flex-col justify-center order-2 lg:order-1 animate-pulse">
+          <div className="mb-4 md:mb-6 space-y-2">
+            <div className="h-8 md:h-10 w-4/5 bg-zinc-800 rounded" />
+            <div className="h-8 md:h-10 w-3/5 bg-zinc-800 rounded" />
           </div>
+          <div className="mb-6 md:mb-8 space-y-2">
+            <div className="h-4 md:h-5 w-full bg-zinc-800 rounded" />
+            <div className="h-4 md:h-5 w-full bg-zinc-800 rounded" />
+            <div className="h-4 md:h-5 w-2/3 bg-zinc-800 rounded" />
+          </div>
+          <div className="h-10 md:h-12 w-44 md:w-48 bg-zinc-800 rounded-full" />
+        </div>
 
-          {/* Right image carousel skeleton */}
-          <div className="lg:col-span-2 order-1 lg:order-2">
-            <div className="h-48 md:h-64 lg:h-full rounded-2xl md:rounded-3xl overflow-hidden bg-zinc-900">
-              <Skeleton height="100%" />
-            </div>
-          </div>
+        {/* Right image carousel skeleton */}
+        <div className="lg:col-span-2 order-1 lg:order-2">
+          <div className="h-48 md:h-64 lg:h-full rounded-2xl md:rounded-3xl overflow-hidden bg-zinc-900 animate-pulse" />
         </div>
       </div>
-    </section>
-  </SkeletonTheme>
+    </div>
+  </section>
 );
 
 const HeroSection: React.FC<HeroSectionProps> = ({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Product } from "@/types";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addToCart } from "@/store/slices/cartSlice";
@@ -9,12 +9,9 @@ import ProductCard from "@/components/ProductCard";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 
-// Import Swiper CSS
-import "swiper/css";
-import "swiper/css/navigation";
-
 export default function RelatedProducts() {
   const dispatch = useAppDispatch();
+  const [stylesReady, setStylesReady] = useState(false);
 
   // Get data from Redux store
   const {
@@ -23,6 +20,26 @@ export default function RelatedProducts() {
     relatedProductsLoading: loading,
   } = useAppSelector((state) => state.products);
 
+
+  useEffect(() => {
+    let isMounted = true;
+
+    Promise.all([import("swiper/css"), import("swiper/css/navigation")])
+      .then(() => {
+        if (isMounted) {
+          setStylesReady(true);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setStylesReady(true);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     // Fetch related products when current product is available
@@ -117,6 +134,21 @@ export default function RelatedProducts() {
 
   if (relatedProducts.length === 0) {
     return null;
+  }
+
+  if (!stylesReady) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {relatedProducts.slice(0, 4).map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            onAddToCart={handleAddToCart}
+            showAddToCart={true}
+          />
+        ))}
+      </div>
+    );
   }
 
   return (

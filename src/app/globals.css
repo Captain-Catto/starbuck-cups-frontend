@@ -1,8 +1,5 @@
 @import "tailwindcss";
 
-/* Critical CSS - load skeleton globally once */
-@import 'react-loading-skeleton/dist/skeleton.css';
-
 :root {
   --background: #ffffff;
   --foreground: #171717;

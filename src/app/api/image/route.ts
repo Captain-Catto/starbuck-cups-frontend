@@ -5,17 +5,19 @@ import path from "path";
 import crypto from "crypto";
 import { convertDriveUrl } from "@/utils/googleDriveHelper";
 
-// Tạo cache directory
-// Default cache directory
-const DEFAULT_CACHE_DIR = path.join(process.cwd(), ".next", "cache", "images");
+// Persistent cache directory (avoid putting in .next because deployments often delete it).
+const DEFAULT_CACHE_DIR = path.join(process.cwd(), ".image-cache", "images");
 
 // Get cache directory based on environment
 function getCacheDir(): string {
+  if (process.env.IMAGE_CACHE_DIR) {
+    return process.env.IMAGE_CACHE_DIR;
+  }
   // In serverless environments (Vercel, AWS Lambda), use /tmp
   if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
     return path.join("/tmp", "image-cache");
   }
-  // In local/VPS, use .next/cache/images
+  // In local/VPS, use persistent folder in project root
   return DEFAULT_CACHE_DIR;
 }
 

@@ -51,6 +51,10 @@ const nextConfig: NextConfig = {
   },
   // Bundle optimization
   experimental: {
+    // Split CSS by route more aggressively to reduce shared blocking CSS.
+    cssChunking: "strict",
+    // Inline critical CSS into HTML to reduce render-blocking stylesheet requests.
+    inlineCss: true,
     optimizePackageImports: [
       "lucide-react",
       "react-loading-skeleton",

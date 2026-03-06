@@ -73,7 +73,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             quality={70}
             style={{ objectFit: "contain" }}
           />
-          {secondImage && (priority || isInView) && (
+          {secondImage && isInView && (
             <OptimizedImage
               src={secondImage.url}
               alt={`${product.name} alternate`}

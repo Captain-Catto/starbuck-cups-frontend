@@ -39,21 +39,12 @@ export default function ProductsGrid({
 }: ProductsGridProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isMounted, setIsMounted] = useState(false);
   const [paginationData, setPaginationData] = useState<PaginationData | null>(
     null
   );
   const dispatch = useAppDispatch();
 
-  // Handle client-side mounting to avoid hydration mismatch
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    // Don't fetch on server or before component is mounted
-    if (!isMounted) return;
-
     const fetchProducts = async () => {
       setLoading(true);
       try {
@@ -90,15 +81,8 @@ export default function ProductsGrid({
         const productsLimit = getProductsPageLimit();
         params.append("limit", productsLimit.toString());
 
-        console.log("🔍 [ProductsGrid] Fetching products with params:", params.toString());
         const response = await fetch(`/api/products?${params.toString()}`);
         const data = await response.json();
-        console.log("📦 [ProductsGrid] API Response:", {
-          success: data.success,
-          itemsCount: data.data?.items?.length,
-          error: data.error,
-          fullData: data
-        });
 
         if (data.success && data.data?.items) {
           setProducts(data.data.items);
@@ -114,12 +98,11 @@ export default function ProductsGrid({
             onPageChange(1);
           }
         } else {
-          console.warn("⚠️ [ProductsGrid] No items in response or unsuccessful");
           setProducts([]);
           setPaginationData(null);
         }
       } catch (error) {
-        console.error("❌ [ProductsGrid] Error fetching products:", error);
+        console.error("Error fetching products:", error);
         setProducts([]);
         setPaginationData(null);
       } finally {
@@ -136,7 +119,6 @@ export default function ProductsGrid({
     capacityRange,
     sortBy,
     currentPage,
-    isMounted, // ✅ FIXED: Cần thêm để fetch lần đầu khi component mount
   ]);
 
   const handleAddToCart = (product: Product) => {
@@ -162,7 +144,8 @@ export default function ProductsGrid({
 
   // Skeleton loading
   if (loading) {
-    const skeletonCount = isMounted ? getProductsPageLimit() : 6;
+    // Render only above-the-fold placeholders to reduce main-thread/layout work.
+    const skeletonCount = 12;
     return (
       <div className="space-y-6">
         <div className={getResponsiveGridClasses("products")}>
@@ -200,12 +183,22 @@ export default function ProductsGrid({
     <div className="space-y-6">
       {/* Products Grid */}
       <div className={getResponsiveGridClasses("products")}>
-        {products.map((product) => (
+        {products.map((product, index) => (
           <ProductCard
             key={product.id}
             product={product}
             onAddToCart={handleAddToCart}
             showAddToCart={true}
+            priority={
+              index === 0 &&
+              currentPage === 1 &&
+              !searchQuery &&
+              !selectedCategory &&
+              !selectedColor &&
+              capacityRange.min <= 0 &&
+              capacityRange.max >= 9999
+            }
+            imageSizes="(max-width: 640px) calc((100vw - 3rem)/2), (max-width: 768px) calc((100vw - 4rem)/2), (max-width: 1024px) calc((100vw - 5rem)/3), (max-width: 1280px) calc((100vw - 8rem)/4), (max-width: 1536px) calc((100vw - 10rem)/5), calc((100vw - 12rem)/6)"
           />
         ))}
       </div>

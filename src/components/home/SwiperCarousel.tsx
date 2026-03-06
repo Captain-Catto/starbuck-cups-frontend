@@ -1,13 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 import OptimizedImage from "@/components/OptimizedImage";
-
-// Import Swiper CSS
-import "swiper/css";
-import "swiper/css/pagination";
 
 interface HeroImageData {
   id: string;
@@ -23,6 +19,56 @@ interface SwiperCarouselProps {
 }
 
 export default function SwiperCarousel({ images }: SwiperCarouselProps) {
+  const [stylesReady, setStylesReady] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    // Load Swiper styles after hydration to avoid blocking initial render CSS.
+    Promise.all([import("swiper/css"), import("swiper/css/pagination")])
+      .then(() => {
+        if (isMounted) {
+          setStylesReady(true);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          // Keep carousel usable even if style loading fails.
+          setStylesReady(true);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (!stylesReady || images.length === 0) {
+    const fallbackImage = images[0];
+
+    if (!fallbackImage) {
+      return <div className="h-full w-full bg-zinc-900" />;
+    }
+
+    return (
+      <div className="relative h-full w-full">
+        <OptimizedImage
+          src={fallbackImage.imageUrl}
+          alt={fallbackImage.altText}
+          fill
+          width={960}
+          className="object-contain"
+          priority
+          loading="eager"
+          fetchPriority="high"
+          sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 60vw, 50vw"
+          quality={75}
+          style={{ objectFit: "contain" }}
+        />
+      </div>
+    );
+  }
+
   return (
     <Swiper
       modules={[Autoplay, Pagination]}
