@@ -16,6 +16,7 @@ interface ProductCardProps {
   onAddToCart?: (product: Product) => void;
   showAddToCart?: boolean;
   priority?: boolean; // Thêm prop để control priority cho LCP
+  imageSizes?: string;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -24,6 +25,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onAddToCart,
   showAddToCart = false,
   priority = false, // Thêm prop để control priority cho LCP
+  imageSizes = "(max-width: 640px) calc((100vw - 3rem)/2), (max-width: 768px) calc((100vw - 4rem)/3), (max-width: 1024px) calc((100vw - 5rem)/3), (max-width: 1280px) calc((100vw - 8rem)/4), (max-width: 1536px) calc((100vw - 10rem)/5), calc((100vw - 12rem)/6)",
 }) => {
   const [isInView, setIsInView] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -67,7 +69,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             priority={priority}
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
-            sizes="(max-width: 640px) calc((100vw - 3rem)/2), (max-width: 1024px) 31vw, 228px"
+            sizes={imageSizes}
             quality={70}
             style={{ objectFit: "contain" }}
           />
@@ -78,8 +80,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
               fill
               width={456}
               className="object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              loading="eager"
-              sizes="(max-width: 640px) calc((100vw - 3rem)/2), (max-width: 1024px) 31vw, 228px"
+              loading="lazy"
+              fetchPriority="low"
+              sizes={imageSizes}
               quality={70}
               style={{ objectFit: "contain" }}
             />

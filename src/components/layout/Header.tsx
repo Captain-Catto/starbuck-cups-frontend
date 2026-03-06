@@ -66,7 +66,7 @@ export function Header({ className = "" }: HeaderProps) {
           </button>
 
           {/* Center: Logo - Hidden on mobile */}
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" aria-label="Về trang chủ" className="flex items-center gap-2">
             {/* Logo hidden on mobile devices */}
           </Link>
 

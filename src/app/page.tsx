@@ -32,6 +32,11 @@ interface HomePageProps {
   promotionalBanner: PromotionalBannerData | null;
 }
 
+const DEFAULT_API_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://api.hasron.vn/api"
+    : "http://localhost:8080/api";
+
 export const metadata: Metadata = generateSEO({
   title: "Trang chủ",
   description:
@@ -53,10 +58,7 @@ async function getHomePageData(): Promise<HomePageProps> {
   try {
     // Fetch categories from API
     const categoriesResponse = await fetch(
-      `${
-        process.env.NEXT_PUBLIC_API_URL ||
-        "https://api-starbuck-cups.lequangtridat.com/api"
-      }/categories/public/`,
+      `${process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL}/categories/public/`,
       {
         next: { revalidate: 300 }, // Revalidate every 5 minutes
         cache: "force-cache",
@@ -77,8 +79,7 @@ async function getHomePageData(): Promise<HomePageProps> {
     let heroImages: HeroImageData[] = [];
     try {
       const heroImagesUrl = `${
-        process.env.NEXT_PUBLIC_API_URL ||
-        "https://api-starbuck-cups.lequangtridat.com/api"
+        process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL
       }/hero-images/public`;
 
       const heroImagesResponse = await fetch(heroImagesUrl, {
@@ -100,8 +101,7 @@ async function getHomePageData(): Promise<HomePageProps> {
     let promotionalBanner: PromotionalBannerData | null = null;
     try {
       const bannerUrl = `${
-        process.env.NEXT_PUBLIC_API_URL ||
-        "https://api-starbuck-cups.lequangtridat.com/api"
+        process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL
       }/promotional-banners`;
 
       const bannerResponse = await fetch(bannerUrl, {

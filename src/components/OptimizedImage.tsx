@@ -36,6 +36,12 @@ export default function OptimizedImage({
   style,
   ...props
 }: OptimizedImageProps) {
+  const resolvedSizes = useMemo(() => {
+    if (sizes) return sizes;
+    if (!width) return "100vw";
+    return `${width}px`;
+  }, [sizes, width]);
+
   // Compute image src synchronously so the URL is available on first render
   // This is critical for LCP — useEffect delays image discovery until after hydration
   const imageSrc = useMemo(() => {
@@ -55,13 +61,7 @@ export default function OptimizedImage({
       return undefined;
     }
 
-    // Generate multiple sizes for responsive loading
-    const baseWidth = width || 800;
-    const widths = [
-      Math.round(baseWidth * 0.5),
-      baseWidth,
-      Math.round(baseWidth * 1.5),
-    ].filter(w => w <= 2048);
+    const widths = getResponsiveWidths(width);
 
     return widths
       .map(w => `${getOptimizedUrl(convertedSrc, w, quality)} ${w}w`)
@@ -82,7 +82,7 @@ export default function OptimizedImage({
       <img
         src={imageSrc}
         srcSet={srcSet}
-        sizes={sizes}
+        sizes={srcSet ? resolvedSizes : undefined}
         alt={alt}
         className={className}
         onError={handleError}
@@ -107,7 +107,7 @@ export default function OptimizedImage({
     <img
       src={imageSrc}
       srcSet={srcSet}
-      sizes={sizes}
+      sizes={srcSet ? resolvedSizes : undefined}
       alt={alt}
       width={width}
       height={height}
@@ -178,4 +178,40 @@ function isLocalOrInlineSource(src: string): boolean {
     src.startsWith('data:') ||
     src.startsWith('blob:')
   );
+}
+
+const RESPONSIVE_WIDTHS = [
+  64, 96, 128, 160, 192, 228, 256, 320, 384, 456, 512, 640, 750, 828, 960,
+  1080, 1200, 1600, 1920,
+];
+
+function getResponsiveWidths(width?: number): number[] {
+  if (!width) {
+    return [256, 320, 384, 456, 512, 640, 750, 828, 960, 1080, 1200];
+  }
+
+  const targetWidths = [
+    Math.round(width * 0.4),
+    Math.round(width * 0.56),
+    Math.round(width * 0.75),
+    width,
+    Math.round(width * 1.25),
+    Math.round(width * 1.5),
+    Math.round(width * 2),
+  ];
+
+  const snapped = targetWidths.map((target) => {
+    const clamped = Math.max(64, Math.min(1920, target));
+    return getNearestWidth(clamped);
+  });
+
+  return Array.from(new Set(snapped)).sort((a, b) => a - b);
+}
+
+function getNearestWidth(target: number): number {
+  return RESPONSIVE_WIDTHS.reduce((closest, current) => {
+    return Math.abs(current - target) < Math.abs(closest - target)
+      ? current
+      : closest;
+  }, RESPONSIVE_WIDTHS[0]);
 }

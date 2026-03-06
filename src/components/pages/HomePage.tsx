@@ -62,7 +62,7 @@ const HomePage: React.FC<HomePageProps> = ({
       <section className="py-8">
         <div className="container mx-auto px-6">
           {/* product title*/}
-          <div className="text-2xl font-semibold mb-6">Sản phẩm mới nhất</div>
+          <h2 className="text-2xl font-semibold mb-6">Sản phẩm mới nhất</h2>
 
           {/* Products Grid */}
           <Suspense fallback={<ProductGridSkeleton />}>

@@ -232,7 +232,7 @@ export default function HomeProductGrid({
                     product={product}
                     onAddToCart={handleAddToCart}
                     showAddToCart={true}
-                    priority={globalIndex < 4} // Đánh dấu 4 sản phẩm đầu làm priority để tối ưu LCP
+                    priority={globalIndex === 0} // Chỉ ưu tiên 1 ảnh đầu để tránh tranh chấp băng thông LCP
                   />
                 </div>
               );
