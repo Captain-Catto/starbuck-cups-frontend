@@ -39,9 +39,9 @@ export default function OptimizedImage({
   // Compute image src synchronously so the URL is available on first render
   // This is critical for LCP — useEffect delays image discovery until after hydration
   const imageSrc = useMemo(() => {
-    const convertedSrc = convertDriveUrl(src);
+    const convertedSrc = normalizeSource(convertDriveUrl(src));
 
-    if (convertedSrc.startsWith('/') || convertedSrc.startsWith('data:')) {
+    if (isLocalOrInlineSource(convertedSrc)) {
       return convertedSrc;
     }
 
@@ -50,8 +50,8 @@ export default function OptimizedImage({
 
   // Generate srcSet for responsive images
   const srcSet = useMemo(() => {
-    const convertedSrc = convertDriveUrl(src);
-    if (convertedSrc.startsWith('/') || convertedSrc.startsWith('data:')) {
+    const convertedSrc = normalizeSource(convertDriveUrl(src));
+    if (isLocalOrInlineSource(convertedSrc)) {
       return undefined;
     }
 
@@ -149,8 +149,8 @@ function getOptimizedUrl(src: string, width?: number, quality?: number): string 
 export function preloadImage(src: string, width?: number) {
   if (typeof window === 'undefined') return;
 
-  const convertedSrc = convertDriveUrl(src);
-  const optimizedUrl = convertedSrc.startsWith('/')
+  const convertedSrc = normalizeSource(convertDriveUrl(src));
+  const optimizedUrl = isLocalOrInlineSource(convertedSrc)
     ? convertedSrc
     : getOptimizedUrl(convertedSrc, width, 85);
 
@@ -159,4 +159,23 @@ export function preloadImage(src: string, width?: number) {
   link.as = 'image';
   link.href = optimizedUrl;
   document.head.appendChild(link);
+}
+
+function normalizeSource(src: string): string {
+  const normalized = src.trim();
+
+  // Protocol-relative URLs (//cdn.example.com/...) are external URLs, not local paths.
+  if (normalized.startsWith('//')) {
+    return `https:${normalized}`;
+  }
+
+  return normalized;
+}
+
+function isLocalOrInlineSource(src: string): boolean {
+  return (
+    (src.startsWith('/') && !src.startsWith('//')) ||
+    src.startsWith('data:') ||
+    src.startsWith('blob:')
+  );
 }
