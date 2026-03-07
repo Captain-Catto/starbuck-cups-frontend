@@ -1,7 +1,89 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import type {
+  ProductLocale,
+  ProductTranslationsInput,
+  ProductTranslationsMap,
+} from "@/types";
+
+type TranslationField = "name" | "description" | "metaTitle" | "metaDescription";
+
+const toOptionalValue = (value: string): string | undefined => {
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
+};
+
+const buildTranslationsPayload = (
+  translations: ProductTranslationsInput,
+  fallbackName: string,
+  fallbackDescription: string
+) => {
+  const buildLocale = (
+    locale: ProductLocale
+  ): Record<string, string> | undefined => {
+    const source = translations[locale];
+    const entry: Record<string, string> = {};
+
+    const name =
+      locale === "vi"
+        ? source.name.trim() || fallbackName.trim()
+        : source.name.trim();
+    if (name) entry.name = name;
+
+    const description =
+      locale === "vi"
+        ? source.description.trim() || fallbackDescription.trim()
+        : source.description.trim();
+    if (description) entry.description = description;
+
+    const metaTitle = toOptionalValue(source.metaTitle);
+    if (metaTitle) entry.metaTitle = metaTitle;
+
+    const metaDescription = toOptionalValue(source.metaDescription);
+    if (metaDescription) entry.metaDescription = metaDescription;
+
+    return Object.keys(entry).length > 0 ? entry : undefined;
+  };
+
+  const vi = buildLocale("vi");
+  const en = buildLocale("en");
+  const zh = buildLocale("zh");
+
+  return {
+    ...(vi && { vi }),
+    ...(en && { en }),
+    ...(zh && { zh }),
+  };
+};
+
+const createDefaultTranslations = (
+  name = "",
+  description = "",
+  translations?: ProductTranslationsMap
+): ProductTranslationsInput => {
+  return {
+    vi: {
+      name: translations?.vi?.name || name,
+      description: translations?.vi?.description || description,
+      metaTitle: translations?.vi?.metaTitle || "",
+      metaDescription: translations?.vi?.metaDescription || "",
+    },
+    en: {
+      name: translations?.en?.name || "",
+      description: translations?.en?.description || "",
+      metaTitle: translations?.en?.metaTitle || "",
+      metaDescription: translations?.en?.metaDescription || "",
+    },
+    zh: {
+      name: translations?.zh?.name || "",
+      description: translations?.zh?.description || "",
+      metaTitle: translations?.zh?.metaTitle || "",
+      metaDescription: translations?.zh?.metaDescription || "",
+    },
+  };
+};
 
 export interface UpdateProductFormData {
   name: string;
@@ -13,9 +95,9 @@ export interface UpdateProductFormData {
   images: string[];
   productUrl: string;
   isActive: boolean;
-  isVip: boolean; // ✅ NEW FIELD
-  isFeatured: boolean; // ✅ NEW FIELD
-  // For file uploads
+  isVip: boolean;
+  isFeatured: boolean;
+  translations: ProductTranslationsInput;
   newImages?: File[];
   keepExistingImages?: boolean;
 }
@@ -36,6 +118,11 @@ export interface UseUpdateProductReturn {
   loading: boolean;
   isSubmitting: boolean;
   updateField: (field: keyof UpdateProductFormData, value: unknown) => void;
+  updateTranslation: (
+    locale: ProductLocale,
+    field: TranslationField,
+    value: string
+  ) => void;
   toggleArrayField: (field: "categoryIds" | "colorIds", value: string) => void;
   validateForm: () => boolean;
   submitForm: () => Promise<void>;
@@ -61,8 +148,9 @@ export function useUpdateProduct(
     images: [],
     productUrl: "",
     isActive: true,
-    isVip: false, // ✅ NEW FIELD - default false
-    isFeatured: false, // ✅ NEW FIELD - default false
+    isVip: false,
+    isFeatured: false,
+    translations: createDefaultTranslations(),
     newImages: [],
     keepExistingImages: true,
   });
@@ -70,7 +158,6 @@ export function useUpdateProduct(
   const getAuthHeaders = (): Record<string, string> => {
     if (typeof window === "undefined") return {};
     const token = localStorage.getItem("admin_token");
-
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
@@ -91,28 +178,39 @@ export function useUpdateProduct(
         throw new Error(data.message || "Không thể tải thông tin sản phẩm");
       }
 
-      const product = data.data;
+      const product = data.data as {
+        name?: string;
+        description?: string;
+        productCategories?: { category: { id: string } }[];
+        productColors?: { color: { id: string } }[];
+        capacity?: { id?: string };
+        stockQuantity?: number;
+        productImages?: { url: string }[];
+        productUrl?: string;
+        isActive?: boolean;
+        isVip?: boolean;
+        isFeatured?: boolean;
+        translations?: ProductTranslationsMap;
+      };
 
-      // Map API data to form format
-      const mappedData = {
+      const mappedData: UpdateProductFormData = {
         name: product.name || "",
         description: product.description || "",
         categoryIds:
-          product.productCategories?.map(
-            (pc: { category: { id: string } }) => pc.category.id
-          ) || [],
-        colorIds:
-          product.productColors?.map(
-            (pc: { color: { id: string } }) => pc.color.id
-          ) || [],
+          product.productCategories?.map((pc) => pc.category.id) || [],
+        colorIds: product.productColors?.map((pc) => pc.color.id) || [],
         capacityId: product.capacity?.id || "",
         stockQuantity: product.stockQuantity || 0,
-        images:
-          product.productImages?.map((img: { url: string }) => img.url) || [],
+        images: product.productImages?.map((img) => img.url) || [],
         productUrl: product.productUrl || "",
         isActive: product.isActive ?? true,
-        isVip: product.isVip ?? false, // ✅ NEW FIELD - default false
-        isFeatured: product.isFeatured ?? false, // ✅ NEW FIELD - default false
+        isVip: product.isVip ?? false,
+        isFeatured: product.isFeatured ?? false,
+        translations: createDefaultTranslations(
+          product.name || "",
+          product.description || "",
+          product.translations
+        ),
         newImages: [],
         keepExistingImages: true,
       };
@@ -123,17 +221,13 @@ export function useUpdateProduct(
         error instanceof Error
           ? error.message
           : "Có lỗi xảy ra khi tải dữ liệu";
-
       toast.error(errorMsg);
-      if (onError) {
-        onError(errorMsg);
-      }
+      if (onError) onError(errorMsg);
     } finally {
       setLoading(false);
     }
   }, [productId, onError]);
 
-  // Load product data when component mounts
   useEffect(() => {
     if (productId) {
       loadProductData();
@@ -142,12 +236,71 @@ export function useUpdateProduct(
 
   const updateField = useCallback(
     (field: keyof UpdateProductFormData, value: unknown) => {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
+      setFormData((prev) => {
+        const next = {
+          ...prev,
+          [field]: value,
+        } as UpdateProductFormData;
 
-      // Clear error for this field if it exists
+        if (field === "name" && typeof value === "string") {
+          next.translations = {
+            ...prev.translations,
+            vi: {
+              ...prev.translations.vi,
+              name: value,
+            },
+          };
+        }
+
+        if (field === "description" && typeof value === "string") {
+          next.translations = {
+            ...next.translations,
+            vi: {
+              ...next.translations.vi,
+              description: value,
+            },
+          };
+        }
+
+        return next;
+      });
+
+      if (errors[field]) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: "",
+        }));
+      }
+    },
+    [errors]
+  );
+
+  const updateTranslation = useCallback(
+    (locale: ProductLocale, field: TranslationField, value: string) => {
+      setFormData((prev) => {
+        const nextTranslations: ProductTranslationsInput = {
+          ...prev.translations,
+          [locale]: {
+            ...prev.translations[locale],
+            [field]: value,
+          },
+        };
+
+        const nextData: UpdateProductFormData = {
+          ...prev,
+          translations: nextTranslations,
+        };
+
+        if (locale === "vi" && field === "name") {
+          nextData.name = value;
+        }
+        if (locale === "vi" && field === "description") {
+          nextData.description = value;
+        }
+
+        return nextData;
+      });
+
       if (errors[field]) {
         setErrors((prev) => ({
           ...prev,
@@ -165,14 +318,12 @@ export function useUpdateProduct(
         const newArray = currentArray.includes(value)
           ? currentArray.filter((item) => item !== value)
           : [...currentArray, value];
-
         return {
           ...prev,
           [field]: newArray,
         };
       });
 
-      // Clear error for this field if it exists
       if (errors[field]) {
         setErrors((prev) => ({
           ...prev,
@@ -183,10 +334,20 @@ export function useUpdateProduct(
     [errors]
   );
 
+  const isValidUrl = (url: string): boolean => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const validateForm = useCallback((): boolean => {
     const newErrors: ValidationErrors = {};
+    const viName = formData.translations.vi.name.trim() || formData.name.trim();
 
-    if (!formData.name.trim()) {
+    if (!viName) {
       newErrors.name = "Tên sản phẩm là bắt buộc";
     }
 
@@ -206,12 +367,10 @@ export function useUpdateProduct(
       newErrors.stockQuantity = "Số lượng tồn kho không thể âm";
     }
 
-    // Validate product URL if provided
     if (formData.productUrl && !isValidUrl(formData.productUrl)) {
       newErrors.productUrl = "URL sản phẩm không hợp lệ";
     }
 
-    // Validate image URLs
     formData.images.forEach((url, index) => {
       if (url && !isValidUrl(url)) {
         newErrors[`image_${index}`] = `URL hình ảnh ${index + 1} không hợp lệ`;
@@ -222,15 +381,6 @@ export function useUpdateProduct(
     return Object.keys(newErrors).length === 0;
   }, [formData]);
 
-  const isValidUrl = (url: string): boolean => {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
   const submitForm = useCallback(async () => {
     if (!validateForm()) {
       toast.error("Vui lòng kiểm tra lại thông tin");
@@ -240,40 +390,35 @@ export function useUpdateProduct(
     try {
       setIsSubmitting(true);
 
-      // Decide whether to use file upload endpoint or regular update
+      const canonicalName = formData.translations.vi.name.trim() || formData.name.trim();
+      const canonicalDescription =
+        formData.translations.vi.description.trim() || formData.description.trim();
+      const translationsPayload = buildTranslationsPayload(
+        formData.translations,
+        canonicalName,
+        canonicalDescription
+      );
       const hasNewFiles = formData.newImages && formData.newImages.length > 0;
 
       if (hasNewFiles) {
-        // Use multipart/form-data endpoint for file uploads
         const formDataToSend = new FormData();
-
-        // Add text fields
-        formDataToSend.append("name", formData.name.trim());
-        formDataToSend.append("description", formData.description.trim() || "");
-        formDataToSend.append(
-          "categoryIds",
-          JSON.stringify(formData.categoryIds)
-        );
+        formDataToSend.append("name", canonicalName);
+        formDataToSend.append("description", canonicalDescription);
+        formDataToSend.append("categoryIds", JSON.stringify(formData.categoryIds));
         formDataToSend.append("colorIds", JSON.stringify(formData.colorIds));
         formDataToSend.append("capacityId", formData.capacityId);
-        formDataToSend.append(
-          "stockQuantity",
-          formData.stockQuantity.toString()
-        );
+        formDataToSend.append("stockQuantity", formData.stockQuantity.toString());
         formDataToSend.append("isActive", formData.isActive.toString());
-        formDataToSend.append("isVip", formData.isVip.toString()); // ✅ NEW FIELD
-        formDataToSend.append("isFeatured", formData.isFeatured.toString()); // ✅ NEW FIELD
+        formDataToSend.append("isVip", formData.isVip.toString());
+        formDataToSend.append("isFeatured", formData.isFeatured.toString());
+        formDataToSend.append("translations", JSON.stringify(translationsPayload));
 
-        // Only add productUrl if it's a valid URL or empty
         const productUrlValue = formData.productUrl.trim();
         if (productUrlValue) {
-          // Validate URL format before sending
           try {
             new URL(productUrlValue);
             formDataToSend.append("productUrl", productUrlValue);
-          } catch {
-            // If invalid URL, don't include it (will be empty string on backend)
-          }
+          } catch {}
         }
 
         formDataToSend.append(
@@ -281,42 +426,35 @@ export function useUpdateProduct(
           formData.keepExistingImages?.toString() || "true"
         );
 
-        // Add image files
         formData.newImages?.forEach((file) => {
           formDataToSend.append("images", file);
         });
 
-        const response = await fetch(
-          `/api/admin/products/${productId}/upload`,
-          {
-            method: "PUT",
-            headers: {
-              ...getAuthHeaders(),
-              // Don't set Content-Type, let browser set it with boundary for FormData
-            },
-            body: formDataToSend,
-          }
-        );
+        const response = await fetch(`/api/admin/products/${productId}/upload`, {
+          method: "PUT",
+          headers: {
+            ...getAuthHeaders(),
+          },
+          body: formDataToSend,
+        });
 
         const data = await response.json();
-
         if (!response.ok || !data.success) {
           throw new Error(data.message || "Không thể cập nhật sản phẩm");
         }
       } else {
-        // Use regular JSON update endpoint (no file uploads)
         const payload = {
-          name: formData.name.trim(),
-          description: formData.description.trim() || "",
+          name: canonicalName,
+          description: canonicalDescription,
           categoryIds: formData.categoryIds,
           colorIds: formData.colorIds,
           capacityId: formData.capacityId,
           stockQuantity: formData.stockQuantity,
           productUrl: formData.productUrl.trim() || "",
           isActive: formData.isActive,
-          isVip: formData.isVip, // ✅ NEW FIELD
-          isFeatured: formData.isFeatured, // ✅ NEW FIELD
-          // Include images array for image reordering - convert URLs to proper format
+          isVip: formData.isVip,
+          isFeatured: formData.isFeatured,
+          translations: translationsPayload,
           productImages: formData.images.map((url, index) => ({
             url,
             order: index,
@@ -333,24 +471,18 @@ export function useUpdateProduct(
         });
 
         const data = await response.json();
-
         if (!response.ok || !data.success) {
           throw new Error(data.message || "Không thể cập nhật sản phẩm");
         }
       }
 
       toast.success("Cập nhật sản phẩm thành công!");
-
-      if (onSuccess) {
-        onSuccess();
-      }
+      if (onSuccess) onSuccess();
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Có lỗi xảy ra";
+      const errorMsg =
+        error instanceof Error ? error.message : "Có lỗi xảy ra";
       toast.error(errorMsg);
-
-      if (onError) {
-        onError(errorMsg);
-      }
+      if (onError) onError(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -362,6 +494,7 @@ export function useUpdateProduct(
     loading,
     isSubmitting,
     updateField,
+    updateTranslation,
     toggleArrayField,
     validateForm,
     submitForm,

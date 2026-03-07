@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/routing";
 import { RootState, AppDispatch } from "@/store"; // Need to ensure store export
 import {
   fetchEffectSettings,

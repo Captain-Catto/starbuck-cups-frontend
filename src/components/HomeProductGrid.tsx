@@ -5,8 +5,10 @@ import ProductCard from "@/components/ProductCard";
 import { Product } from "@/types";
 import { useAppDispatch } from "@/store";
 import { addToCart } from "@/store/slices/cartSlice";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ArrowRight } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 // CSS cho skeleton được import ở app level để tránh duplicate
 
 interface HomeProductGridProps {
@@ -25,6 +27,8 @@ export default function HomeProductGrid({
     new Map()
   );
   const dispatch = useAppDispatch();
+  const t = useTranslations("homePage");
+  const locale = useLocale();
 
   // Debug logs
 
@@ -124,7 +128,7 @@ export default function HomeProductGrid({
         setAllAnimationsComplete(false);
         setShowViewAllButton(false);
 
-        const url = "/api/products?sortBy=createdAt&sortOrder=desc&limit=12";
+        const url = `/api/products?sortBy=createdAt&sortOrder=desc&limit=12&locale=${locale}`;
 
         const response = await fetch(url);
         const data = await response.json();
@@ -143,7 +147,7 @@ export default function HomeProductGrid({
     };
 
     fetchProducts();
-  }, []);
+  }, [locale]);
 
   const handleAddToCart = (product: Product) => {
     dispatch(addToCart({ product }));
@@ -181,7 +185,7 @@ export default function HomeProductGrid({
   if (!loading && products.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-zinc-400 text-lg">Không có sản phẩm nào</p>
+        <p className="text-zinc-400 text-lg">{t("noProducts")}</p>
       </div>
     );
   }
@@ -254,7 +258,7 @@ export default function HomeProductGrid({
 
               {/* Content */}
               <span className="relative z-10 flex items-center gap-2">
-                Xem tất cả sản phẩm
+                {t("viewAllProducts")}
                 <ArrowRight className="w-5 h-5" />
               </span>
             </Link>

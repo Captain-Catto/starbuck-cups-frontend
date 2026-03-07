@@ -1,9 +1,102 @@
-﻿"use client";
+"use client";
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import type { ProductLocale, ProductTranslationsInput } from "@/types";
 import { useAppSelector } from "@/hooks/redux";
+
+type TranslationField = "name" | "description" | "metaTitle" | "metaDescription";
+
+const EMPTY_TRANSLATIONS: ProductTranslationsInput = {
+  vi: { name: "", description: "", metaTitle: "", metaDescription: "" },
+  en: { name: "", description: "", metaTitle: "", metaDescription: "" },
+  zh: { name: "", description: "", metaTitle: "", metaDescription: "" },
+};
+
+const createInitialTranslations = (
+  initialData?: Partial<ProductFormData>
+): ProductTranslationsInput => {
+  const initialTranslations = initialData?.translations;
+
+  return {
+    vi: {
+      name: initialTranslations?.vi?.name || initialData?.name || "",
+      description:
+        initialTranslations?.vi?.description || initialData?.description || "",
+      metaTitle: initialTranslations?.vi?.metaTitle || "",
+      metaDescription: initialTranslations?.vi?.metaDescription || "",
+    },
+    en: {
+      name: initialTranslations?.en?.name || "",
+      description: initialTranslations?.en?.description || "",
+      metaTitle: initialTranslations?.en?.metaTitle || "",
+      metaDescription: initialTranslations?.en?.metaDescription || "",
+    },
+    zh: {
+      name: initialTranslations?.zh?.name || "",
+      description: initialTranslations?.zh?.description || "",
+      metaTitle: initialTranslations?.zh?.metaTitle || "",
+      metaDescription: initialTranslations?.zh?.metaDescription || "",
+    },
+  };
+};
+
+const toOptionalValue = (value: string): string | undefined => {
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
+};
+
+const buildTranslationsPayload = (
+  translations: ProductTranslationsInput,
+  fallbackName: string,
+  fallbackDescription: string
+) => {
+  const buildLocale = (
+    locale: ProductLocale
+  ): Record<string, string> | undefined => {
+    const source = translations[locale];
+    const entry: Record<string, string> = {};
+
+    const name =
+      locale === "vi"
+        ? source.name.trim() || fallbackName.trim()
+        : source.name.trim();
+    if (name) {
+      entry.name = name;
+    }
+
+    const description =
+      locale === "vi"
+        ? source.description.trim() || fallbackDescription.trim()
+        : source.description.trim();
+    if (description) {
+      entry.description = description;
+    }
+
+    const metaTitle = toOptionalValue(source.metaTitle);
+    if (metaTitle) {
+      entry.metaTitle = metaTitle;
+    }
+
+    const metaDescription = toOptionalValue(source.metaDescription);
+    if (metaDescription) {
+      entry.metaDescription = metaDescription;
+    }
+
+    return Object.keys(entry).length > 0 ? entry : undefined;
+  };
+
+  const vi = buildLocale("vi");
+  const en = buildLocale("en");
+  const zh = buildLocale("zh");
+
+  return {
+    ...(vi && { vi }),
+    ...(en && { en }),
+    ...(zh && { zh }),
+  };
+};
 
 export interface ProductFormData {
   name: string;
@@ -14,10 +107,11 @@ export interface ProductFormData {
   capacityIds: string[];
   categoryIds: string[];
   isActive: boolean;
-  isVip: boolean; // ✅ NEW FIELD
-  isFeatured: boolean; // ✅ NEW FIELD
+  isVip: boolean;
+  isFeatured: boolean;
   stockQuantity: number;
   productUrl: string;
+  translations: ProductTranslationsInput;
 }
 
 export interface ValidationErrors {
@@ -38,6 +132,11 @@ export interface UseProductFormReturn {
   loading: boolean;
   isSubmitting: boolean;
   updateField: (field: keyof ProductFormData, value: unknown) => void;
+  updateTranslation: (
+    locale: ProductLocale,
+    field: TranslationField,
+    value: string
+  ) => void;
   toggleArrayField: (
     field: "colorIds" | "capacityIds" | "categoryIds",
     value: string
@@ -71,10 +170,11 @@ export function useProductForm(
     capacityIds: initialData?.capacityIds || [],
     categoryIds: initialData?.categoryIds || [],
     isActive: initialData?.isActive ?? true,
-    isVip: initialData?.isVip ?? false, // ✅ NEW FIELD - default false
-    isFeatured: initialData?.isFeatured ?? false, // ✅ NEW FIELD - default false
+    isVip: initialData?.isVip ?? false,
+    isFeatured: initialData?.isFeatured ?? false,
     stockQuantity: initialData?.stockQuantity || 0,
     productUrl: initialData?.productUrl || "",
+    translations: createInitialTranslations(initialData),
   });
 
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -87,20 +187,70 @@ export function useProductForm(
 
   const updateField = useCallback(
     (field: keyof ProductFormData, value: unknown) => {
-      // Debug isVip changes
-      if (field === "isVip") {
-        console.log("🔍 DEBUG: isVip field updated:", {
-          field,
-          value,
-          valueType: typeof value,
-          timestamp: new Date().toISOString(),
-        });
-      }
+      setFormData((prev) => {
+        const next = {
+          ...prev,
+          [field]: value,
+        } as ProductFormData;
 
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
+        if (field === "name" && typeof value === "string") {
+          next.translations = {
+            ...prev.translations,
+            vi: {
+              ...prev.translations.vi,
+              name: value,
+            },
+          };
+        }
+
+        if (field === "description" && typeof value === "string") {
+          next.translations = {
+            ...next.translations,
+            vi: {
+              ...next.translations.vi,
+              description: value,
+            },
+          };
+        }
+
+        return next;
+      });
+
+      if (errors[field]) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: "",
+        }));
+      }
+    },
+    [errors]
+  );
+
+  const updateTranslation = useCallback(
+    (locale: ProductLocale, field: TranslationField, value: string) => {
+      setFormData((prev) => {
+        const nextTranslations: ProductTranslationsInput = {
+          ...prev.translations,
+          [locale]: {
+            ...prev.translations[locale],
+            [field]: value,
+          },
+        };
+
+        const nextData: ProductFormData = {
+          ...prev,
+          translations: nextTranslations,
+        };
+
+        if (locale === "vi" && field === "name") {
+          nextData.name = value;
+        }
+        if (locale === "vi" && field === "description") {
+          nextData.description = value;
+        }
+
+        return nextData;
+      });
 
       if (errors[field]) {
         setErrors((prev) => ({
@@ -136,38 +286,6 @@ export function useProductForm(
     [errors]
   );
 
-  const validateForm = useCallback((): boolean => {
-    const newErrors: ValidationErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Tên sản phẩm là bắt buộc";
-    }
-
-    if (formData.colorIds.length === 0) {
-      newErrors.colorIds = "Phải chọn ít nhất một màu sắc";
-    }
-
-    if (formData.capacityIds.length === 0) {
-      newErrors.capacityIds = "Phải chọn ít nhất một dung tích";
-    }
-
-    if (formData.categoryIds.length === 0) {
-      newErrors.categoryIds = "Phải chọn ít nhất một danh mục";
-    }
-
-    // Validate that at least one image is provided
-    if (formData.images.length === 0 && !formData.imageUrl.trim()) {
-      newErrors.images = "Phải có ít nhất một hình ảnh sản phẩm";
-    }
-
-    if (formData.imageUrl && !isValidUrl(formData.imageUrl)) {
-      newErrors.imageUrl = "URL hình ảnh không hợp lệ";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [formData]);
-
   const isValidUrl = (url: string): boolean => {
     try {
       new URL(url);
@@ -177,152 +295,11 @@ export function useProductForm(
     }
   };
 
-  const submitForm = useCallback(async () => {
-    console.log("🚨 SUBMIT FORM STARTED - Debug point 1");
-    console.log("🚨 Form data at start:", formData);
-
-    if (!validateForm()) {
-      console.log("🚨 VALIDATION FAILED - Form not submitted");
-      toast.error("Vui lòng kiểm tra lại thông tin");
-      return;
-    }
-
-    console.log("🚨 VALIDATION PASSED - Continuing with submission");
-
-    try {
-      setIsSubmitting(true);
-
-      // Debug form state before submission
-      console.log("🔍 DEBUG: Form state before submission:", {
-        formDataIsVip: formData.isVip,
-        formDataIsVipType: typeof formData.isVip,
-        fullFormData: formData,
-      });
-
-      // Prepare images with order information
-      const imagesWithOrder =
-        formData.images.length > 0
-          ? formData.images.map((url, index) => ({ url, order: index }))
-          : formData.imageUrl.trim()
-          ? [{ url: formData.imageUrl.trim(), order: 0 }]
-          : [];
-
-      // Debug isVip value before creating payload
-      console.log("🔍 DEBUG: isVip value check:", {
-        formDataIsVip: formData.isVip,
-        formDataIsVipType: typeof formData.isVip,
-        isVipValueBeforePayload: formData.isVip,
-        timestamp: new Date().toISOString(),
-      });
-
-      const payload = {
-        name: formData.name.trim(),
-        description: formData.description.trim() || undefined,
-        productImages: imagesWithOrder,
-        colorIds: formData.colorIds,
-        capacityId: formData.capacityIds[0] || "",
-        categoryIds: formData.categoryIds,
-        stockQuantity: formData.stockQuantity,
-        productUrl: formData.productUrl.trim() || undefined,
-        isVip: formData.isVip,
-        isFeatured: formData.isFeatured,
-        ...(isEditing && productId && { id: productId }),
-      };
-
-      // Debug payload immediately after creation
-      console.log("🔍 DEBUG: Payload immediately after creation:", {
-        payloadIsVip: payload.isVip,
-        payloadIsVipType: typeof payload.isVip,
-        hasIsVipProperty: payload.hasOwnProperty("isVip"),
-        payloadKeys: Object.keys(payload),
-      });
-
-      const url =
-        isEditing && productId
-          ? `/api/admin/products/${productId}`
-          : "/api/admin/products";
-
-      const method = isEditing ? "PUT" : "POST";
-
-      console.log("🔍 DEBUG: Payload being sent to API:", {
-        isVip: payload.isVip,
-        isVipType: typeof payload.isVip,
-        method,
-        url,
-        fullPayload: payload,
-      });
-
-      // Debug the actual JSON string being sent
-      const jsonPayload = JSON.stringify(payload);
-      console.log("🔍 DEBUG: JSON string being sent:", jsonPayload);
-      console.log(
-        "🔍 DEBUG: JSON contains isVip?",
-        jsonPayload.includes("isVip")
-      );
-
-      // Add alert to make sure we see this
-      alert(
-        `🚨 ABOUT TO SEND API REQUEST\nisVip: ${
-          payload.isVip
-        }\nJSON: ${jsonPayload.substring(0, 200)}...`
-      );
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          ...getAuthHeaders(),
-        },
-        body: jsonPayload,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        const errorMsg =
-          data.message ||
-          (isEditing
-            ? "Không thể cập nhật sản phẩm"
-            : "Không thể tạo sản phẩm");
-        throw new Error(errorMsg);
-      }
-
-      const successMsg = isEditing
-        ? "Cập nhật sản phẩm thành công!"
-        : "Tạo sản phẩm thành công!";
-
-      toast.success(successMsg);
-
-      if (onSuccess) {
-        onSuccess(data.data);
-      } else {
-        router.push("/admin/products");
-      }
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Có lỗi xảy ra";
-      toast.error(errorMsg);
-
-      if (onError) {
-        onError(errorMsg);
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [
-    formData,
-    isEditing,
-    productId,
-    validateForm,
-    onSuccess,
-    onError,
-    router,
-    getAuthHeaders,
-  ]);
-
   const validateFormData = useCallback((data: ProductFormData): boolean => {
     const newErrors: ValidationErrors = {};
+    const viName = data.translations.vi.name.trim() || data.name.trim();
 
-    if (!data.name.trim()) {
+    if (!viName) {
       newErrors.name = "Tên sản phẩm là bắt buộc";
     }
 
@@ -338,7 +315,6 @@ export function useProductForm(
       newErrors.categoryIds = "Phải chọn ít nhất một danh mục";
     }
 
-    // Validate that at least one image is provided
     if (data.images.length === 0 && !data.imageUrl.trim()) {
       newErrors.images = "Phải có ít nhất một hình ảnh sản phẩm";
     }
@@ -351,40 +327,28 @@ export function useProductForm(
     return Object.keys(newErrors).length === 0;
   }, []);
 
-  const submitFormWithImages = useCallback(
-    async (images: string[]) => {
-      console.log("🚨 SUBMIT FORM WITH IMAGES STARTED - Debug point 1");
-      console.log("🚨 Images provided:", images);
-      console.log("🚨 Form data at start:", formData);
+  const validateForm = useCallback((): boolean => {
+    return validateFormData(formData);
+  }, [formData, validateFormData]);
 
-      // Create temporary form data with provided images
-      const tempFormData = {
+  const submitWithImages = useCallback(
+    async (images: string[]) => {
+      const tempFormData: ProductFormData = {
         ...formData,
-        images: images,
+        name: formData.translations.vi.name || formData.name,
+        description: formData.translations.vi.description || formData.description,
+        images,
         imageUrl: images.length > 0 ? images[0] : formData.imageUrl,
       };
 
-      console.log("🚨 Temp form data with images:", tempFormData);
-
       if (!validateFormData(tempFormData)) {
-        console.log("🚨 VALIDATION FAILED - Form not submitted");
         toast.error("Vui lòng kiểm tra lại thông tin");
         return;
       }
 
-      console.log("🚨 VALIDATION PASSED - Continuing with submission");
-
       try {
         setIsSubmitting(true);
 
-        // Debug current form state
-        console.log("🔍 DEBUG: Form state before submission (WITH IMAGES):", {
-          tempFormDataIsVip: tempFormData.isVip,
-          tempFormDataIsVipType: typeof tempFormData.isVip,
-          fullTempFormData: tempFormData,
-        });
-
-        // Prepare images with order information
         const imagesWithOrder =
           images.length > 0
             ? images.map((url, index) => ({ url, order: index }))
@@ -392,45 +356,29 @@ export function useProductForm(
             ? [{ url: tempFormData.imageUrl.trim(), order: 0 }]
             : [];
 
-        // Debug isVip value before creating payload
-        console.log("🔍 DEBUG: isVip value check (WITH IMAGES):", {
-          tempFormDataIsVip: tempFormData.isVip,
-          tempFormDataIsVipType: typeof tempFormData.isVip,
-          isVipValueBeforePayload: tempFormData.isVip,
-          timestamp: new Date().toISOString(),
-        });
-
         const payload = {
           name: tempFormData.name.trim(),
-          description: tempFormData.description.trim() || undefined,
+          description: toOptionalValue(tempFormData.description) || "",
           productImages: imagesWithOrder,
           colorIds: tempFormData.colorIds,
           capacityId: tempFormData.capacityIds[0] || "",
           categoryIds: tempFormData.categoryIds,
           stockQuantity: tempFormData.stockQuantity,
-          productUrl: tempFormData.productUrl.trim() || undefined,
-          isVip: tempFormData.isVip, // ✅ ADDED: isVip field
-          isFeatured: tempFormData.isFeatured, // ✅ ADDED: isFeatured field
+          productUrl: toOptionalValue(tempFormData.productUrl) || "",
+          isVip: tempFormData.isVip,
+          isFeatured: tempFormData.isFeatured,
+          translations: buildTranslationsPayload(
+            tempFormData.translations,
+            tempFormData.name,
+            tempFormData.description
+          ),
           ...(isEditing && productId && { id: productId }),
         };
-
-        // Debug payload immediately after creation
-        console.log(
-          "🔍 DEBUG: Payload immediately after creation (WITH IMAGES):",
-          {
-            payloadIsVip: payload.isVip,
-            payloadIsVipType: typeof payload.isVip,
-            hasIsVipProperty: payload.hasOwnProperty("isVip"),
-            payloadKeys: Object.keys(payload),
-            fullPayload: payload,
-          }
-        );
 
         const url =
           isEditing && productId
             ? `/api/admin/products/${productId}`
             : "/api/admin/products";
-
         const method = isEditing ? "PUT" : "POST";
 
         const response = await fetch(url, {
@@ -443,7 +391,6 @@ export function useProductForm(
         });
 
         const data = await response.json();
-
         if (!response.ok || !data.success) {
           const errorMsg =
             data.message ||
@@ -453,11 +400,11 @@ export function useProductForm(
           throw new Error(errorMsg);
         }
 
-        const successMsg = isEditing
-          ? "Cập nhật sản phẩm thành công!"
-          : "Tạo sản phẩm thành công!";
-
-        toast.success(successMsg);
+        toast.success(
+          isEditing
+            ? "Cập nhật sản phẩm thành công!"
+            : "Tạo sản phẩm thành công!"
+        );
 
         if (onSuccess) {
           onSuccess(data.data);
@@ -468,24 +415,32 @@ export function useProductForm(
         const errorMsg =
           error instanceof Error ? error.message : "Có lỗi xảy ra";
         toast.error(errorMsg);
-
-        if (onError) {
-          onError(errorMsg);
-        }
+        if (onError) onError(errorMsg);
       } finally {
         setIsSubmitting(false);
       }
     },
     [
       formData,
-      isEditing,
-      productId,
-      onSuccess,
-      onError,
-      router,
       getAuthHeaders,
+      isEditing,
+      onError,
+      onSuccess,
+      productId,
+      router,
       validateFormData,
     ]
+  );
+
+  const submitForm = useCallback(async () => {
+    await submitWithImages(formData.images);
+  }, [formData.images, submitWithImages]);
+
+  const submitFormWithImages = useCallback(
+    async (images: string[]) => {
+      await submitWithImages(images);
+    },
+    [submitWithImages]
   );
 
   const resetForm = useCallback(() => {
@@ -498,10 +453,11 @@ export function useProductForm(
       capacityIds: initialData?.capacityIds || [],
       categoryIds: initialData?.categoryIds || [],
       isActive: initialData?.isActive ?? true,
-      isVip: initialData?.isVip ?? false, // ✅ NEW FIELD - default false
-      isFeatured: initialData?.isFeatured ?? false, // ✅ NEW FIELD - default false
+      isVip: initialData?.isVip ?? false,
+      isFeatured: initialData?.isFeatured ?? false,
       stockQuantity: initialData?.stockQuantity || 0,
       productUrl: initialData?.productUrl || "",
+      translations: createInitialTranslations(initialData) || EMPTY_TRANSLATIONS,
     });
     setErrors({});
     setIsSubmitting(false);
@@ -513,6 +469,7 @@ export function useProductForm(
     loading,
     isSubmitting,
     updateField,
+    updateTranslation,
     toggleArrayField,
     validateForm,
     submitForm,

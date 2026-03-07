@@ -13,7 +13,7 @@ interface ProductGridProps {
 
 export default function ProductGrid({
   apiEndpoint,
-  emptyMessage = "Không có sản phẩm nào",
+  emptyMessage = "No products available",
   className = "",
   layout = "products",
 }: ProductGridProps) {

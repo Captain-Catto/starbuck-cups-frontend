@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useParams, notFound, useRouter } from "next/navigation";
+import { useParams, notFound } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { ShoppingCart } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addToCart } from "@/store/slices/cartSlice";
@@ -12,6 +13,7 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import { trackProductClick, trackAddToCartClick } from "@/lib/productAnalytics";
+import { useLocale, useTranslations } from "next-intl";
 
 interface ProductColor {
   color: {
@@ -34,6 +36,8 @@ export default function ProductInfo() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const t = useTranslations("productDetail");
+  const locale = useLocale();
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
 
   // Get product data from Redux store
@@ -50,10 +54,10 @@ export default function ProductInfo() {
     const slug = params.slug;
     if (typeof slug === "string" && !hasAttemptedFetch) {
       setHasAttemptedFetch(true);
-      dispatch(fetchProductBySlug(slug));
+      dispatch(fetchProductBySlug({ slug, locale }));
     } else {
     }
-  }, [params.slug, dispatch, hasAttemptedFetch]);
+  }, [params.slug, dispatch, hasAttemptedFetch, locale]);
 
   // Track product view when product is loaded
   useEffect(() => {
@@ -112,7 +116,7 @@ export default function ProductInfo() {
 
       // Toast will be handled by ClientLayout based on cart lastAction
     } else {
-      toast.error("Sản phẩm hiện đã hết hàng", {
+      toast.error(t("outOfStockError"), {
         duration: 3000,
       });
     }
@@ -240,7 +244,7 @@ export default function ProductInfo() {
   if (!product) {
     return (
       <div className="text-center text-white py-8">
-        <p>Không tìm thấy sản phẩm</p>
+        <p>{t("notFound")}</p>
       </div>
     );
   }
@@ -267,7 +271,7 @@ export default function ProductInfo() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-2">
-              Màu sắc
+              {t("color")}
             </label>
             <div className="flex flex-wrap gap-2">
               {product.productColors?.map((pc: ProductColor) => {
@@ -289,14 +293,14 @@ export default function ProductInfo() {
                   </button>
                 );
               }) || (
-                <span className="text-zinc-400 text-sm">Không xác định</span>
+                <span className="text-zinc-400 text-sm">{t("unknown")}</span>
               )}
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-2">
-              Dung tích
+              {t("capacity")}
             </label>
             {product.capacity ? (
               <button
@@ -310,7 +314,7 @@ export default function ProductInfo() {
             ) : (
               <div className="inline-flex items-center px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg">
                 <span className="text-zinc-400 font-medium">
-                  Không xác định
+                  {t("unknown")}
                 </span>
               </div>
             )}
@@ -318,7 +322,7 @@ export default function ProductInfo() {
 
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-2">
-              Danh mục
+              {t("category")}
             </label>
             <div className="flex flex-wrap gap-2">
               {product.productCategories?.map((pc: ProductCategory) => (
@@ -332,7 +336,7 @@ export default function ProductInfo() {
                   </span>
                 </button>
               )) || (
-                <span className="text-zinc-400 text-sm">Không xác định</span>
+                <span className="text-zinc-400 text-sm">{t("unknown")}</span>
               )}
             </div>
           </div>
@@ -347,7 +351,7 @@ export default function ProductInfo() {
               rel="noopener noreferrer"
               className="text-blue-400 hover:text-blue-300 transition-colors underline"
             >
-              Xem clip sản phẩm
+              {t("viewClip")}
             </a>
           </div>
         )}
@@ -365,7 +369,7 @@ export default function ProductInfo() {
               }`}
             >
               <ShoppingCart className="w-5 h-5" />
-              {product.stockQuantity === 0 ? "Hết hàng" : "Thêm vào giỏ tư vấn"}
+              {product.stockQuantity === 0 ? t("outOfStock") : t("addToCart")}
             </button>
           </div>
         </div>

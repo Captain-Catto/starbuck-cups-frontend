@@ -2,7 +2,8 @@
 
 import { useRef, useEffect, useState } from "react";
 import { Search, X, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
+import { useLocale, useTranslations } from "next-intl";
 import ProductCard from "@/components/ProductCard";
 import { useAppDispatch } from "@/store";
 import { addToCart } from "@/store/slices/cartSlice";
@@ -23,6 +24,8 @@ export function SearchAutocomplete({
   const router = useRouter();
   const dispatch = useAppDispatch();
   const inputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations("searchModal");
+  const locale = useLocale();
 
   const [query, setQuery] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
@@ -52,7 +55,7 @@ export function SearchAutocomplete({
       try {
         // Sử dụng cùng endpoint với products page
         const response = await fetch(
-          `/api/products?search=${encodeURIComponent(query)}&limit=8`
+          `/api/products?search=${encodeURIComponent(query)}&limit=8&locale=${locale}`
         );
 
         if (response.ok) {
@@ -79,7 +82,7 @@ export function SearchAutocomplete({
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [query]);
+  }, [query, locale]);
 
   // Focus input when modal opens
   useEffect(() => {
@@ -137,7 +140,7 @@ export function SearchAutocomplete({
       <div className="bg-zinc-900 rounded-lg max-w-2xl w-full mx-4 overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700">
-          <h2 className="text-lg font-bold text-white">Tìm kiếm sản phẩm</h2>
+          <h2 className="text-lg font-bold text-white">{t("title")}</h2>
           <button
             onClick={handleClose}
             className="p-2 rounded-lg hover:bg-zinc-800 text-white transition-colors"
@@ -157,7 +160,7 @@ export function SearchAutocomplete({
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Tìm kiếm sản phẩm... (tối thiểu 2 ký tự)"
+                  placeholder={t("placeholder")}
                   className="flex-1 bg-transparent text-white placeholder-zinc-400 outline-none"
                 />
                 {isLoading && (
@@ -175,7 +178,7 @@ export function SearchAutocomplete({
               <div className="p-4 text-center">
                 <div className="flex items-center justify-center gap-2 text-zinc-400">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Đang tìm kiếm...</span>
+                  <span>{t("searching")}</span>
                 </div>
               </div>
             ) : showSuggestions && products.length > 0 ? (
@@ -203,19 +206,19 @@ export function SearchAutocomplete({
                     onClick={handleViewAllResults}
                     className="w-full bg-white text-black py-2 px-4 rounded-lg font-medium hover:bg-zinc-200 transition-colors text-sm"
                   >
-                    Xem tất cả kết quả cho &quot;{query}&quot;
+                    {t("viewAllResults", { query })}
                   </button>
                 </div>
               </div>
             ) : query.length >= 2 && !isLoading ? (
               <div className="p-8 text-center">
                 <Search className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-                <p className="text-zinc-400">Không tìm thấy sản phẩm nào</p>
+                <p className="text-zinc-400">{t("noResults")}</p>
                 <button
                   onClick={handleViewAllResults}
                   className="mt-4 bg-white text-black py-2 px-4 rounded-lg font-medium hover:bg-zinc-200 transition-colors text-sm"
                 >
-                  Tìm kiếm trên trang sản phẩm
+                  {t("searchOnProductsPage")}
                 </button>
               </div>
             ) : null}
@@ -227,10 +230,10 @@ export function SearchAutocomplete({
           <div className="p-8 text-center border-t border-zinc-700">
             <Search className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
             <p className="text-zinc-400">
-              Nhập ít nhất 2 ký tự để bắt đầu tìm kiếm
+              {t("minChars")}
             </p>
             <p className="text-zinc-500 text-sm mt-2">
-              Suggestions sẽ xuất hiện trong vòng 300ms
+              {t("suggestionsHint")}
             </p>
           </div>
         )}

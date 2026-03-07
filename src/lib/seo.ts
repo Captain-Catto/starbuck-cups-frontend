@@ -11,13 +11,39 @@ export const siteConfig = {
     "starbucks, ly starbucks, cups, tumbler, ly giữ nhiệt, starbucks vietnam, ly starbucks chính hãng, ly starbuck chính hãng, ly starbucks auth, starbuck chính hãng, starbucks chính hãng, mua ly starbuck chính hãng, bình starbucks chính hãng, bình giữ nhiệt starbucks, ly giữ nhiệt starbucks, ly sứ starbucks",
 };
 
-export function generateSEO(seo: Partial<PageSEO>): Metadata {
+export function generateSEO(
+  seo: Partial<PageSEO> & { locale?: string }
+): Metadata {
   const title = seo.title
     ? `${seo.title} | ${siteConfig.name}`
     : siteConfig.name;
   const description = seo.description || siteConfig.description;
-  const url = seo.canonical || siteConfig.url;
+
+  const ogLocaleMap: Record<string, string> = {
+    vi: "vi_VN",
+    en: "en_US",
+    zh: "zh_CN",
+  };
+  const locale = seo.locale || "vi";
   const image = seo.openGraph?.image || siteConfig.image;
+  const pathFromSeo = seo.openGraph?.url || "/";
+  const normalizedPath =
+    pathFromSeo.startsWith("http://") || pathFromSeo.startsWith("https://")
+      ? new URL(pathFromSeo).pathname
+      : pathFromSeo;
+  const cleanPath = normalizedPath.startsWith("/") ? normalizedPath : `/${normalizedPath}`;
+  const localePrefix = locale === "vi" ? "" : `/${locale}`;
+  const canonicalPath =
+    cleanPath === "/" ? `${localePrefix || "/"}` : `${localePrefix}${cleanPath}`;
+  const canonicalUrl = seo.canonical || new URL(canonicalPath, siteConfig.url).toString();
+  const ogLocale = ogLocaleMap[locale] || "vi_VN";
+
+  const buildLocalizedUrl = (targetLocale: "vi" | "en" | "zh") => {
+    const prefix = targetLocale === "vi" ? "" : `/${targetLocale}`;
+    const localizedPath =
+      cleanPath === "/" ? `${prefix || "/"}` : `${prefix}${cleanPath}`;
+    return new URL(localizedPath, siteConfig.url).toString();
+  };
 
   return {
     title,
@@ -33,12 +59,18 @@ export function generateSEO(seo: Partial<PageSEO>): Metadata {
     },
     metadataBase: new URL(siteConfig.url),
     alternates: {
-      canonical: url,
+      canonical: canonicalUrl,
+      languages: {
+        vi: buildLocalizedUrl("vi"),
+        en: buildLocalizedUrl("en"),
+        zh: buildLocalizedUrl("zh"),
+        "x-default": buildLocalizedUrl("vi"),
+      },
     },
     openGraph: {
       title: seo.openGraph?.title || title,
       description: seo.openGraph?.description || description,
-      url: seo.openGraph?.url || url,
+      url: canonicalUrl,
       siteName: siteConfig.name,
       images: [
         {
@@ -48,7 +80,7 @@ export function generateSEO(seo: Partial<PageSEO>): Metadata {
           alt: seo.openGraph?.title || title,
         },
       ],
-      locale: "vi_VN",
+      locale: ogLocale,
       type: seo.openGraph?.type || "website",
     },
     twitter: {
@@ -146,7 +178,7 @@ export function generateOrganizationStructuredData() {
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer service",
-      availableLanguage: "Vietnamese",
+      availableLanguage: ["Vietnamese", "English", "Chinese"],
     },
     sameAs: [
       "https://facebook.com/starbuckscups",

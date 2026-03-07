@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface PaginationData {
   current_page: number;
@@ -27,6 +28,7 @@ export function Pagination({
   showPages = 5,
   className = "",
 }: PaginationProps) {
+  const t = useTranslations("pagination");
   const [isInputMode, setIsInputMode] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [desktopInputMode, setDesktopInputMode] = useState(false);
@@ -125,7 +127,7 @@ export function Pagination({
   return (
     <nav
       className={classNames("flex items-center justify-center", className)}
-      aria-label="Pagination"
+      aria-label={t("navigationAria")}
     >
       <div className="flex items-center space-x-1">
         {/* Previous Page */}
@@ -140,7 +142,7 @@ export function Pagination({
               ? "text-zinc-600 cursor-not-allowed bg-zinc-800"
               : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800"
           )}
-          aria-label="Trang trước"
+          aria-label={t("previousPage")}
         >
           &lt;
         </button>
@@ -150,7 +152,7 @@ export function Pagination({
           {isInputMode ? (
             <form onSubmit={handleInputSubmit} className="flex items-center">
               <span className="text-sm font-medium text-zinc-300 mr-2">
-                Trang
+                {t("page")}
               </span>
               <input
                 type="number"
@@ -173,7 +175,7 @@ export function Pagination({
               className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors"
             >
               <span>
-                Trang {currentPage} / {totalPages}
+                {t("pageWithTotal", { current: currentPage, total: totalPages })}
               </span>
             </button>
           )}
@@ -226,7 +228,7 @@ export function Pagination({
                       className="flex items-center"
                     >
                       <span className="text-xs font-medium text-zinc-400 mr-1">
-                        Đến
+                        {t("goTo")}
                       </span>
                       <input
                         type="number"
@@ -248,7 +250,7 @@ export function Pagination({
                         setDesktopInputValue("");
                       }}
                       className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-400 transition-colors"
-                      title={`Nhảy đến trang (1-${totalPages})`}
+                      title={t("jumpToPageTitle", { total: totalPages })}
                     >
                       ...
                     </button>
@@ -277,7 +279,7 @@ export function Pagination({
               ? "text-zinc-600 cursor-not-allowed bg-zinc-800"
               : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800"
           )}
-          aria-label="Trang sau"
+          aria-label={t("nextPage")}
         >
           &gt;
         </button>

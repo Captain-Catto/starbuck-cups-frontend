@@ -1,13 +1,13 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "@/store";
 import { clearCart } from "@/store/slices/cartSlice";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ChevronLeft, FileText, Phone, User, MapPin, Mail } from "lucide-react";
 import type { CartItem } from "@/types";
-import { Header } from "@/components/layout/Header";
 import { Cart } from "@/components/ui/Cart";
 import { getFirstProductImageUrl } from "@/lib/utils/image";
 import { trackConsultationSubmission } from "@/lib/analytics";
@@ -28,6 +28,9 @@ export default function CartPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { items } = useAppSelector((state) => state.cart);
+  const t = useTranslations("cart");
+  const tForm = useTranslations("cartForm");
+  const tCommon = useTranslations("common");
 
   const totalItems = items.length;
 
@@ -52,12 +55,12 @@ export default function CartPage() {
 
   const validateForm = (): boolean => {
     if (!formData.customerName.trim()) {
-      toast.error("Vui lòng nhập họ tên");
+      toast.error(tForm("nameRequired"));
       return false;
     }
 
     if (!formData.phoneNumber.trim()) {
-      toast.error("Vui lòng nhập số điện thoại");
+      toast.error(tForm("phoneRequired"));
       return false;
     }
 
@@ -67,7 +70,7 @@ export default function CartPage() {
     }
 
     if (!formData.address.trim()) {
-      toast.error("Vui lòng nhập địa chỉ");
+      toast.error(tForm("addressRequired"));
       return false;
     }
 
@@ -78,14 +81,13 @@ export default function CartPage() {
     if (!validateForm()) return;
 
     if (items.length === 0) {
-      toast.error("Giỏ tư vấn trống! Vui lòng thêm sản phẩm trước.");
+      toast.error(t("emptyError"));
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Log cart items để debug
       console.log("🛒 CART ITEMS DEBUG:", {
         totalItems: items.length,
         items: items.map((item, index) => ({
@@ -108,22 +110,21 @@ export default function CartPage() {
       const consultationData = {
         customer: {
           ...formData,
-          email: formData.email || undefined, // Include email if provided
+          email: formData.email || undefined,
         },
         items: items.map((item) => ({
           productId: item.product.id,
           productName: item.product.name,
-          color: item.colorRequest || "Chưa chọn",
-          capacity: item.product.capacity?.name || "N/A",
+          color: item.colorRequest || t("colorNotSelected"),
+          capacity: item.product.capacity?.name || t("notAvailable"),
           category:
             item.product.productCategories
               ?.map((pc) => pc.category.name)
-              .join(", ") || "N/A",
+              .join(", ") || t("notAvailable"),
         })),
         createdAt: new Date().toISOString(),
       };
 
-      // Log dữ liệu consultation sẽ gửi lên backend
       console.log("📝 CONSULTATION DATA TO BACKEND:", consultationData);
       console.log(
         "📤 CONSULTATION JSON:",
@@ -141,14 +142,10 @@ export default function CartPage() {
       if (response.ok) {
         const responseData = await response.json();
 
-        toast.success(
-          "Đã tạo đơn tư vấn thành công! Chúng tôi sẽ liên hệ với bạn sớm.",
-          {
-            duration: 5000,
-          }
-        );
+        toast.success(tForm("successMessage"), {
+          duration: 5000,
+        });
 
-        // Track consultation submission as conversion
         trackConsultationSubmission({
           id: responseData.data?.consultation?.id,
           totalItems: items.length,
@@ -160,19 +157,16 @@ export default function CartPage() {
           })),
         });
 
-        // Clear cart and redirect
         dispatch(clearCart());
         router.push("/products");
       } else {
         const errorData = await response.json();
-        const errorMessage = errorData.error || "Failed to create consultation";
+        const errorMessage = errorData.error || tForm("errorGeneric");
         throw new Error(errorMessage);
       }
     } catch (error) {
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Có lỗi xảy ra khi tạo đơn tư vấn. Vui lòng thử lại.";
+        error instanceof Error ? error.message : tForm("errorGeneric");
       toast.error(errorMessage, {
         duration: 5000,
       });
@@ -188,17 +182,15 @@ export default function CartPage() {
           <div className="max-w-4xl mx-auto px-4">
             <div className="text-center">
               <h1 className="text-2xl font-bold text-white mb-4">
-                Giỏ tư vấn trống
+                {t("emptyTitle")}
               </h1>
-              <p className="text-zinc-400 mb-8">
-                Bạn chưa có sản phẩm nào trong giỏ tư vấn.
-              </p>
+              <p className="text-zinc-400 mb-8">{t("emptyMessage")}</p>
               <button
                 onClick={() => router.push("/products")}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-lg hover:bg-zinc-100 transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
-                Tiếp tục mua sắm
+                {tCommon("continueShopping")}
               </button>
             </div>
           </div>
@@ -210,24 +202,23 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Header />
       <div className="pt-16">
         <div className="max-w-6xl mx-auto p-4">
-          {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white">Giỏ tư vấn</h1>
+            <h1 className="text-3xl font-bold text-white">
+              {tForm("consultationCart")}
+            </h1>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Cart Items */}
             <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
               <h2 className="text-xl font-semibold text-white mb-4">
-                Sản phẩm cần tư vấn ({totalItems} sản phẩm)
+                {tForm("productsToConsult", { count: totalItems })}
               </h2>
 
               <div className="space-y-4">
                 {items.map((item, index) => {
-                  // Tạo unique key cho mỗi variant
                   const uniqueKey = `${item.product.id}-${
                     item.colorRequest || "no-color"
                   }-${index}`;
@@ -240,19 +231,15 @@ export default function CartPage() {
             <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
               <div className="mb-6">
                 <h2 className="text-xl font-semibold text-white">
-                  Thông tin liên hệ
+                  {tForm("contactInfo")}
                 </h2>
-                <p className="text-zinc-400">
-                  Vui lòng liên hệ hotline 0896686008 (Zalo) để được tư vấn
-                  nhanh nhất
-                </p>
+                <p className="text-zinc-400">{tForm("contactHint")}</p>
               </div>
               <form className="space-y-4">
-                {/* Name */}
                 <div>
                   <label className="block text-sm font-medium text-zinc-300 mb-2">
                     <User className="w-4 h-4 inline mr-2" />
-                    Họ và tên *
+                    {tForm("fullName")}
                   </label>
                   <input
                     type="text"
@@ -261,16 +248,15 @@ export default function CartPage() {
                       handleInputChange("customerName", e.target.value)
                     }
                     className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
-                    placeholder="Nhập họ và tên của bạn"
+                    placeholder={tForm("fullNamePlaceholder")}
                     required
                   />
                 </div>
 
-                {/* Phone */}
                 <div>
                   <label className="block text-sm font-medium text-zinc-300 mb-2">
                     <Phone className="w-4 h-4 inline mr-2" />
-                    Số điện thoại, hoặc số zalo *
+                    {tForm("phone")}
                   </label>
                   <input
                     type="tel"
@@ -279,31 +265,29 @@ export default function CartPage() {
                       handleInputChange("phoneNumber", e.target.value)
                     }
                     className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
-                    placeholder="Nhập số điện thoại hoặc số zalo"
+                    placeholder={tForm("phonePlaceholder")}
                     required
                   />
                 </div>
 
-                {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-zinc-300 mb-2">
                     <Mail className="w-4 h-4 inline mr-2" />
-                    Email
+                    {tForm("email")}
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
-                    placeholder="Nhập email (không bắt buộc)"
+                    placeholder={tForm("emailPlaceholder")}
                   />
                 </div>
 
-                {/* Address */}
                 <div>
                   <label className="block text-sm font-medium text-zinc-300 mb-2">
                     <MapPin className="w-4 h-4 inline mr-2" />
-                    Địa chỉ *
+                    {tForm("address")}
                   </label>
                   <textarea
                     value={formData.address}
@@ -312,12 +296,11 @@ export default function CartPage() {
                     }
                     rows={3}
                     className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
-                    placeholder="Nhập địa chỉ của bạn"
+                    placeholder={tForm("addressPlaceholder")}
                     required
                   />
                 </div>
 
-                {/* Submit Button */}
                 <button
                   type="button"
                   onClick={handleSubmitConsultation}
@@ -327,23 +310,19 @@ export default function CartPage() {
                   {isSubmitting ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
-                      Đang tạo đơn...
+                      {tForm("submitting")}
                     </>
                   ) : (
                     <>
                       <FileText className="w-5 h-5" />
-                      Tạo đơn tư vấn
+                      {tForm("submit")}
                     </>
                   )}
                 </button>
               </form>
 
               <div className="mt-6 p-4 bg-zinc-800 border border-zinc-700 rounded-lg">
-                <p className="text-sm text-zinc-300">
-                  <strong>Lưu ý:</strong> Sau khi tạo đơn tư vấn, chúng tôi sẽ
-                  liên hệ với bạn trong vòng 24h để tư vấn chi tiết về các sản
-                  phẩm và báo giá sản phẩm.
-                </p>
+                <p className="text-sm text-zinc-300">{tForm("note")}</p>
               </div>
             </div>
           </div>
@@ -355,6 +334,7 @@ export default function CartPage() {
 }
 
 function CartItemRow({ item }: { item: CartItem }) {
+  const t = useTranslations("cart");
   return (
     <div className="flex items-center gap-4 p-4 border border-zinc-700 rounded-lg bg-zinc-800">
       <div className="relative w-16 h-16 flex-shrink-0">
@@ -372,19 +352,19 @@ function CartItemRow({ item }: { item: CartItem }) {
       <div className="flex-1 min-w-0">
         <h3 className="font-medium text-white truncate">{item.product.name}</h3>
         <p className="text-sm text-zinc-400">
-          Màu: {item.colorRequest || "Chưa chọn"} •{" "}
-          {item.product.capacity?.name || "Chưa có"}
+          {t("colorLabel")} {item.colorRequest || t("colorNotSelected")} •{" "}
+          {item.product.capacity?.name || t("notAvailable")}
         </p>
         <p className="text-sm text-zinc-400">
-          Danh mục:{" "}
+          {t("categoryLabel")}{" "}
           {item.product.productCategories
             ?.map((pc) => pc.category.name)
-            .join(", ") || "N/A"}
+            .join(", ") || t("notAvailable")}
         </p>
       </div>
 
       <div className="text-right">
-        <p className="text-sm text-zinc-400">Sản phẩm quan tâm</p>
+        <p className="text-sm text-zinc-400">{t("interestedProduct")}</p>
       </div>
     </div>
   );

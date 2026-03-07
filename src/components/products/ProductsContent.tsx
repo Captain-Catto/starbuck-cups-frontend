@@ -1,7 +1,10 @@
+"use client";
+
 import ProductsGrid from "@/components/ProductsGrid";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { FilterBadges } from "@/components/products/FilterBadges";
 import type { CapacityRange, Category, Color, Product } from "@/types";
+import { useTranslations } from "next-intl";
 
 interface InitialPaginationData {
   totalPages: number;
@@ -52,11 +55,16 @@ export function ProductsContent({
   initialPaginationData,
   initialQueryKey,
 }: ProductsContentProps) {
+  const tCommon = useTranslations("common");
+
   return (
     <div className="lg:w-full space-y-6">
       {/* Breadcrumb */}
       <Breadcrumb
-        items={[{ label: "Trang chủ", href: "/" }, { label: "Sản phẩm" }]}
+        items={[
+          { label: tCommon("home"), href: "/" },
+          { label: tCommon("products") },
+        ]}
       />
 
       {/* Filter Badges */}

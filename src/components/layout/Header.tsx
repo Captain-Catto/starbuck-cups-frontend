@@ -1,13 +1,14 @@
 "use client";
 
-import Link from "next/link";
+import { Link, usePathname, useRouter } from "@/i18n/routing";
 import dynamic from "next/dynamic";
-import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { openCart } from "@/store/slices/cartSlice";
 import { Search, Menu as MenuIcon, X } from "lucide-react";
 import { trackCartAction, trackMobileMenu } from "@/lib/analytics";
+import { useTranslations } from "next-intl";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 const SearchAutocomplete = dynamic(
   () =>
@@ -24,6 +25,7 @@ interface HeaderProps {
 }
 
 export function Header({ className = "" }: HeaderProps) {
+  const t = useTranslations("common");
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -32,10 +34,8 @@ export function Header({ className = "" }: HeaderProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
-  // Calculate total cart items - count unique products only
   const totalCartItems = cartItems.length;
 
-  // Wait for hydration to avoid mismatch
   useEffect(() => {
     setIsHydrated(true);
   }, []);
@@ -66,30 +66,27 @@ export function Header({ className = "" }: HeaderProps) {
       >
         {/* Mobile Layout */}
         <div className="md:hidden container mx-auto px-4 py-4 flex items-center justify-between">
-          {/* Left: Menu Button */}
           <button
             onClick={handleMenuClick}
             className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors"
-            aria-label="Toggle menu"
+            aria-label={t("toggleMenu")}
           >
             <MenuIcon className="w-5 h-5" />
           </button>
 
-          {/* Center: Brand */}
           <Link
             href="/"
-            aria-label="Về trang chủ"
+            aria-label={t("goToHome")}
             className="text-sm font-semibold text-white tracking-wide"
           >
             H&apos;s
           </Link>
 
-          {/* Right: Search & Cart */}
           <div className="flex items-center gap-2">
             <button
               onClick={handleSearchClick}
               className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors"
-              aria-label="Search products"
+              aria-label={t("searchProductsAria")}
             >
               <Search className="w-5 h-5" />
             </button>
@@ -97,7 +94,7 @@ export function Header({ className = "" }: HeaderProps) {
             <button
               onClick={() => dispatch(openCart())}
               className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors relative"
-              aria-label="Shopping cart"
+              aria-label={t("shoppingCartAria")}
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
@@ -113,17 +110,15 @@ export function Header({ className = "" }: HeaderProps) {
 
         {/* Desktop Layout */}
         <div className="hidden md:flex container mx-auto px-6 py-4 items-center justify-between">
-          {/* Logo thay thế Menu Button */}
           <Link href="/" className="flex items-center gap-3">
             {isHydrated && (
               <img
                 src="/logo-32.png"
-                alt="Starbucks Logo"
+                alt={t("brandName")}
                 width={32}
                 height={32}
                 className="w-8 h-8 brightness-0 invert"
                 onError={(e) => {
-                  // Fallback to text if image fails
                   e.currentTarget.style.display = "none";
                 }}
               />
@@ -140,7 +135,7 @@ export function Header({ className = "" }: HeaderProps) {
                 pathname === "/" ? "text-white" : "text-zinc-400"
               }`}
             >
-              Trang chủ
+              {t("home")}
             </Link>
             <Link
               href="/products"
@@ -150,7 +145,7 @@ export function Header({ className = "" }: HeaderProps) {
                   : "text-sm text-zinc-400 hover:text-zinc-300"
               }`}
             >
-              Sản phẩm
+              {t("products")}
             </Link>
             <Link
               href="/contacts"
@@ -160,17 +155,19 @@ export function Header({ className = "" }: HeaderProps) {
                   : "text-sm text-zinc-400 hover:text-zinc-300"
               }`}
             >
-              Liên hệ
+              {t("contacts")}
             </Link>
           </div>
 
           <div className="flex items-center gap-4">
+            <LanguageSwitcher />
+
             <button
               onClick={handleSearchClick}
               className="flex items-center gap-2 text-sm font-medium text-white hover:text-zinc-300 transition-colors"
             >
               <Search className="w-4 h-4" />
-              Tìm kiếm
+              {t("search")}
             </button>
 
             <button
@@ -180,7 +177,7 @@ export function Header({ className = "" }: HeaderProps) {
               }}
               className="text-sm font-medium text-white hover:text-zinc-300 transition-colors"
             >
-              Giỏ Tư Vấn{" "}
+              {t("cart")}{" "}
               {isHydrated && totalCartItems > 0 && (
                 <span className="text-zinc-500">({totalCartItems})</span>
               )}
@@ -207,19 +204,16 @@ export function Header({ className = "" }: HeaderProps) {
         }`}
       >
         <div className="p-6">
-          {/* Sidebar Header */}
           <div className="flex items-center justify-between mb-8">
-            {/* Logo trong sidebar */}
             <div className="flex items-center gap-3">
               {isHydrated && (
                 <img
                   src="/logo-32.png"
-                  alt="Starbucks Logo"
+                  alt={t("brandName")}
                   width={32}
                   height={32}
                   className="w-8 h-8 brightness-0 invert"
                   onError={(e) => {
-                    // Fallback to text if image fails
                     e.currentTarget.style.display = "none";
                   }}
                 />
@@ -231,13 +225,17 @@ export function Header({ className = "" }: HeaderProps) {
             <button
               onClick={() => setIsSidebarOpen(false)}
               className="p-2 rounded-lg hover:bg-zinc-800 text-white transition-colors"
-              aria-label="Close menu"
+              aria-label={t("closeMenu")}
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Navigation Links */}
+          {/* Language Switcher in Mobile */}
+          <div className="mb-6">
+            <LanguageSwitcher />
+          </div>
+
           <div className="space-y-2">
             <Link
               href="/"
@@ -256,7 +254,7 @@ export function Header({ className = "" }: HeaderProps) {
                 >
                   <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                 </svg>
-                Trang chủ
+                {t("home")}
               </div>
             </Link>
             <Link
@@ -279,7 +277,7 @@ export function Header({ className = "" }: HeaderProps) {
                     d="M10 2L3 7v11a2 2 0 002 2h10a2 2 0 002-2V7l-7-5zM10 18V9l5.5-4H4.5L10 9v9z"
                   />
                 </svg>
-                Sản phẩm
+                {t("products")}
               </div>
             </Link>
             <Link
@@ -299,15 +297,14 @@ export function Header({ className = "" }: HeaderProps) {
                 >
                   <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                 </svg>
-                Liên hệ
+                {t("contacts")}
               </div>
             </Link>
           </div>
 
-          {/* Quick Actions trong sidebar */}
           <div className="mt-8 pt-8 border-t border-zinc-700">
             <h3 className="text-sm font-medium text-zinc-400 mb-4">
-              Quick Actions
+              {t("quickActions")}
             </h3>
             <div className="space-y-2">
               <button
@@ -319,7 +316,7 @@ export function Header({ className = "" }: HeaderProps) {
               >
                 <div className="flex items-center gap-3">
                   <Search className="w-5 h-5" />
-                  Tìm kiếm sản phẩm
+                  {t("searchProducts")}
                 </div>
               </button>
               <button
@@ -338,7 +335,7 @@ export function Header({ className = "" }: HeaderProps) {
                     >
                       <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
                     </svg>
-                    Giỏ tư vấn
+                    {t("consultationCart")}
                   </div>
                   {isHydrated && totalCartItems > 0 && (
                     <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">

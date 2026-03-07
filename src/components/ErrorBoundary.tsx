@@ -6,6 +6,12 @@ import { AlertTriangle, RefreshCw } from "lucide-react";
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  messages?: {
+    title: string;
+    description: string;
+    retry: string;
+    detailLabel: string;
+  };
 }
 
 interface State {
@@ -33,6 +39,14 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
+      const messages = this.props.messages ?? {
+        title: "Something went wrong",
+        description:
+          "An unexpected error occurred. Please try again or contact support if the issue persists.",
+        retry: "Reload page",
+        detailLabel: "Error details (development only)",
+      };
+
       return (
         <div className="min-h-[400px] flex items-center justify-center p-8">
           <div className="text-center max-w-md">
@@ -41,12 +55,11 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Có lỗi xảy ra
+              {messages.title}
             </h2>
 
             <p className="text-gray-600 mb-6">
-              Xin lỗi, đã xảy ra lỗi không mong muốn. Vui lòng thử lại hoặc liên
-              hệ hỗ trợ nếu vấn đề vẫn tiếp tục.
+              {messages.description}
             </p>
 
             <button
@@ -54,13 +67,13 @@ export class ErrorBoundary extends Component<Props, State> {
               className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
-              Tải lại trang
+              {messages.retry}
             </button>
 
             {process.env.NODE_ENV === "development" && this.state.error && (
               <details className="mt-6 text-left">
                 <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
-                  Chi tiết lỗi (chỉ hiển thị trong môi trường development)
+                  {messages.detailLabel}
                 </summary>
                 <pre className="mt-2 p-4 bg-gray-100 rounded text-xs overflow-auto text-red-600">
                   {this.state.error.stack}

@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Toaster, toast } from "sonner";
@@ -35,9 +35,9 @@ interface ClientLayoutProps {
 }
 
 export function ClientLayout({ children }: ClientLayoutProps) {
-  const pathname = usePathname();
   const dispatch = useAppDispatch();
-  const isAdminRoute = pathname?.startsWith("/admin");
+  const t = useTranslations("cartNotification");
+  const tError = useTranslations("error");
   const [isRuntimeReady, setIsRuntimeReady] = useState(false);
 
   // Get cart state for global notifications
@@ -48,12 +48,12 @@ export function ClientLayout({ children }: ClientLayoutProps) {
     if (lastAction) {
       switch (lastAction.type) {
         case "added":
-          toast.success(`Đã thêm ${lastAction.productName} vào giỏ tư vấn`, {
+          toast.success(t("added", { name: lastAction.productName ?? "" }), {
             duration: 3000,
           });
           break;
         case "already_exists":
-          toast.info(`${lastAction.productName} đã có trong giỏ tư vấn`, {
+          toast.info(t("alreadyExists", { name: lastAction.productName ?? "" }), {
             duration: 3000,
           });
           break;
@@ -74,36 +74,24 @@ export function ClientLayout({ children }: ClientLayoutProps) {
     return () => window.clearTimeout(timer);
   }, []);
 
-  // For admin routes, don't show customer header and cart
-  if (isAdminRoute) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <SettingsSocketProvider>
-          {isRuntimeReady && <EffectManager />}
-          <ErrorBoundary>{children}</ErrorBoundary>
-        </SettingsSocketProvider>
-        <Toaster
-          position="top-right"
-          richColors
-          closeButton
-          toastOptions={{
-            style: {
-              fontFamily: "Inter, sans-serif",
-            },
-          }}
-        />
-      </div>
-    );
-  }
-
-  // For customer routes, show full layout with header and cart
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
-      {isRuntimeReady && <EffectManager />}
-      <main className="flex-1">
-        <ErrorBoundary>{children}</ErrorBoundary>
-      </main>
+      <SettingsSocketProvider>
+        {isRuntimeReady && <EffectManager />}
+        <main className="flex-1">
+          <ErrorBoundary
+            messages={{
+              title: tError("title"),
+              description: tError("description"),
+              retry: tError("retry"),
+              detailLabel: tError("detailLabel"),
+            }}
+          >
+            {children}
+          </ErrorBoundary>
+        </main>
+      </SettingsSocketProvider>
       <Footer />
       {isRuntimeReady && <Cart />}
       {isRuntimeReady && <FloatingContactButton />}

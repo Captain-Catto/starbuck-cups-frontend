@@ -8,9 +8,11 @@ import { fetchRelatedProducts } from "@/store/slices/productsSlice";
 import ProductCard from "@/components/ProductCard";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
+import { useLocale } from "next-intl";
 
 export default function RelatedProducts() {
   const dispatch = useAppDispatch();
+  const locale = useLocale();
   const [stylesReady, setStylesReady] = useState(false);
 
   // Get data from Redux store
@@ -50,10 +52,11 @@ export default function RelatedProducts() {
           categoryIds,
           currentProductId: currentProduct.id,
           limit: 10,
+          locale,
         })
       );
     }
-  }, [currentProduct?.productCategories, currentProduct?.id, dispatch]); // Only depend on specific properties
+  }, [currentProduct?.productCategories, currentProduct?.id, dispatch, locale]); // Only depend on specific properties
 
   const handleAddToCart = (product: Product) => {
     dispatch(addToCart({ product }));

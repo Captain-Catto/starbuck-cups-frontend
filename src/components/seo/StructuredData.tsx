@@ -1,12 +1,16 @@
+"use client";
+
 import Script from "next/script";
+import { useTranslations } from "next-intl";
 
 export function StructuredData() {
+  const tSeo = useTranslations("seo");
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Store",
     name: "H's shoucangpu - Collectible Gift Shop",
-    description:
-      "Khám phá bộ sưu tập ly St@rbucks đa dạng với nhiều màu sắc và dung tích. Tư vấn miễn phí qua Zalo 0896686008.",
+    description: tSeo("siteDescription"),
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://starbucks-cups.com",
     logo: {
       "@type": "ImageObject",
@@ -33,8 +37,7 @@ export function StructuredData() {
             "@type": "Product",
             name: "Ly St@rbucks Tumbler",
             category: "Drinkware",
-            keywords:
-              "starbucks, ly starbucks, cups, tumbler, ly giữ nhiệt, starbucks vietnam, ly starbucks chính hãng, ly starbuck chính hãng, ly starbucks auth, starbuck chính hãng, starbucks chính hãng, mua ly starbuck chính hãng, bình starbucks chính hãng, bình giữ nhiệt starbucks, ly giữ nhiệt starbucks, ly sứ starbucks",
+            keywords: tSeo("siteKeywords"),
           },
         },
       ],

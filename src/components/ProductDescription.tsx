@@ -3,6 +3,7 @@
 import type { Product } from "@/types";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { useTranslations } from "next-intl";
 
 interface ProductDescriptionProps {
   product: Product | null;
@@ -13,6 +14,8 @@ export default function ProductDescription({
   product,
   loading = false,
 }: ProductDescriptionProps) {
+  const t = useTranslations("productDetail");
+
   if (loading || !product) {
     return (
       <SkeletonTheme baseColor="#18181b" highlightColor="#27272a">
@@ -38,7 +41,7 @@ export default function ProductDescription({
       {/* Header */}
       <div className="border-b border-zinc-800">
         <div className="px-6 py-4">
-          <h3 className="text-white font-medium">Mô tả sản phẩm</h3>
+          <h3 className="text-white font-medium">{t("descriptionHeading")}</h3>
         </div>
       </div>
 

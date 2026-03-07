@@ -2,6 +2,7 @@
 
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { useTranslations } from "next-intl";
 
 // Messenger Icon Component (same as FloatingContactButton)
 const MessengerIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
@@ -39,6 +40,9 @@ const ZaloIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
 );
 
 export default function ContactsPage() {
+  const t = useTranslations("contacts");
+  const tCommon = useTranslations("common");
+
   return (
     <div className="min-h-screen bg-black text-white pt-24 pb-16">
       <div className="container mx-auto px-6">
@@ -46,17 +50,17 @@ export default function ContactsPage() {
         <div className="mb-8">
           <Breadcrumb
             items={[
-              { label: "Trang chủ", href: "/" },
-              { label: "Liên hệ" },
+              { label: tCommon("home"), href: "/" },
+              { label: t("title") },
             ]}
           />
         </div>
 
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Liên hệ</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">{t("title")}</h1>
           <p className="text-zinc-400 text-lg">
-            Chúng tôi luôn sẵn sàng hỗ trợ và tư vấn bạn
+            {t("subtitle")}
           </p>
         </div>
 
@@ -67,7 +71,7 @@ export default function ContactsPage() {
             <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
               <Phone className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Điện thoại</h3>
+            <h3 className="text-xl font-bold mb-2">{t("phone")}</h3>
             <a
               href="tel:0896686008"
               className="text-zinc-400 hover:text-white transition-colors"
@@ -75,8 +79,7 @@ export default function ContactsPage() {
               0896 686 008
             </a>
             <p className="text-sm text-zinc-500 mt-2">
-              24/7 Nếu khách cần gấp ship hỏa tốc cứ gọi trực tiếp sđt sẽ có hỗ
-              trợ liền.
+              {t("phoneSupport")}
             </p>
           </div>
 
@@ -85,7 +88,7 @@ export default function ContactsPage() {
             <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
               <ZaloIcon className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Zalo</h3>
+            <h3 className="text-xl font-bold mb-2">{t("zalo")}</h3>
             <a
               href="https://zalo.me/84896686008"
               target="_blank"
@@ -94,7 +97,7 @@ export default function ContactsPage() {
             >
               0896 686 008
             </a>
-            <p className="text-sm text-zinc-500 mt-2">Hỗ trợ 24/7</p>
+            <p className="text-sm text-zinc-500 mt-2">{t("support247")}</p>
           </div>
 
           {/* Messenger Card */}
@@ -102,16 +105,16 @@ export default function ContactsPage() {
             <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
               <MessengerIcon className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Messenger</h3>
+            <h3 className="text-xl font-bold mb-2">{t("messenger")}</h3>
             <a
               href="https://www.facebook.com/messages/e2ee/t/9870524003031490"
               target="_blank"
               rel="noopener noreferrer"
               className="text-zinc-400 hover:text-white transition-colors"
             >
-              Facebook Messenger
+              {t("facebookMessenger")}
             </a>
-            <p className="text-sm text-zinc-500 mt-2">Hỗ trợ 24/7</p>
+            <p className="text-sm text-zinc-500 mt-2">{t("support247")}</p>
           </div>
 
           {/* Email Card */}
@@ -119,14 +122,14 @@ export default function ContactsPage() {
             <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
               <Mail className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Email</h3>
+            <h3 className="text-xl font-bold mb-2">{t("email")}</h3>
             <a
               href="mailto:hasronleung@gmail.com"
               className="text-zinc-400 hover:text-white transition-colors break-all"
             >
               hasronleung@gmail.com
             </a>
-            <p className="text-sm text-zinc-500 mt-2">Phản hồi trong 24 giờ</p>
+            <p className="text-sm text-zinc-500 mt-2">{t("emailResponse")}</p>
           </div>
 
           {/* Address Card */}
@@ -134,13 +137,13 @@ export default function ContactsPage() {
             <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
               <MapPin className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Địa chỉ</h3>
+            <h3 className="text-xl font-bold mb-2">{t("address")}</h3>
             <p className="text-zinc-400">
-              254 Trần Hưng Đạo B
+              {t("addressLine1")}
               <br />
-              Phường 11, Quận 5
+              {t("addressLine2")}
               <br />
-              TP. Hồ Chí Minh
+              {t("addressLine3")}
             </p>
           </div>
 
@@ -149,9 +152,9 @@ export default function ContactsPage() {
             <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
               <Clock className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Giờ làm việc</h3>
+            <h3 className="text-xl font-bold mb-2">{t("workingHours")}</h3>
             <div className="text-zinc-400 text-sm space-y-1">
-              <p>Hỗ trợ 24/7</p>
+              <p>{t("support247")}</p>
             </div>
           </div>
         </div>

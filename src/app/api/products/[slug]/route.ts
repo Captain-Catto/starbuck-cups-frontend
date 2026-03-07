@@ -7,9 +7,14 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const backendUrl = getApiUrl(`products/${slug}`);
+    const searchParams = request.nextUrl.searchParams;
+    const backendUrl = new URL(getApiUrl(`products/${slug}`));
 
-    const response = await fetch(backendUrl, {
+    searchParams.forEach((value, key) => {
+      backendUrl.searchParams.append(key, value);
+    });
+
+    const response = await fetch(backendUrl.toString(), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

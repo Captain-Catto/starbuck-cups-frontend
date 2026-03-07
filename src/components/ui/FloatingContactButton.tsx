@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MessageCircle, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface FloatingContactButtonProps {
   zaloPhone?: string;
@@ -12,6 +13,7 @@ export function FloatingContactButton({
 }: FloatingContactButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const t = useTranslations("floating");
 
   useEffect(() => {
     setIsHydrated(true);
@@ -58,7 +60,7 @@ export function FloatingContactButton({
           <button
             onClick={handleMessengerClick}
             className="flex items-center justify-center w-14 h-14 bg-black hover:bg-zinc-800 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-zinc-700"
-            aria-label="Liên hệ qua Messenger"
+            aria-label={t("messenger")}
           >
             {/* Messenger Icon SVG */}
             <svg
@@ -88,7 +90,7 @@ export function FloatingContactButton({
           <button
             onClick={handleZaloClick}
             className="flex items-center justify-center w-14 h-14 bg-black hover:bg-zinc-800 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-zinc-700"
-            aria-label="Liên hệ qua Zalo"
+            aria-label={t("zalo")}
           >
             {/* Zalo Icon SVG */}
             <svg
@@ -111,7 +113,7 @@ export function FloatingContactButton({
         className={`w-14 h-14 bg-black hover:bg-zinc-800 rounded-full shadow-lg transition-all duration-300 hover:scale-110 border border-zinc-700 flex items-center justify-center ${
           isOpen ? "rotate-90" : ""
         }`}
-        aria-label={isOpen ? "Đóng menu liên hệ" : "Mở menu liên hệ"}
+        aria-label={isOpen ? t("closeContact") : t("openContact")}
       >
         {isOpen ? (
           <X className="w-6 h-6 text-white" />

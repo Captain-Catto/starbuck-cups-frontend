@@ -48,10 +48,13 @@ const initialState: ProductsState = {
 // Fetch single product by slug
 export const fetchProductBySlug = createAsyncThunk(
   "products/fetchProductBySlug",
-  async (slug: string, { rejectWithValue }) => {
+  async (
+    { slug, locale }: { slug: string; locale?: string },
+    { rejectWithValue }
+  ) => {
     try {
-
-      const response = await fetch(`/api/products/public/${slug}`);
+      const localeQuery = locale ? `?locale=${encodeURIComponent(locale)}` : "";
+      const response = await fetch(`/api/products/public/${slug}${localeQuery}`);
 
       const data = await response.json();
 
@@ -81,6 +84,7 @@ export const fetchProducts = createAsyncThunk(
       capacity?: string;
       sort?: string;
       inStock?: boolean;
+      locale?: string;
     } = {},
     { rejectWithValue }
   ) => {
@@ -96,6 +100,7 @@ export const fetchProducts = createAsyncThunk(
       if (params.sort) searchParams.append("sort", params.sort);
       if (params.inStock !== undefined)
         searchParams.append("inStock", params.inStock.toString());
+      if (params.locale) searchParams.append("locale", params.locale);
 
       const response = await fetch(
         `/api/products/public?${searchParams.toString()}`
@@ -126,6 +131,7 @@ export const fetchRelatedProducts = createAsyncThunk(
       categoryIds: string[];
       currentProductId?: string;
       limit?: number;
+      locale?: string;
     },
     { rejectWithValue }
   ) => {
@@ -142,6 +148,9 @@ export const fetchRelatedProducts = createAsyncThunk(
         searchParams.append("inStock", "true");
         searchParams.append("sortBy", "createdAt");
         searchParams.append("sortOrder", "desc"); // Newest first
+        if (params.locale) {
+          searchParams.append("locale", params.locale);
+        }
         if (params.currentProductId) {
           searchParams.append("excludeProductId", params.currentProductId);
         }
@@ -196,6 +205,9 @@ export const fetchRelatedProducts = createAsyncThunk(
       searchParams.append("inStock", "true");
       searchParams.append("sortBy", "createdAt");
       searchParams.append("sortOrder", "desc"); // Newest first
+      if (params.locale) {
+        searchParams.append("locale", params.locale);
+      }
       if (params.currentProductId) {
         searchParams.append("excludeProductId", params.currentProductId);
       }

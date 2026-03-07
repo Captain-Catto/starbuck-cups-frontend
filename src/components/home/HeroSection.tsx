@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import React from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { ArrowRight } from "lucide-react";
 
@@ -70,6 +71,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   heroImages = [],
   promotionalBanner = null,
 }) => {
+  const t = useTranslations("homePage");
   // Load Swiper immediately to enable priority loading for first hero image (LCP optimization)
   const showSwiper = true;
 
@@ -106,12 +108,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
   // Default banner data
   const defaultBanner = {
-    title: "Bộ Sưu Tập",
-    highlightText: "Ly Starbucks",
+    title: t("defaultBannerTitle"),
+    highlightText: t("defaultBannerHighlight"),
     highlightColor: "#10b981",
-    description:
-      "Khám phá bộ sưu tập ly Starbucks đa dạng với nhiều màu sắc và dung tích. Tư vấn miễn phí qua Messenger.",
-    buttonText: "Khám Phá Ngay",
+    description: t("defaultBannerDescription"),
+    buttonText: t("defaultBannerButton"),
     buttonLink: "/products",
   };
 

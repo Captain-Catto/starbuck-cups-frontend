@@ -8,7 +8,7 @@ interface LoadingSpinnerProps {
 
 export function LoadingSpinner({
   size = "md",
-  text = "Đang tải...",
+  text = "Loading...",
   fullScreen = false,
 }: LoadingSpinnerProps) {
   const sizeClasses = {
@@ -36,7 +36,7 @@ export function LoadingSpinner({
 export function PageLoader() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
-      <LoadingSpinner size="lg" text="Đang tải trang..." />
+      <LoadingSpinner size="lg" text="Loading page..." />
     </div>
   );
 }

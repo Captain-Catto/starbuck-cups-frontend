@@ -20,8 +20,37 @@ export interface PaginationMeta {
 
 // Product Types
 export interface ProductImage {
+  id?: string;
   url: string;
   order: number;
+  altText?: string;
+}
+
+export type ProductLocale = "vi" | "en" | "zh";
+
+export interface ProductTranslation {
+  locale: ProductLocale;
+  name: string;
+  description?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+}
+
+export type ProductTranslationsMap = Partial<
+  Record<ProductLocale, ProductTranslation>
+>;
+
+export interface ProductTranslationInputEntry {
+  name: string;
+  description: string;
+  metaTitle: string;
+  metaDescription: string;
+}
+
+export interface ProductTranslationsInput {
+  vi: ProductTranslationInputEntry;
+  en: ProductTranslationInputEntry;
+  zh: ProductTranslationInputEntry;
 }
 
 export interface Product {
@@ -40,6 +69,7 @@ export interface Product {
   productCategories?: { category: Category }[];
   productColors?: { color: Color }[];
   capacity?: Capacity;
+  translations?: ProductTranslationsMap;
 }
 
 export interface Category {

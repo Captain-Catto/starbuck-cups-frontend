@@ -1,5 +1,8 @@
+"use client";
+
 import { X } from "lucide-react";
 import type { Category, Color, CapacityRange } from "@/types";
+import { useTranslations } from "next-intl";
 
 interface FilterBadgesProps {
   searchQuery: string;
@@ -32,6 +35,8 @@ export function FilterBadges({
   onRemoveSort,
   onClearAll,
 }: FilterBadgesProps) {
+  const t = useTranslations("filters");
+
   // Helper functions
   const getCategoryName = (id: string): string => {
     const category = categories.find((c) => c.id === id || c.slug === id);
@@ -45,11 +50,11 @@ export function FilterBadges({
 
   const getSortLabel = (value: string): string => {
     const sortLabels: Record<string, string> = {
-      featured: "Nổi bật",
-      newest: "Mới nhất",
-      oldest: "Cũ nhất",
-      name_asc: "Tên A-Z",
-      name_desc: "Tên Z-A",
+      featured: t("sortFeatured"),
+      newest: t("sortNewest"),
+      oldest: t("sortOldest"),
+      name_asc: t("sortNameAsc"),
+      name_desc: t("sortNameDesc"),
     };
     return sortLabels[value] || value;
   };
@@ -80,12 +85,12 @@ export function FilterBadges({
       {hasSearch && (
         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white">
           <span>
-            Tìm kiếm: <span className="font-medium">{searchQuery}</span>
+            {t("searchLabel")} <span className="font-medium">{searchQuery}</span>
           </span>
           <button
             onClick={onRemoveSearch}
             className="hover:bg-zinc-700 rounded p-0.5 transition-colors"
-            aria-label="Xóa tìm kiếm"
+            aria-label={t("removeSearch")}
           >
             <X className="w-4 h-4" />
           </button>
@@ -96,7 +101,7 @@ export function FilterBadges({
       {hasCategory && (
         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white">
           <span>
-            Danh mục:{" "}
+            {t("categoryLabel")}{" "}
             <span className="font-medium">
               {getCategoryName(selectedCategory)}
             </span>
@@ -104,7 +109,7 @@ export function FilterBadges({
           <button
             onClick={onRemoveCategory}
             className="hover:bg-zinc-700 rounded p-0.5 transition-colors"
-            aria-label="Xóa danh mục"
+            aria-label={t("removeCategory")}
           >
             <X className="w-4 h-4" />
           </button>
@@ -115,13 +120,13 @@ export function FilterBadges({
       {hasColor && (
         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white">
           <span>
-            Màu:{" "}
+            {t("colorLabel")}{" "}
             <span className="font-medium">{getColorName(selectedColor)}</span>
           </span>
           <button
             onClick={onRemoveColor}
             className="hover:bg-zinc-700 rounded p-0.5 transition-colors"
-            aria-label="Xóa màu"
+            aria-label={t("removeColor")}
           >
             <X className="w-4 h-4" />
           </button>
@@ -132,7 +137,7 @@ export function FilterBadges({
       {hasCapacity && (
         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white">
           <span>
-            Dung tích:{" "}
+            {t("capacityLabel")}{" "}
             <span className="font-medium">
               {capacityRange.min > 0 ? `${capacityRange.min}ml` : "0ml"} -{" "}
               {capacityRange.max < 9999 ? `${capacityRange.max}ml` : "∞"}
@@ -141,7 +146,7 @@ export function FilterBadges({
           <button
             onClick={onRemoveCapacity}
             className="hover:bg-zinc-700 rounded p-0.5 transition-colors"
-            aria-label="Xóa dung tích"
+            aria-label={t("removeCapacity")}
           >
             <X className="w-4 h-4" />
           </button>
@@ -152,12 +157,12 @@ export function FilterBadges({
       {hasSort && (
         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white">
           <span>
-            Sắp xếp: <span className="font-medium">{getSortLabel(sortBy)}</span>
+            {t("sortLabel")} <span className="font-medium">{getSortLabel(sortBy)}</span>
           </span>
           <button
             onClick={onRemoveSort}
             className="hover:bg-zinc-700 rounded p-0.5 transition-colors"
-            aria-label="Xóa sắp xếp"
+            aria-label={t("removeSort")}
           >
             <X className="w-4 h-4" />
           </button>
@@ -170,7 +175,7 @@ export function FilterBadges({
           onClick={onClearAll}
           className="text-blue-400 hover:text-blue-300 hover:underline text-sm font-medium cursor-pointer transition-colors"
         >
-          Xóa tất cả
+          {t("clearAll")}
         </button>
       )}
     </div>

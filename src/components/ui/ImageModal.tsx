@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import OptimizedImage from "@/components/OptimizedImage";
+import { useTranslations } from "next-intl";
 
 interface ImageModalProps {
   images: string[];
@@ -18,6 +19,7 @@ export function ImageModal({
   isOpen,
   onClose,
 }: ImageModalProps) {
+  const t = useTranslations("imageViewer");
   const [activeIndex, setActiveIndex] = useState(currentIndex);
 
   // Zoom states
@@ -393,7 +395,7 @@ export function ImageModal({
       <button
         onClick={onClose}
         className="absolute top-4 right-4 text-white hover:text-zinc-300 z-10"
-        aria-label="Đóng"
+        aria-label={t("close")}
       >
         <svg
           className="w-8 h-8"
@@ -421,7 +423,7 @@ export function ImageModal({
             onClick={() => handleZoom(scale + 0.5)}
             disabled={scale >= MAX_SCALE}
             className="p-2 bg-black bg-opacity-50 text-white rounded hover:bg-opacity-70 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Zoom in"
+            aria-label={t("zoomIn")}
           >
             <svg
               className="w-6 h-6"
@@ -442,7 +444,7 @@ export function ImageModal({
             onClick={() => handleZoom(scale - 0.5)}
             disabled={scale <= MIN_SCALE}
             className="p-2 bg-black bg-opacity-50 text-white rounded hover:bg-opacity-70 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Zoom out"
+            aria-label={t("zoomOut")}
           >
             <svg
               className="w-6 h-6"
@@ -463,7 +465,7 @@ export function ImageModal({
             <button
               onClick={resetZoom}
               className="p-2 bg-black bg-opacity-50 text-white rounded hover:bg-opacity-70"
-              aria-label="Reset zoom"
+              aria-label={t("resetZoom")}
             >
               <svg
                 className="w-6 h-6"
@@ -504,7 +506,7 @@ export function ImageModal({
               >
                 <OptimizedImage
                   src={image}
-                  alt={`Thumbnail ${index + 1}`}
+                  alt={t("thumbnailAlt", { index: index + 1 })}
                   fill
                   className="object-cover"
                   sizes="80px"
@@ -554,7 +556,7 @@ export function ImageModal({
           >
             <OptimizedImage
               src={images[activeIndex]}
-              alt={`Hình ${activeIndex + 1}`}
+              alt={t("imageAlt", { index: activeIndex + 1 })}
               fill
               className="object-contain pointer-events-none"
               key={activeIndex}
@@ -576,7 +578,7 @@ export function ImageModal({
               className={`absolute top-1/2 transform -translate-y-1/2 text-white hover:text-zinc-300 p-3 ${
                 !isMobile ? "left-28 md:left-32" : "left-4"
               }`}
-              aria-label="Hình trước"
+              aria-label={t("previousImage")}
             >
               <svg
                 className="w-8 h-8"
@@ -596,7 +598,7 @@ export function ImageModal({
             <button
               onClick={nextImage}
               className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-zinc-300 p-3"
-              aria-label="Hình tiếp theo"
+              aria-label={t("nextImage")}
             >
               <svg
                 className="w-8 h-8"
@@ -621,12 +623,15 @@ export function ImageModal({
         {/* Image counter */}
         <div className="px-4 py-3 text-center">
           <p className="text-sm text-zinc-300">
-            {`Hình ${activeIndex + 1} / ${images.length}`}
+            {t("imageCounter", {
+              current: activeIndex + 1,
+              total: images.length,
+            })}
           </p>
           {/* Help text - only show on desktop */}
           {!isMobile && (
             <p className="text-xs text-zinc-400 mt-1">
-              Cuộn chuột để zoom • Kéo để di chuyển
+              {t("zoomHint")}
             </p>
           )}
         </div>
@@ -636,7 +641,7 @@ export function ImageModal({
       <div
         className="absolute inset-0 -z-10"
         onClick={onClose}
-        aria-label="Đóng modal"
+        aria-label={t("closeModal")}
       />
     </div>
   );

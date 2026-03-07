@@ -4,6 +4,7 @@ import React from "react";
 import { Category } from "@/types";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { useTranslations } from "next-intl";
 
 interface CategoryTabsProps {
   categories: Category[];
@@ -41,6 +42,8 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
   onCategoryChange,
   loading = false,
 }) => {
+  const t = useTranslations("filters");
+
   if (loading) {
     return <CategoryTabsSkeleton />;
   }
@@ -61,7 +64,7 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
               : "bg-zinc-800 text-white hover:bg-zinc-700"
           }`}
         >
-          Tất cả
+          {t("allCategories")}
         </button>
         {categories.map((category) => (
           <button

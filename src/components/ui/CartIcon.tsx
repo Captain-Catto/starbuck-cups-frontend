@@ -3,6 +3,7 @@
 import { useAppDispatch, useAppSelector } from "@/store";
 import { toggleCart } from "@/store/slices/cartSlice";
 import { ShoppingBag } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface CartIconProps {
   className?: string;
@@ -11,6 +12,7 @@ interface CartIconProps {
 export function CartIcon({ className = "" }: CartIconProps) {
   const dispatch = useAppDispatch();
   const { items } = useAppSelector((state) => state.cart);
+  const tCommon = useTranslations("common");
 
   const totalItems = items.length;
 
@@ -18,7 +20,7 @@ export function CartIcon({ className = "" }: CartIconProps) {
     <button
       onClick={() => dispatch(toggleCart())}
       className={`relative p-2 hover:bg-gray-100 rounded-lg transition-colors ${className}`}
-      aria-label="Open cart"
+      aria-label={tCommon("shoppingCartAria")}
     >
       <ShoppingBag className="w-6 h-6 text-gray-700" />
 

@@ -1,11 +1,11 @@
 import { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { generateSEO } from "@/lib/seo";
 import HomePageComponent from "@/components/pages/HomePage";
 import { Category } from "@/types";
 import { getApiUrl } from "@/lib/api-config";
 
-// Enable static generation with revalidation for better performance
-export const revalidate = 300; // 5 minutes
+export const revalidate = 300;
 export const dynamic = "force-static";
 
 interface HeroImageData {
@@ -33,29 +33,33 @@ interface HomePageProps {
   promotionalBanner: PromotionalBannerData | null;
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "seo" });
 
-export const metadata: Metadata = generateSEO({
-  title: "Trang chủ",
-  description:
-    "Ly ST@RBUCKS CHÍNH HÃNG các nước. 95% MẪU TRÊN PAGE là HÀNG SẴN SHIP HOẢ TỐC📍HCM📍 Quà tặng cao cấp Luxury. Có dịch vụ gói quà. FB: Hasron Leung. Dịch vụ ship hoả tốc 24/7",
-  keywords:
-    "ly starbucks, tumbler starbucks, cốc starbucks, ly giữ nhiệt, starbucks vietnam, mua ly starbucks, ly gai starbucks, shoucangpu, hasron.com, hasron, hasron starbucks chính hãng, hasron starbucks, hasron ly starbucks chính hãng, h's, h's shoucangpu, hasron leung",
-  openGraph: {
-    title: "H’s shoucangpu - Trang chủ",
-    description:
-      "Ly ST@RBUCKS CHÍNH HÃNG các nước. 95% MẪU TRÊN PAGE là HÀNG SẴN SHIP HOẢ TỐC📍HCM📍 Quà tặng cao cấp Luxury. Có dịch vụ gói quà. FB: Hasron Leung",
-    image: "/images/placeholder.webp",
-    url: "/",
-    type: "website",
-  },
-});
+  return generateSEO({
+    title: t("homeTitle"),
+    description: t("homeDescription"),
+    keywords: t("siteKeywords"),
+    locale,
+    openGraph: {
+      title: t("homeOgTitle"),
+      description: t("homeOgDescription"),
+      image: "/images/placeholder.webp",
+      url: "/",
+      type: "website",
+    },
+  });
+}
 
-// Server-side data fetching
 async function getHomePageData(): Promise<HomePageProps> {
   try {
-    // Fetch categories from API
     const categoriesResponse = await fetch(getApiUrl("categories/public/"), {
-      next: { revalidate: 300 }, // Revalidate every 5 minutes
+      next: { revalidate: 300 },
       cache: "force-cache",
     });
 
@@ -69,13 +73,12 @@ async function getHomePageData(): Promise<HomePageProps> {
       }
     }
 
-    // Fetch hero images from API
     let heroImages: HeroImageData[] = [];
     try {
       const heroImagesUrl = getApiUrl("hero-images/public");
 
       const heroImagesResponse = await fetch(heroImagesUrl, {
-        next: { revalidate: 300 }, // Revalidate every 5 minutes
+        next: { revalidate: 300 },
         cache: "force-cache",
       });
 
@@ -85,17 +88,15 @@ async function getHomePageData(): Promise<HomePageProps> {
         if (heroImagesData.success && heroImagesData.data) {
           heroImages = heroImagesData.data;
         }
-      } else {
       }
     } catch {}
 
-    // Fetch promotional banner from API
     let promotionalBanner: PromotionalBannerData | null = null;
     try {
       const bannerUrl = getApiUrl("promotional-banners");
 
       const bannerResponse = await fetch(bannerUrl, {
-        next: { revalidate: 60 }, // Revalidate every 1 minute for promotional content
+        next: { revalidate: 60 },
         cache: "force-cache",
       });
 
@@ -105,7 +106,6 @@ async function getHomePageData(): Promise<HomePageProps> {
         if (bannerData.success && bannerData.data) {
           promotionalBanner = bannerData.data;
         }
-      } else {
       }
     } catch {}
 
@@ -123,7 +123,14 @@ async function getHomePageData(): Promise<HomePageProps> {
   }
 }
 
-export default async function HomePage() {
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const homePageData = await getHomePageData();
 
   return (
@@ -134,4 +141,3 @@ export default async function HomePage() {
     />
   );
 }
-

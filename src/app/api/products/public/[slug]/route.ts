@@ -7,8 +7,14 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
+    const searchParams = request.nextUrl.searchParams;
+    const url = new URL(getApiUrl(`products/public/${slug}`));
 
-    const response = await fetch(getApiUrl(`products/public/${slug}`), {
+    searchParams.forEach((value, key) => {
+      url.searchParams.append(key, value);
+    });
+
+    const response = await fetch(url.toString(), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

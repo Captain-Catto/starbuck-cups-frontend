@@ -1,6 +1,7 @@
 import ProductsPageClient from "@/components/pages/ProductsPageClient";
 import { getApiUrl } from "@/lib/api-config";
 import { buildProductsQueryParams } from "@/lib/products-query";
+import { setRequestLocale } from "next-intl/server";
 import type { Product } from "@/types";
 
 export const revalidate = 60;
@@ -26,7 +27,7 @@ interface InitialPaginationData {
 
 const DEFAULT_PRODUCTS_LIMIT = 24;
 
-async function getInitialProducts(): Promise<{
+async function getInitialProducts(locale: string): Promise<{
   products: Product[];
   pagination: InitialPaginationData | null;
   queryKey: string;
@@ -39,12 +40,16 @@ async function getInitialProducts(): Promise<{
     sortBy: "featured",
     currentPage: 1,
     limit: DEFAULT_PRODUCTS_LIMIT,
+    locale,
   });
 
   try {
-    const response = await fetch(`${getApiUrl("products/public")}?${params.toString()}`, {
-      next: { revalidate: 60 },
-    });
+    const response = await fetch(
+      `${getApiUrl("products/public")}?${params.toString()}`,
+      {
+        next: { revalidate: 60 },
+      }
+    );
 
     if (!response.ok) {
       return { products: [], pagination: null, queryKey: params.toString() };
@@ -66,8 +71,15 @@ async function getInitialProducts(): Promise<{
   }
 }
 
-export default async function ProductsPage() {
-  const { products, pagination, queryKey } = await getInitialProducts();
+export default async function ProductsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  const { products, pagination, queryKey } = await getInitialProducts(locale);
 
   return (
     <ProductsPageClient

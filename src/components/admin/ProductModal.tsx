@@ -13,6 +13,7 @@ import { getFirstProductImageUrl } from "@/lib/utils/image";
 import { VipToggle } from "./VipRadio";
 import { FeaturedToggle } from "./FeaturedToggle";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { ProductTranslationsFields } from "./ProductTranslationsFields";
 
 // Dynamic import for RichTextEditor to reduce initial bundle
 const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
@@ -80,6 +81,7 @@ export default function ProductModal({
     errors,
     isSubmitting,
     updateField,
+    updateTranslation,
     toggleArrayField,
     submitFormWithImages,
   } = useProductForm({
@@ -296,6 +298,11 @@ export default function ProductModal({
               height={300}
             />
           </div>
+
+          <ProductTranslationsFields
+            translations={formData.translations}
+            onChange={updateTranslation}
+          />
 
           {/* Category, Color, Capacity Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

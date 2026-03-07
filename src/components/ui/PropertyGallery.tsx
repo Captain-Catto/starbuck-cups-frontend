@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { ImageModal } from "./ImageModal";
 import { VipBadge } from "./VipBadge";
 import OptimizedImage from "@/components/OptimizedImage";
+import { useTranslations } from "next-intl";
 
 interface PropertyGalleryProps {
   images: string[];
@@ -15,6 +16,7 @@ export function PropertyGallery({
   title,
   isVip = false,
 }: PropertyGalleryProps) {
+  const t = useTranslations("imageViewer");
   const [currentImage, setCurrentImage] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -150,7 +152,7 @@ export function PropertyGallery({
     return (
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
         <div className="h-96 bg-zinc-800 flex items-center justify-center">
-          <span className="text-zinc-400">Không có hình ảnh</span>
+          <span className="text-zinc-400">{t("noImages")}</span>
         </div>
       </div>
     );
@@ -188,7 +190,10 @@ export function PropertyGallery({
           >
             <OptimizedImage
               src={images[currentImage]}
-              alt={`${title} - Hình ${currentImage + 1}`}
+              alt={t("imageWithTitleAlt", {
+                title,
+                index: currentImage + 1,
+              })}
               fill
               className="object-contain"
               priority
@@ -215,7 +220,7 @@ export function PropertyGallery({
                     prevImage();
                   }}
                   className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-zinc-800 bg-opacity-80 backdrop-blur-md text-white p-3 rounded-full hover:bg-zinc-700 hover:scale-110 transition-all duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none shadow-lg"
-                  aria-label="Hình trước"
+                  aria-label={t("previousImage")}
                 >
                   <svg
                     className="w-6 h-6"
@@ -238,7 +243,7 @@ export function PropertyGallery({
                     nextImage();
                   }}
                   className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-zinc-800 bg-opacity-80 backdrop-blur-md text-white p-3 rounded-full hover:bg-zinc-700 hover:scale-110 transition-all duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none shadow-lg"
-                  aria-label="Hình tiếp theo"
+                  aria-label={t("nextImage")}
                 >
                   <svg
                     className="w-6 h-6"
@@ -278,7 +283,7 @@ export function PropertyGallery({
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
                   />
                 </svg>
-                Click để phóng to
+                {t("clickToZoom")}
               </span>
             </div>
           </div>
@@ -301,7 +306,7 @@ export function PropertyGallery({
                   >
                     <OptimizedImage
                       src={image}
-                      alt={`${title} - Thumbnail ${index + 1}`}
+                      alt={t("thumbnailAlt", { index: index + 1 })}
                       fill
                       className="object-contain"
                       style={{ objectFit: "contain" }}
@@ -326,7 +331,7 @@ export function PropertyGallery({
                   onClick={openModal}
                   className="text-zinc-300 hover:text-white text-sm font-medium"
                 >
-                  Xem tất cả {images.length} hình ảnh
+                  {t("viewAllImages", { count: images.length })}
                 </button>
               </div>
             )}

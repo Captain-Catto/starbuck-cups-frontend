@@ -8,6 +8,7 @@ export interface ProductsQueryInput {
   sortBy: string;
   currentPage: number;
   limit: number;
+  locale?: string;
 }
 
 function getSortParams(sortBy: string): { field: string; order: string } {
@@ -35,6 +36,7 @@ export function buildProductsQueryParams({
   sortBy,
   currentPage,
   limit,
+  locale,
 }: ProductsQueryInput): URLSearchParams {
   const params = new URLSearchParams();
 
@@ -50,6 +52,7 @@ export function buildProductsQueryParams({
 
   params.append("page", `${currentPage}`);
   params.append("limit", `${limit}`);
+  if (locale) params.append("locale", locale);
 
   return params;
 }

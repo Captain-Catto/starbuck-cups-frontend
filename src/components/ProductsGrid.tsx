@@ -12,6 +12,8 @@ import {
   getResponsiveGridClasses,
   getProductsPageLimit,
 } from "@/utils/layoutCalculator";
+import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 
 interface PaginationData {
   totalPages: number;
@@ -44,6 +46,8 @@ export default function ProductsGrid({
   initialPaginationData = null,
   initialQueryKey,
 }: ProductsGridProps) {
+  const t = useTranslations("filters");
+  const locale = useLocale();
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [loading, setLoading] = useState(initialProducts.length === 0);
   const [paginationData, setPaginationData] = useState<PaginationData | null>(
@@ -65,6 +69,7 @@ export default function ProductsGrid({
           sortBy,
           currentPage,
           limit: productsLimit,
+          locale,
         });
 
         if (
@@ -117,6 +122,7 @@ export default function ProductsGrid({
     sortBy,
     currentPage,
     initialQueryKey,
+    locale,
   ]);
 
   const handleAddToCart = (product: Product) => {
@@ -169,9 +175,9 @@ export default function ProductsGrid({
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-zinc-400 text-lg">Không tìm thấy sản phẩm nào</p>
+        <p className="text-zinc-400 text-lg">{t("noProductsFound")}</p>
         <p className="text-zinc-500 text-sm mt-2">
-          Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm
+          {t("tryChangingFilters")}
         </p>
       </div>
     );

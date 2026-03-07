@@ -5,10 +5,11 @@ import { removeFromCart, clearCart, closeCart } from "@/store/slices/cartSlice";
 import { X, ShoppingBag, FileText } from "lucide-react";
 import type { CartItem } from "@/types";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { getFirstProductImageUrl } from "@/lib/utils/image";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import OptimizedImage from "@/components/OptimizedImage";
+import { useTranslations } from "next-intl";
 
 interface CartProps {
   className?: string;
@@ -18,6 +19,7 @@ export function Cart({ className = "" }: CartProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { items, isOpen } = useAppSelector((state) => state.cart);
+  const t = useTranslations("cart");
 
   const totalItems = items.length;
 
@@ -31,7 +33,7 @@ export function Cart({ className = "" }: CartProps) {
 
   const handleCreateConsultationOrder = () => {
     if (items.length === 0) {
-      toast.error("Giỏ tư vấn trống! Vui lòng thêm sản phẩm trước.", {
+      toast.error(t("emptyError"), {
         duration: 3000,
       });
       return;
@@ -81,7 +83,7 @@ export function Cart({ className = "" }: CartProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-zinc-800 flex-shrink-0">
           <h2 className="text-lg font-semibold text-white">
-            Giỏ tư vấn ({totalItems} sản phẩm)
+            {t("title", { count: totalItems })}
           </h2>
           <button
             onClick={() => dispatch(closeCart())}
@@ -97,7 +99,7 @@ export function Cart({ className = "" }: CartProps) {
             onClick={handleClearCart}
             className="w-full text-sm text-zinc-400 hover:text-red-400 transition-colors py-2 px-3 hover:bg-red-900/20 rounded-lg"
           >
-            Xóa tất cả sản phẩm
+            {t("clearAll")}
           </button>
         )}
 
@@ -110,10 +112,10 @@ export function Cart({ className = "" }: CartProps) {
                 <ShoppingBag className="w-8 h-8 text-zinc-400" />
               </div>
               <h3 className="text-lg font-medium text-white mb-2">
-                Giỏ tư vấn trống
+                {t("emptyTitle")}
               </h3>
               <p className="text-zinc-400 mb-4">
-                Thêm sản phẩm vào giỏ để được tư vấn chi tiết
+                {t("emptyDescription")}
               </p>
             </div>
           ) : (
@@ -139,13 +141,12 @@ export function Cart({ className = "" }: CartProps) {
                   className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-zinc-100 text-black font-medium rounded-lg transition-colors"
                 >
                   <FileText className="w-5 h-5" />
-                  Tạo đơn tư vấn
+                  {t("createOrder")}
                 </button>
 
                 {/* Info Text */}
                 <p className="text-xs text-zinc-400 text-center">
-                  Tạo đơn tư vấn để chúng tôi liên hệ tư vấn chi tiết về sản
-                  phẩm và giá cả
+                  {t("createOrderInfo")}
                 </p>
               </div>
             </>
@@ -163,6 +164,7 @@ interface CartItemCardProps {
 
 function CartItemCard({ item, onRemove }: CartItemCardProps) {
   const { product } = item;
+  const t = useTranslations("cart");
 
   return (
     <div className="flex gap-3 p-3 bg-zinc-800 rounded-lg">
@@ -222,13 +224,13 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
                 )}
               </div>
               <span className="text-xs text-zinc-400">
-                {product.productColors.length} màu •{" "}
-                {product.capacity?.name || "Chưa có"}
+                {t("colors", { count: product.productColors.length })} •{" "}
+                {product.capacity?.name || t("notAvailable")}
               </span>
             </div>
           ) : (
             <span className="text-xs text-zinc-400">
-              Chưa có màu • {product.capacity?.name || "Chưa có"}
+              {t("noColor")} • {product.capacity?.name || t("notAvailable")}
             </span>
           )}
         </div>
@@ -236,7 +238,7 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
         {/* Product Label */}
         <div className="flex items-center gap-2">
           <span className="px-2 py-1 bg-zinc-700 border border-zinc-600 rounded text-xs text-zinc-300">
-            Quan tâm
+            {t("interested")}
           </span>
         </div>
       </div>

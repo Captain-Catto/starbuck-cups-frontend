@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ShoppingCart } from "lucide-react";
 import { Product } from "@/types";
 import { getFirstProductImage, getSecondProductImage } from "@/lib/utils/image";
@@ -9,6 +9,7 @@ import { trackProductClick, trackAddToCartClick } from "@/lib/productAnalytics";
 import { ConditionalVipBadge } from "@/components/ui/VipBadge";
 import { ConditionalFeaturedBadge } from "@/components/ui/FeaturedBadge";
 import OptimizedImage from "@/components/OptimizedImage";
+import { useTranslations } from "next-intl";
 
 interface ProductCardProps {
   product: Product;
@@ -29,6 +30,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   imageSizes = "(max-width: 640px) calc((100vw - 3rem)/2), (max-width: 768px) calc((100vw - 4rem)/3), (max-width: 1024px) calc((100vw - 5rem)/3), (max-width: 1280px) calc((100vw - 8rem)/4), (max-width: 1536px) calc((100vw - 10rem)/5), calc((100vw - 12rem)/6)",
   showSecondaryImage = true,
 }) => {
+  const tProduct = useTranslations("productDetail");
+
   const renderProductVisual = () => {
     const firstImage = getFirstProductImage(product.productImages);
     const secondImage = getSecondProductImage(product.productImages);
@@ -145,7 +148,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     : "bg-white text-black hover:bg-black hover:text-white"
                 }`}
                 aria-label={
-                  product.stockQuantity === 0 ? "Out of stock" : "Add to cart"
+                  product.stockQuantity === 0
+                    ? tProduct("outOfStockAria")
+                    : tProduct("addToCartAria")
                 }
               >
                 <ShoppingCart className="w-5 h-5" />

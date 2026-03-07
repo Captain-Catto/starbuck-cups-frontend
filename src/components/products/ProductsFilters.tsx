@@ -1,5 +1,8 @@
+"use client";
+
 import { Search } from "lucide-react";
 import type { Category, Color, Capacity, CapacityRange } from "@/types";
+import { useTranslations } from "next-intl";
 
 interface ProductsFiltersProps {
   // Data
@@ -50,6 +53,13 @@ export function ProductsFilters({
   onToggleFilters,
   onClearFilters,
 }: ProductsFiltersProps) {
+  const t = useTranslations("filters");
+  const searchInputId = "products-filter-search";
+  const categorySelectId = "products-filter-category";
+  const colorSelectId = "products-filter-color";
+  const capacityPresetSelectId = "products-filter-capacity-preset";
+  const sortSelectId = "products-filter-sort";
+
   return (
     <div className="lg:w-1/5">
       <div
@@ -61,14 +71,14 @@ export function ProductsFilters({
       >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <h3 className="text-sm font-semibold text-white">Bộ lọc</h3>
+            <h3 className="text-sm font-semibold text-white">{t("title")}</h3>
             {/* Clear filters button for mobile */}
             {hasActiveFilters && (
               <button
                 onClick={onClearFilters}
                 className="lg:hidden text-sm text-red-600 hover:text-red-700 px-2 py-1 rounded"
               >
-                Xóa tất cả
+                {t("clearAll")}
               </button>
             )}
             {/* Clear filters button for desktop */}
@@ -77,7 +87,7 @@ export function ProductsFilters({
                 onClick={onClearFilters}
                 className="hidden lg:inline text-sm text-red-600 hover:text-red-700 rounded"
               >
-                Xóa tất cả
+                {t("clearAll")}
               </button>
             )}
           </div>
@@ -94,12 +104,12 @@ export function ProductsFilters({
         {hasActiveFilters && (
           <div className="lg:hidden mb-6 p-4 bg-zinc-800 rounded-lg border border-zinc-700">
             <h4 className="text-xs font-medium text-zinc-300 mb-3">
-              Đang lọc:
+              {t("filtering")}
             </h4>
             <div className="flex flex-wrap gap-2">
               {searchQuery && (
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white">
-                  <span>Tìm kiếm: &ldquo;{searchQuery}&rdquo;</span>
+                  <span>{t("searchLabel")} &ldquo;{searchQuery}&rdquo;</span>
                   <button
                     onClick={() => onSearchChange("")}
                     className="text-zinc-400 hover:text-zinc-300"
@@ -112,7 +122,7 @@ export function ProductsFilters({
               {selectedCategory && (
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white">
                   <span>
-                    Danh mục:{" "}
+                    {t("categoryLabel")}{" "}
                     {categories.find((c) => c.slug === selectedCategory)
                       ?.name || selectedCategory}
                   </span>
@@ -128,7 +138,7 @@ export function ProductsFilters({
               {selectedColor && (
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white">
                   <span>
-                    Màu:{" "}
+                    {t("colorLabel")}{" "}
                     {colors.find((c) => c.slug === selectedColor)?.name ||
                       selectedColor}
                   </span>
@@ -144,7 +154,7 @@ export function ProductsFilters({
               {(capacityRange.min > 0 || capacityRange.max < 9999) && (
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white">
                   <span>
-                    Dung tích: {capacityRange.min > 0 ? capacityRange.min : "0"}
+                    {t("capacityLabel")} {capacityRange.min > 0 ? capacityRange.min : "0"}
                     -{capacityRange.max < 9999 ? capacityRange.max : "∞"}ml
                   </span>
                   <button
@@ -159,15 +169,15 @@ export function ProductsFilters({
               {sortBy !== "featured" && (
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white">
                   <span>
-                    Sắp xếp:{" "}
+                    {t("sortLabel")}{" "}
                     {sortBy === "newest"
-                      ? "Mới nhất"
+                      ? t("sortNewest")
                       : sortBy === "oldest"
-                      ? "Cũ nhất"
+                      ? t("sortOldest")
                       : sortBy === "name_asc"
-                      ? "Tên A → Z"
+                      ? t("sortNameAsc")
                       : sortBy === "name_desc"
-                      ? "Tên Z → A"
+                      ? t("sortNameDesc")
                       : sortBy}
                   </span>
                   <button
@@ -184,16 +194,20 @@ export function ProductsFilters({
 
         {/* Search */}
         <div className="mb-6">
-          <label className="block text-xs font-medium text-zinc-300 mb-2">
-            Tìm kiếm
+          <label
+            htmlFor={searchInputId}
+            className="block text-xs font-medium text-zinc-300 mb-2"
+          >
+            {t("search")}
           </label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 w-4 h-4" />
             <input
+              id={searchInputId}
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Tìm sản phẩm..."
+              placeholder={t("searchPlaceholder")}
               className="w-full pl-10 pr-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
             />
           </div>
@@ -201,15 +215,20 @@ export function ProductsFilters({
 
         {/* Category Filter */}
         <div className="mb-6">
-          <label className="block text-xs font-medium text-zinc-300 mb-2">
-            Danh mục
+          <label
+            htmlFor={categorySelectId}
+            className="block text-xs font-medium text-zinc-300 mb-2"
+          >
+            {t("category")}
           </label>
           <select
+            id={categorySelectId}
             value={selectedCategory}
             onChange={(e) => onCategoryChange(e.target.value)}
+            aria-label={t("filterByCategory")}
             className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
           >
-            <option value="">Tất cả danh mục</option>
+            <option value="">{t("allCategories")}</option>
             {categories.map((category) => (
               <option key={category.id} value={category.slug}>
                 {category.name}
@@ -220,15 +239,20 @@ export function ProductsFilters({
 
         {/* Color Filter */}
         <div className="mb-6">
-          <label className="block text-xs font-medium text-zinc-300 mb-2">
-            Màu sắc
+          <label
+            htmlFor={colorSelectId}
+            className="block text-xs font-medium text-zinc-300 mb-2"
+          >
+            {t("color")}
           </label>
           <select
+            id={colorSelectId}
             value={selectedColor}
             onChange={(e) => onColorChange(e.target.value)}
+            aria-label={t("filterByColor")}
             className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
           >
-            <option value="">Tất cả màu</option>
+            <option value="">{t("allColors")}</option>
             {colors.map((color) => (
               <option key={color.id} value={color.slug}>
                 {color.name}
@@ -240,17 +264,17 @@ export function ProductsFilters({
         {/* Capacity Filter */}
         <div className="mb-6">
           <label className="block text-xs font-medium text-zinc-300 mb-2">
-            Dung tích (ml)
+            {t("capacityMl")}
           </label>
 
           {/* Range inputs */}
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Từ</label>
+                <label className="block text-xs text-zinc-400 mb-1">{t("from")}</label>
                 <input
                   type="number"
-                  placeholder="Min"
+                  placeholder={t("minPlaceholder")}
                   value={capacityRange.min > 0 ? capacityRange.min : ""}
                   onChange={(e) => {
                     const newRange = {
@@ -263,10 +287,10 @@ export function ProductsFilters({
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Đến</label>
+                <label className="block text-xs text-zinc-400 mb-1">{t("to")}</label>
                 <input
                   type="number"
-                  placeholder="Max"
+                  placeholder={t("maxPlaceholder")}
                   value={capacityRange.max < 9999 ? capacityRange.max : ""}
                   onChange={(e) => {
                     const newRange = {
@@ -283,10 +307,14 @@ export function ProductsFilters({
 
           {/* Original dropdown as fallback */}
           <div className="mt-3">
-            <label className="block text-xs text-zinc-400 mb-1">
-              Hoặc chọn từ danh sách:
+            <label
+              htmlFor={capacityPresetSelectId}
+              className="block text-xs text-zinc-400 mb-1"
+            >
+              {t("orSelectFromList")}
             </label>
             <select
+              id={capacityPresetSelectId}
               value=""
               onChange={(e) => {
                 const capacityId = e.target.value;
@@ -309,9 +337,10 @@ export function ProductsFilters({
                   onCapacityRangeChange({ min: 0, max: 9999 });
                 }
               }}
+              aria-label={t("selectCapacity")}
               className="w-full px-2 py-1 bg-zinc-800 border border-zinc-700 rounded text-white text-sm focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500"
             >
-              <option value="">Chọn dung tích cụ thể</option>
+              <option value="">{t("selectSpecificCapacity")}</option>
               {capacities.map((capacity) => (
                 <option key={capacity.id} value={capacity.id}>
                   {capacity.name} ({capacity.volumeMl}ml)
@@ -323,19 +352,24 @@ export function ProductsFilters({
 
         {/* Sort Options */}
         <div className="mb-6">
-          <label className="block text-xs font-medium text-zinc-300 mb-2">
-            Sắp xếp
+          <label
+            htmlFor={sortSelectId}
+            className="block text-xs font-medium text-zinc-300 mb-2"
+          >
+            {t("sort")}
           </label>
           <select
+            id={sortSelectId}
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value)}
+            aria-label={t("sortProducts")}
             className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
           >
-            <option value="featured">Nổi bật</option>
-            <option value="newest">Mới nhất</option>
-            <option value="oldest">Cũ nhất</option>
-            <option value="name_asc">Tên A → Z</option>
-            <option value="name_desc">Tên Z → A</option>
+            <option value="featured">{t("sortFeatured")}</option>
+            <option value="newest">{t("sortNewest")}</option>
+            <option value="oldest">{t("sortOldest")}</option>
+            <option value="name_asc">{t("sortNameAsc")}</option>
+            <option value="name_desc">{t("sortNameDesc")}</option>
           </select>
         </div>
       </div>

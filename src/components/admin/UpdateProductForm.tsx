@@ -10,6 +10,7 @@ import ImageReorder from "./ImageReorder";
 import { VipToggle } from "./VipRadio";
 import { FeaturedToggle } from "./FeaturedToggle";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { ProductTranslationsFields } from "./ProductTranslationsFields";
 
 // Dynamic import for RichTextEditor to reduce initial bundle
 const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
@@ -42,6 +43,7 @@ export function UpdateProductForm({
     loading,
     isSubmitting,
     updateField,
+    updateTranslation,
     toggleArrayField,
     submitForm,
   } = useUpdateProduct({
@@ -170,6 +172,11 @@ export function UpdateProductForm({
             height={300}
           />
         </div>
+
+        <ProductTranslationsFields
+          translations={formData.translations}
+          onChange={updateTranslation}
+        />
 
         {/* Category, Color, Capacity Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
