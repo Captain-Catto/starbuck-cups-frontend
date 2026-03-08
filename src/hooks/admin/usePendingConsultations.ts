@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAppSelector } from "@/store";
 
 export interface PendingConsultationsResponse {
@@ -20,7 +20,7 @@ export function usePendingConsultations() {
 
   const token = useAppSelector((state) => state.auth.token);
 
-  const fetchPendingCount = async () => {
+  const fetchPendingCount = useCallback(async () => {
     if (!token) {
       setLoading(false);
       return;
@@ -47,7 +47,6 @@ export function usePendingConsultations() {
       }
 
       if (data.success) {
-        // Handle both formats: direct number or {count: number}
         const count =
           typeof data.data === "number" ? data.data : data.data.count;
         setPendingCount(count);
@@ -57,18 +56,16 @@ export function usePendingConsultations() {
         );
       }
     } catch (err) {
-
+      
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchPendingCount();
-    // Chỉ fetch một lần khi mount, không polling
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [fetchPendingCount]);
 
   return {
     pendingCount,

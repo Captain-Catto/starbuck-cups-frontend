@@ -1,5 +1,5 @@
 // Example usage trong admin component
-import { useAdminAuth } from "@/hooks/useAuthRefresh";
+import { useAdminAuth } from "@/hooks/useStandardAuth";
 
 export default function AdminExample() {
   const { isAuthenticated, isLoading } = useAdminAuth();

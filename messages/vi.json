@@ -24,10 +24,10 @@
     "latestProducts": "Sản phẩm mới nhất",
     "noProducts": "Không có sản phẩm nào",
     "viewAllProducts": "Xem tất cả sản phẩm",
-    "defaultBannerTitle": "Bo suu tap Starbucks",
-    "defaultBannerHighlight": "Chinh hang",
-    "defaultBannerDescription": "Kham pha bo suu tap ly Starbucks da dang tu nhieu quoc gia.",
-    "defaultBannerButton": "Xem san pham"
+    "defaultBannerTitle": "Bộ Sưu Tập Starbucks",
+    "defaultBannerHighlight": "Chính Hãng",
+    "defaultBannerDescription": "Khám phá bộ sưu tập ly Starbucks đa dạng từ nhiều quốc gia.",
+    "defaultBannerButton": "Xem sản phẩm"
   },
   "searchModal": {
     "title": "Tìm kiếm sản phẩm",
@@ -128,11 +128,11 @@
     "notFound": "Không tìm thấy sản phẩm",
     "youMayLike": "Có Thể Bạn Thích",
     "detail": "Chi tiết sản phẩm",
-    "metaDescription": "Chi tiet san pham {name} tai H's shoucangpu.",
-    "metaDescriptionShort": "Xem ngay {name} tai H's shoucangpu.",
-    "descriptionHeading": "Mo ta san pham",
-    "addToCartAria": "Them vao gio tu van",
-    "outOfStockAria": "San pham da het hang"
+    "metaDescription": "Chi tiết sản phẩm {name} tại H's shoucangpu.",
+    "metaDescriptionShort": "Xem ngay {name} tại H's shoucangpu.",
+    "descriptionHeading": "Mô tả sản phẩm",
+    "addToCartAria": "Thêm vào giỏ tư vấn",
+    "outOfStockAria": "Sản phẩm đã hết hàng"
   },
   "filters": {
     "title": "Bộ lọc",
@@ -164,15 +164,15 @@
     "sortProducts": "Sắp xếp sản phẩm",
     "selectCapacity": "Chọn dung tích cụ thể",
     "searchPlaceholder": "Tìm sản phẩm...",
-    "noProductsFound": "Khong tim thay san pham nao",
-    "tryChangingFilters": "Thu thay doi bo loc hoac tu khoa tim kiem",
-    "removeSearch": "Xoa tim kiem",
-    "removeCategory": "Xoa danh muc",
-    "removeColor": "Xoa mau",
-    "removeCapacity": "Xoa dung tich",
-    "removeSort": "Xoa sap xep",
-    "minPlaceholder": "Toi thieu",
-    "maxPlaceholder": "Toi da"
+    "noProductsFound": "Không tìm thấy sản phẩm nào",
+    "tryChangingFilters": "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm",
+    "removeSearch": "Xóa tìm kiếm",
+    "removeCategory": "Xóa danh mục",
+    "removeColor": "Xóa màu",
+    "removeCapacity": "Xóa dung tích",
+    "removeSort": "Xóa sắp xếp",
+    "minPlaceholder": "Tối thiểu",
+    "maxPlaceholder": "Tối đa"
   },
   "notFound": {
     "title": "Không tìm thấy trang",
@@ -199,7 +199,7 @@
     "contactsOgDescription": "Liên hệ với chúng tôi qua Hotline, Zalo hoặc Messenger để được tư vấn về sản phẩm ly Starbucks chính hãng.",
     "twitterTitle": "H's shoucangpu - Tiệm sưu tầm của H",
     "twitterDescription": "Ly ST@RBUCKS CHÍNH HÃNG các nước. 95% MẪU TRÊN PAGE là HÀNG SẴN SHIP HOẢ TỐC📍HCM📍 Quà tặng cao cấp Luxury",
-    "productsPageTitle": "San pham"
+    "productsPageTitle": "Sản phẩm"
   },
   "floating": {
     "openContact": "Mở menu liên hệ",
@@ -208,29 +208,29 @@
     "zalo": "Liên hệ qua Zalo"
   },
   "pagination": {
-    "navigationAria": "Phan trang",
+    "navigationAria": "Phân trang",
     "page": "Trang",
     "pageWithTotal": "Trang {current} / {total}",
-    "goTo": "Den",
-    "jumpToPageTitle": "Nhay den trang (1-{total})",
-    "previousPage": "Trang truoc",
+    "goTo": "Đến",
+    "jumpToPageTitle": "Nhảy đến trang (1-{total})",
+    "previousPage": "Trang trước",
     "nextPage": "Trang sau"
   },
   "imageViewer": {
-    "close": "Dong",
-    "closeModal": "Dong modal",
-    "previousImage": "Hinh truoc",
-    "nextImage": "Hinh tiep theo",
-    "imageAlt": "Hinh {index}",
-    "imageWithTitleAlt": "{title} - Hinh {index}",
-    "imageCounter": "Hinh {current} / {total}",
-    "zoomHint": "Cuon chuot de zoom - Keo de di chuyen",
-    "noImages": "Khong co hinh anh",
-    "clickToZoom": "Click de phong to",
-    "viewAllImages": "Xem tat ca {count} hinh anh",
-    "zoomIn": "Phong to",
-    "zoomOut": "Thu nho",
-    "resetZoom": "Dat lai zoom",
-    "thumbnailAlt": "Anh thu nho {index}"
+    "close": "Đóng",
+    "closeModal": "Đóng modal",
+    "previousImage": "Hình trước",
+    "nextImage": "Hình tiếp theo",
+    "imageAlt": "Hình {index}",
+    "imageWithTitleAlt": "{title} - Hình {index}",
+    "imageCounter": "Hình {current} / {total}",
+    "zoomHint": "Cuộn chuột để zoom - Kéo để di chuyển",
+    "noImages": "Không có hình ảnh",
+    "clickToZoom": "Click để phóng to",
+    "viewAllImages": "Xem tất cả {count} hình ảnh",
+    "zoomIn": "Phóng to",
+    "zoomOut": "Thu nhỏ",
+    "resetZoom": "Đặt lại zoom",
+    "thumbnailAlt": "Ảnh thu nhỏ {index}"
   }
 }

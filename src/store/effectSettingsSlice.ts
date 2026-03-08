@@ -74,6 +74,12 @@ const initialState: EffectSettingsState = {
 
 const EFFECT_SETTINGS_API_URL = getApiUrl("settings/effect-settings");
 
+const getAdminAuthHeaders = (): Record<string, string> => {
+  if (typeof window === "undefined") return {};
+  const token = localStorage.getItem("admin_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 // Thunks
 export const fetchEffectSettings = createAsyncThunk(
   "effectSettings/fetch",
@@ -91,7 +97,12 @@ export const updateEffectSettings = createAsyncThunk(
   "effectSettings/update",
   async (settings: EffectSettings) => {
     try {
-      const response = await axios.put(EFFECT_SETTINGS_API_URL, settings);
+      const response = await axios.put(EFFECT_SETTINGS_API_URL, settings, {
+        headers: {
+          ...getAdminAuthHeaders(),
+        },
+        withCredentials: true,
+      });
       return response.data.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || "Failed to update settings");

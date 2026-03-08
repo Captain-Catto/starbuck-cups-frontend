@@ -3,6 +3,7 @@
 import React from "react";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
+import DOMPurify from "isomorphic-dompurify";
 import dynamic from "next/dynamic";
 import { ArrowRight } from "lucide-react";
 
@@ -142,7 +143,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
             <div
               className="text-gray-300 text-sm md:text-base lg:text-lg mb-6 md:mb-8 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: bannerData.description }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(bannerData.description) }}
             />
             <Link
               href={bannerData.buttonLink}

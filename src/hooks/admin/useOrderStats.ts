@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 
@@ -33,6 +33,37 @@ export interface UseOrderStatsReturn {
   }>;
 }
 
+type OrderStatsCache = {
+  token: string | null;
+  value: OrderStats | null;
+  fetchedAt: number;
+  inFlight: Promise<OrderStats> | null;
+};
+
+const ORDER_STATS_CACHE_TTL_MS = 30_000;
+
+const orderStatsCache: OrderStatsCache = {
+  token: null,
+  value: null,
+  fetchedAt: 0,
+  inFlight: null,
+};
+
+export function invalidateOrderStatsCache() {
+  orderStatsCache.token = null;
+  orderStatsCache.value = null;
+  orderStatsCache.fetchedAt = 0;
+  orderStatsCache.inFlight = null;
+}
+
+function isOrderStatsCacheFresh(token: string) {
+  return (
+    orderStatsCache.token === token &&
+    orderStatsCache.value !== null &&
+    Date.now() - orderStatsCache.fetchedAt < ORDER_STATS_CACHE_TTL_MS
+  );
+}
+
 export function useOrderStats(): UseOrderStatsReturn {
   const [stats, setStats] = useState<OrderStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,31 +73,67 @@ export function useOrderStats(): UseOrderStatsReturn {
   const token = useSelector((state: RootState) => state.auth.token);
 
   // Fetch order statistics
-  const fetchStats = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const authHeaders: Record<string, string> = token
-        ? { Authorization: `Bearer ${token}` }
-        : {};
-      const response = await fetch("/api/admin/orders/stats", {
-        headers: authHeaders,
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setStats(data.data);
-      } else {
-        setError(data.message || "Không thể tải thống kê đơn hàng");
+  const fetchStats = useCallback(
+    async (forceRefresh = false) => {
+      if (!token) {
+        setLoading(false);
+        return;
       }
-    } catch (error) {
 
-      setError("Lỗi kết nối. Vui lòng thử lại.");
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+      const hasCachedStats =
+        orderStatsCache.token === token && orderStatsCache.value !== null;
+      if (hasCachedStats) {
+        setStats(orderStatsCache.value);
+      }
+
+      if (!forceRefresh && isOrderStatsCacheFresh(token)) {
+        setError(null);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(forceRefresh || !hasCachedStats);
+      setError(null);
+
+      try {
+        if (!orderStatsCache.inFlight || forceRefresh) {
+          const authHeaders: Record<string, string> = token
+            ? { Authorization: `Bearer ${token}` }
+            : {};
+
+          orderStatsCache.inFlight = fetch("/api/admin/orders/stats", {
+            headers: authHeaders,
+          })
+            .then(async (response) => {
+              const data = await response.json();
+
+              if (data.success) {
+                orderStatsCache.token = token;
+                orderStatsCache.value = data.data;
+                orderStatsCache.fetchedAt = Date.now();
+                return data.data as OrderStats;
+              }
+
+              throw new Error(data.message || "Không thể tải thống kê đơn hàng");
+            })
+            .finally(() => {
+              orderStatsCache.inFlight = null;
+            });
+        }
+
+        const freshStats = await orderStatsCache.inFlight;
+        setStats(freshStats);
+      } catch (error) {
+        // Keep stale data without showing blocking error when background revalidation fails
+        if (!hasCachedStats || forceRefresh) {
+          setError("Lỗi kết nối. Vui lòng thử lại.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token]
+  );
 
   // Clear error
   const clearError = useCallback(() => {
@@ -76,7 +143,7 @@ export function useOrderStats(): UseOrderStatsReturn {
   // Auto fetch stats on mount and when token changes
   useEffect(() => {
     if (token) {
-      fetchStats();
+      fetchStats(false);
     }
   }, [token, fetchStats]);
 
@@ -111,10 +178,7 @@ export function useOrderStats(): UseOrderStatsReturn {
         {
           label: "Tổng đơn hàng",
           value: (stats.total || 0).toString(),
-          ...calculateChange(
-            stats.total || 0,
-            stats.previousPeriod?.total || 0
-          ),
+          ...calculateChange(stats.total || 0, stats.previousPeriod?.total || 0),
         },
         {
           label: "Chờ xử lý",
@@ -173,7 +237,7 @@ export function useOrderStats(): UseOrderStatsReturn {
     stats,
     loading,
     error,
-    fetchStats,
+    fetchStats: () => fetchStats(true),
     clearError,
     displayStats,
   };

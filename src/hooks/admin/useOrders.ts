@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 
@@ -72,25 +72,72 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
     has_next: false,
     has_prev: false,
   });
-  const [loading, setLoading] = useState(false); // Bắt đầu với false
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(
+    filters.searchTerm
+  );
+  const requestControllerRef = useRef<AbortController | null>(null);
 
   // Get auth token from Redux store
   const token = useSelector((state: RootState) => state.auth.token);
 
+  // Debounce search to avoid flooding API while typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(filters.searchTerm);
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [filters.searchTerm]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setPagination((prev) =>
+      prev.current_page === 1 ? prev : { ...prev, current_page: 1 }
+    );
+  }, [
+    debouncedSearchTerm,
+    filters.statusFilter,
+    filters.typeFilter,
+    filters.dateFrom,
+    filters.dateTo,
+    filters.priceRange,
+    filters.freeShipping,
+  ]);
+
   // Build query parameters from filters
   const buildQueryParams = useCallback(
-    (filters: OrderFilters, page?: number, limit?: number): string => {
+    (page?: number, limit?: number): string => {
       const params = new URLSearchParams();
 
-      if (filters.searchTerm) params.set("search", filters.searchTerm);
-      if (filters.statusFilter) params.set("status", filters.statusFilter);
-      if (filters.typeFilter) params.set("orderType", filters.typeFilter);
+      const search = debouncedSearchTerm?.trim();
+      if (search) params.set("search", search);
+
+      if (filters.statusFilter && filters.statusFilter !== "all") {
+        params.set("status", filters.statusFilter);
+      }
+
+      if (filters.typeFilter && filters.typeFilter !== "all") {
+        const normalizedOrderType =
+          filters.typeFilter === "product"
+            ? "PRODUCT"
+            : filters.typeFilter === "custom"
+            ? "CUSTOM"
+            : filters.typeFilter;
+        params.set("orderType", normalizedOrderType);
+      }
+
       if (filters.dateFrom) params.set("dateFrom", filters.dateFrom);
       if (filters.dateTo) params.set("dateTo", filters.dateTo);
       if (filters.priceRange) params.set("priceRange", filters.priceRange);
-      if (filters.freeShipping)
-        params.set("freeShipping", filters.freeShipping);
+
+      if (filters.freeShipping === "free") {
+        params.set("freeShipping", "true");
+      } else if (filters.freeShipping === "paid") {
+        params.set("freeShipping", "false");
+      }
 
       // Add pagination parameters
       params.set("page", (page || pagination.current_page).toString());
@@ -98,11 +145,28 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
 
       return params.toString();
     },
-    [pagination.current_page, pagination.per_page]
+    [
+      debouncedSearchTerm,
+      filters.statusFilter,
+      filters.typeFilter,
+      filters.dateFrom,
+      filters.dateTo,
+      filters.priceRange,
+      filters.freeShipping,
+      pagination.current_page,
+      pagination.per_page,
+    ]
   );
 
   // Fetch orders
   const fetchOrders = useCallback(async () => {
+    if (requestControllerRef.current) {
+      requestControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+
     setLoading(true);
     setError(null);
 
@@ -110,20 +174,19 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
       const authHeaders: Record<string, string> = token
         ? { Authorization: `Bearer ${token}` }
         : {};
-      const queryParams = buildQueryParams(filters);
+      const queryParams = buildQueryParams();
       const url = `/api/admin/orders${queryParams ? `?${queryParams}` : ""}`;
 
       const response = await fetch(url, {
         headers: authHeaders,
+        signal: controller.signal,
       });
 
       const data = await response.json();
 
       if (data.success) {
-        // API response structure: {success: true, data: {items: [...], pagination: {...}}}
         setOrders(data.data?.items || []);
 
-        // Update pagination state
         if (data.data?.pagination) {
           setPagination(data.data.pagination);
         }
@@ -131,15 +194,17 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
         setError(data.message || "Không thể tải danh sách đơn hàng");
       }
     } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        return;
+      }
 
       setError("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
-      // Đảm bảo skeleton hiển thị ít nhất 500ms để UX tốt hơn
-      setTimeout(() => {
+      if (!controller.signal.aborted) {
         setLoading(false);
-      }, 500);
+      }
     }
-  }, [token, filters, buildQueryParams]);
+  }, [token, buildQueryParams]);
 
   // Clear error
   const clearError = useCallback(() => {
@@ -155,6 +220,15 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  // Cleanup pending request on unmount
+  useEffect(() => {
+    return () => {
+      if (requestControllerRef.current) {
+        requestControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   return {
     orders,

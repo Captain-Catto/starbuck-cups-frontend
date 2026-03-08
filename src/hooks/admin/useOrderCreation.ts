@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/store";
 import { OrderFormData, Product } from "@/types/orders";
 import { toast } from "sonner";
+import { invalidateOrderDependentCaches } from "@/lib/adminCacheInvalidation";
 
 const initialFormData: OrderFormData = {
   customerId: "",
@@ -329,6 +330,7 @@ export function useOrderCreation() {
       const data = await response.json();
 
       if (data.success) {
+        invalidateOrderDependentCaches();
 
         toast.success("Đơn hàng đã được tạo thành công!");
         router.push("/admin/orders");

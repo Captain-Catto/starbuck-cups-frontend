@@ -12,6 +12,34 @@ import {
 } from "@/store/effectSettingsSlice";
 import { toast } from "sonner";
 import { Save, RefreshCw } from "lucide-react";
+import axios from "axios";
+import { getApiUrl } from "@/lib/api-config";
+
+interface ProductWatermarkSettings {
+  enabled: boolean;
+  text: string;
+  opacity: number;
+  backgroundOpacity: number;
+  fontSize: number;
+  margin: number;
+}
+
+const WATERMARK_SETTINGS_API_URL = getApiUrl("settings/watermark-settings");
+
+const DEFAULT_WATERMARK_SETTINGS: ProductWatermarkSettings = {
+  enabled: true,
+  text: "hasron.vn",
+  opacity: 0.92,
+  backgroundOpacity: 0.4,
+  fontSize: 20,
+  margin: 12,
+};
+
+const getAdminAuthHeaders = (): Record<string, string> => {
+  if (typeof window === "undefined") return {};
+  const token = localStorage.getItem("admin_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 export default function SettingsPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -33,9 +61,33 @@ export default function SettingsPage() {
     snowSettings: undefined,
     excludedPaths: [],
   });
+  const [watermarkSettings, setWatermarkSettings] =
+    useState<ProductWatermarkSettings>(DEFAULT_WATERMARK_SETTINGS);
+  const [isWatermarkLoading, setIsWatermarkLoading] = useState(true);
+
+  const fetchWatermarkSettings = async () => {
+    try {
+      setIsWatermarkLoading(true);
+      const response = await axios.get(WATERMARK_SETTINGS_API_URL);
+      if (response.data?.success && response.data?.data) {
+        setWatermarkSettings({
+          ...DEFAULT_WATERMARK_SETTINGS,
+          ...response.data.data,
+        });
+      } else {
+        setWatermarkSettings(DEFAULT_WATERMARK_SETTINGS);
+      }
+    } catch (error) {
+      console.error("Failed to fetch watermark settings:", error);
+      setWatermarkSettings(DEFAULT_WATERMARK_SETTINGS);
+    } finally {
+      setIsWatermarkLoading(false);
+    }
+  };
 
   useEffect(() => {
     dispatch(fetchEffectSettings());
+    fetchWatermarkSettings();
   }, [dispatch]);
 
   useEffect(() => {
@@ -51,12 +103,38 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     try {
-      await dispatch(updateEffectSettings(localSettings)).unwrap();
+      await Promise.all([
+        dispatch(updateEffectSettings(localSettings)).unwrap(),
+        axios.put(WATERMARK_SETTINGS_API_URL, watermarkSettings, {
+          headers: {
+            ...getAdminAuthHeaders(),
+          },
+          withCredentials: true,
+        }),
+      ]);
       toast.success("Cập nhật cài đặt thành công!");
     } catch (error) {
       toast.error("Lỗi khi cập nhật cài đặt");
       console.error(error);
     }
+  };
+
+  const handleRefresh = async () => {
+    await Promise.all([
+      dispatch(fetchEffectSettings()),
+      fetchWatermarkSettings(),
+    ]);
+    toast.success("Đã tải lại cấu hình");
+  };
+
+  const updateWatermarkField = (
+    key: keyof ProductWatermarkSettings,
+    value: string | number | boolean
+  ) => {
+    setWatermarkSettings((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
   };
 
   const updateRedEnvelope = (key: keyof RedEnvelopeSettings, value: number) => {
@@ -107,7 +185,7 @@ export default function SettingsPage() {
     }));
   };
 
-  if (isLoading && !localSettings.redEnvelopeSettings) {
+  if ((isLoading && !localSettings.redEnvelopeSettings) || isWatermarkLoading) {
     return <div className="p-8">Đang tải cài đặt...</div>;
   }
 
@@ -118,13 +196,22 @@ export default function SettingsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Cấu hình Hiệu ứng</h1>
           <p className="text-gray-500 mt-1">Điều chỉnh hiệu ứng Lì xì và Tuyết rơi theo thời gian thực</p>
         </div>
-        <button
-          onClick={handleSave}
-          className="flex items-center gap-2 px-6 py-2.5 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors shadow-md font-medium"
-        >
-          <Save size={20} />
-          Lưu thay đổi
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleRefresh}
+            className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors border border-gray-200"
+          >
+            <RefreshCw size={18} />
+            Tải lại
+          </button>
+          <button
+            onClick={handleSave}
+            className="flex items-center gap-2 px-6 py-2.5 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors shadow-md font-medium"
+          >
+            <Save size={20} />
+            Lưu thay đổi
+          </button>
+        </div>
       </div>
 
       {/* Main Switch */}
@@ -404,6 +491,140 @@ export default function SettingsPage() {
                 value={localSettings.snowSettings?.windStrength || 0.2}
                 onChange={(e) => updateSnow("windStrength", Number(e.target.value))}
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Product Watermark Settings */}
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">
+              🖼️ Watermark ảnh sản phẩm
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Watermark sẽ được gắn ở góc phải dưới trước khi chuyển ảnh sang AVIF.
+            </p>
+          </div>
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <input
+              type="checkbox"
+              className="accent-green-600 w-4 h-4"
+              checked={watermarkSettings.enabled}
+              onChange={(e) =>
+                updateWatermarkField("enabled", e.target.checked)
+              }
+            />
+            Bật watermark
+          </label>
+        </div>
+
+        <div
+          className={`space-y-5 transition-opacity ${
+            watermarkSettings.enabled ? "opacity-100" : "opacity-50"
+          }`}
+        >
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Nội dung watermark
+            </label>
+            <input
+              type="text"
+              value={watermarkSettings.text}
+              onChange={(e) => updateWatermarkField("text", e.target.value)}
+              className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+              placeholder="hasron.vn"
+              disabled={!watermarkSettings.enabled}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <label className="flex justify-between text-sm font-medium text-gray-700">
+                <span>Độ đậm chữ</span>
+                <span className="text-gray-500 font-mono">
+                  {watermarkSettings.opacity.toFixed(2)}
+                </span>
+              </label>
+              <input
+                type="range"
+                min="0.1"
+                max="1"
+                step="0.01"
+                value={watermarkSettings.opacity}
+                onChange={(e) =>
+                  updateWatermarkField("opacity", Number(e.target.value))
+                }
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                disabled={!watermarkSettings.enabled}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex justify-between text-sm font-medium text-gray-700">
+                <span>Độ đậm nền</span>
+                <span className="text-gray-500 font-mono">
+                  {watermarkSettings.backgroundOpacity.toFixed(2)}
+                </span>
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={watermarkSettings.backgroundOpacity}
+                onChange={(e) =>
+                  updateWatermarkField(
+                    "backgroundOpacity",
+                    Number(e.target.value)
+                  )
+                }
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                disabled={!watermarkSettings.enabled}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex justify-between text-sm font-medium text-gray-700">
+                <span>Cỡ chữ (px)</span>
+                <span className="text-gray-500 font-mono">
+                  {watermarkSettings.fontSize}
+                </span>
+              </label>
+              <input
+                type="range"
+                min="12"
+                max="40"
+                step="1"
+                value={watermarkSettings.fontSize}
+                onChange={(e) =>
+                  updateWatermarkField("fontSize", Number(e.target.value))
+                }
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                disabled={!watermarkSettings.enabled}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex justify-between text-sm font-medium text-gray-700">
+                <span>Lề góc phải dưới (px)</span>
+                <span className="text-gray-500 font-mono">
+                  {watermarkSettings.margin}
+                </span>
+              </label>
+              <input
+                type="range"
+                min="4"
+                max="30"
+                step="1"
+                value={watermarkSettings.margin}
+                onChange={(e) =>
+                  updateWatermarkField("margin", Number(e.target.value))
+                }
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                disabled={!watermarkSettings.enabled}
               />
             </div>
           </div>

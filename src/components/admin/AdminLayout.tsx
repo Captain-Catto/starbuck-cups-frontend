@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAppSelector } from "@/store";
@@ -8,7 +9,14 @@ import { useAdminAuth } from "@/hooks/useStandardAuth";
 import { useSocket } from "@/hooks/useSocket";
 import { usePendingConsultations } from "@/hooks/admin/usePendingConsultations";
 import { useConsultationSocket } from "@/hooks/useConsultationSocket";
-import { NotificationDropdown } from "@/components/admin/NotificationDropdown";
+
+const NotificationDropdown = dynamic(
+  () =>
+    import("@/components/admin/NotificationDropdown").then((mod) => ({
+      default: mod.NotificationDropdown,
+    })),
+  { ssr: false }
+);
 import {
   LayoutDashboard,
   Package,
@@ -65,8 +73,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     enabled: isConnected,
   });
 
-  // Generate sidebar items with realtime data
-  const getSidebarItems = (): SidebarItem[] => [
+  // Memoize sidebar items - only recalculate when pendingCount changes
+  const sidebarItems: SidebarItem[] = useMemo(() => [
     {
       icon: LayoutDashboard,
       label: "Dashboard",
@@ -128,15 +136,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       label: "Cấu hình Hiệu ứng",
       path: "/admin/settings",
     },
-  ];
+  ], [pendingCount]);
 
-  const sidebarItems = getSidebarItems();
-
-  // Authentication check is handled by useAdminAuth hook automatically
-  // No need for manual redirect logic here
-
-  // Close dropdowns when clicking outside
+  // Close dropdowns when clicking outside - only attach listener when a dropdown is open
   useEffect(() => {
+    if (!profileDropdownOpen && !notificationDropdownOpen) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
       if (profileDropdownOpen && !target.closest(".profile-dropdown")) {
@@ -156,46 +161,31 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     };
   }, [profileDropdownOpen, notificationDropdownOpen]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await performLogout();
-    // Redirect is handled automatically by the standardized hook
-  };
+  }, [performLogout]);
 
-  const toggleSubmenu = (path: string) => {
+  const toggleSubmenu = useCallback((path: string) => {
     setExpandedItems((prev) =>
       prev.includes(path)
         ? prev.filter((item) => item !== path)
         : [...prev, path]
     );
-  };
+  }, []);
 
-  const isActivePath = (path: string) => {
+  const isActivePath = useCallback((path: string) => {
     return pathname === path || pathname.startsWith(path + "/");
-  };
+  }, [pathname]);
 
-  const getGreeting = () => {
+  // Memoize greeting - only recalculate on mount
+  const greeting = useMemo(() => {
     const hour = new Date().getHours();
-
-    if (hour >= 5 && hour < 11) {
-      return "Chào buổi sáng";
-    } else if (hour >= 11 && hour < 14) {
-      return "Chào buổi trưa";
-    } else if (hour >= 14 && hour < 18) {
-      return "Chào buổi chiều";
-    } else if (hour >= 18 && hour < 22) {
-      return "Chào buổi tối";
-    } else {
-      return "Chào đêm khuya";
-    }
-  };
-
-  if (!isAdminReady) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
-      </div>
-    );
-  }
+    if (hour >= 5 && hour < 11) return "Chào buổi sáng";
+    if (hour >= 11 && hour < 14) return "Chào buổi trưa";
+    if (hour >= 14 && hour < 18) return "Chào buổi chiều";
+    if (hour >= 18 && hour < 22) return "Chào buổi tối";
+    return "Chào đêm khuya";
+  }, []);
 
   return (
     <div className="min-h-screen bg-black flex">
@@ -302,7 +292,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </button>
               <div>
                 <h2 className="text-lg font-semibold text-white">
-                  {getGreeting()}
+                  {greeting}
                 </h2>
                 <p className="text-sm text-white">{user?.name || "Admin"}</p>
               </div>
@@ -403,8 +393,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 p-6 bg-black">{children}</main>
+        {/* Page Content - show loading spinner while auth is checking */}
+        <main className="flex-1 p-6 bg-black">
+          {isAdminReady ? (
+            children
+          ) : (
+            <div className="flex items-center justify-center h-[60vh]">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white" />
+            </div>
+          )}
+        </main>
       </div>
 
       {/* Sidebar Overlay */}

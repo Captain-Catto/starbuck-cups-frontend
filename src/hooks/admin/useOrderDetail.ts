@@ -1,7 +1,7 @@
-﻿import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
-
+import { invalidateOrderDependentCaches } from "@/lib/adminCacheInvalidation";
 export interface OrderDetailData {
   id: string;
   orderNumber: string;
@@ -115,6 +115,7 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
         const data = await response.json();
 
         if (data.success) {
+          invalidateOrderDependentCaches();
           setOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
           // Refresh order data to get latest info
           await fetchOrder();
@@ -156,3 +157,4 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
     clearError,
   };
 }
+

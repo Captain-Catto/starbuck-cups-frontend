@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { ProductLocale, ProductTranslationsInput } from "@/types";
 import { useAppSelector } from "@/hooks/redux";
+import { invalidateProductDependentCaches } from "@/lib/adminCacheInvalidation";
 
 type TranslationField = "name" | "description" | "metaTitle" | "metaDescription";
 
@@ -109,6 +110,7 @@ export interface ProductFormData {
   isActive: boolean;
   isVip: boolean;
   isFeatured: boolean;
+  hasVariants: boolean;
   stockQuantity: number;
   productUrl: string;
   translations: ProductTranslationsInput;
@@ -172,6 +174,7 @@ export function useProductForm(
     isActive: initialData?.isActive ?? true,
     isVip: initialData?.isVip ?? false,
     isFeatured: initialData?.isFeatured ?? false,
+    hasVariants: (initialData as any)?.hasVariants ?? true,
     stockQuantity: initialData?.stockQuantity || 0,
     productUrl: initialData?.productUrl || "",
     translations: createInitialTranslations(initialData),
@@ -303,11 +306,11 @@ export function useProductForm(
       newErrors.name = "Tên sản phẩm là bắt buộc";
     }
 
-    if (data.colorIds.length === 0) {
+    if (data.hasVariants && data.colorIds.length === 0) {
       newErrors.colorIds = "Phải chọn ít nhất một màu sắc";
     }
 
-    if (data.capacityIds.length === 0) {
+    if (data.hasVariants && data.capacityIds.length === 0) {
       newErrors.capacityIds = "Phải chọn ít nhất một dung tích";
     }
 
@@ -360,8 +363,8 @@ export function useProductForm(
           name: tempFormData.name.trim(),
           description: toOptionalValue(tempFormData.description) || "",
           productImages: imagesWithOrder,
-          colorIds: tempFormData.colorIds,
-          capacityId: tempFormData.capacityIds[0] || "",
+          colorIds: tempFormData.hasVariants ? tempFormData.colorIds : [],
+          capacityId: tempFormData.hasVariants ? (tempFormData.capacityIds[0] || null) : null,
           categoryIds: tempFormData.categoryIds,
           stockQuantity: tempFormData.stockQuantity,
           productUrl: toOptionalValue(tempFormData.productUrl) || "",
@@ -405,6 +408,7 @@ export function useProductForm(
             ? "Cập nhật sản phẩm thành công!"
             : "Tạo sản phẩm thành công!"
         );
+        invalidateProductDependentCaches();
 
         if (onSuccess) {
           onSuccess(data.data);
@@ -455,6 +459,7 @@ export function useProductForm(
       isActive: initialData?.isActive ?? true,
       isVip: initialData?.isVip ?? false,
       isFeatured: initialData?.isFeatured ?? false,
+      hasVariants: (initialData as any)?.hasVariants ?? true,
       stockQuantity: initialData?.stockQuantity || 0,
       productUrl: initialData?.productUrl || "",
       translations: createInitialTranslations(initialData) || EMPTY_TRANSLATIONS,

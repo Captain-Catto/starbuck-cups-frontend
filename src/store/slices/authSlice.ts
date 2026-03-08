@@ -182,6 +182,10 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    setSessionChecked: (state) => {
+      state.sessionChecked = true;
+      state.loading = false;
+    },
     setTokens: (
       state,
       action: PayloadAction<{ token: string; refreshToken?: string }>
@@ -326,5 +330,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, setTokens } = authSlice.actions;
+export const { clearError, setTokens, setSessionChecked } = authSlice.actions;
 export default authSlice.reducer;

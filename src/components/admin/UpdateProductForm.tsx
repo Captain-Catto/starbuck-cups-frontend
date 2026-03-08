@@ -178,6 +178,21 @@ export function UpdateProductForm({
           onChange={updateTranslation}
         />
 
+        {/* Variants Toggle */}
+        <div>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={formData.hasVariants}
+              onChange={(e) => updateField("hasVariants", e.target.checked)}
+              className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+            />
+            <span className="text-sm font-medium text-gray-700">
+              Sản phẩm này có phân loại Màu Sắc & Dung Tích
+            </span>
+          </label>
+        </div>
+
         {/* Category, Color, Capacity Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
@@ -211,63 +226,67 @@ export function UpdateProductForm({
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Màu sắc <span className="text-red-500">*</span>
-            </label>
-            <div
-              className={`space-y-2 max-h-32 overflow-y-auto border rounded-md p-2 ${
-                errors.colorIds ? "border-red-500" : "border-gray-300"
-              }`}
-            >
-              {Array.isArray(colors) &&
-                colors.map((color) => (
-                  <label key={color.id} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.colorIds?.includes(color.id) || false}
-                      onChange={() => toggleArrayField("colorIds", color.id)}
-                      className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                    />
-                    <span className="text-sm flex items-center gap-2">
-                      <div
-                        className="w-4 h-4 rounded border border-gray-300"
-                        style={{ backgroundColor: color.hexCode }}
-                      ></div>
-                      {color.name}
-                    </span>
-                  </label>
-                ))}
-            </div>
-            {errors.colorIds && (
-              <p className="mt-1 text-sm text-red-600">{errors.colorIds}</p>
-            )}
-          </div>
+          {formData.hasVariants && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Màu sắc <span className="text-red-500">*</span>
+                </label>
+                <div
+                  className={`space-y-2 max-h-32 overflow-y-auto border rounded-md p-2 ${
+                    errors.colorIds ? "border-red-500" : "border-gray-300"
+                  }`}
+                >
+                  {Array.isArray(colors) &&
+                    colors.map((color) => (
+                      <label key={color.id} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.colorIds?.includes(color.id) || false}
+                          onChange={() => toggleArrayField("colorIds", color.id)}
+                          className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                        />
+                        <span className="text-sm flex items-center gap-2">
+                          <div
+                            className="w-4 h-4 rounded border border-gray-300"
+                            style={{ backgroundColor: color.hexCode }}
+                          ></div>
+                          {color.name}
+                        </span>
+                      </label>
+                    ))}
+                </div>
+                {errors.colorIds && (
+                  <p className="mt-1 text-sm text-red-600">{errors.colorIds}</p>
+                )}
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Dung tích <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={formData.capacityId}
-              onChange={(e) => updateField("capacityId", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                errors.capacityId ? "border-red-500" : "border-gray-300"
-              }`}
-              required
-            >
-              <option value="">Chọn dung tích</option>
-              {Array.isArray(capacities) &&
-                capacities.map((capacity) => (
-                  <option key={capacity.id} value={capacity.id}>
-                    {capacity.name} ({capacity.volumeMl}ml)
-                  </option>
-                ))}
-            </select>
-            {errors.capacityId && (
-              <p className="mt-1 text-sm text-red-600">{errors.capacityId}</p>
-            )}
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Dung tích <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.capacityId}
+                  onChange={(e) => updateField("capacityId", e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    errors.capacityId ? "border-red-500" : "border-gray-300"
+                  }`}
+                  required
+                >
+                  <option value="">Chọn dung tích</option>
+                  {Array.isArray(capacities) &&
+                    capacities.map((capacity) => (
+                      <option key={capacity.id} value={capacity.id}>
+                        {capacity.name} ({capacity.volumeMl}ml)
+                      </option>
+                    ))}
+                </select>
+                {errors.capacityId && (
+                  <p className="mt-1 text-sm text-red-600">{errors.capacityId}</p>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Stock and Product URL Row */}

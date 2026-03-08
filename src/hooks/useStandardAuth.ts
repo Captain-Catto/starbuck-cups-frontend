@@ -1,6 +1,10 @@
-﻿import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { checkAuthStatus, logout } from "@/store/slices/authSlice";
+import {
+  checkAuthStatus,
+  logout,
+  setSessionChecked,
+} from "@/store/slices/authSlice";
 import { useAuthRefresh } from "./useAuthRefresh";
 import { TokenRefreshNotification } from "@/utils/tokenNotification";
 
@@ -32,43 +36,49 @@ export function useStandardAuth() {
       if (storedToken || hasRefreshCookie) {
         await dispatch(checkAuthStatus()).unwrap();
       } else {
-        // No tokens found - mark session as checked but not authenticated
-
-        // Manually set sessionChecked to true by dispatching a rejected action
-        dispatch(checkAuthStatus()).catch(() => {
-          // Expected to fail when no tokens, this will set sessionChecked = true
-        });
+        // No tokens found: avoid an unnecessary API call and mark checked locally
+        dispatch(setSessionChecked());
       }
     } catch (error) {
-
+      
     } finally {
       initializationRef.current = false;
     }
   }, [dispatch]);
 
-  // Initialize auth on mount and check periodically for token changes
+  // Initialize auth on mount
   useEffect(() => {
     if (!sessionChecked) {
       initializeAuth();
     }
   }, [initializeAuth, sessionChecked]);
 
-  // Check for token removal (user manually cleared localStorage/cookies)
+  // Re-check auth when tab becomes active again (instead of polling every second).
   useEffect(() => {
     if (!sessionChecked) return;
 
-    const interval = setInterval(() => {
-      const currentToken = localStorage.getItem("admin_token");
-      const hasRefreshCookie = document.cookie.includes("admin_refresh_token");
+    const lastVisibilityCheckRef = { current: 0 };
 
-      // If we think we're authenticated but have no tokens, re-check auth
-      if (isAuthenticated && !currentToken && !hasRefreshCookie) {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
 
+      const now = Date.now();
+      if (now - lastVisibilityCheckRef.current < 30000) {
+        return;
+      }
+      lastVisibilityCheckRef.current = now;
+
+      // Authenticated sessions are already handled by useAuthRefresh (focus + interval).
+      if (!isAuthenticated) {
         dispatch(checkAuthStatus());
       }
-    }, 1000); // Check every second
+    };
 
-    return () => clearInterval(interval);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [sessionChecked, isAuthenticated, dispatch]);
 
   // Provide a standardized logout function
@@ -81,12 +91,13 @@ export function useStandardAuth() {
       // Clear all local storage
       localStorage.removeItem("admin_token");
       // Cookie will be cleared by the backend
-
     } catch (error) {
-
       // Force clear local storage even if server call fails
       localStorage.removeItem("admin_token");
       TokenRefreshNotification.cleanup();
+    } finally {
+      // Always redirect to login page after logout
+      window.location.href = "/admin/login";
     }
   }, [dispatch]);
 
@@ -95,7 +106,7 @@ export function useStandardAuth() {
     try {
       await checkAndRefreshToken();
     } catch (error) {
-
+      
       throw error;
     }
   }, [checkAndRefreshToken]);
@@ -137,7 +148,7 @@ export function useRequireAuth(redirectUrl: string = "/admin/login") {
 
   useEffect(() => {
     if (auth.needsAuthentication) {
-
+      
       window.location.href = redirectUrl;
     }
   }, [auth.needsAuthentication, redirectUrl]);
@@ -156,7 +167,7 @@ export function useAdminAuth(redirectUrl: string = "/admin/login") {
 
   useEffect(() => {
     if (auth.isReady && auth.isAuthenticated && !hasAdminRole) {
-
+      
       window.location.href = redirectUrl;
     }
   }, [auth.isReady, auth.isAuthenticated, hasAdminRole, redirectUrl]);

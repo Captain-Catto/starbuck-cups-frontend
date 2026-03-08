@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useProducts } from "@/hooks/admin/useProducts";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -81,21 +82,21 @@ export default function AdminProductsPage() {
     isIndeterminate,
   } = useProducts();
 
-  const handleSelectAll = (checked: boolean) => {
+  const handleSelectAll = useCallback((checked: boolean) => {
     if (checked) {
       setSelectedProducts(products.map((p) => p.id));
     } else {
       setSelectedProducts([]);
     }
-  };
+  }, [products, setSelectedProducts]);
 
-  const handleSelectProduct = (productId: string, checked: boolean) => {
+  const handleSelectProduct = useCallback((productId: string, checked: boolean) => {
     if (checked) {
       setSelectedProducts((prev) => [...prev, productId]);
     } else {
       setSelectedProducts((prev) => prev.filter((id) => id !== productId));
     }
-  };
+  }, [setSelectedProducts]);
 
   return (
     <div className="min-h-screen bg-gray-900">

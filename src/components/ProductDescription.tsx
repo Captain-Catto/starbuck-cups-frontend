@@ -1,6 +1,7 @@
 "use client";
 
 import type { Product } from "@/types";
+import DOMPurify from "isomorphic-dompurify";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { useTranslations } from "next-intl";
@@ -51,7 +52,7 @@ export default function ProductDescription({
           <div
             className="prose-sm text-zinc-300"
             dangerouslySetInnerHTML={{
-              __html: product.description || "",
+              __html: DOMPurify.sanitize(product.description || ""),
             }}
           />
         </div>

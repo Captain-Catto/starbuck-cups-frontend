@@ -7,6 +7,7 @@ import type {
   ProductTranslationsInput,
   ProductTranslationsMap,
 } from "@/types";
+import { invalidateProductDependentCaches } from "@/lib/adminCacheInvalidation";
 
 type TranslationField = "name" | "description" | "metaTitle" | "metaDescription";
 
@@ -96,6 +97,7 @@ export interface UpdateProductFormData {
   productUrl: string;
   isActive: boolean;
   isVip: boolean;
+  hasVariants: boolean;
   isFeatured: boolean;
   translations: ProductTranslationsInput;
   newImages?: File[];
@@ -149,6 +151,7 @@ export function useUpdateProduct(
     productUrl: "",
     isActive: true,
     isVip: false,
+    hasVariants: true,
     isFeatured: false,
     translations: createDefaultTranslations(),
     newImages: [],
@@ -205,6 +208,9 @@ export function useUpdateProduct(
         productUrl: product.productUrl || "",
         isActive: product.isActive ?? true,
         isVip: product.isVip ?? false,
+        hasVariants:
+          Boolean(product.capacity?.id != null) ||
+          Boolean(product.productColors && product.productColors.length > 0),
         isFeatured: product.isFeatured ?? false,
         translations: createDefaultTranslations(
           product.name || "",
@@ -355,11 +361,11 @@ export function useUpdateProduct(
       newErrors.categoryIds = "Vui lòng chọn ít nhất một danh mục";
     }
 
-    if (!formData.colorIds || formData.colorIds.length === 0) {
+    if (formData.hasVariants && (!formData.colorIds || formData.colorIds.length === 0)) {
       newErrors.colorIds = "Vui lòng chọn ít nhất một màu sắc";
     }
 
-    if (!formData.capacityId) {
+    if (formData.hasVariants && !formData.capacityId) {
       newErrors.capacityId = "Dung tích là bắt buộc";
     }
 
@@ -405,8 +411,8 @@ export function useUpdateProduct(
         formDataToSend.append("name", canonicalName);
         formDataToSend.append("description", canonicalDescription);
         formDataToSend.append("categoryIds", JSON.stringify(formData.categoryIds));
-        formDataToSend.append("colorIds", JSON.stringify(formData.colorIds));
-        formDataToSend.append("capacityId", formData.capacityId);
+        formDataToSend.append("colorIds", JSON.stringify(formData.hasVariants ? formData.colorIds : []));
+        formDataToSend.append("capacityId", formData.hasVariants ? formData.capacityId : "");
         formDataToSend.append("stockQuantity", formData.stockQuantity.toString());
         formDataToSend.append("isActive", formData.isActive.toString());
         formDataToSend.append("isVip", formData.isVip.toString());
@@ -447,8 +453,8 @@ export function useUpdateProduct(
           name: canonicalName,
           description: canonicalDescription,
           categoryIds: formData.categoryIds,
-          colorIds: formData.colorIds,
-          capacityId: formData.capacityId,
+          colorIds: formData.hasVariants ? formData.colorIds : [],
+          capacityId: formData.hasVariants ? (formData.capacityId || null) : null,
           stockQuantity: formData.stockQuantity,
           productUrl: formData.productUrl.trim() || "",
           isActive: formData.isActive,
@@ -476,6 +482,7 @@ export function useUpdateProduct(
         }
       }
 
+      invalidateProductDependentCaches();
       toast.success("Cập nhật sản phẩm thành công!");
       if (onSuccess) onSuccess();
     } catch (error) {

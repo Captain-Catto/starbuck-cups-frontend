@@ -69,7 +69,7 @@ export function SearchAutocomplete({
           }
         }
       } catch (error) {
-
+        console.error("Search autocomplete error:", error);
         setProducts([]);
       } finally {
         setIsLoading(false);

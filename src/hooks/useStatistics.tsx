@@ -82,6 +82,20 @@ export interface StatisticsData {
   };
 }
 
+type StatisticsCacheEntry = {
+  data: StatisticsData;
+  fetchedAt: number;
+};
+
+const STATISTICS_CACHE_TTL_MS = 60_000;
+const statisticsCache = new Map<string, StatisticsCacheEntry>();
+const statisticsInFlight = new Map<string, Promise<StatisticsData>>();
+
+export function invalidateStatisticsCache() {
+  statisticsCache.clear();
+  statisticsInFlight.clear();
+}
+
 export const useStatistics = (period: "week" | "month" | "year" = "month") => {
   const statisticsUrl = getApiUrl("admin/dashboard/statistics");
   const [data, setData] = useState<StatisticsData | null>(null);
@@ -91,54 +105,93 @@ export const useStatistics = (period: "week" | "month" | "year" = "month") => {
   // Get token from Redux store
   const { token } = useAppSelector((state) => state.auth);
 
+  const getCacheKey = useCallback(
+    (selectedPeriod: string) => `${token || "guest"}:${selectedPeriod}`,
+    [token]
+  );
+
   const fetchStatistics = useCallback(
-    async (selectedPeriod: string) => {
+    async (selectedPeriod: string, forceRefresh = false) => {
+      const cacheKey = getCacheKey(selectedPeriod);
+      const cached = statisticsCache.get(cacheKey);
+      const hasCachedData = Boolean(cached);
+
+      if (hasCachedData) {
+        setData(cached!.data);
+      }
+
+      if (
+        !forceRefresh &&
+        cached &&
+        Date.now() - cached.fetchedAt < STATISTICS_CACHE_TTL_MS
+      ) {
+        setData(cached.data);
+        setLoading(false);
+        return;
+      }
+
       try {
-        setLoading(true);
+        setLoading(forceRefresh || !hasCachedData);
         setError(null);
 
         if (!token) {
           throw new Error("No authentication token found");
         }
 
-        const response = await fetch(
-          `${statisticsUrl}?period=${selectedPeriod}`,
-          {
+        if (!statisticsInFlight.has(cacheKey) || forceRefresh) {
+          const request = fetch(`${statisticsUrl}?period=${selectedPeriod}`, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-          }
-        );
+          })
+            .then(async (response) => {
+              if (!response.ok) {
+                throw new Error("Failed to fetch statistics");
+              }
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch statistics");
+              const result = await response.json();
+              const statisticsData = result.data as StatisticsData;
+              statisticsCache.set(cacheKey, {
+                data: statisticsData,
+                fetchedAt: Date.now(),
+              });
+              return statisticsData;
+            })
+            .finally(() => {
+              statisticsInFlight.delete(cacheKey);
+            });
+
+          statisticsInFlight.set(cacheKey, request);
         }
 
-        const result = await response.json();
-        setData(result.data);
+        const freshData = await statisticsInFlight.get(cacheKey)!;
+        setData(freshData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        // Keep stale data visible when background revalidation fails
+        if (!hasCachedData || forceRefresh) {
+          setError(err instanceof Error ? err.message : "An error occurred");
+        }
       } finally {
         setLoading(false);
       }
     },
-    [statisticsUrl, token]
+    [getCacheKey, statisticsUrl, token]
   );
 
   useEffect(() => {
     if (token) {
-      fetchStatistics(period);
+      fetchStatistics(period, false);
     }
   }, [period, token, fetchStatistics]);
 
-  const refetch = () => fetchStatistics(period);
+  const refetch = useCallback(() => fetchStatistics(period, true), [fetchStatistics, period]);
 
   return {
     data,
     loading,
     error,
     refetch,
-    fetchStatistics,
+    fetchStatistics: (selectedPeriod: string) => fetchStatistics(selectedPeriod, false),
   };
 };

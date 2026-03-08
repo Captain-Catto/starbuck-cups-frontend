@@ -166,11 +166,6 @@ export const useSocket = () => {
         dispatch(updateUnreadCount(count));
       });
 
-      // Debug: Log all socket events
-      socket.onAny((eventName, ...args) => {
-
-      });
-
       socket.on("disconnect", (reason) => {
 
         dispatch(setConnected(false));

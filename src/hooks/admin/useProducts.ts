@@ -8,6 +8,7 @@ import type {
   PaginationMeta,
 } from "@/types";
 import { apiService } from "@/lib/api";
+import { invalidateProductDependentCaches } from "@/lib/adminCacheInvalidation";
 
 interface ProductListItem extends Product {
   isActive: boolean;
@@ -128,6 +129,7 @@ export function useProducts(): UseProductsReturn {
   // Debounced search query
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const searchDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const productsRequestControllerRef = useRef<AbortController | null>(null);
 
   const [pagination, setPagination] = useState<PaginationMeta>({
     current_page: 1,
@@ -161,6 +163,12 @@ export function useProducts(): UseProductsReturn {
   }, [filters.search]);
 
   const loadProducts = useCallback(async () => {
+    if (productsRequestControllerRef.current) {
+      productsRequestControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    productsRequestControllerRef.current = controller;
+
     try {
       setLoading(true);
 
@@ -184,6 +192,7 @@ export function useProducts(): UseProductsReturn {
 
       const response = await fetch(`/api/admin/products?${params}`, {
         headers: getAuthHeaders(),
+        signal: controller.signal,
       });
       const data = await response.json();
 
@@ -212,10 +221,15 @@ export function useProducts(): UseProductsReturn {
         toast.error(data.message || "Không thể tải danh sách sản phẩm");
       }
     } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        return;
+      }
 
       toast.error("Có lỗi xảy ra khi tải sản phẩm");
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) {
+        setLoading(false);
+      }
     }
   }, [debouncedSearch, filters.category, filters.color, filters.minCapacity, filters.maxCapacity, filters.status, filters.sortBy, filters.sortOrder, pagination.current_page, pagination.per_page]);
 
@@ -264,7 +278,7 @@ export function useProducts(): UseProductsReturn {
 
   const handleFilterChange = (field: keyof ProductFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
-    setPagination((prev) => ({ ...prev, page: 1 }));
+    setPagination((prev) => ({ ...prev, current_page: 1 }));
   };
 
   const handleBulkAction = async (
@@ -297,6 +311,7 @@ export function useProducts(): UseProductsReturn {
       });
 
       await Promise.all(promises);
+      invalidateProductDependentCaches();
 
       toast.success(
         `Đã ${
@@ -369,6 +384,7 @@ export function useProducts(): UseProductsReturn {
       if (action === "delete") {
         const result = await apiService.adminDeleteProduct(productId);
         if (result.success) {
+          invalidateProductDependentCaches();
           toast.success("Đã xóa sản phẩm thành công");
           loadProducts();
         } else {
@@ -392,6 +408,7 @@ export function useProducts(): UseProductsReturn {
         const result = await apiService.toggleProductStatus(productId);
 
         if (result.success) {
+          invalidateProductDependentCaches();
           const actionText =
             action === "activate" ? "kích hoạt" : "vô hiệu hóa";
           toast.success(`Đã ${actionText} sản phẩm thành công`);
@@ -441,6 +458,7 @@ export function useProducts(): UseProductsReturn {
   };
 
   const handleModalSuccess = () => {
+    invalidateProductDependentCaches();
     loadProducts();
   };
 
@@ -468,11 +486,24 @@ export function useProducts(): UseProductsReturn {
   const isIndeterminate =
     selectedProducts.length > 0 && selectedProducts.length < products.length;
 
-  // Load data on component mount
+  // Load products when filters or pagination change
   useEffect(() => {
     loadProducts();
+  }, [loadProducts]);
+
+  // Load filter options once on mount
+  useEffect(() => {
     loadFilterOptions();
-  }, [loadProducts, loadFilterOptions]);
+  }, [loadFilterOptions]);
+
+  // Cleanup pending request
+  useEffect(() => {
+    return () => {
+      if (productsRequestControllerRef.current) {
+        productsRequestControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   return {
     // Data

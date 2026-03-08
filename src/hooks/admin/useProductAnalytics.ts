@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAppSelector } from "@/store";
 
 export interface ProductAnalytics {
@@ -56,7 +56,6 @@ export const useProductAnalytics = () => {
         throw new Error(data.message || "Failed to fetch analytics summary");
       }
     } catch (err) {
-
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);
@@ -75,17 +74,34 @@ export const useProductAnalytics = () => {
   };
 };
 
-export const useTopClickedProducts = (limit: number = 10, page: number = 1) => {
+export const useTopClickedProducts = (
+  limit: number = 10,
+  page: number = 1,
+  enabled: boolean = true
+) => {
   const { token } = useAppSelector((state) => state.auth);
   const [products, setProducts] = useState<ProductAnalytics[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const requestControllerRef = useRef<AbortController | null>(null);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, [token]);
 
   const fetchTopClicked = useCallback(async () => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
+    if (requestControllerRef.current) {
+      requestControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+
     try {
       setLoading(true);
       setError(null);
@@ -99,6 +115,7 @@ export const useTopClickedProducts = (limit: number = 10, page: number = 1) => {
             "Content-Type": "application/json",
             ...getAuthHeaders(),
           },
+          signal: controller.signal,
         }
       );
 
@@ -116,16 +133,33 @@ export const useTopClickedProducts = (limit: number = 10, page: number = 1) => {
         throw new Error(data.message || "Failed to fetch top clicked products");
       }
     } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        return;
+      }
 
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) {
+        setLoading(false);
+      }
     }
-  }, [limit, page]);
+  }, [enabled, limit, page, getAuthHeaders]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     fetchTopClicked();
-  }, [limit, page, fetchTopClicked, getAuthHeaders]);
+  }, [enabled, fetchTopClicked]);
+
+  useEffect(() => {
+    return () => {
+      if (requestControllerRef.current) {
+        requestControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   return {
     products,
@@ -135,17 +169,34 @@ export const useTopClickedProducts = (limit: number = 10, page: number = 1) => {
   };
 };
 
-export const useTopConversionProducts = (limit: number = 10, page: number = 1) => {
+export const useTopConversionProducts = (
+  limit: number = 10,
+  page: number = 1,
+  enabled: boolean = true
+) => {
   const { token } = useAppSelector((state) => state.auth);
   const [products, setProducts] = useState<ProductAnalytics[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const requestControllerRef = useRef<AbortController | null>(null);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, [token]);
 
   const fetchTopConversion = useCallback(async () => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
+    if (requestControllerRef.current) {
+      requestControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+
     try {
       setLoading(true);
       setError(null);
@@ -159,6 +210,7 @@ export const useTopConversionProducts = (limit: number = 10, page: number = 1) =
             "Content-Type": "application/json",
             ...getAuthHeaders(),
           },
+          signal: controller.signal,
         }
       );
 
@@ -178,16 +230,33 @@ export const useTopConversionProducts = (limit: number = 10, page: number = 1) =
         );
       }
     } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        return;
+      }
 
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) {
+        setLoading(false);
+      }
     }
-  }, [limit, page]);
+  }, [enabled, limit, page, getAuthHeaders]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     fetchTopConversion();
-  }, [limit, page, fetchTopConversion, getAuthHeaders]);
+  }, [enabled, fetchTopConversion]);
+
+  useEffect(() => {
+    return () => {
+      if (requestControllerRef.current) {
+        requestControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   return {
     products,

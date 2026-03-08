@@ -88,7 +88,7 @@ export function LowStockAlert() {
               className="p-4 border border-gray-700 rounded-lg bg-gray-800"
             >
               <h4 className="font-medium text-white">{product.name}</h4>
-              <p className="text-sm text-gray-400">{product.capacity.name}</p>
+              <p className="text-sm text-gray-400">{product.capacity?.name || "N/A"}</p>
               <p className="text-lg font-bold text-red-400 mt-2">
                 Còn lại: {product.stockQuantity}
               </p>

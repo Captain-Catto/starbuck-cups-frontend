@@ -1,12 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { Plus, Download } from "lucide-react";
 import Link from "next/link";
-import { OrderList } from "@/components/admin/orders/OrderList";
-import { OrderStatsCards } from "@/components/admin/orders/OrderStatsCards";
-import { OrderFilters } from "@/components/admin/orders/OrderFilters";
 import { useOrderStats } from "@/hooks/admin/useOrderStats";
+
+const OrderList = dynamic(
+  () =>
+    import("@/components/admin/orders/OrderList").then((mod) => ({
+      default: mod.OrderList,
+    })),
+  { loading: () => <div className="h-96 bg-gray-800 rounded-lg animate-pulse" /> }
+);
+
+const OrderStatsCards = dynamic(
+  () =>
+    import("@/components/admin/orders/OrderStatsCards").then((mod) => ({
+      default: mod.OrderStatsCards,
+    })),
+  {
+    loading: () => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[...Array(4)].map((_, index) => (
+          <div
+            key={index}
+            className="h-28 bg-gray-800 rounded-lg border border-gray-700 animate-pulse"
+          />
+        ))}
+      </div>
+    ),
+  }
+);
+
+const OrderFilters = dynamic(
+  () =>
+    import("@/components/admin/orders/OrderFilters").then((mod) => ({
+      default: mod.OrderFilters,
+    })),
+  { loading: () => <div className="h-20 bg-gray-800 rounded-lg animate-pulse" /> }
+);
 
 export default function OrdersPage() {
   const [filters, setFilters] = useState({
@@ -26,26 +59,26 @@ export default function OrdersPage() {
     fetchStats,
   } = useOrderStats();
 
-  const handleSearchChange = (value: string) => {
+  const handleSearchChange = useCallback((value: string) => {
     setFilters((prev) => ({ ...prev, searchTerm: value }));
-  };
+  }, []);
 
-  const handleStatusChange = (value: string) => {
+  const handleStatusChange = useCallback((value: string) => {
     setFilters((prev) => ({ ...prev, statusFilter: value }));
-  };
+  }, []);
 
-  const handleTypeChange = (value: string) => {
+  const handleTypeChange = useCallback((value: string) => {
     setFilters((prev) => ({ ...prev, typeFilter: value }));
-  };
+  }, []);
 
-  const handleAdvancedFiltersChange = (advancedFilters: {
+  const handleAdvancedFiltersChange = useCallback((advancedFilters: {
     dateFrom?: string;
     dateTo?: string;
     priceRange?: string;
     freeShipping?: string;
   }) => {
     setFilters((prev) => ({ ...prev, ...advancedFilters }));
-  };
+  }, []);
 
   return (
     <div className="space-y-6 bg-gray-900 min-h-screen p-6">

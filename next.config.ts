@@ -67,6 +67,8 @@ const nextConfig: NextConfig = {
     ],
     webpackBuildWorker: true,
   },
+  // Disable source maps in production to reduce bundle size (~2-3MB)
+  productionBrowserSourceMaps: false,
   // Compression
   compress: true,
   modularizeImports: {

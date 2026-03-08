@@ -63,6 +63,9 @@ export default function ProductModal({
         name: product.name,
         description: product.description || "",
         imageUrl: getFirstProductImageUrl(product.productImages),
+        hasVariants:
+          (product.capacity?.id != null) ||
+          (product.productColors && product.productColors.length > 0),
         colorIds:
           product.productColors?.map(
             (pc: { color: { id: string } }) => pc.color.id
@@ -304,6 +307,21 @@ export default function ProductModal({
             onChange={updateTranslation}
           />
 
+          {/* Variants Toggle */}
+          <div>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.hasVariants}
+                onChange={(e) => updateField("hasVariants", e.target.checked)}
+                className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                Sản phẩm này có phân loại Màu Sắc & Dung Tích
+              </span>
+            </label>
+          </div>
+
           {/* Category, Color, Capacity Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -336,61 +354,65 @@ export default function ProductModal({
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Màu sắc *
-              </label>
-              <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
-                {Array.isArray(colors) &&
-                  colors.map((color) => (
-                    <label key={color.id} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={formData.colorIds.includes(color.id)}
-                        onChange={() => toggleArrayField("colorIds", color.id)}
-                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                      />
-                      <span className="text-sm flex items-center gap-2">
-                        <div
-                          className="w-4 h-4 rounded border border-gray-300"
-                          style={{ backgroundColor: color.hexCode }}
-                        ></div>
-                        {color.name}
-                      </span>
-                    </label>
-                  ))}
-              </div>
-              {formData.colorIds.length === 0 && (
-                <p className="text-red-500 text-sm mt-1">
-                  Vui lòng chọn ít nhất một màu sắc
-                </p>
-              )}
-            </div>
+            {formData.hasVariants && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Màu sắc *
+                  </label>
+                  <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
+                    {Array.isArray(colors) &&
+                      colors.map((color) => (
+                        <label key={color.id} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.colorIds.includes(color.id)}
+                            onChange={() => toggleArrayField("colorIds", color.id)}
+                            className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                          />
+                          <span className="text-sm flex items-center gap-2">
+                            <div
+                              className="w-4 h-4 rounded border border-gray-300"
+                              style={{ backgroundColor: color.hexCode }}
+                            ></div>
+                            {color.name}
+                          </span>
+                        </label>
+                      ))}
+                  </div>
+                  {formData.colorIds.length === 0 && (
+                    <p className="text-red-500 text-sm mt-1">
+                      Vui lòng chọn ít nhất một màu sắc
+                    </p>
+                  )}
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Dung tích *
-              </label>
-              <select
-                value={formData.capacityIds[0] || ""}
-                onChange={(e) => {
-                  updateField(
-                    "capacityIds",
-                    e.target.value ? [e.target.value] : []
-                  );
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
-              >
-                <option value="">Chọn dung tích</option>
-                {Array.isArray(capacities) &&
-                  capacities.map((capacity) => (
-                    <option key={capacity.id} value={capacity.id}>
-                      {capacity.name} ({capacity.volumeMl}ml)
-                    </option>
-                  ))}
-              </select>
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Dung tích *
+                  </label>
+                  <select
+                    value={formData.capacityIds[0] || ""}
+                    onChange={(e) => {
+                      updateField(
+                        "capacityIds",
+                        e.target.value ? [e.target.value] : []
+                      );
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    required
+                  >
+                    <option value="">Chọn dung tích</option>
+                    {Array.isArray(capacities) &&
+                      capacities.map((capacity) => (
+                        <option key={capacity.id} value={capacity.id}>
+                          {capacity.name} ({capacity.volumeMl}ml)
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Stock and Product URL Row */}

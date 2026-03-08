@@ -125,12 +125,6 @@ export default function CartPage() {
         createdAt: new Date().toISOString(),
       };
 
-      console.log("📝 CONSULTATION DATA TO BACKEND:", consultationData);
-      console.log(
-        "📤 CONSULTATION JSON:",
-        JSON.stringify(consultationData, null, 2)
-      );
-
       const response = await fetch("/api/consultations", {
         method: "POST",
         headers: {
@@ -160,8 +154,13 @@ export default function CartPage() {
         dispatch(clearCart());
         router.push("/products");
       } else {
-        const errorData = await response.json();
-        const errorMessage = errorData.error || tForm("errorGeneric");
+        let errorMessage = tForm("errorGeneric");
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // Response is not JSON (e.g. 502 HTML page)
+        }
         throw new Error(errorMessage);
       }
     } catch (error) {

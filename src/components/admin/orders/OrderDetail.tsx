@@ -20,6 +20,7 @@ import {
   getProductSnapshotImageUrl,
 } from "@/lib/utils/image";
 import OptimizedImage from "@/components/OptimizedImage";
+import { invalidateOrderDependentCaches } from "@/lib/adminCacheInvalidation";
 
 interface ProductColor {
   color?: {
@@ -292,6 +293,7 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
 
       const data = await response.json();
       if (data.success) {
+        invalidateOrderDependentCaches();
         setOrder(data.data);
         toast.success("Đơn hàng đã được cập nhật thành công!");
       } else {
@@ -1147,8 +1149,11 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
                       {/* Product Details & Inputs */}
                       <div className="flex-1">
                         <p className="text-sm text-gray-300 mb-1">
-                          {selectedProduct.color.name} •{" "}
-                          {selectedProduct.capacity.name}
+                          {/* @ts-expect-error */}
+                          {selectedProduct.productColors
+                            ?.map((pc: any) => pc.color?.name)
+                            .join(", ") || "N/A"}{" "}
+                          • {selectedProduct.capacity?.name || "N/A"}
                         </p>
                         <p className="text-sm text-gray-400 mb-3">
                           Còn: {selectedProduct.stockQuantity} • Giá gốc:{" "}

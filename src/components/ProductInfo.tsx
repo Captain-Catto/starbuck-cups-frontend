@@ -85,13 +85,6 @@ export default function ProductInfo() {
 
   const handleAddToCart = () => {
     if (product && product.stockQuantity > 0) {
-      console.log("🛒 ADDING PRODUCT TO CART:", {
-        productId: product.id,
-        productName: product.name,
-        capacity: product.capacity,
-        categories: product.productCategories?.map((pc) => pc.category),
-      });
-
       // Add to cart without specific color selection
       dispatch(
         addToCart({

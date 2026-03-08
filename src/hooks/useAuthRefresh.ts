@@ -197,13 +197,3 @@ export function useAuthRefresh() {
   };
 }
 
-// Hook để sử dụng trong admin layout
-export function useAdminAuth() {
-  const { isAuthenticated, sessionChecked } = useAuthRefresh();
-
-  return {
-    isAuthenticated,
-    sessionChecked,
-    isLoading: !sessionChecked,
-  };
-}
