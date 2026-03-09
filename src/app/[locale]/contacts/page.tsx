@@ -19,7 +19,7 @@ export async function generateMetadata({
     openGraph: {
       title: t("contactsOgTitle"),
       description: t("contactsOgDescription"),
-      image: "/images/placeholder.webp",
+      image: "/logo.png",
       url: "/contacts",
       type: "website",
     },

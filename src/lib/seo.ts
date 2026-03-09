@@ -4,11 +4,11 @@ import { PageSEO, Product } from "@/types";
 export const siteConfig = {
   name: "H's shoucangpu - Collectible Gift Shop",
   description:
-    "Ly ST@RBUCKS CHÍNH HÃNG các nước. 95% MẪU TRÊN PAGE là HÀNG SẴN SHIP HOẢ TỐC📍HCM📍 Quà tặng cao cấp Luxury. Có dịch vụ gói quà. FB: Hasron Leung. Dịch vụ ship hoả tốc 24/7",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://starbucks-cups.com",
+    "Chuyên ly Starbucks, cốc Starbucks chính hãng các nước. Starbucks Cups, Tumbler, bình giữ nhiệt chính hãng. 95% mẫu hàng sẵn, ship hoả tốc HCM. Quà tặng cao cấp, có dịch vụ gói quà.",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn",
   image: "/logo.png",
   keywords:
-    "starbucks, ly starbucks, cups, tumbler, ly giữ nhiệt, starbucks vietnam, ly starbucks chính hãng, ly starbuck chính hãng, ly starbucks auth, starbuck chính hãng, starbucks chính hãng, mua ly starbuck chính hãng, bình starbucks chính hãng, bình giữ nhiệt starbucks, ly giữ nhiệt starbucks, ly sứ starbucks",
+    "starbucks, ly starbucks, ly starbuck, cốc starbucks, cốc starbuck, starbucks cups, starbucks cup, starbuck cups, starbuck cup, cups, tumbler, ly giữ nhiệt, starbucks vietnam, ly starbucks chính hãng, ly starbuck chính hãng, mua ly starbuck, mua ly starbucks, mua cốc starbucks, bình starbucks chính hãng, bình giữ nhiệt starbucks, ly giữ nhiệt starbucks, ly sứ starbucks, ly starbucks giá rẻ, ly starbucks hcm, starbuck vietnam, quà tặng starbucks, ly starbucks chính hãng hcm, cốc starbucks sưu tầm, mua ly starbucks auth, ly starbucks auth, ly starbucks nhập khẩu, ly starbucks limited edition, ly starbucks các nước, tumbler starbucks chính hãng, bình nước starbucks, ly starbucks quà tặng",
 };
 
 export function generateSEO(
@@ -88,7 +88,7 @@ export function generateSEO(
       title: seo.openGraph?.title || title,
       description: seo.openGraph?.description || description,
       images: [image],
-      creator: "@starbuckscups",
+      creator: "@hasron_leung",
     },
     robots: {
       index: true,
@@ -109,14 +109,19 @@ export function generateSEO(
 }
 
 export function generateProductStructuredData(product: Product) {
+  const cleanDescription = product.description
+    ? product.description.replace(/<[^>]*>/g, "").slice(0, 500)
+    : "";
+
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
-    description: product.description,
-    image: product.productImages?.map(
-      (img: { url: string }) => `${siteConfig.url}${img.url}`
+    description: cleanDescription,
+    image: product.productImages?.map((img: { url: string }) =>
+      img.url.startsWith("http") ? img.url : `${siteConfig.url}${img.url}`
     ),
+    url: `${siteConfig.url}/products/${product.slug}`,
     brand: {
       "@type": "Brand",
       name: "Starbucks",
@@ -130,24 +135,13 @@ export function generateProductStructuredData(product: Product) {
         ?.map((pc: { color: { name: string } }) => pc.color.name)
         .join(", ") || "",
     offers: {
-      "@type": "AggregateOffer",
+      "@type": "Offer",
       availability: "https://schema.org/InStock",
       priceCurrency: "VND",
-      lowPrice: "0",
-      highPrice: "0",
-      priceSpecification: {
-        "@type": "PriceSpecification",
-        valueAddedTaxIncluded: true,
-      },
       seller: {
         "@type": "Organization",
         name: siteConfig.name,
       },
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      reviewCount: "100",
     },
   };
 }
@@ -181,8 +175,8 @@ export function generateOrganizationStructuredData() {
       availableLanguage: ["Vietnamese", "English", "Chinese"],
     },
     sameAs: [
-      "https://facebook.com/starbuckscups",
-      "https://instagram.com/starbuckscups",
+      "https://www.facebook.com/profile.php?id=61560973846348",
+      "https://www.instagram.com/hasron_leung",
     ],
   };
 }

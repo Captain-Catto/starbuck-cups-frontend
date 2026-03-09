@@ -18,7 +18,7 @@ export async function generateMetadata({
     openGraph: {
       title: `${t("siteTitle")} - ${t("productsPageTitle")}`,
       description: t("siteDescription"),
-      image: "/images/placeholder.webp",
+      image: "/logo.png",
       url: "/products",
       type: "website",
     },

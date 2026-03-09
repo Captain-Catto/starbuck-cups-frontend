@@ -11,43 +11,36 @@ export function StructuredData() {
     "@type": "Store",
     name: "H's shoucangpu - Collectible Gift Shop",
     description: tSeo("siteDescription"),
-    url: process.env.NEXT_PUBLIC_SITE_URL || "https://starbucks-cups.com",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn",
     logo: {
       "@type": "ImageObject",
       url: `${
-        process.env.NEXT_PUBLIC_SITE_URL || "https://starbucks-cups.com"
+        process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn"
       }/logo.png`,
       width: "200",
       height: "200",
     },
     image: `${
-      process.env.NEXT_PUBLIC_SITE_URL || "https://starbucks-cups.com"
+      process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn"
     }/logo.png`,
     sameAs: [
-      "https://www.facebook.com/starbuckscupsshop",
-      "https://www.instagram.com/starbuckscupsshop",
+      "https://www.facebook.com/profile.php?id=61560973846348",
+      "https://www.instagram.com/hasron_leung",
     ],
     hasOfferCatalog: {
       "@type": "OfferCatalog",
-      name: "Ly St@rbucks",
+      name: "Ly Starbucks",
       itemListElement: [
         {
           "@type": "Offer",
           itemOffered: {
             "@type": "Product",
-            name: "Ly St@rbucks Tumbler",
+            name: "Ly Starbucks Tumbler",
             category: "Drinkware",
             keywords: tSeo("siteKeywords"),
           },
         },
       ],
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      ratingCount: "150",
-      bestRating: "5",
-      worstRating: "1",
     },
     priceRange: "₫₫",
     currenciesAccepted: "VND",

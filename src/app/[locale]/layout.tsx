@@ -27,7 +27,7 @@ export async function generateMetadata({
   };
 
   const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://starbucks-cups.com";
+    process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn";
 
   return {
     ...generateSEO({
@@ -38,16 +38,16 @@ export async function generateMetadata({
       openGraph: {
         title: t("siteTitle"),
         description: t("siteDescription"),
-        image: "/images/placeholder.webp",
+        image: "/logo.png",
         url: "/",
         type: "website",
       },
     }),
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: t("twitterTitle"),
       description: t("twitterDescription"),
-      images: ["/images/placeholder.webp"],
+      images: ["/logo.png"],
     },
     icons: {
       icon: [
