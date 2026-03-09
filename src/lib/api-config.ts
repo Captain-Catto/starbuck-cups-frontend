@@ -10,6 +10,7 @@ export const getApiUrl = (endpoint: string) => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL;
   // Remove leading slash from endpoint if present to avoid double slashes
   const cleanEndpoint = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
+  if (!cleanEndpoint) return baseUrl;
   return `${baseUrl}/${cleanEndpoint}`;
 };
 
