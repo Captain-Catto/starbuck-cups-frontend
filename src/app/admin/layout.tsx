@@ -1,12 +1,16 @@
 import React from "react";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 import StoreProvider from "@/components/StoreProvider";
 import AdminClientLayout from "@/components/layout/AdminClientLayout";
 
-export default function AdminHtmlLayout({
+export default async function AdminHtmlLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const messages = await getMessages({ locale: "vi" });
+
   return (
     <html lang="vi">
       <head>
@@ -17,9 +21,11 @@ export default function AdminHtmlLayout({
         <meta name="theme-color" content="#000000" />
       </head>
       <body>
-        <StoreProvider>
-          <AdminClientLayout>{children}</AdminClientLayout>
-        </StoreProvider>
+        <NextIntlClientProvider locale="vi" messages={messages}>
+          <StoreProvider>
+            <AdminClientLayout>{children}</AdminClientLayout>
+          </StoreProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
