@@ -163,7 +163,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       {/* Product info */}
       <div className="mt-3">
         <p
-          className={`text-sm lg:text-base font-medium mb-1 ${
+          className={`text-lg lg:text-lg font-medium mb-1 ${
             product.stockQuantity === 0 ? "text-zinc-400" : "text-white"
           }`}
         >
