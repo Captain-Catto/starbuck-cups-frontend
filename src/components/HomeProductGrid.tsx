@@ -9,7 +9,6 @@ import { Link } from "@/i18n/routing";
 import { ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
-// CSS cho skeleton được import ở app level để tránh duplicate
 
 interface HomeProductGridProps {
   selectedCategory?: string | null;
@@ -29,8 +28,6 @@ export default function HomeProductGrid({
   const dispatch = useAppDispatch();
   const t = useTranslations("homePage");
   const locale = useLocale();
-
-  // Debug logs
 
   // Generate random delays for products when they're loaded
   useEffect(() => {
@@ -128,6 +125,7 @@ export default function HomeProductGrid({
         setAllAnimationsComplete(false);
         setShowViewAllButton(false);
 
+        // Fetch up to 12 products for 3 rows of 4 items
         const url = `/api/products?sortBy=createdAt&sortOrder=desc&limit=12&locale=${locale}`;
 
         const response = await fetch(url);
@@ -153,16 +151,18 @@ export default function HomeProductGrid({
     dispatch(addToCart({ product }));
   };
 
+  const PRODUCTS_PER_ROW = 4;
+
   // Skeleton loading to prevent layout shift
   if (loading && products.length === 0) {
     return (
       <div className="space-y-6">
-        {[...Array(6)].map((_, rowIndex) => (
+        {[...Array(3)].map((_, rowIndex) => (
           <div
             key={rowIndex}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
           >
-            {[...Array(6)].map((_, colIndex) => (
+            {[...Array(4)].map((_, colIndex) => (
               <div
                 key={colIndex}
                 className="bg-black rounded-lg overflow-hidden"
@@ -191,7 +191,6 @@ export default function HomeProductGrid({
   }
 
   // Render products in rows for animation
-  const PRODUCTS_PER_ROW = 6;
   const productRows = [];
   for (let i = 0; i < products.length; i += PRODUCTS_PER_ROW) {
     productRows.push(products.slice(i, i + PRODUCTS_PER_ROW));
@@ -204,7 +203,7 @@ export default function HomeProductGrid({
           <div
             key={rowIndex}
             data-row={rowIndex}
-            className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 transition-all duration-700 ${
+            className={`grid grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-700 ${
               visibleRows.has(rowIndex)
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-8"
