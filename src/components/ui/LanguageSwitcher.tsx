@@ -6,10 +6,12 @@ import { usePathname, useRouter } from "@/i18n/routing";
 import { locales, localeNames, type Locale } from "@/i18n/config";
 import { ChevronDown } from "lucide-react";
 
+import Image from "next/image";
+
 const localeFlags: Record<Locale, string> = {
-  vi: "🇻🇳",
-  en: "🇬🇧",
-  zh: "🇨🇳",
+  vi: "https://flagcdn.com/w40/vn.png",
+  en: "https://flagcdn.com/w40/gb.png",
+  zh: "https://flagcdn.com/w40/cn.png",
 };
 
 export function LanguageSwitcher() {
@@ -47,7 +49,13 @@ export function LanguageSwitcher() {
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-zinc-300 hover:text-white rounded transition-colors"
         >
-          <span>{localeFlags[locale]}</span>
+          <Image 
+            src={localeFlags[locale]} 
+            alt={locale} 
+            width={20} 
+            height={15} 
+            className="rounded-sm object-cover shadow-sm"
+          />
           <span>{localeNames[locale]}</span>
           <ChevronDown
             className={`w-3.5 h-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`}
@@ -66,7 +74,13 @@ export function LanguageSwitcher() {
                     : "text-zinc-300 hover:bg-zinc-700 hover:text-white"
                 }`}
               >
-                <span>{localeFlags[loc]}</span>
+                <Image 
+                  src={localeFlags[loc]} 
+                  alt={loc} 
+                  width={20} 
+                  height={15} 
+                  className="rounded-sm object-cover shadow-sm"
+                />
                 <span>{localeNames[loc]}</span>
               </button>
             ))}

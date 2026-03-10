@@ -19,6 +19,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "flagcdn.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "hasron-starbucks-shop.s3.ap-southeast-1.amazonaws.com",
         port: "",
         pathname: "/**",

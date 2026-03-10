@@ -102,7 +102,7 @@ export function Header({ className = "" }: HeaderProps) {
 
         {/* Desktop Layout */}
         <div className="hidden md:flex container mx-auto px-6 py-4 items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center">
             {isHydrated && (
               <img
                 src="/logo-32.png"
@@ -123,28 +123,30 @@ export function Header({ className = "" }: HeaderProps) {
           <div className="flex items-center gap-6">
             <Link
               href="/"
-              className={`text-lg font-medium hover:text-zinc-300 transition-colors ${
-                pathname === "/" ? "text-white" : "text-zinc-400"
+              className={`transition-colors tracking-wider ${
+                pathname === "/" 
+                  ? "text-xl font-bold text-white tracking-widest" 
+                  : "text-lg font-medium text-zinc-400 hover:text-zinc-300"
               }`}
             >
               {t("home")}
             </Link>
             <Link
               href="/products"
-              className={`font-light tracking-wider transition-colors ${
+              className={`transition-colors tracking-wider ${
                 pathname === "/products"
-                  ? "text-lg text-white"
-                  : "text-lg text-zinc-400 hover:text-zinc-300"
+                  ? "text-xl font-bold text-white tracking-widest"
+                  : "text-lg font-medium text-zinc-400 hover:text-zinc-300"
               }`}
             >
               {t("products")}
             </Link>
             <Link
               href="/contacts"
-              className={`font-light tracking-wider transition-colors ${
+              className={`transition-colors tracking-wider ${
                 pathname === "/contacts"
-                  ? "text-lg text-white"
-                  : "text-lg text-zinc-400 hover:text-zinc-300"
+                  ? "text-xl font-bold text-white tracking-widest"
+                  : "text-lg font-medium text-zinc-400 hover:text-zinc-300"
               }`}
             >
               {t("contacts")}
@@ -202,7 +204,7 @@ export function Header({ className = "" }: HeaderProps) {
       >
         <div className="p-6">
           <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center">
               {isHydrated && (
                 <img
                   src="/logo-32.png"
@@ -237,10 +239,10 @@ export function Header({ className = "" }: HeaderProps) {
             <Link
               href="/"
               onClick={() => setIsSidebarOpen(false)}
-              className={`block py-3 px-4 text-lg rounded-lg transition-colors ${
+              className={`block py-3 px-4 rounded-lg transition-colors ${
                 pathname === "/"
-                  ? "bg-zinc-800 text-white"
-                  : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                  ? "bg-zinc-800 text-white text-xl font-bold tracking-widest"
+                  : "text-lg font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white tracking-wider"
               }`}
             >
               <div className="flex items-center gap-3">
@@ -257,10 +259,10 @@ export function Header({ className = "" }: HeaderProps) {
             <Link
               href="/products"
               onClick={() => setIsSidebarOpen(false)}
-              className={`block py-3 px-4 text-lg rounded-lg transition-colors ${
+              className={`block py-3 px-4 rounded-lg transition-colors ${
                 pathname === "/products"
-                  ? "bg-zinc-800 text-white"
-                  : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                  ? "bg-zinc-800 text-white text-xl font-bold tracking-widest"
+                  : "text-lg font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white tracking-wider"
               }`}
             >
               <div className="flex items-center gap-3">
@@ -280,10 +282,10 @@ export function Header({ className = "" }: HeaderProps) {
             <Link
               href="/contacts"
               onClick={() => setIsSidebarOpen(false)}
-              className={`block py-3 px-4 text-lg rounded-lg transition-colors ${
+              className={`block py-3 px-4 rounded-lg transition-colors ${
                 pathname === "/contacts"
-                  ? "bg-zinc-800 text-white"
-                  : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                  ? "bg-zinc-800 text-white text-xl font-bold tracking-widest"
+                  : "text-lg font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white tracking-wider"
               }`}
             >
               <div className="flex items-center gap-3">
