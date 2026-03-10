@@ -12,13 +12,13 @@ interface BreadcrumbProps {
 
 export function Breadcrumb({ items }: BreadcrumbProps) {
   return (
-    <nav className="flex items-center gap-2 text-sm">
+    <nav className="flex items-center gap-2 text-sm overflow-x-auto whitespace-nowrap scrollbar-hide py-1">
       {items.map((item, index) => {
         const isFirst = index === 0;
         const isLast = index === items.length - 1;
 
         return (
-          <div key={index} className="flex items-center gap-2">
+          <div key={index} className="flex items-center gap-2 shrink-0">
             {item.href ? (
               <Link
                 href={item.href}
@@ -33,7 +33,7 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
                 {item.label}
               </span>
             )}
-            {!isLast && <ChevronRight className="w-4 h-4 text-zinc-600" />}
+            {!isLast && <ChevronRight className="w-4 h-4 text-zinc-600 shrink-0" />}
           </div>
         );
       })}
