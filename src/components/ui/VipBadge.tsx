@@ -9,9 +9,9 @@ interface VipBadgeProps {
 
 export function VipBadge({ size = "md", className = "" }: VipBadgeProps) {
   const imageSizes = {
-    sm: { width: 24, height: 24 },
-    md: { width: 32, height: 32 },
-    lg: { width: 40, height: 40 },
+    sm: { width: 32, height: 32 },
+    md: { width: 44, height: 44 },
+    lg: { width: 56, height: 56 },
   };
 
   return (

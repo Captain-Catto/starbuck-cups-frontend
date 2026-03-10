@@ -115,15 +115,15 @@ export function Header({ className = "" }: HeaderProps) {
                 }}
               />
             )}
-            <span className="text-lg font-semibold text-white">
-              H&apos;s shoucangpu
+            <span className="text-2xl font-semibold text-white">
+              &apos;s shoucangpu
             </span>
           </Link>
 
           <div className="flex items-center gap-6">
             <Link
               href="/"
-              className={`text-sm font-medium hover:text-zinc-300 transition-colors ${
+              className={`text-lg font-medium hover:text-zinc-300 transition-colors ${
                 pathname === "/" ? "text-white" : "text-zinc-400"
               }`}
             >
@@ -133,8 +133,8 @@ export function Header({ className = "" }: HeaderProps) {
               href="/products"
               className={`font-light tracking-wider transition-colors ${
                 pathname === "/products"
-                  ? "text-sm text-white"
-                  : "text-sm text-zinc-400 hover:text-zinc-300"
+                  ? "text-lg text-white"
+                  : "text-lg text-zinc-400 hover:text-zinc-300"
               }`}
             >
               {t("products")}
@@ -143,8 +143,8 @@ export function Header({ className = "" }: HeaderProps) {
               href="/contacts"
               className={`font-light tracking-wider transition-colors ${
                 pathname === "/contacts"
-                  ? "text-sm text-white"
-                  : "text-sm text-zinc-400 hover:text-zinc-300"
+                  ? "text-lg text-white"
+                  : "text-lg text-zinc-400 hover:text-zinc-300"
               }`}
             >
               {t("contacts")}
@@ -215,8 +215,8 @@ export function Header({ className = "" }: HeaderProps) {
                   }}
                 />
               )}
-              <div className="text-lg font-bold text-white tracking-wider">
-                H&apos;s shoucangpu
+              <div className="text-2xl font-bold text-white tracking-wider">
+                shoucangpu
               </div>
             </div>
             <button
@@ -237,7 +237,7 @@ export function Header({ className = "" }: HeaderProps) {
             <Link
               href="/"
               onClick={() => setIsSidebarOpen(false)}
-              className={`block py-3 px-4 rounded-lg transition-colors ${
+              className={`block py-3 px-4 text-lg rounded-lg transition-colors ${
                 pathname === "/"
                   ? "bg-zinc-800 text-white"
                   : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
@@ -257,7 +257,7 @@ export function Header({ className = "" }: HeaderProps) {
             <Link
               href="/products"
               onClick={() => setIsSidebarOpen(false)}
-              className={`block py-3 px-4 rounded-lg transition-colors ${
+              className={`block py-3 px-4 text-lg rounded-lg transition-colors ${
                 pathname === "/products"
                   ? "bg-zinc-800 text-white"
                   : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
@@ -280,7 +280,7 @@ export function Header({ className = "" }: HeaderProps) {
             <Link
               href="/contacts"
               onClick={() => setIsSidebarOpen(false)}
-              className={`block py-3 px-4 rounded-lg transition-colors ${
+              className={`block py-3 px-4 text-lg rounded-lg transition-colors ${
                 pathname === "/contacts"
                   ? "bg-zinc-800 text-white"
                   : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
@@ -300,7 +300,7 @@ export function Header({ className = "" }: HeaderProps) {
           </div>
 
           <div className="mt-8 pt-8 border-t border-zinc-700">
-            <h3 className="text-sm font-medium text-zinc-400 mb-4">
+            <h3 className="text-base font-medium text-zinc-400 mb-4">
               {t("quickActions")}
             </h3>
             <div className="space-y-2">
@@ -309,7 +309,7 @@ export function Header({ className = "" }: HeaderProps) {
                   setIsSidebarOpen(false);
                   handleSearchClick();
                 }}
-                className="w-full text-left py-3 px-4 rounded-lg transition-colors text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-3"
+                className="w-full text-left py-3 px-4 text-lg rounded-lg transition-colors text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-3"
                 aria-label={t("searchProductsAria")}
               >
                 <Search className="w-5 h-5" />
@@ -320,7 +320,7 @@ export function Header({ className = "" }: HeaderProps) {
                   setIsSidebarOpen(false);
                   dispatch(openCart());
                 }}
-                className="w-full text-left py-3 px-4 rounded-lg transition-colors text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                className="w-full text-left py-3 px-4 text-lg rounded-lg transition-colors text-zinc-300 hover:bg-zinc-800 hover:text-white"
                 aria-label={t("shoppingCartAria")}
               >
                 <div className="flex items-center justify-between w-full">
