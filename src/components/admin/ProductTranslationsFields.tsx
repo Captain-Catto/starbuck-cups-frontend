@@ -25,9 +25,9 @@ interface LocaleConfig {
 }
 
 const LOCALES: LocaleConfig[] = [
-  { code: "vi", flag: "VN", label: "Tiếng Việt", sublabel: "(Mặc định)", requiredName: true },
-  { code: "en", flag: "GB", label: "English" },
-  { code: "zh", flag: "CN", label: "Chinese" },
+  { code: "vi", flag: "🇻🇳", label: "Tiếng Việt", sublabel: "(Mặc định)", requiredName: true },
+  { code: "en", flag: "🇬🇧", label: "Tiếng Anh" },
+  { code: "zh", flag: "🇨🇳", label: "Tiếng Trung" },
 ];
 
 interface ProductTranslationsFieldsProps {
@@ -71,11 +71,11 @@ export function ProductTranslationsFields({
           key={locale.code}
           className={activeLocale === locale.code ? "space-y-4" : "hidden"}
         >
-          {/* Product Name */}
+          {/* Tên sản phẩm */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {locale.requiredName && <span className="text-red-500">* </span>}
-              Product Name
+              Tên sản phẩm ({locale.label})
             </label>
             <input
               type="text"
@@ -86,16 +86,16 @@ export function ProductTranslationsFields({
                 locale.code === "vi"
                   ? "Tên sản phẩm tiếng Việt"
                   : locale.code === "en"
-                  ? "English product name"
-                  : "产品名称"
+                  ? "Tên sản phẩm tiếng Anh"
+                  : "Tên sản phẩm tiếng Trung"
               }
             />
           </div>
 
-          {/* Product Description - Rich Text Editor */}
+          {/* Mô tả sản phẩm */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Product Description
+              Mô tả sản phẩm ({locale.label})
             </label>
             <RichTextEditor
               value={translations[locale.code].description}
@@ -106,8 +106,8 @@ export function ProductTranslationsFields({
                 locale.code === "vi"
                   ? "Nhập mô tả chi tiết sản phẩm..."
                   : locale.code === "en"
-                  ? "Enter product description..."
-                  : "输入产品描述..."
+                  ? "Nhập mô tả tiếng Anh..."
+                  : "Nhập mô tả tiếng Trung..."
               }
               height={300}
             />
@@ -117,7 +117,7 @@ export function ProductTranslationsFields({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
-                Meta title
+                Tiêu đề SEO
               </label>
               <input
                 type="text"
@@ -126,13 +126,13 @@ export function ProductTranslationsFields({
                   onChange(locale.code, "metaTitle", e.target.value)
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="Meta title"
+                placeholder="Tiêu đề SEO"
               />
             </div>
 
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
-                Meta description
+                Mô tả SEO
               </label>
               <input
                 type="text"
@@ -141,7 +141,7 @@ export function ProductTranslationsFields({
                   onChange(locale.code, "metaDescription", e.target.value)
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="Meta description"
+                placeholder="Mô tả SEO"
               />
             </div>
           </div>

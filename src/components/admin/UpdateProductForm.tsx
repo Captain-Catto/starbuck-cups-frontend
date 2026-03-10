@@ -1,7 +1,6 @@
 ﻿"use client";
 
 import React, { useState, useCallback } from "react";
-import dynamic from "next/dynamic";
 import { X, Upload, ImageIcon } from "lucide-react";
 import type { Category, Color, Capacity } from "@/types";
 import { useUpdateProduct } from "@/hooks/business/useUpdateProduct";
@@ -9,14 +8,7 @@ import { uploadAPI } from "@/lib/api/upload";
 import ImageReorder from "./ImageReorder";
 import { VipToggle } from "./VipRadio";
 import { FeaturedToggle } from "./FeaturedToggle";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ProductTranslationsFields } from "./ProductTranslationsFields";
-
-// Dynamic import for RichTextEditor to reduce initial bundle
-const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
-  ssr: false,
-  loading: () => <div className="w-full h-[300px] border rounded-md flex items-center justify-center"><LoadingSpinner /></div>
-});
 
 interface UpdateProductFormProps {
   productId: string;
@@ -140,39 +132,7 @@ export function UpdateProductForm({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Product Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Tên sản phẩm <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => updateField("name", e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-              errors.name ? "border-red-500" : "border-gray-300"
-            }`}
-            placeholder="Nhập tên sản phẩm"
-            required
-          />
-          {errors.name && (
-            <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-          )}
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Mô tả
-          </label>
-          <RichTextEditor
-            value={formData.description || ""}
-            onChange={(htmlContent) => updateField("description", htmlContent)}
-            placeholder="Nhập mô tả chi tiết sản phẩm..."
-            height={300}
-          />
-        </div>
-
+        {/* Đa ngôn ngữ: Tên, Mô tả, SEO */}
         <ProductTranslationsFields
           translations={formData.translations}
           onChange={updateTranslation}
