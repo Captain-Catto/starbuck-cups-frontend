@@ -179,7 +179,7 @@ export function PropertyGallery({
         <div className="relative">
           {/* Main Image */}
           <div
-            className="relative h-96 w-full group cursor-pointer"
+            className="relative h-[350px] md:h-[500px] lg:h-[600px] w-full group cursor-pointer"
             onClick={openModal}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}

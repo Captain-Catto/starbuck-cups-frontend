@@ -74,14 +74,6 @@ export function Header({ className = "" }: HeaderProps) {
             <MenuIcon className="w-5 h-5" />
           </button>
 
-          <Link
-            href="/"
-            aria-label={t("goToHome")}
-            className="text-sm font-semibold text-white tracking-wide"
-          >
-            H&apos;s
-          </Link>
-
           <div className="flex items-center gap-2">
             <button
               onClick={handleSearchClick}
@@ -164,10 +156,10 @@ export function Header({ className = "" }: HeaderProps) {
 
             <button
               onClick={handleSearchClick}
-              className="flex items-center gap-2 text-sm font-medium text-white hover:text-zinc-300 transition-colors"
+              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors"
+              aria-label={t("searchProductsAria")}
             >
-              <Search className="w-4 h-4" />
-              {t("search")}
+              <Search className="w-5 h-5" />
             </button>
 
             <button
@@ -175,11 +167,16 @@ export function Header({ className = "" }: HeaderProps) {
                 dispatch(openCart());
                 trackCartAction("open");
               }}
-              className="text-sm font-medium text-white hover:text-zinc-300 transition-colors"
+              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors relative"
+              aria-label={t("shoppingCartAria")}
             >
-              {t("cart")}{" "}
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+              </svg>
               {isHydrated && totalCartItems > 0 && (
-                <span className="text-zinc-500">({totalCartItems})</span>
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  {totalCartItems}
+                </span>
               )}
             </button>
           </div>
@@ -313,10 +310,10 @@ export function Header({ className = "" }: HeaderProps) {
                   handleSearchClick();
                 }}
                 className="w-full text-left py-3 px-4 rounded-lg transition-colors text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                aria-label={t("searchProductsAria")}
               >
                 <div className="flex items-center gap-3">
                   <Search className="w-5 h-5" />
-                  {t("searchProducts")}
                 </div>
               </button>
               <button
@@ -325,18 +322,16 @@ export function Header({ className = "" }: HeaderProps) {
                   dispatch(openCart());
                 }}
                 className="w-full text-left py-3 px-4 rounded-lg transition-colors text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                aria-label={t("shoppingCartAria")}
               >
                 <div className="flex items-center gap-3 justify-between">
-                  <div className="flex items-center gap-3">
-                    <svg
-                      className="w-5 h-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                    </svg>
-                    {t("consultationCart")}
-                  </div>
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                  </svg>
                   {isHydrated && totalCartItems > 0 && (
                     <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                       {totalCartItems}
