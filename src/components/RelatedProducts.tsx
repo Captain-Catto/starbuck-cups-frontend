@@ -190,17 +190,17 @@ export default function RelatedProducts() {
 
       <Swiper
         modules={[Navigation]}
-        spaceBetween={16}
-        slidesPerView={2}
+        spaceBetween={12}
+        slidesPerView={3}
         breakpoints={{
           640: {
-            slidesPerView: 2,
-          },
-          768: {
             slidesPerView: 3,
           },
-          1024: {
+          768: {
             slidesPerView: 4,
+          },
+          1024: {
+            slidesPerView: 5,
           },
         }}
         navigation={{

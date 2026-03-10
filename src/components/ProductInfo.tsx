@@ -245,7 +245,7 @@ export default function ProductInfo() {
                   <button
                     key={pc.color.id}
                     onClick={() => handleColorClick(pc.color.slug)}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-zinc-800/50 border border-zinc-700 hover:bg-zinc-700 hover:border-zinc-500 rounded-lg transition-all"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-zinc-800/50 border border-zinc-700 hover:bg-zinc-700 hover:border-zinc-500 rounded-lg transition-all cursor-pointer"
                   >
                     <div
                       className="w-3.5 h-3.5 md:w-4 md:h-4 rounded-full border border-zinc-500 flex-shrink-0"
@@ -268,7 +268,7 @@ export default function ProductInfo() {
               </label>
               <button
                 onClick={() => handleCapacityClick(product.capacity!)}
-                className="inline-flex items-center px-2.5 py-1.5 bg-zinc-800/50 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:border-zinc-500 transition-all"
+                className="inline-flex items-center px-2.5 py-1.5 bg-zinc-800/50 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:border-zinc-500 transition-all cursor-pointer"
               >
                 <span className="text-xs md:text-sm text-white">
                   {product.capacity.name}
@@ -288,7 +288,7 @@ export default function ProductInfo() {
                   <button
                     key={pc.category.id}
                     onClick={() => handleCategoryClick(pc.category.slug)}
-                    className="inline-flex items-center px-2.5 py-1.5 bg-zinc-800/50 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:border-zinc-500 transition-all"
+                    className="inline-flex items-center px-2.5 py-1.5 bg-zinc-800/50 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:border-zinc-500 transition-all cursor-pointer"
                   >
                     <span className="text-xs md:text-sm text-white">{pc.category.name}</span>
                   </button>
@@ -307,7 +307,7 @@ export default function ProductInfo() {
             className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold text-sm md:text-base transition-colors ${
               product.stockQuantity === 0
                 ? "bg-zinc-700 text-zinc-400 cursor-not-allowed"
-                : "bg-white text-black hover:bg-zinc-100"
+                : "bg-white text-black hover:bg-zinc-100 cursor-pointer"
             }`}
           >
             <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
@@ -320,7 +320,7 @@ export default function ProductInfo() {
               href={product.productUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-medium text-xs md:text-sm border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 transition-all"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-medium text-xs md:text-sm border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 transition-all cursor-pointer"
             >
               <ExternalLink className="w-4 h-4" />
               {t("viewClip")}
