@@ -1,6 +1,8 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -20,7 +22,7 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
       },
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
 
     if (!response.ok) {
@@ -29,9 +31,13 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
+    // Cache based on locale to support multilingual content
+    const locale = searchParams.get("locale") || "vi";
     return NextResponse.json(data, {
       headers: {
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600",
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+        "Vary": "Accept-Language",
+        "X-Locale": locale,
       },
     });
   } catch {

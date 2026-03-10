@@ -4,7 +4,7 @@ import { buildProductsQueryParams } from "@/lib/products-query";
 import { setRequestLocale } from "next-intl/server";
 import type { Product } from "@/types";
 
-export const revalidate = 60;
+export const revalidate = 30;
 export const dynamic = "force-static";
 
 interface ProductsApiResponse {

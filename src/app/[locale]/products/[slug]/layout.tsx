@@ -16,7 +16,7 @@ interface Props {
 async function getProduct(slug: string): Promise<Product | null> {
   try {
     const response = await fetch(getApiUrl(`products/public/${slug}`), {
-      next: { revalidate: 300 },
+      next: { revalidate: 30 },
     });
     if (!response.ok) return null;
     const data = await response.json();

@@ -5,7 +5,7 @@ import HomePageComponent from "@/components/pages/HomePage";
 import { Category } from "@/types";
 import { getApiUrl } from "@/lib/api-config";
 
-export const revalidate = 300;
+export const revalidate = 30;
 export const dynamic = "force-static";
 
 interface HeroImageData {

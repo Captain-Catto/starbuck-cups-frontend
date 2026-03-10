@@ -9,16 +9,19 @@ export function FeaturedBadge({
   size = "md",
   className = "",
 }: FeaturedBadgeProps) {
-  // Featured badge sizes - max 24px
   const sizes = {
-    sm: { fontSize: "20px", lineHeight: "20px" },
-    md: { fontSize: "24px", lineHeight: "24px" },
-    lg: { fontSize: "24px", lineHeight: "24px" },
+    sm: "px-1.5 py-0.5 text-[10px]",
+    md: "px-2 py-0.5 text-xs",
+    lg: "px-2.5 py-1 text-sm",
   };
 
   return (
     <div className={`inline-block featured-shimmer ${className}`}>
-      <span style={sizes[size]}>⭐</span>
+      <span
+        className={`${sizes[size]} font-bold text-white bg-red-500 rounded-sm uppercase tracking-wide`}
+      >
+        HOT
+      </span>
 
       <style jsx>{`
         .featured-shimmer {

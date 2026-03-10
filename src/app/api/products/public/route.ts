@@ -39,8 +39,7 @@ export async function GET(request: NextRequest) {
       },
       {
         headers: {
-          // Cache for 1 hour on CDN, revalidate in background for 24 hours
-          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+          'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
         },
       }
     );

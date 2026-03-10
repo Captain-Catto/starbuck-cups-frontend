@@ -272,36 +272,7 @@ export default function ProductModal({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Product Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tên sản phẩm *
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => updateField("name", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Nhập tên sản phẩm"
-              required
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mô tả
-            </label>
-            <RichTextEditor
-              value={formData.description || ""}
-              onChange={(htmlContent) =>
-                updateField("description", htmlContent)
-              }
-              placeholder="Nhập mô tả chi tiết sản phẩm..."
-              height={300}
-            />
-          </div>
-
+          {/* Multilingual Product Name & Description */}
           <ProductTranslationsFields
             translations={formData.translations}
             onChange={updateTranslation}
