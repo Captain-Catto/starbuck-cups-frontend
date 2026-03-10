@@ -13,10 +13,8 @@ export interface GridConfig {
  * Reduced for larger, more readable product cards
  */
 export const getColumnsForWidth = (width: number): number => {
-  if (width >= 1536) return 6; // 2xl screens - reduced from 8
-  if (width >= 1280) return 5; // xl screens - reduced from 7
-  if (width >= 1024) return 4; // lg screens - reduced from 6
-  if (width >= 768) return 3; // md screens - reduced from 4
+  if (width >= 1024) return 4; // lg screens and above
+  if (width >= 768) return 3; // md screens
   if (width >= 640) return 2; // sm screens
   return 2; // mobile default
 };
@@ -76,14 +74,14 @@ export const getResponsiveGridClasses = (
 ): string => {
   switch (layout) {
     case "homepage":
-      return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4";
+      return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
 
     case "related":
       return "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
 
     case "products":
     default:
-      return "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4";
+      return "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
   }
 };
 
