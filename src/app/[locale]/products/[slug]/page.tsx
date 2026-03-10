@@ -4,15 +4,12 @@ import { Cart } from "@/components/ui/Cart";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import ProductInfo from "@/components/ProductInfo";
 import RelatedProducts from "@/components/RelatedProducts";
-import { useAppSelector } from "@/store";
 import { useTranslations } from "next-intl";
 import "@/components/ui/RichTextEditor.css";
 
 export default function ProductDetailPage() {
   const t = useTranslations("common");
   const tProduct = useTranslations("productDetail");
-
-  const { relatedProducts } = useAppSelector((state) => state.products);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -35,16 +32,14 @@ export default function ProductDetailPage() {
       </div>
 
       {/* Related Products - Full width */}
-      {relatedProducts.length > 0 && (
-        <div className="container mx-auto px-4 pb-8">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
-            <h3 className="text-xl font-bold text-white mb-6">
-              {tProduct("youMayLike")}
-            </h3>
-            <RelatedProducts />
-          </div>
+      <div className="container mx-auto px-4 pb-8">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+          <h3 className="text-xl font-bold text-white mb-6">
+            {tProduct("youMayLike")}
+          </h3>
+          <RelatedProducts />
         </div>
-      )}
+      </div>
 
       <Cart />
     </div>

@@ -240,10 +240,40 @@ export const fetchRelatedProducts = createAsyncThunk(
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
 
-      const finalProducts = [
+      let finalProducts = [
         ...sortedAllCategoryProducts,
         ...sortedAnyCategoryProducts,
       ].slice(0, limit);
+
+      // Fallback: if not enough related products, fetch latest products from any category
+      if (finalProducts.length < limit) {
+        const fallbackParams = new URLSearchParams();
+        fallbackParams.append("limit", limit.toString());
+        fallbackParams.append("inStock", "true");
+        fallbackParams.append("sortBy", "createdAt");
+        fallbackParams.append("sortOrder", "desc");
+        if (params.locale) {
+          fallbackParams.append("locale", params.locale);
+        }
+        if (params.currentProductId) {
+          fallbackParams.append("excludeProductId", params.currentProductId);
+        }
+
+        const fallbackResponse = await fetch(
+          `/api/products/public?${fallbackParams.toString()}`
+        );
+        const fallbackData = await fallbackResponse.json();
+
+        if (fallbackData.success) {
+          const fallbackProducts = (fallbackData.data?.items || []).filter(
+            (p: Product) => !finalProducts.some((fp) => fp.id === p.id)
+          );
+          finalProducts = [...finalProducts, ...fallbackProducts].slice(
+            0,
+            limit
+          );
+        }
+      }
 
       // Normalize products data to handle image structure
       const normalizedProducts = finalProducts.map((product: Product) => ({
