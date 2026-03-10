@@ -219,7 +219,7 @@ export default function ProductInfo() {
       {/* Product Images - Sticky on desktop */}
       <div className="lg:sticky lg:top-20 lg:self-start">
         <PropertyGallery
-          images={product.productImages?.map((img) => img.url) || []}
+          images={product.productImages?.slice().sort((a, b) => a.order - b.order).map((img) => img.url) || []}
           title={product.name}
           isVip={product.isVip}
         />
