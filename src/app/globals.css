@@ -3,7 +3,6 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --font-jetbrains-mono: "JetBrains Mono", monospace;
 }
 
 /* Hide scrollbar utility classes */
@@ -43,28 +42,11 @@
   background: #71717a;
 }
 
-/* JetBrains Mono Font Family - Load only essential weights */
-@font-face {
-  font-family: "JetBrains Mono";
-  src: url("/font/JetBrainsMono-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "JetBrains Mono";
-  src: url("/font/JetBrainsMono-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -77,7 +59,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "JetBrains Mono", "Soehne Mono", monospace;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Zoom in animation for lazy loaded cards */

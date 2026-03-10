@@ -3,10 +3,17 @@ import React from "react";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { Inter } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import StoreProvider from "@/components/StoreProvider";
 import ClientLayout from "@/components/layout/ClientLayout";
 import { generateSEO, generateOrganizationStructuredData } from "@/lib/seo";
+
+const inter = Inter({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -94,20 +101,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <head>
-        <link
-          rel="preload"
-          href="/font/JetBrainsMono-Bold.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href="/font/JetBrainsMono-Regular.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
+
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover"
@@ -147,7 +141,7 @@ export default async function LocaleLayout({
           }}
         />
       </head>
-      <body>
+      <body className={`${inter.variable} antialiased font-sans`}>
         <NextIntlClientProvider messages={messages}>
           <StoreProvider>
             <ClientLayout>{children}</ClientLayout>
