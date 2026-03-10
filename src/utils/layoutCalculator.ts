@@ -74,14 +74,14 @@ export const getResponsiveGridClasses = (
 ): string => {
   switch (layout) {
     case "homepage":
-      return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
+      return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4";
 
     case "related":
-      return "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
+      return "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4";
 
     case "products":
     default:
-      return "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
+      return "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4";
   }
 };
 
