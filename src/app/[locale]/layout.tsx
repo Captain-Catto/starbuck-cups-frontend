@@ -12,7 +12,7 @@ import { generateSEO, generateOrganizationStructuredData } from "@/lib/seo";
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "700"],
-  variable: "--font-sans",
+  variable: "--font-jetbrains",
   display: "swap",
 });
 
@@ -142,7 +142,7 @@ export default async function LocaleLayout({
           }}
         />
       </head>
-      <body className={`${jetbrainsMono.className} antialiased`}>
+      <body className={`${jetbrainsMono.variable} antialiased font-sans`}>
         <NextIntlClientProvider messages={messages}>
           <StoreProvider>
             <ClientLayout>{children}</ClientLayout>
