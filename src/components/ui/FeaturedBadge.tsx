@@ -1,7 +1,7 @@
 "use client";
 
 interface FeaturedBadgeProps {
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }
 
@@ -10,6 +10,7 @@ export function FeaturedBadge({
   className = "",
 }: FeaturedBadgeProps) {
   const sizes = {
+    xs: "px-1.5 py-0 text-[10px]",
     sm: "px-2 py-0.5 text-xs",
     md: "px-2.5 py-1 text-sm",
     lg: "px-3 py-1.5 text-base",

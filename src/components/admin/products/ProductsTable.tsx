@@ -169,10 +169,10 @@ const ProductRow = memo(
                 <ImageIcon className="w-6 h-6 text-gray-400" />
               </div>
               <div className="absolute -top-1 -left-1 z-10">
-                <ConditionalFeaturedBadge product={product} size="sm" />
+                <ConditionalFeaturedBadge product={product} size="xs" />
               </div>
               <div className="absolute -top-1 -right-1 z-10">
-                <ConditionalVipBadge product={product} size="sm" />
+                <ConditionalVipBadge product={product} size="xs" />
               </div>
             </div>
             <div className="ml-4">

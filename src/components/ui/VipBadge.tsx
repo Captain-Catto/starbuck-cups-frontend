@@ -3,12 +3,13 @@
 import React from "react";
 
 interface VipBadgeProps {
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }
 
 export function VipBadge({ size = "md", className = "" }: VipBadgeProps) {
   const imageSizes = {
+    xs: { width: 20, height: 20 },
     sm: { width: 32, height: 32 },
     md: { width: 44, height: 44 },
     lg: { width: 56, height: 56 },
