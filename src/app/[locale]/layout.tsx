@@ -142,7 +142,7 @@ export default async function LocaleLayout({
           }}
         />
       </head>
-      <body className={`${jetbrainsMono.variable} antialiased font-sans`}>
+      <body className={`${jetbrainsMono.className} antialiased`}>
         <NextIntlClientProvider messages={messages}>
           <StoreProvider>
             <ClientLayout>{children}</ClientLayout>
