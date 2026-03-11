@@ -160,7 +160,7 @@ export default function HomeProductGrid({
         {[...Array(3)].map((_, rowIndex) => (
           <div
             key={rowIndex}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-1 md:gap-4"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4"
           >
             {[...Array(4)].map((_, colIndex) => (
               <div
@@ -203,7 +203,7 @@ export default function HomeProductGrid({
           <div
             key={rowIndex}
             data-row={rowIndex}
-            className={`grid grid-cols-2 lg:grid-cols-4 gap-1 md:gap-4 transition-all duration-700 ${
+            className={`grid grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-700 ${
               visibleRows.has(rowIndex)
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-8"
