@@ -3,15 +3,16 @@ import React from "react";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
-import { Inter } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import StoreProvider from "@/components/StoreProvider";
 import ClientLayout from "@/components/layout/ClientLayout";
 import { generateSEO, generateOrganizationStructuredData } from "@/lib/seo";
 
-const inter = Inter({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin", "vietnamese"],
-  variable: "--font-inter",
+  weight: ["400", "700"],
+  variable: "--font-sans",
   display: "swap",
 });
 
@@ -141,7 +142,7 @@ export default async function LocaleLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} antialiased font-sans`}>
+      <body className={`${jetbrainsMono.variable} antialiased font-sans`}>
         <NextIntlClientProvider messages={messages}>
           <StoreProvider>
             <ClientLayout>{children}</ClientLayout>
