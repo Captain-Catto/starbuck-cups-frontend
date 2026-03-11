@@ -100,7 +100,7 @@ export default async function LocaleLayout({
     !!gaMeasurementId && gaMeasurementId !== "G-XXXXXXXXXX";
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={`${jetbrainsMono.variable}`}>
       <head>
 
         <meta
@@ -142,7 +142,7 @@ export default async function LocaleLayout({
           }}
         />
       </head>
-      <body className={`${jetbrainsMono.variable} antialiased font-sans`}>
+      <body className="antialiased font-sans">
         <NextIntlClientProvider messages={messages}>
           <StoreProvider>
             <ClientLayout>{children}</ClientLayout>
