@@ -63,8 +63,8 @@ const HomePage: React.FC<HomePageProps> = ({
 
       {/* Categories Section */}
       <section className="py-4 md:py-8">
-        <div className="container mx-auto px-2 md:px-6">
-          <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6 px-2">{t("latestProducts")}</h2>
+        <div className="container mx-auto px-6">
+          <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6">{t("latestProducts")}</h2>
 
           {/* Products Grid */}
           <Suspense fallback={<ProductGridSkeleton />}>
