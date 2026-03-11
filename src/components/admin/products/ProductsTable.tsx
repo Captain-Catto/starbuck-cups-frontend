@@ -133,7 +133,7 @@ const ProductRow = memo(
     const firstImage = getFirstProductImage(product.productImages);
 
     return (
-      <tr className="hover:bg-gray-700">
+      <tr className="hover:bg-gray-700 cursor-pointer">
         <td className="px-6 py-4">
           <input
             type="checkbox"
@@ -176,7 +176,12 @@ const ProductRow = memo(
               </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-white">{product.name}</div>
+              <button
+                onClick={() => onEditProduct(product)}
+                className="text-sm font-medium text-white hover:text-green-400 hover:underline transition-colors text-left"
+              >
+                {product.name}
+              </button>
               <div className="text-sm text-gray-300">{product.slug}</div>
             </div>
           </div>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMemo } from "react";
 import Link from "next/link";
@@ -252,7 +252,7 @@ export function CustomerList({
           </thead>
           <tbody className="bg-gray-800 divide-y divide-gray-700">
             {filteredAndSortedCustomers.map((customer) => (
-              <tr key={customer.id} className="hover:bg-gray-700">
+              <tr key={customer.id} className="hover:bg-gray-700 cursor-pointer">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="max-w-48">
                     <div className="flex items-center gap-2">

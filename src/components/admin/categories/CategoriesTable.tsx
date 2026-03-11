@@ -73,7 +73,7 @@ export function CategoriesTable({
               </tr>
             ) : (
               categories.map((category) => (
-                <tr key={category.id} className="hover:bg-gray-700">
+                <tr key={category.id} className="hover:bg-gray-700 cursor-pointer">
                   <td className="px-6 py-4">
                     <div className="text-sm font-medium text-white">
                       {category.name}

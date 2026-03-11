@@ -78,7 +78,7 @@ export function CapacitiesTable({
               </tr>
             ) : (
               capacities.map((capacity) => (
-                <tr key={capacity.id} className="hover:bg-gray-700">
+                <tr key={capacity.id} className="hover:bg-gray-700 cursor-pointer">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-white">

@@ -67,7 +67,7 @@ export function ColorsTable({
             </thead>
             <tbody className="bg-gray-800 divide-y divide-gray-700">
               {colors.map((color) => (
-                <tr key={color.id} className="hover:bg-gray-700">
+                <tr key={color.id} className="hover:bg-gray-700 cursor-pointer">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       <div

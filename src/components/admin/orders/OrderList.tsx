@@ -128,7 +128,7 @@ interface OrderRowProps {
 const OrderRow = memo(
   function OrderRow({ order }: OrderRowProps) {
     return (
-      <tr className="hover:bg-gray-700">
+      <tr className="hover:bg-gray-700 cursor-pointer">
         <td className="px-6 py-4 whitespace-nowrap">
           <div>
             <div className="text-sm font-medium text-white">{order.orderNumber}</div>

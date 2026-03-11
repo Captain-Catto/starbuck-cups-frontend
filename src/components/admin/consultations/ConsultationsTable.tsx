@@ -99,7 +99,7 @@ export function ConsultationsTable({
                 const StatusIcon = statusInfo.icon;
 
                 return (
-                  <tr key={consultation.id} className="hover:bg-gray-700">
+                  <tr key={consultation.id} className="hover:bg-gray-700 cursor-pointer">
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
