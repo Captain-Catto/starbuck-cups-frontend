@@ -30,7 +30,7 @@ export function WelcomeSection({
           <button
             onClick={onRefresh}
             disabled={loading}
-            className="p-3 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl transition-colors disabled:opacity-50 border border-gray-600"
+            className="p-3 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl transition-colors disabled:opacity-50 border border-gray-600 cursor-pointer"
             title="Làm mới dữ liệu"
           >
             <RefreshCw

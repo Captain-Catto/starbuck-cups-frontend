@@ -126,7 +126,7 @@ export function NotificationDropdown({
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllAsRead}
-              className="text-xs text-white hover:text-gray-300 flex items-center gap-1"
+              className="text-xs text-white hover:text-gray-300 flex items-center gap-1 cursor-pointer"
             >
               <CheckCircle2 className="w-3 h-3" />
               Đánh dấu tất cả đã đọc
@@ -134,7 +134,7 @@ export function NotificationDropdown({
           )}
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-300"
+            className="text-gray-400 hover:text-gray-300 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>

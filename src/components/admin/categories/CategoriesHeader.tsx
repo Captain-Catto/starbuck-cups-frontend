@@ -13,7 +13,7 @@ export function CategoriesHeader({ onAddCategory }: CategoriesHeaderProps) {
       </div>
       <button
         onClick={onAddCategory}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
       >
         <Plus className="w-5 h-5" />
         Thêm danh mục

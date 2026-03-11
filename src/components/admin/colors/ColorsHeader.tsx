@@ -13,7 +13,7 @@ export function ColorsHeader({ onAddColor }: ColorsHeaderProps) {
       </div>
       <button
         onClick={onAddColor}
-        className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors cursor-pointer"
       >
         <Plus className="w-4 h-4" />
         Thêm màu mới

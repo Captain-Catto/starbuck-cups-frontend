@@ -130,7 +130,7 @@ export function ColorConfirmModal({
           <div className="flex gap-3">
             <button
               onClick={onCancel}
-              className="flex-1 px-4 py-2 border border-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              className="flex-1 px-4 py-2 border border-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
             >
               {action === "delete" ? "Hủy" : "Hủy"}
             </button>
@@ -139,7 +139,7 @@ export function ColorConfirmModal({
             {action === "toggle" && (
               <button
                 onClick={onConfirm}
-                className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
+                className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors cursor-pointer"
               >
                 Xác nhận tắt
               </button>
@@ -150,7 +150,7 @@ export function ColorConfirmModal({
               (color._count?.productColors || 0) === 0 && (
                 <button
                   onClick={onConfirm}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition-colors"
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition-colors cursor-pointer"
                 >
                   Xác nhận xóa
                 </button>

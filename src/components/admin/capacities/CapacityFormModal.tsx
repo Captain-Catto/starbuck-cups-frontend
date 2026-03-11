@@ -45,7 +45,7 @@ export function CapacityFormModal({
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-300"
+            className="text-gray-400 hover:text-gray-300 cursor-pointer"
           >
             <X className="w-6 h-6" />
           </button>
@@ -128,14 +128,14 @@ export function CapacityFormModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-300 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors"
+              className="px-4 py-2 text-gray-300 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={actionLoading === "submit"}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2 transition-colors"
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2 transition-colors cursor-pointer"
             >
               {actionLoading === "submit" && (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

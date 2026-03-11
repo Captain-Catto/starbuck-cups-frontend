@@ -139,7 +139,7 @@ export function CustomerSelectionStep({
             </div>
             <button
               onClick={handleClearCustomer}
-              className="ml-auto text-red-400 hover:text-red-300"
+              className="ml-auto text-red-400 hover:text-red-300 cursor-pointer"
             >
               Bỏ chọn
             </button>

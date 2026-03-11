@@ -274,14 +274,14 @@ export function PhoneManager({ customerId }: PhoneManagerProps) {
             <div className="flex gap-2">
               <button
                 onClick={handleAddPhone}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer"
               >
                 <Check className="h-4 w-4" />
                 Lưu
               </button>
               <button
                 onClick={cancelEdit}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
               >
                 <X className="h-4 w-4" />
                 Hủy
@@ -366,7 +366,7 @@ export function PhoneManager({ customerId }: PhoneManagerProps) {
                     </button>
                     <button
                       onClick={cancelEdit}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
                     >
                       <X className="h-4 w-4" />
                       Hủy

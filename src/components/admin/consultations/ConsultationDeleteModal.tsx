@@ -39,14 +39,14 @@ export function ConsultationDeleteModal({
           <button
             onClick={onCancel}
             disabled={actionLoading === "delete"}
-            className="px-4 py-2 text-gray-300 border border-gray-600 rounded-lg hover:bg-gray-700 disabled:opacity-50"
+            className="px-4 py-2 text-gray-300 border border-gray-600 rounded-lg hover:bg-gray-700 disabled:opacity-50 cursor-pointer"
           >
             Hủy
           </button>
           <button
             onClick={onConfirm}
             disabled={actionLoading === "delete"}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
           >
             {actionLoading === "delete" && (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

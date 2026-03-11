@@ -341,14 +341,14 @@ export function CustomerList({
                   <div className="flex items-center justify-end gap-2">
                     <Link
                       href={`/admin/customers/${customer.id}`}
-                      className="text-white hover:bg-gray-700 p-1 rounded transition-colors"
+                      className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer"
                       title="Xem chi tiết"
                     >
                       <Eye className="w-4 h-4" />
                     </Link>
                     <Link
                       href={`/admin/customers/${customer.id}?edit=true`}
-                      className="text-white hover:bg-gray-700 p-1 rounded transition-colors"
+                      className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer"
                       title="Chỉnh sửa"
                     >
                       <Edit className="w-4 h-4" />

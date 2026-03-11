@@ -189,7 +189,7 @@ const OrderRow = memo(
         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
           <Link
             href={`/admin/orders/${order.id}`}
-            className="inline-flex items-center gap-1 px-3 py-2 text-sm text-white hover:bg-gray-700 rounded-lg transition-colors"
+            className="inline-flex items-center gap-1 px-3 py-2 text-sm text-white hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
           >
             <Eye className="w-4 h-4" />
             Chi tiết

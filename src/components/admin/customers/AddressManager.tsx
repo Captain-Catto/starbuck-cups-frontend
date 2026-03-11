@@ -370,7 +370,7 @@ export function AddressManager({ customerId }: AddressManagerProps) {
             <>
               <button
                 onClick={handleStartAdd}
-                className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+                className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 Thêm địa chỉ
@@ -536,14 +536,14 @@ export function AddressManager({ customerId }: AddressManagerProps) {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={handleSave}
-                      className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                      className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 cursor-pointer"
                     >
                       <Save className="w-4 h-4" />
                       Lưu
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="flex items-center gap-2 px-4 py-2 text-white bg-gray-600 border border-gray-500 rounded-lg hover:bg-gray-500"
+                      className="flex items-center gap-2 px-4 py-2 text-white bg-gray-600 border border-gray-500 rounded-lg hover:bg-gray-500 cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                       Hủy
@@ -755,14 +755,14 @@ export function AddressManager({ customerId }: AddressManagerProps) {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleSave}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 cursor-pointer"
                   >
                     <Save className="w-4 h-4" />
                     Lưu địa chỉ
                   </button>
                   <button
                     onClick={handleCancel}
-                    className="flex items-center gap-2 px-4 py-2 text-white bg-gray-600 border border-gray-500 rounded-lg hover:bg-gray-500"
+                    className="flex items-center gap-2 px-4 py-2 text-white bg-gray-600 border border-gray-500 rounded-lg hover:bg-gray-500 cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                     Hủy
@@ -776,7 +776,7 @@ export function AddressManager({ customerId }: AddressManagerProps) {
           {!isAdding && !editingId && !isEditing && (
             <button
               onClick={handleStartAdd}
-              className="w-full p-4 border-2 border-dashed border-gray-600 rounded-lg text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-colors"
+              className="w-full p-4 border-2 border-dashed border-gray-600 rounded-lg text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-colors cursor-pointer"
             >
               <div className="flex items-center justify-center gap-2">
                 <Plus className="w-5 h-5" />
@@ -817,7 +817,7 @@ export function AddressManager({ customerId }: AddressManagerProps) {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={cancelDelete}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 cursor-pointer"
               >
                 Hủy
               </button>

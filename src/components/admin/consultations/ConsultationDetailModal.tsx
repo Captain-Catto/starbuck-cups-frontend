@@ -67,7 +67,7 @@ export function ConsultationDetailModal({
           <h3 className="text-lg font-semibold text-white">Chi tiết tư vấn</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-300"
+            className="text-gray-400 hover:text-gray-300 cursor-pointer"
           >
             <XCircle className="w-6 h-6" />
           </button>
@@ -164,7 +164,7 @@ export function ConsultationDetailModal({
                               item.product?.slug || item.productId
                             }`}
                             target="_blank"
-                            className="text-sm font-medium text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1"
+                            className="text-sm font-medium text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1 cursor-pointer"
                           >
                             {item.productName}
                             <ExternalLink className="w-3 h-3" />
@@ -244,14 +244,14 @@ export function ConsultationDetailModal({
           <div className="flex justify-end gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-300 border border-gray-600 rounded-lg hover:bg-gray-700"
+              className="px-4 py-2 text-gray-300 border border-gray-600 rounded-lg hover:bg-gray-700 cursor-pointer"
             >
               Đóng
             </button>
             <button
               onClick={onUpdate}
               disabled={actionLoading === "response"}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
             >
               {actionLoading === "response" && (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

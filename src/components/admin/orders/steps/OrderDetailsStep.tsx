@@ -665,7 +665,7 @@ export function OrderDetailsStep({
 
           <button
             onClick={onAddItem}
-            className="w-full p-3 border-2 border-dashed border-gray-600 rounded-lg text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-colors"
+            className="w-full p-3 border-2 border-dashed border-gray-600 rounded-lg text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-colors cursor-pointer"
           >
             + Thêm sản phẩm
           </button>

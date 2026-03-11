@@ -18,7 +18,7 @@ export function NotificationHeader({
       <div className="flex items-center gap-4">
         <button
           onClick={onBack}
-          className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+          className="p-2 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
@@ -37,7 +37,7 @@ export function NotificationHeader({
         {hasUnread && (
           <button
             onClick={onMarkAllAsRead}
-            className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 cursor-pointer"
           >
             <CheckCircle2 className="w-4 h-4 text-white" />
             Đánh dấu tất cả đã đọc
@@ -45,7 +45,7 @@ export function NotificationHeader({
         )}
         <button
           onClick={onClearAll}
-          className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 cursor-pointer"
         >
           <Trash2 className="w-4 h-4 text-white" />
           Xóa tất cả

@@ -45,7 +45,7 @@ export function EmptyState({
         <p className="text-gray-300 mb-4">{description}</p>
         <button
           onClick={onAction}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors mx-auto"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors mx-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           {actionLabel}

@@ -64,13 +64,13 @@ export function CustomerConfirmModal({
           <div className="flex gap-3">
             <button
               onClick={onCancel}
-              className="flex-1 px-4 py-2 border border-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              className="flex-1 px-4 py-2 border border-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
             >
               Hủy bỏ
             </button>
             <button
               onClick={onConfirm}
-              className="flex-1 px-4 py-2 text-white rounded-lg transition-colors bg-red-600 hover:bg-red-700"
+              className="flex-1 px-4 py-2 text-white rounded-lg transition-colors bg-red-600 hover:bg-red-700 cursor-pointer"
             >
               Xóa khách hàng
             </button>

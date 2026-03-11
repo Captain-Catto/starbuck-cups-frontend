@@ -87,7 +87,7 @@ export function BannerCard({
         <div className="mb-3">
           <div className="inline-flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full text-sm font-medium">
             {banner.buttonText}
-            <LinkIcon className="w-3 h-3" />
+            <LinkIcon className="w-3 h-3 cursor-pointer" />
           </div>
           <p className="text-xs text-gray-400 mt-1">→ {banner.buttonLink}</p>
         </div>
