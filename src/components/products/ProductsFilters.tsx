@@ -76,7 +76,7 @@ export function ProductsFilters({
             {hasActiveFilters && (
               <button
                 onClick={onClearFilters}
-                className="lg:hidden text-sm text-red-600 hover:text-red-700 px-2 py-1 rounded"
+                className="lg:hidden text-sm text-red-600 hover:text-red-700 px-2 py-1 rounded cursor-pointer"
               >
                 {t("clearAll")}
               </button>
@@ -85,7 +85,7 @@ export function ProductsFilters({
             {hasActiveFilters && (
               <button
                 onClick={onClearFilters}
-                className="hidden lg:inline text-sm text-red-600 hover:text-red-700 rounded"
+                className="hidden lg:inline text-sm text-red-600 hover:text-red-700 rounded cursor-pointer"
               >
                 {t("clearAll")}
               </button>
@@ -94,7 +94,7 @@ export function ProductsFilters({
           {/* Close button for mobile */}
           <button
             onClick={onToggleFilters}
-            className="lg:hidden text-zinc-400 hover:text-zinc-300"
+            className="lg:hidden text-zinc-400 hover:text-zinc-300 cursor-pointer"
           >
             ✕
           </button>
@@ -112,7 +112,7 @@ export function ProductsFilters({
                   <span>{t("searchLabel")} &ldquo;{searchQuery}&rdquo;</span>
                   <button
                     onClick={() => onSearchChange("")}
-                    className="text-zinc-400 hover:text-zinc-300"
+                    className="text-zinc-400 hover:text-zinc-300 cursor-pointer"
                   >
                     ×
                   </button>
@@ -128,7 +128,7 @@ export function ProductsFilters({
                   </span>
                   <button
                     onClick={() => onCategoryChange("")}
-                    className="text-zinc-400 hover:text-zinc-300"
+                    className="text-zinc-400 hover:text-zinc-300 cursor-pointer"
                   >
                     ×
                   </button>
@@ -144,7 +144,7 @@ export function ProductsFilters({
                   </span>
                   <button
                     onClick={() => onColorChange("")}
-                    className="text-zinc-400 hover:text-zinc-300"
+                    className="text-zinc-400 hover:text-zinc-300 cursor-pointer"
                   >
                     ×
                   </button>
@@ -159,7 +159,7 @@ export function ProductsFilters({
                   </span>
                   <button
                     onClick={() => onCapacityRangeChange({ min: 0, max: 9999 })}
-                    className="text-zinc-400 hover:text-zinc-300"
+                    className="text-zinc-400 hover:text-zinc-300 cursor-pointer"
                   >
                     ×
                   </button>
@@ -182,7 +182,7 @@ export function ProductsFilters({
                   </span>
                   <button
                     onClick={() => onSortChange("featured")}
-                    className="text-zinc-400 hover:text-zinc-300"
+                    className="text-zinc-400 hover:text-zinc-300 cursor-pointer"
                   >
                     ×
                   </button>
@@ -226,7 +226,7 @@ export function ProductsFilters({
             value={selectedCategory}
             onChange={(e) => onCategoryChange(e.target.value)}
             aria-label={t("filterByCategory")}
-            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
+            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 cursor-pointer"
           >
             <option value="">{t("allCategories")}</option>
             {categories.map((category) => (
@@ -250,7 +250,7 @@ export function ProductsFilters({
             value={selectedColor}
             onChange={(e) => onColorChange(e.target.value)}
             aria-label={t("filterByColor")}
-            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
+            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 cursor-pointer"
           >
             <option value="">{t("allColors")}</option>
             {colors.map((color) => (
@@ -338,7 +338,7 @@ export function ProductsFilters({
                 }
               }}
               aria-label={t("selectCapacity")}
-              className="w-full px-2 py-1 bg-zinc-800 border border-zinc-700 rounded text-white text-sm focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500"
+              className="w-full px-2 py-1 bg-zinc-800 border border-zinc-700 rounded text-white text-sm focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 cursor-pointer"
             >
               <option value="">{t("selectSpecificCapacity")}</option>
               {capacities.map((capacity) => (
@@ -363,7 +363,7 @@ export function ProductsFilters({
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value)}
             aria-label={t("sortProducts")}
-            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
+            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 cursor-pointer"
           >
             <option value="featured">{t("sortFeatured")}</option>
             <option value="newest">{t("sortNewest")}</option>

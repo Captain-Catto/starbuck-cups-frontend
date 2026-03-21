@@ -297,7 +297,7 @@ export function PropertyGallery({
                   <button
                     key={index}
                     onClick={(e) => handleThumbnailClick(index, e)}
-                    className={`relative h-16 w-20 md:h-20 md:w-28 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all transform focus:outline-none ${
+                    className={`relative h-16 w-20 md:h-20 md:w-28 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all transform focus:outline-none cursor-pointer ${
                       index === currentImage
                         ? "border-zinc-400 shadow-lg"
                         : "border-zinc-700 hover:border-zinc-600 focus:border-zinc-500"

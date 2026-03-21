@@ -140,7 +140,7 @@ export function Pagination({
             "relative inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
             !has_prev
               ? "text-zinc-600 cursor-not-allowed bg-zinc-800"
-              : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800"
+              : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 cursor-pointer"
           )}
           aria-label={t("previousPage")}
         >
@@ -172,7 +172,7 @@ export function Pagination({
           ) : (
             <button
               onClick={handleMobilePageClick}
-              className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors"
+              className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
             >
               <span>
                 {t("pageWithTotal", { current: currentPage, total: totalPages })}
@@ -188,7 +188,7 @@ export function Pagination({
             <>
               <button
                 onClick={() => onPageChange && onPageChange(1)}
-                className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors"
+                className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
               >
                 1
               </button>
@@ -208,8 +208,8 @@ export function Pagination({
               className={classNames(
                 "relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors",
                 page === currentPage
-                  ? "z-10 bg-zinc-600 border-zinc-600 text-white"
-                  : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800"
+                  ? "z-10 bg-zinc-600 border-zinc-600 text-white cursor-default"
+                  : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 cursor-pointer"
               )}
               aria-current={page === currentPage ? "page" : undefined}
             >
@@ -249,7 +249,7 @@ export function Pagination({
                         setDesktopInputMode(true);
                         setDesktopInputValue("");
                       }}
-                      className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-400 transition-colors"
+                      className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-400 transition-colors cursor-pointer"
                       title={t("jumpToPageTitle", { total: totalPages })}
                     >
                       ...
@@ -259,7 +259,7 @@ export function Pagination({
               )}
               <button
                 onClick={() => onPageChange && onPageChange(totalPages)}
-                className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors"
+                className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
               >
                 {totalPages}
               </button>
@@ -277,7 +277,7 @@ export function Pagination({
             "relative inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
             !has_next
               ? "text-zinc-600 cursor-not-allowed bg-zinc-800"
-              : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800"
+              : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 cursor-pointer"
           )}
           aria-label={t("nextPage")}
         >

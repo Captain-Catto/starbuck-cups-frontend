@@ -77,7 +77,7 @@ export function Header({ className = "" }: HeaderProps) {
           <div className="flex items-center gap-2">
             <button
               onClick={handleSearchClick}
-              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors"
+              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors cursor-pointer"
               aria-label={t("searchProductsAria")}
             >
               <Search className="w-5 h-5" />
@@ -85,7 +85,7 @@ export function Header({ className = "" }: HeaderProps) {
 
             <button
               onClick={() => dispatch(openCart())}
-              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors relative"
+              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors relative cursor-pointer"
               aria-label={t("shoppingCartAria")}
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -158,7 +158,7 @@ export function Header({ className = "" }: HeaderProps) {
 
             <button
               onClick={handleSearchClick}
-              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors"
+              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors cursor-pointer"
               aria-label={t("searchProductsAria")}
             >
               <Search className="w-5 h-5" />
@@ -169,7 +169,7 @@ export function Header({ className = "" }: HeaderProps) {
                 dispatch(openCart());
                 trackCartAction("open");
               }}
-              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors relative"
+              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors relative cursor-pointer"
               aria-label={t("shoppingCartAria")}
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

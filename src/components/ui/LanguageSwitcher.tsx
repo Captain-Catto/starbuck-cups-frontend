@@ -47,7 +47,7 @@ export function LanguageSwitcher() {
       <div className="hidden md:block relative" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-zinc-300 hover:text-white rounded transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-zinc-300 hover:text-white rounded transition-colors cursor-pointer"
         >
           <Image 
             src={localeFlags[locale]} 
@@ -68,7 +68,7 @@ export function LanguageSwitcher() {
               <button
                 key={loc}
                 onClick={() => handleLocaleChange(loc)}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors cursor-pointer ${
                   locale === loc
                     ? "bg-zinc-700 text-white"
                     : "text-zinc-300 hover:bg-zinc-700 hover:text-white"
@@ -95,7 +95,7 @@ export function LanguageSwitcher() {
             {index > 0 && <span className="text-zinc-600 mx-1">|</span>}
             <button
               onClick={() => handleLocaleChange(loc)}
-              className={`text-xs font-medium px-1.5 py-0.5 rounded transition-colors ${
+              className={`text-xs font-medium px-1.5 py-0.5 rounded transition-colors cursor-pointer ${
                 locale === loc
                   ? "bg-white text-black"
                   : "text-zinc-400 hover:text-white"
