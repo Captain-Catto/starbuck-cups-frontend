@@ -87,7 +87,7 @@ export function Cart({ className = "" }: CartProps) {
           </h2>
           <button
             onClick={() => dispatch(closeCart())}
-            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5 text-zinc-400" />
           </button>
@@ -97,7 +97,7 @@ export function Cart({ className = "" }: CartProps) {
         {items.length > 0 && (
           <button
             onClick={handleClearCart}
-            className="w-full text-sm text-zinc-400 hover:text-red-400 transition-colors py-2 px-3 hover:bg-red-900/20 rounded-lg"
+            className="w-full text-sm text-zinc-400 hover:text-red-400 transition-colors py-2 px-3 hover:bg-red-900/20 rounded-lg cursor-pointer"
           >
             {t("clearAll")}
           </button>
@@ -138,7 +138,7 @@ export function Cart({ className = "" }: CartProps) {
                 {/* Consultation Order Button */}
                 <button
                   onClick={handleCreateConsultationOrder}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-zinc-100 text-black font-medium rounded-lg transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-zinc-100 text-black font-medium rounded-lg transition-colors cursor-pointer"
                 >
                   <FileText className="w-5 h-5" />
                   {t("createOrder")}
@@ -246,7 +246,7 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
       {/* Remove Button */}
       <button
         onClick={onRemove}
-        className="p-1 hover:bg-zinc-700 rounded transition-colors self-start"
+        className="p-1 hover:bg-zinc-700 rounded transition-colors self-start cursor-pointer"
       >
         <X className="w-4 h-4 text-zinc-400" />
       </button>

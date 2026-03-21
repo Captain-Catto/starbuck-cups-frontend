@@ -136,14 +136,20 @@ export function SearchAutocomplete({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-20">
-      <div className="bg-zinc-900 rounded-lg max-w-2xl w-full mx-4 overflow-hidden shadow-2xl">
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-20"
+      onClick={handleClose}
+    >
+      <div
+        className="bg-zinc-900 rounded-lg max-w-2xl w-full mx-4 overflow-hidden shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700">
           <h2 className="text-lg font-bold text-white">{t("title")}</h2>
           <button
             onClick={handleClose}
-            className="p-2 rounded-lg hover:bg-zinc-800 text-white transition-colors"
+            className="p-2 rounded-lg hover:bg-zinc-800 text-white transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -204,7 +210,7 @@ export function SearchAutocomplete({
                 <div className="p-4 border-t border-zinc-700">
                   <button
                     onClick={handleViewAllResults}
-                    className="w-full bg-white text-black py-2 px-4 rounded-lg font-medium hover:bg-zinc-200 transition-colors text-sm"
+                    className="w-full bg-white text-black py-2 px-4 rounded-lg font-medium hover:bg-zinc-200 transition-colors text-sm cursor-pointer"
                   >
                     {t("viewAllResults", { query })}
                   </button>
@@ -216,7 +222,7 @@ export function SearchAutocomplete({
                 <p className="text-zinc-400">{t("noResults")}</p>
                 <button
                   onClick={handleViewAllResults}
-                  className="mt-4 bg-white text-black py-2 px-4 rounded-lg font-medium hover:bg-zinc-200 transition-colors text-sm"
+                  className="mt-4 bg-white text-black py-2 px-4 rounded-lg font-medium hover:bg-zinc-200 transition-colors text-sm cursor-pointer"
                 >
                   {t("searchOnProductsPage")}
                 </button>
