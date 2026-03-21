@@ -130,7 +130,7 @@ export default function ProductsPageClient({
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 py-8 md:px-6 lg:px-8 pt-20">
+      <div className="container mx-auto px-4 pt-16 pb-4 md:px-6 lg:px-8 md:pt-20 md:pb-8">
         {showFilters && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
