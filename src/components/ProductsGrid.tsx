@@ -137,8 +137,12 @@ export default function ProductsGrid({
   };
 
   const handlePageChange = (page: number) => {
-    // Use instant scroll to ensure it works reliably on all mobile browsers
-    window.scrollTo(0, 0);
+    // Smooth scroll to top, with fallback for older browsers
+    try {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {
+      window.scrollTo(0, 0);
+    }
     onPageChange(page);
 
     // Track pagination usage
