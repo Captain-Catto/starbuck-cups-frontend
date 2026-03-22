@@ -65,7 +65,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
             sizes={imageSizes}
-            quality={60}
+            quality={50}
             style={{ objectFit: "contain" }}
           />
           {shouldRenderSecondary && secondImage && (
@@ -78,7 +78,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               loading="lazy"
               fetchPriority="low"
               sizes={imageSizes}
-              quality={60}
+              quality={50}
               style={{ objectFit: "contain" }}
             />
           )}
