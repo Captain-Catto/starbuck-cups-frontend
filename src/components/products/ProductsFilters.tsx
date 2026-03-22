@@ -271,8 +271,10 @@ export function ProductsFilters({
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">{t("from")}</label>
+                <label htmlFor="capacity-min" className="block text-xs text-zinc-400 mb-1">{t("from")}</label>
                 <input
+                  id="capacity-min"
+                  name="capacity-min"
                   type="number"
                   placeholder={t("minPlaceholder")}
                   value={capacityRange.min > 0 ? capacityRange.min : ""}
@@ -287,8 +289,10 @@ export function ProductsFilters({
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">{t("to")}</label>
+                <label htmlFor="capacity-max" className="block text-xs text-zinc-400 mb-1">{t("to")}</label>
                 <input
+                  id="capacity-max"
+                  name="capacity-max"
                   type="number"
                   placeholder={t("maxPlaceholder")}
                   value={capacityRange.max < 9999 ? capacityRange.max : ""}

@@ -155,6 +155,8 @@ export function Pagination({
                 {t("page")}
               </span>
               <input
+                id="pagination-mobile-page"
+                name="pagination-mobile-page"
                 type="number"
                 min="1"
                 max={totalPages}
@@ -162,6 +164,7 @@ export function Pagination({
                 onChange={(e) => setInputValue(e.target.value)}
                 onBlur={handleInputBlur}
                 onKeyDown={handleInputKeyDown}
+                aria-label={t("page")}
                 className="w-12 px-2 py-1 text-sm text-center text-white bg-zinc-800 border border-zinc-600 rounded focus:outline-none focus:ring-2 focus:ring-zinc-500"
                 autoFocus
               />
@@ -231,6 +234,8 @@ export function Pagination({
                         {t("goTo")}
                       </span>
                       <input
+                        id="pagination-desktop-jump"
+                        name="pagination-desktop-jump"
                         type="number"
                         min="1"
                         max={totalPages}
@@ -238,6 +243,7 @@ export function Pagination({
                         onChange={(e) => setDesktopInputValue(e.target.value)}
                         onBlur={handleDesktopInputBlur}
                         onKeyDown={handleDesktopInputKeyDown}
+                        aria-label={t("goTo")}
                         className="w-16 px-2 py-1 text-sm text-center text-white bg-zinc-800 border border-zinc-600 rounded focus:outline-none focus:ring-2 focus:ring-zinc-500"
                         autoFocus
                         placeholder={`1-${totalPages}`}

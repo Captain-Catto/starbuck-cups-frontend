@@ -163,10 +163,13 @@ export function SearchAutocomplete({
                 <Search className="w-5 h-5 text-zinc-400 flex-shrink-0" />
                 <input
                   ref={inputRef}
+                  id="search-autocomplete"
+                  name="search-autocomplete"
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t("placeholder")}
+                  aria-label={t("placeholder")}
                   className="flex-1 bg-transparent text-white placeholder-zinc-400 outline-none"
                 />
                 {isLoading && (

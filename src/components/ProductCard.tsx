@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "@/i18n/routing";
 import { ShoppingCart } from "lucide-react";
 import { Product } from "@/types";
@@ -10,6 +10,16 @@ import { ConditionalVipBadge } from "@/components/ui/VipBadge";
 import { ConditionalFeaturedBadge } from "@/components/ui/FeaturedBadge";
 import OptimizedImage from "@/components/OptimizedImage";
 import { useTranslations } from "next-intl";
+
+function useIsTouchDevice() {
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    setIsTouch(
+      "ontouchstart" in window || navigator.maxTouchPoints > 0
+    );
+  }, []);
+  return isTouch;
+}
 
 interface ProductCardProps {
   product: Product;
@@ -31,11 +41,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
   showSecondaryImage = true,
 }) => {
   const tProduct = useTranslations("productDetail");
+  const isTouch = useIsTouchDevice();
 
   const renderProductVisual = () => {
     const firstImage = getFirstProductImage(product.productImages);
     const secondImage = getSecondProductImage(product.productImages);
-    const shouldRenderSecondary = showSecondaryImage && !!secondImage;
+    // Skip secondary image on touch devices (no hover)
+    const shouldRenderSecondary = showSecondaryImage && !isTouch && !!secondImage;
     if (firstImage) {
       return (
         <>
@@ -43,7 +55,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             src={firstImage.url}
             alt={product.name}
             fill
-            width={456}
+            width={384}
             className={`object-contain transition-opacity duration-300 ${
               shouldRenderSecondary
                 ? "opacity-100 group-hover:opacity-0"
@@ -53,7 +65,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
             sizes={imageSizes}
-            quality={70}
+            quality={60}
             style={{ objectFit: "contain" }}
           />
           {shouldRenderSecondary && secondImage && (
@@ -61,12 +73,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
               src={secondImage.url}
               alt={`${product.name} alternate`}
               fill
-              width={456}
+              width={384}
               className="object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               loading="lazy"
               fetchPriority="low"
               sizes={imageSizes}
-              quality={70}
+              quality={60}
               style={{ objectFit: "contain" }}
             />
           )}
