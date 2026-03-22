@@ -195,6 +195,7 @@ function getResponsiveWidths(width?: number): number[] {
     Math.round(width * 0.4),
     Math.round(width * 0.56),
     Math.round(width * 0.75),
+    Math.round(width * 0.85),
     width,
     Math.round(width * 1.25),
     Math.round(width * 1.5),
