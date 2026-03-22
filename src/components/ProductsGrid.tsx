@@ -208,7 +208,7 @@ export default function ProductsGrid({
               capacityRange.min <= 0 &&
               capacityRange.max >= 9999
             }
-            imageSizes="(max-width: 640px) calc((100vw - 3rem)/2), (max-width: 768px) calc((100vw - 4rem)/2), (max-width: 1024px) calc((100vw - 5rem)/3), (max-width: 1280px) calc((100vw - 8rem)/4), (max-width: 1536px) calc((100vw - 10rem)/5), calc((100vw - 12rem)/6)"
+            imageSizes="(max-width: 640px) calc((100vw - 3rem)/2), (max-width: 768px) calc((100vw - 4rem)/2), (max-width: 1024px) calc((100vw - 5rem)/3), (max-width: 1280px) calc((100vw - 8rem) * 0.8 / 4), (max-width: 1536px) calc((100vw - 10rem) * 0.8 / 5), calc((100vw - 12rem) * 0.8 / 6)"
           />
         ))}
       </div>
