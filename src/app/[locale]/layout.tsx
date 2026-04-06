@@ -28,12 +28,6 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "seo" });
 
-  const ogLocaleMap: Record<string, string> = {
-    vi: "vi_VN",
-    en: "en_US",
-    zh: "zh_CN",
-  };
-
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn";
 

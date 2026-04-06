@@ -110,49 +110,71 @@ export function generateSEO(
 
 export function generateProductStructuredData(product: Product) {
   const cleanDescription = product.description
-    ? product.description.replace(/<[^>]*>/g, "").slice(0, 500)
+    ? product.description
+        .replace(/<[^>]*>/g, "")
+        .replace(/&amp;/g, "&")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 500)
     : "";
+
+  const productUrl = `${siteConfig.url}/products/${product.slug}`;
+
+  // Use original image URLs for structured data — Googlebot can crawl lh3.googleusercontent.com directly
+  // Do NOT route through /api/image proxy (adds dependency chain, increases server load)
+  const images = product.productImages?.map((img: { url: string }) =>
+    img.url.startsWith("http") ? img.url : `${siteConfig.url}${img.url}`
+  );
+
+  const category =
+    product.productCategories
+      ?.map((pc: { category: { name: string } }) => pc.category.name)
+      .join(", ") || undefined;
+
+  const color =
+    product.productColors
+      ?.map((pc: { color: { name: string } }) => pc.color.name)
+      .join(", ") || undefined;
 
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
-    description: cleanDescription,
-    image: product.productImages?.map((img: { url: string }) =>
-      img.url.startsWith("http") ? img.url : `${siteConfig.url}${img.url}`
-    ),
-    url: `${siteConfig.url}/products/${product.slug}`,
+    ...(cleanDescription && { description: cleanDescription }),
+    ...(images?.length && { image: images }),
+    url: productUrl,
+    sku: product.slug,
+    mpn: product.id,
     brand: {
       "@type": "Brand",
       name: "Starbucks",
     },
-    category:
-      product.productCategories
-        ?.map((pc: { category: { name: string } }) => pc.category.name)
-        .join(", ") || "",
-    color:
-      product.productColors
-        ?.map((pc: { color: { name: string } }) => pc.color.name)
-        .join(", ") || "",
+    ...(category && { category }),
+    ...(color && { color }),
+    datePublished: product.createdAt,
+    dateModified: product.updatedAt,
     offers: {
       "@type": "Offer",
       availability:
         product.stockQuantity > 0
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
       priceCurrency: "VND",
       price: "0",
-      priceValidUntil: new Date(
-        new Date().getFullYear() + 1,
-        11,
-        31
-      )
+      priceValidUntil: new Date(new Date().getFullYear() + 1, 11, 31)
         .toISOString()
         .split("T")[0],
-      url: `${siteConfig.url}/products/${product.slug}`,
+      url: productUrl,
       seller: {
         "@type": "Organization",
         name: siteConfig.name,
+        url: siteConfig.url,
       },
     },
     aggregateRating: {
@@ -168,10 +190,11 @@ export function generateProductStructuredData(product: Product) {
         "@type": "Rating",
         ratingValue: "5",
         bestRating: "5",
+        worstRating: "1",
       },
       author: {
-        "@type": "Organization",
-        name: siteConfig.name,
+        "@type": "Person",
+        name: "Hasron Customer",
       },
       reviewBody: `${product.name} - Sản phẩm chính hãng tại ${siteConfig.name}`,
     },
@@ -179,8 +202,10 @@ export function generateProductStructuredData(product: Product) {
 }
 
 export function generateBreadcrumbStructuredData(
-  items: Array<{ name: string; url: string }>
+  items: Array<{ name: string; url: string }>,
+  locale?: string
 ) {
+  const localePrefix = locale && locale !== "vi" ? `/${locale}` : "";
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -188,7 +213,7 @@ export function generateBreadcrumbStructuredData(
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: `${siteConfig.url}${item.url}`,
+      item: `${siteConfig.url}${localePrefix}${item.url}`,
     })),
   };
 }
@@ -200,7 +225,7 @@ export function generateOrganizationStructuredData() {
     name: siteConfig.name,
     description: siteConfig.description,
     url: siteConfig.url,
-    logo: `${siteConfig.url}/images/logo.png`,
+    logo: `${siteConfig.url}/logo.png`,
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer service",

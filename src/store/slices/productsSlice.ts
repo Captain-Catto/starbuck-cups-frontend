@@ -296,6 +296,13 @@ const productsSlice = createSlice({
   name: "products",
   initialState,
   reducers: {
+    // Set current product directly (used by SSR pages)
+    setCurrentProduct: (state, action: PayloadAction<Product>) => {
+      state.currentProduct = action.payload;
+      state.currentProductLoading = false;
+      state.currentProductError = null;
+    },
+
     // Clear current product
     clearCurrentProduct: (state) => {
       state.currentProduct = null;
@@ -385,6 +392,7 @@ const productsSlice = createSlice({
 
 // Export actions
 export const {
+  setCurrentProduct,
   clearCurrentProduct,
   clearProducts,
   clearRelatedProducts,

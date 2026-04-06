@@ -25,11 +25,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   };
 
   // Static pages with locale variants
+  // NOTE: /cart is intentionally excluded — cart pages are user-specific and should not be indexed
   const staticPaths = [
     { path: "", changeFrequency: "daily" as const, priority: 1 },
     { path: "/products", changeFrequency: "daily" as const, priority: 0.9 },
     { path: "/contacts", changeFrequency: "monthly" as const, priority: 0.7 },
-    { path: "/cart", changeFrequency: "weekly" as const, priority: 0.8 },
   ];
 
   const staticPages: MetadataRoute.Sitemap = staticPaths.flatMap(
@@ -43,36 +43,46 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }))
   );
 
-  // Fetch dynamic product pages from API
+  // Fetch dynamic product pages from API (paginated)
   let productPages: MetadataRoute.Sitemap = [];
+  const PAGE_SIZE = 100;
 
   try {
-    const response = await fetch(`${apiUrl}/products/public?limit=100`, {
-      next: { revalidate: 3600 },
-      headers: {
-        "User-Agent": "Sitemap Generator",
-      },
-    });
+    const fetchPage = (page: number) =>
+      fetch(`${apiUrl}/products/public?limit=${PAGE_SIZE}&page=${page}`, {
+        next: { revalidate: 3600 },
+        headers: { "User-Agent": "Sitemap Generator" },
+      }).then((r) => r.json());
 
-    if (response.ok) {
-      const data = await response.json();
+    const firstData = await fetchPage(1);
 
-      if (data.success && data.data && data.data.items) {
-        const products = data.data.items;
+    if (firstData.success && firstData.data?.items) {
+      const totalPages: number = firstData.data.totalPages || 1;
 
-        if (Array.isArray(products)) {
-          productPages = products.flatMap(
-            (product: { slug: string; createdAt: string }) =>
-              locales.map((locale) => ({
-                url: getLocalizedUrl(`/products/${product.slug}`, locale),
-                lastModified: new Date(product.createdAt),
-                changeFrequency: "weekly" as const,
-                priority: 0.8,
-                alternates: getAlternates(`/products/${product.slug}`),
-              }))
-          );
-        }
-      }
+      // Fetch remaining pages in parallel
+      const remainingData =
+        totalPages > 1
+          ? await Promise.all(
+              Array.from({ length: totalPages - 1 }, (_, i) =>
+                fetchPage(i + 2)
+              )
+            )
+          : [];
+
+      const allProducts = [firstData, ...remainingData].flatMap(
+        (data) => (data.success && Array.isArray(data.data?.items) ? data.data.items : [])
+      );
+
+      productPages = allProducts.flatMap(
+        (product: { slug: string; createdAt: string; updatedAt?: string }) =>
+          locales.map((locale) => ({
+            url: getLocalizedUrl(`/products/${product.slug}`, locale),
+            lastModified: new Date(product.updatedAt || product.createdAt),
+            changeFrequency: "weekly" as const,
+            priority: 0.8,
+            alternates: getAlternates(`/products/${product.slug}`),
+          }))
+      );
     }
   } catch {
     // Fallback to empty array if API fails
