@@ -57,7 +57,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const firstData = await fetchPage(1);
 
     if (firstData.success && firstData.data?.items) {
-      const totalPages: number = firstData.data.totalPages || 1;
+      const totalPages: number = firstData.data.pagination?.total_pages || firstData.data.totalPages || 1;
 
       // Fetch remaining pages in parallel
       const remainingData =
