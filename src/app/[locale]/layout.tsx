@@ -7,7 +7,7 @@ import { JetBrains_Mono } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import StoreProvider from "@/components/StoreProvider";
 import ClientLayout from "@/components/layout/ClientLayout";
-import { generateSEO, generateOrganizationStructuredData } from "@/lib/seo";
+import { generateSEO, generateOrganizationStructuredData, siteConfig } from "@/lib/seo";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin", "vietnamese"],
@@ -88,7 +88,40 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   const messages = await getMessages();
+  const t = await getTranslations({ locale, namespace: "seo" });
   const organizationData = generateOrganizationStructuredData();
+
+  // Store structured data — server-side so Googlebot sees it immediately
+  const storeData = {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    name: siteConfig.name,
+    description: t("siteDescription"),
+    url: siteConfig.url,
+    logo: {
+      "@type": "ImageObject",
+      url: `${siteConfig.url}/logo.png`,
+      width: "200",
+      height: "200",
+    },
+    image: `${siteConfig.url}/logo.png`,
+    telephone: "0896686008",
+    sameAs: [
+      "https://www.facebook.com/profile.php?id=61560973846348",
+      "https://www.instagram.com/hasron_leung",
+    ],
+    priceRange: "₫₫",
+    currenciesAccepted: "VND",
+    paymentAccepted: ["Cash", "Bank Transfer", "COD", "Zalo Pay"],
+    areaServed: { "@type": "Country", name: "Vietnam" },
+    contactPoint: {
+      "@type": "ContactPoint",
+      telephone: "0896686008",
+      contactType: "Customer Service",
+      availableLanguage: ["Vietnamese", "English", "Chinese"],
+    },
+  };
+
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   const hasGoogleAnalytics =
     !!gaMeasurementId && gaMeasurementId !== "G-XXXXXXXXXX";
@@ -103,6 +136,8 @@ export default async function LocaleLayout({
         />
         <meta name="theme-color" content="#000000" />
         <meta httpEquiv="x-dns-prefetch-control" content="on" />
+        <link rel="preconnect" href="https://lh3.googleusercontent.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
 
         {hasGoogleAnalytics && (
           <>
@@ -131,9 +166,11 @@ export default async function LocaleLayout({
 
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationData),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationData) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(storeData) }}
         />
       </head>
       <body className="antialiased font-sans">

@@ -4,7 +4,6 @@ import React, { lazy, Suspense } from "react";
 import { useTranslations } from "next-intl";
 import { Category } from "@/types";
 import { ProductGridSkeleton } from "@/components/ui/LoadingSkeleton";
-import { StructuredData } from "@/components/seo/StructuredData";
 
 // Hero Section không lazy load để tối ưu LCP
 import HeroSection from "@/components/home/HeroSection";
@@ -51,9 +50,6 @@ const HomePage: React.FC<HomePageProps> = ({
 
   return (
     <div className="min-h-screen bg-black text-white pt-12">
-      {/* SEO Structured Data */}
-      <StructuredData />
-
       {/* Hero Section */}
       <HeroSection
         loading={loading}
