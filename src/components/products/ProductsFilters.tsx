@@ -338,14 +338,13 @@ export function ProductsFilters({
                         });
                       }
                     }}
-                    className={`w-full text-left px-3 py-1.5 text-sm cursor-pointer transition-colors flex items-center justify-between ${
+                    className={`w-full text-left px-3 py-1.5 text-sm cursor-pointer transition-colors ${
                       isSelected
-                        ? "bg-green-700 text-white font-medium"
+                        ? "bg-zinc-500 text-white font-medium"
                         : "text-zinc-300 hover:bg-zinc-700"
                     }`}
                   >
-                    <span>{capacity.name} ({capacity.volumeMl}ml)</span>
-                    {isSelected && <span className="text-xs">✓</span>}
+                    {capacity.name} ({capacity.volumeMl}ml)
                   </button>
                 );
               })}
