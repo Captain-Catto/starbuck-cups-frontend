@@ -54,6 +54,7 @@ export default function ProductsGrid({
     initialPaginationData
   );
   const didSkipInitialFetch = useRef(false);
+  const lastFetchedParams = useRef<string | null>(null);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -78,10 +79,19 @@ export default function ProductsGrid({
           initialQueryKey === params.toString()
         ) {
           didSkipInitialFetch.current = true;
+          lastFetchedParams.current = params.toString();
           setLoading(false);
           return;
         }
         didSkipInitialFetch.current = true;
+
+        // Skip if same params as last fetch (prevents double-fetch on hydration)
+        const currentParams = params.toString();
+        if (lastFetchedParams.current === currentParams) {
+          setLoading(false);
+          return;
+        }
+        lastFetchedParams.current = currentParams;
 
         const response = await fetch(`/api/products?${params.toString()}`);
         const data = await response.json();

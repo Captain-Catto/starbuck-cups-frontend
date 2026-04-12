@@ -109,7 +109,7 @@ export function useProducts(): UseProductsReturn {
         }
 
         // Fetch colors
-        const colorsRes = await fetch("/api/colors");
+        const colorsRes = await fetch("/api/colors?limit=-1");
         const colorsData = await colorsRes.json();
 
         if (
@@ -121,7 +121,7 @@ export function useProducts(): UseProductsReturn {
         }
 
         // Fetch capacities
-        const capacitiesRes = await fetch("/api/capacities");
+        const capacitiesRes = await fetch("/api/capacities?limit=-1");
         const capacitiesData = await capacitiesRes.json();
 
         if (

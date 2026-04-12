@@ -1,9 +1,11 @@
-﻿import { NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const backendUrl = getApiUrl("colors/public");
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.toString();
+    const backendUrl = `${getApiUrl("colors/public")}${query ? `?${query}` : ""}`;
 
     const response = await fetch(backendUrl, {
       method: "GET",
