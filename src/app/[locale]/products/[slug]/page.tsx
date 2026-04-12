@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getApiUrl } from "@/lib/api-config";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Cart } from "@/components/ui/Cart";
 import ProductClient from "@/components/ProductClient";
+import { generateSEO, siteConfig } from "@/lib/seo";
 import type { Product } from "@/types";
 
 async function getProduct(slug: string, locale: string): Promise<Product | null> {
@@ -18,6 +20,44 @@ async function getProduct(slug: string, locale: string): Promise<Product | null>
   } catch {
     return null;
   }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string; locale: string }>;
+}): Promise<Metadata> {
+  const { slug, locale } = await params;
+  const product = await getProduct(slug, locale);
+
+  if (!product) {
+    return { robots: { index: false, follow: false } };
+  }
+
+  const cleanDescription = product.description
+    ? product.description
+        .replace(/<[^>]*>/g, "")
+        .replace(/&amp;/g, "&")
+        .replace(/&nbsp;/g, " ")
+        .trim()
+        .slice(0, 160)
+    : undefined;
+
+  const firstImage = product.productImages?.[0]?.url;
+  const ogImage = firstImage?.startsWith("http") ? firstImage : firstImage ? `${siteConfig.url}${firstImage}` : "/logo.png";
+
+  return generateSEO({
+    title: product.name,
+    description: cleanDescription,
+    locale,
+    openGraph: {
+      title: product.name,
+      description: cleanDescription ?? "",
+      image: ogImage,
+      url: `/products/${slug}`,
+      type: "website",
+    },
+  });
 }
 
 export default async function ProductDetailPage({
