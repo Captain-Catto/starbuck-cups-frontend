@@ -36,7 +36,7 @@ export default async function ProductDetailPage({
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="pt-18 lg:pt-14">
+      <div className="pt-20 lg:pt-14">
         <div className="container mx-auto px-4 py-4">
           <Breadcrumb
             items={[

@@ -88,6 +88,11 @@ export function useProducts(): UseProductsReturn {
   const [colors, setColors] = useState<Color[]>([]);
   const [capacities, setCapacities] = useState<Capacity[]>([]);
 
+  // Ensure filter panel is closed on mount (prevents stale state from router cache)
+  useEffect(() => {
+    setShowFilters(false);
+  }, []);
+
   // Debounce timer refs
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const searchDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
