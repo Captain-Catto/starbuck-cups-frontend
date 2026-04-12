@@ -1,3 +1,4 @@
+import { revalidateTag, revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
 
@@ -59,6 +60,11 @@ export async function PUT(
 
     const data = await response.json();
 
+    if (data.success) {
+      revalidateTag("categories");
+      revalidatePath("/[locale]/category/[slug]", "page");
+    }
+
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error("Update category API error:", error);
@@ -84,6 +90,11 @@ export async function DELETE(
     });
 
     const data = await response.json();
+
+    if (data.success) {
+      revalidateTag("categories");
+      revalidatePath("/[locale]/category/[slug]", "page");
+    }
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {

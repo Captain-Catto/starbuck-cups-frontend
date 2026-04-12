@@ -1,4 +1,5 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+﻿import { revalidateTag } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
 
 // Helper function to forward auth headers
@@ -58,6 +59,10 @@ export async function POST(request: NextRequest) {
     });
 
     const data = await response.json();
+
+    if (data.success) {
+      revalidateTag("categories");
+    }
 
     return NextResponse.json(data, { status: response.status });
   } catch {

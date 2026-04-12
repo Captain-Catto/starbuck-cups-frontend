@@ -22,7 +22,7 @@ interface ProductsApiResponse {
 async function getCategory(slug: string): Promise<Category | null> {
   try {
     const response = await fetch(getApiUrl(`categories/public/${slug}`), {
-      next: { revalidate: 3600, tags: ["products"] },
+      next: { revalidate: 3600, tags: ["categories"] },
     });
     if (!response.ok) return null;
     const data = await response.json();
