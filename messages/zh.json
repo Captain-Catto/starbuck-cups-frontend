@@ -18,6 +18,8 @@
     "shoppingCartAria": "购物车"
   },
   "homePage": {
+    "h1Title": "正品星巴克杯 - 星巴克收藏品店",
+    "h1Description": "专营来自美国、日本、韩国、中国、台湾的正品星巴克杯、保温杯及随行杯。有吊牌原装正品，95%现货，胡志明市及全国极速配送。24/7咨询服务。",
     "latestProducts": "最新产品",
     "noProducts": "没有可用的产品",
     "viewAllProducts": "查看所有产品",
@@ -197,7 +199,12 @@
     "twitterTitle": "H's 收藏铺 - H的收藏店",
     "twitterDescription": "各国正品Starbucks杯子。95%商品现货火速发货胡志明市。高端奢华礼品，提供礼品包装。",
     "productsPageTitle": "产品",
-    "productsPageDescription": "Hasron Leung - 正品星巴克杯及纪念品。24/7极速配送。联系方式：0896 686 008 · Zalo: 0896 686 008 · hasronleung@gmail.com。地址：254 Trần Hưng Đạo B，第11坊，第5区，胡志明市。营业时间24/7。"
+    "productsPageDescription": "正品星巴克杯、保温杯及纪念品，来自美国、日本、韩国、中国。95%现货，全国极速配送。24/7咨询：0896 686 008。",
+    "productsIntroTitle": "正品星巴克杯 - 完整收藏系列",
+    "productsIntroP1": "Hasron专注于提供正品星巴克杯、保温杯及收藏品，直接从美国、日本、韩国、中国和台湾进口。所有商品均附原装吊牌，不经中间商。",
+    "productsIntroP2": "收藏系列涵盖Stanley联名保温杯、镶钻冷饮杯、不锈钢水瓶、陶瓷马克杯及玻璃杯。Been There系列、Reserve Roastery限定款和城市专属系列持续更新。",
+    "productsIntroP3": "95%以上商品长期备货。每件商品发货前均经严格检验。胡志明市提供当日极速配送，全国各地通过可靠物流送达。",
+    "productsIntroP4": "使用筛选器按类别、颜色或容量查找商品。客服团队24/7在线，欢迎通过Zalo联系或拨打0896 686 008获取免费咨询。"
   },
   "floating": {
     "openContact": "打开联系菜单",
@@ -213,6 +220,10 @@
     "jumpToPageTitle": "跳转到页面 (1-{total})",
     "previousPage": "上一页",
     "nextPage": "下一页"
+  },
+  "categoryPage": {
+    "allProductsLabel": "产品",
+    "metaDescriptionFallback": "探索H's收藏铺的正品星巴克{name}。95%现货，胡志明市及全国极速配送。高端礼品，提供包装服务。"
   },
   "imageViewer": {
     "close": "关闭",

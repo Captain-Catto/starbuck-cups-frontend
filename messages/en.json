@@ -18,6 +18,8 @@
     "shoppingCartAria": "Shopping cart"
   },
   "homePage": {
+    "h1Title": "Authentic Starbucks Cups - Collectible Starbucks Shop",
+    "h1Description": "Specializing in authentic Starbucks cups, tumblers and thermal bottles from the US, Japan, Korea, China and Taiwan. Tagged originals, 95% in stock, express delivery in HCMC and nationwide. 24/7 consultation.",
     "latestProducts": "Latest Products",
     "noProducts": "No products available",
     "viewAllProducts": "View all products",
@@ -197,7 +199,12 @@
     "twitterTitle": "H's shoucangpu - H's Collection Shop",
     "twitterDescription": "Authentic Starbucks cups from around the world. 95% in stock, express delivery HCM. Premium luxury gifts with gift wrapping.",
     "productsPageTitle": "Products",
-    "productsPageDescription": "Hasron Leung - Authentic Starbucks cups & collectible gifts. Express delivery 24/7. Contact: 0896 686 008 · Zalo: 0896 686 008 · hasronleung@gmail.com. 254 Tran Hung Dao B, Ward 11, District 5, HCMC. Open 24/7."
+    "productsPageDescription": "Authentic Starbucks cups, tumblers & collectibles from the US, Japan, Korea, China. 95% in stock, express delivery nationwide. 24/7 support: 0896 686 008.",
+    "productsIntroTitle": "Authentic Starbucks Cups - Full Collection",
+    "productsIntroP1": "Hasron specializes in authentic Starbucks cups, tumblers and collectibles imported directly from the US, Japan, South Korea, China and Taiwan. Every item comes with original tags and is sourced without intermediaries.",
+    "productsIntroP2": "The collection includes Stanley Starbucks tumblers, rhinestone cold cups, stainless steel bottles, ceramic mugs and glassware. Limited editions such as the Been There Series, Reserve Roastery Exclusives and City Collections are updated regularly.",
+    "productsIntroP3": "Over 95% of items are kept in stock at all times. Each product is carefully inspected before packaging. Same-day express delivery is available in Ho Chi Minh City, with nationwide shipping via trusted carriers.",
+    "productsIntroP4": "Use the filters to browse by category, color or capacity. Our team is available 24/7 — contact us via Zalo or call 0896 686 008 for free consultation and fast ordering."
   },
   "floating": {
     "openContact": "Open contact menu",
@@ -213,6 +220,10 @@
     "jumpToPageTitle": "Jump to page (1-{total})",
     "previousPage": "Previous page",
     "nextPage": "Next page"
+  },
+  "categoryPage": {
+    "allProductsLabel": "Products",
+    "metaDescriptionFallback": "Explore authentic Starbucks {name} at H's shoucangpu. 95% in stock, express delivery in HCMC and nationwide. Premium gifts with wrapping service."
   },
   "imageViewer": {
     "close": "Close",

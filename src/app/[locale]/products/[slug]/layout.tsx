@@ -18,7 +18,7 @@ async function getProduct(slug: string, locale?: string): Promise<Product | null
     const url = locale
       ? `${getApiUrl(`products/public/${slug}`)}?locale=${encodeURIComponent(locale)}`
       : getApiUrl(`products/public/${slug}`);
-    const response = await fetch(url, { next: { revalidate: 30 } });
+    const response = await fetch(url, { next: { revalidate: 3600, tags: ["products"] } });
     if (!response.ok) return null;
     const data = await response.json();
     return data.data || null;
@@ -55,7 +55,7 @@ export async function generateMetadata({
     : t("metaDescription", { name: productName });
 
   const ogImage =
-    product?.productImages?.[0]?.url || "/logo.png";
+    product?.productImages?.[0]?.url || `${process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn"}/logo.png`;
 
   const categories =
     product?.productCategories
@@ -84,10 +84,9 @@ export async function generateMetadata({
     .filter(Boolean)
     .join(", ");
 
-  // Route OG image through proxy to resize to 1200x630 for social previews
-  const ogImageUrl = ogImage.startsWith("http")
-    ? `${process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn"}/api/image?url=${encodeURIComponent(ogImage)}&w=1200&q=80&f=webp`
-    : ogImage;
+  // Use original image URL for OG — social crawlers (Facebook, Zalo) load it directly,
+  // proxy adds latency risk and timeout potential with no page-speed benefit.
+  const ogImageUrl = ogImage;
 
   const ogTitleSuffix: Record<string, string> = {
     vi: "Mua ly Starbucks chính hãng",

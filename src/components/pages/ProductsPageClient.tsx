@@ -1,6 +1,7 @@
 "use client";
 
 import { useProducts } from "@/hooks/useProducts";
+import { useRouter } from "@/i18n/routing";
 import { ProductsFilters } from "@/components/products/ProductsFilters";
 import { ProductsToolbar } from "@/components/products/ProductsToolbar";
 import { ProductsContent } from "@/components/products/ProductsContent";
@@ -24,6 +25,7 @@ export default function ProductsPageClient({
   initialPaginationData = null,
   initialQueryKey,
 }: ProductsPageClientProps) {
+  const router = useRouter();
   const {
     categories,
     colors,
@@ -55,10 +57,15 @@ export default function ProductsPageClient({
     debouncedUpdateURL({ search: value, page: 1 });
   };
 
+  // Category selection navigates to dedicated landing page /category/[slug]
   const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value);
-    setCurrentPage(1);
-    updateURL({ category: value, page: 1 });
+    if (value) {
+      router.push(`/category/${value}`);
+    } else {
+      setSelectedCategory("");
+      setCurrentPage(1);
+      updateURL({ category: "", page: 1 });
+    }
   };
 
   const handleColorChange = (value: string) => {
@@ -130,7 +137,7 @@ export default function ProductsPageClient({
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 pt-16 pb-4 md:px-6 lg:px-8 md:pt-20 md:pb-8">
+      <div className="container mx-auto px-4 pt-4 pb-4 md:px-6 lg:px-8 md:pt-6 md:pb-8">
         {showFilters && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"

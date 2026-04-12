@@ -124,13 +124,13 @@ export default function ProductClient({ product, relatedTitle }: Props) {
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {product.productCategories.map((pc: ProductCategory) => (
-                    <button
+                    <a
                       key={pc.category.id}
-                      onClick={() => router.push(`/products?category=${pc.category.slug}`)}
+                      href={`/category/${pc.category.slug}`}
                       className="inline-flex items-center px-2.5 py-1.5 bg-zinc-800/50 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:border-zinc-500 transition-all cursor-pointer"
                     >
                       <span className="text-xs md:text-sm text-white">{pc.category.name}</span>
-                    </button>
+                    </a>
                   ))}
                 </div>
               </div>

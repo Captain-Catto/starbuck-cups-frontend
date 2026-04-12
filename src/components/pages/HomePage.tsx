@@ -57,6 +57,18 @@ const HomePage: React.FC<HomePageProps> = ({
         promotionalBanner={promotionalBanner}
       />
 
+      {/* SEO intro — H1 visible for Google, styled naturally for users */}
+      <section className="pt-6 pb-2 md:pt-8 md:pb-0">
+        <div className="container mx-auto px-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
+            {t("h1Title")}
+          </h1>
+          <p className="text-zinc-400 text-sm md:text-base max-w-2xl leading-relaxed">
+            {t("h1Description")}
+          </p>
+        </div>
+      </section>
+
       {/* Categories Section */}
       <section className="py-4 md:py-8">
         <div className="container mx-auto px-6">

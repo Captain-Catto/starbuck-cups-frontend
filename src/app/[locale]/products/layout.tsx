@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { generateSEO } from "@/lib/seo";
+import { generateSEO, generateBreadcrumbStructuredData } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -11,12 +11,12 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "seo" });
 
   return generateSEO({
-    title: `${t("siteTitle")} - ${t("productsPageTitle")}`,
+    title: t("productsPageTitle"),
     description: t("productsPageDescription"),
     keywords: t("siteKeywords"),
     locale,
     openGraph: {
-      title: `${t("siteTitle")} - ${t("productsPageTitle")}`,
+      title: `${t("productsPageTitle")} | ${t("siteTitle")}`,
       description: t("productsPageDescription"),
       image: "/logo.png",
       url: "/products",
@@ -25,10 +25,31 @@ export async function generateMetadata({
   });
 }
 
-export default function ProductsLayout({
+export default async function ProductsLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
-  return children;
+  const { locale } = await params;
+  const tCommon = await getTranslations({ locale, namespace: "common" });
+
+  const breadcrumbJsonLd = generateBreadcrumbStructuredData(
+    [
+      { name: tCommon("home"), url: "/" },
+      { name: tCommon("products"), url: "/products" },
+    ],
+    locale
+  );
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      {children}
+    </>
+  );
 }

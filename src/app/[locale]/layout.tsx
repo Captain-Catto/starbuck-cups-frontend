@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import React from "react";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
@@ -19,6 +19,12 @@ const jetbrainsMono = JetBrains_Mono({
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export async function generateMetadata({
   params,
@@ -130,10 +136,6 @@ export default async function LocaleLayout({
     <html lang={locale} className={`${jetbrainsMono.variable}`}>
       <head>
 
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, viewport-fit=cover"
-        />
         <meta name="theme-color" content="#000000" />
         <meta httpEquiv="x-dns-prefetch-control" content="on" />
         <link rel="preconnect" href="https://lh3.googleusercontent.com" crossOrigin="anonymous" />

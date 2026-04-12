@@ -148,8 +148,7 @@ export function generateProductStructuredData(product: Product) {
     ...(cleanDescription && { description: cleanDescription }),
     ...(images?.length && { image: images }),
     url: productUrl,
-    sku: product.slug,
-    mpn: product.id,
+    sku: product.id,
     brand: {
       "@type": "Brand",
       name: "Starbucks",
@@ -165,38 +164,12 @@ export function generateProductStructuredData(product: Product) {
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
-      priceCurrency: "VND",
-      price: "0",
-      priceValidUntil: new Date(new Date().getFullYear() + 1, 11, 31)
-        .toISOString()
-        .split("T")[0],
       url: productUrl,
       seller: {
         "@type": "Organization",
         name: siteConfig.name,
         url: siteConfig.url,
       },
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "5",
-      reviewCount: "1",
-      bestRating: "5",
-      worstRating: "1",
-    },
-    review: {
-      "@type": "Review",
-      reviewRating: {
-        "@type": "Rating",
-        ratingValue: "5",
-        bestRating: "5",
-        worstRating: "1",
-      },
-      author: {
-        "@type": "Person",
-        name: "Hasron Customer",
-      },
-      reviewBody: `${product.name} - Sản phẩm chính hãng tại ${siteConfig.name}`,
     },
   };
 }

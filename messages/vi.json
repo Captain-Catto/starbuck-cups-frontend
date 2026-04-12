@@ -18,6 +18,8 @@
     "shoppingCartAria": "Giỏ hàng"
   },
   "homePage": {
+    "h1Title": "Ly Starbucks Chính Hãng - Shop Đồ Sưu Tầm Starbucks",
+    "h1Description": "Chuyên cung cấp ly, bình giữ nhiệt, cốc Starbucks chính hãng từ Mỹ, Nhật, Hàn Quốc, Trung Quốc, Đài Loan. Hàng xách tay có tag, 95% mẫu sẵn hàng, ship hỏa tốc TP.HCM và toàn quốc. Tư vấn 24/7.",
     "latestProducts": "Sản phẩm mới nhất",
     "noProducts": "Không có sản phẩm nào",
     "viewAllProducts": "Xem tất cả sản phẩm",
@@ -197,7 +199,12 @@
     "twitterTitle": "H's shoucangpu - Tiệm sưu tầm của H",
     "twitterDescription": "Ly Starbucks chính hãng các nước. 95% mẫu hàng sẵn, ship hoả tốc HCM. Quà tặng cao cấp, có dịch vụ gói quà.",
     "productsPageTitle": "Sản phẩm",
-    "productsPageDescription": "Hasron Leung - Ly Starbucks, quà lưu niệm chính hãng. Ship hoả tốc 24/7. Liên hệ: 0896 686 008 · Zalo: 0896 686 008 · hasronleung@gmail.com. 254 Trần Hưng Đạo B, P.11, Q.5, TP.HCM. Giờ làm việc 24/7."
+    "productsPageDescription": "Ly Starbucks, bình giữ nhiệt, cốc Starbucks chính hãng từ Mỹ, Nhật, Hàn, Trung Quốc. 95% sẵn hàng, ship hỏa tốc HCM, toàn quốc. Tư vấn 24/7: 0896 686 008.",
+    "productsIntroTitle": "Ly Starbucks Chính Hãng - Bộ Sưu Tập Đa Dạng",
+    "productsIntroP1": "Hasron chuyên cung cấp ly Starbucks, bình giữ nhiệt và đồ sưu tầm Starbucks chính hãng tại Việt Nam. Sản phẩm nhập khẩu trực tiếp từ Mỹ, Nhật Bản, Hàn Quốc, Trung Quốc và Đài Loan. Tất cả đều có tag chính hãng, không qua trung gian.",
+    "productsIntroP2": "Bộ sưu tập gồm nhiều dòng sản phẩm đa dạng: ly giữ nhiệt Stanley Starbucks, cold cup trong suốt đính đá, bình nước inox, cốc sứ và ly thủy tinh. Các phiên bản giới hạn như Been There Series, Reserve Roastery Exclusive và City Collection được cập nhật liên tục.",
+    "productsIntroP3": "Hơn 95% mẫu hàng luôn sẵn kho. Mỗi sản phẩm được kiểm tra kỹ trước khi đóng gói. Giao hàng hỏa tốc trong ngày tại TP.HCM. Vận chuyển toàn quốc qua các đơn vị uy tín.",
+    "productsIntroP4": "Dùng bộ lọc để tìm sản phẩm theo danh mục, màu sắc hoặc dung tích. Đội ngũ tư vấn hoạt động 24/7 — liên hệ Zalo hoặc gọi 0896 686 008 để được hỗ trợ chọn sản phẩm."
   },
   "floating": {
     "openContact": "Mở menu liên hệ",
@@ -213,6 +220,10 @@
     "jumpToPageTitle": "Nhảy đến trang (1-{total})",
     "previousPage": "Trang trước",
     "nextPage": "Trang sau"
+  },
+  "categoryPage": {
+    "allProductsLabel": "Sản phẩm",
+    "metaDescriptionFallback": "Khám phá {name} Starbucks chính hãng tại H's shoucangpu. 95% mẫu sẵn hàng, ship hỏa tốc TP.HCM và toàn quốc. Quà tặng cao cấp, có dịch vụ gói quà."
   },
   "imageViewer": {
     "close": "Đóng",

@@ -50,7 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const fetchPage = (page: number) =>
       fetch(`${apiUrl}/products/public?limit=${PAGE_SIZE}&page=${page}`, {
-        next: { revalidate: 3600 },
+        next: { revalidate: 3600, tags: ["products"] },
         headers: { "User-Agent": "Sitemap Generator" },
       }).then((r) => r.json());
 
@@ -88,5 +88,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Fallback to empty array if API fails
   }
 
-  return [...staticPages, ...productPages];
+  // Fetch category pages
+  let categoryPages: MetadataRoute.Sitemap = [];
+
+  try {
+    const catRes = await fetch(`${apiUrl}/categories/public?limit=100`, {
+      next: { revalidate: 3600 },
+      headers: { "User-Agent": "Sitemap Generator" },
+    });
+    const catData = await catRes.json();
+
+    if (catData.success && Array.isArray(catData.data?.items)) {
+      categoryPages = catData.data.items
+        .filter((cat: { isActive: boolean; slug: string }) => cat.isActive)
+        .flatMap((cat: { slug: string; updatedAt?: string; createdAt: string }) =>
+          locales.map((locale) => ({
+            url: getLocalizedUrl(`/category/${cat.slug}`, locale),
+            lastModified: new Date(cat.updatedAt || cat.createdAt),
+            changeFrequency: "weekly" as const,
+            priority: 0.85,
+            alternates: getAlternates(`/category/${cat.slug}`),
+          }))
+        );
+    }
+  } catch {
+    // Fallback to empty array if API fails
+  }
+
+  return [...staticPages, ...categoryPages, ...productPages];
 }
