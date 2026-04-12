@@ -173,7 +173,7 @@ export function FilterBadges({
       {activeFiltersCount >= 2 && (
         <button
           onClick={onClearAll}
-          className="text-blue-400 hover:text-blue-300 hover:underline text-sm font-medium cursor-pointer transition-colors"
+          className="text-red-600 hover:text-red-700 text-sm font-medium cursor-pointer transition-colors"
         >
           {t("clearAll")}
         </button>

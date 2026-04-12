@@ -333,13 +333,14 @@ export function ProductsFilters({
                         });
                       }
                     }}
-                    className={`w-full text-left px-3 py-1.5 text-sm cursor-pointer hover:bg-zinc-700 transition-colors ${
+                    className={`w-full text-left px-3 py-1.5 text-sm cursor-pointer transition-colors flex items-center justify-between ${
                       isSelected
-                        ? "bg-zinc-600 text-white"
-                        : "text-zinc-300"
+                        ? "bg-green-700 text-white font-medium"
+                        : "text-zinc-300 hover:bg-zinc-700"
                     }`}
                   >
-                    {capacity.name} ({capacity.volumeMl}ml)
+                    <span>{capacity.name} ({capacity.volumeMl}ml)</span>
+                    {isSelected && <span className="text-xs">✓</span>}
                   </button>
                 );
               })}
