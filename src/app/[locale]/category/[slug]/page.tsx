@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { getApiUrl } from "@/lib/api-config";
 import { buildProductsQueryParams } from "@/lib/products-query";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import CategoryPageClient from "@/components/pages/CategoryPageClient";
 import type { Category, Product } from "@/types";
 
@@ -76,11 +75,10 @@ export default async function CategoryPage({
   const { slug, locale } = await params;
   setRequestLocale(locale);
 
-  const [category, { products, pagination, queryKey }, tCommon] =
+  const [category, { products, pagination, queryKey }] =
     await Promise.all([
       getCategory(slug),
       getInitialProducts(slug, locale),
-      getTranslations({ locale, namespace: "common" }),
     ]);
 
   if (!category) notFound();
@@ -95,19 +93,6 @@ export default async function CategoryPage({
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Breadcrumb — visible navigation */}
-      <section className="bg-black text-white pt-20 pb-2 md:pt-24">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <Breadcrumb
-            items={[
-              { label: tCommon("home"), href: "/" },
-              { label: tCommon("products"), href: "/products" },
-              { label: category.name },
-            ]}
-          />
-        </div>
-      </section>
-
       {/* SEO text — server-rendered for Google, visually hidden for users */}
       <div className="sr-only">
         <h1>{category.name}</h1>
@@ -116,6 +101,7 @@ export default async function CategoryPage({
 
       <CategoryPageClient
         categorySlug={slug}
+        categoryName={category.name}
         initialProducts={products}
         initialPaginationData={pagination}
         initialQueryKey={queryKey}

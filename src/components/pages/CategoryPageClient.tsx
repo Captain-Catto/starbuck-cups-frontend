@@ -16,6 +16,7 @@ interface InitialPaginationData {
 
 interface CategoryPageClientProps {
   categorySlug: string;
+  categoryName?: string;
   initialProducts?: Product[];
   initialPaginationData?: InitialPaginationData | null;
   initialQueryKey?: string;
@@ -23,6 +24,7 @@ interface CategoryPageClientProps {
 
 export default function CategoryPageClient({
   categorySlug,
+  categoryName,
   initialProducts = [],
   initialPaginationData = null,
   initialQueryKey,
@@ -187,6 +189,7 @@ export default function CategoryPageClient({
             searchQuery={searchQuery}
             debouncedSearchQuery={debouncedSearchQuery}
             selectedCategory={categorySlug}
+            categoryName={categoryName}
             selectedColor={selectedColor}
             capacityRange={capacityRange}
             sortBy={sortBy}

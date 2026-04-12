@@ -16,6 +16,7 @@ interface ProductsContentProps {
   searchQuery: string;
   debouncedSearchQuery: string;
   selectedCategory: string;
+  categoryName?: string;
   selectedColor: string;
   capacityRange: CapacityRange;
   sortBy: string;
@@ -38,6 +39,7 @@ export function ProductsContent({
   searchQuery,
   debouncedSearchQuery,
   selectedCategory,
+  categoryName,
   selectedColor,
   capacityRange,
   sortBy,
@@ -63,7 +65,10 @@ export function ProductsContent({
       <Breadcrumb
         items={[
           { label: tCommon("home"), href: "/" },
-          { label: tCommon("products") },
+          ...(categoryName
+            ? [{ label: tCommon("products"), href: "/products" }, { label: categoryName }]
+            : [{ label: tCommon("products") }]
+          ),
         ]}
       />
 
