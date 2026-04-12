@@ -86,20 +86,14 @@ export default async function ProductsPage({
 
   return (
     <>
-      {/* SEO intro — server-rendered, visible to Google */}
-      <section className="bg-black text-white pt-20 pb-2 md:pt-24">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <h1 className="text-xl md:text-2xl font-bold text-white mb-4">
-            {t("productsIntroTitle")}
-          </h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-zinc-400 leading-relaxed max-w-4xl">
-            <p>{t("productsIntroP1")}</p>
-            <p>{t("productsIntroP2")}</p>
-            <p>{t("productsIntroP3")}</p>
-            <p>{t("productsIntroP4")}</p>
-          </div>
-        </div>
-      </section>
+      {/* SEO intro — server-rendered for Google, visually hidden for users */}
+      <div className="sr-only">
+        <h1>{t("productsIntroTitle")}</h1>
+        <p>{t("productsIntroP1")}</p>
+        <p>{t("productsIntroP2")}</p>
+        <p>{t("productsIntroP3")}</p>
+        <p>{t("productsIntroP4")}</p>
+      </div>
 
       <ProductsPageClient
         initialProducts={products}

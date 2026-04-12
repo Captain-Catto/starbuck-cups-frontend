@@ -95,7 +95,7 @@ export default async function CategoryPage({
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* SEO intro — server-rendered, visible to Google */}
+      {/* Breadcrumb — visible navigation */}
       <section className="bg-black text-white pt-20 pb-2 md:pt-24">
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
           <Breadcrumb
@@ -105,16 +105,14 @@ export default async function CategoryPage({
               { label: category.name },
             ]}
           />
-          <h1 className="text-xl md:text-2xl font-bold text-white mt-4 mb-2">
-            {category.name}
-          </h1>
-          {cleanDescription && (
-            <p className="text-sm text-zinc-400 leading-relaxed max-w-2xl">
-              {cleanDescription}
-            </p>
-          )}
         </div>
       </section>
+
+      {/* SEO text — server-rendered for Google, visually hidden for users */}
+      <div className="sr-only">
+        <h1>{category.name}</h1>
+        {cleanDescription && <p>{cleanDescription}</p>}
+      </div>
 
       <CategoryPageClient
         categorySlug={slug}
