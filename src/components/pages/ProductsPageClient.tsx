@@ -137,7 +137,7 @@ export default function ProductsPageClient({
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 pt-4 pb-4 md:px-6 lg:px-8 md:pt-6 md:pb-8">
+      <div className="container mx-auto px-4 pt-20 pb-4 md:px-6 lg:px-8 md:pt-24 md:pb-8">
         {showFilters && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
