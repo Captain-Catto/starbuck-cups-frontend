@@ -166,8 +166,8 @@ export function useCategories(): UseCategoriesReturn {
       errors.name = "Tên danh mục không được vượt quá 100 ký tự";
     }
 
-    if (formData.description && formData.description.length > 500) {
-      errors.description = "Mô tả không được vượt quá 500 ký tự";
+    if (formData.description && formData.description.length > 1500) {
+      errors.description = "Mô tả không được vượt quá 1500 ký tự";
     }
 
     setFormErrors(errors);
