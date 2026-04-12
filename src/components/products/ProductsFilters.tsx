@@ -309,48 +309,41 @@ export function ProductsFilters({
             </div>
           </div>
 
-          {/* Original dropdown as fallback */}
+          {/* Scrollable capacity list */}
           <div className="mt-3">
-            <label
-              htmlFor={capacityPresetSelectId}
-              className="block text-xs text-zinc-400 mb-1"
-            >
+            <label className="block text-xs text-zinc-400 mb-1">
               {t("orSelectFromList")}
             </label>
-            <select
-              id={capacityPresetSelectId}
-              value=""
-              onChange={(e) => {
-                const capacityId = e.target.value;
-
-                // Auto-update range inputs when selecting specific capacity
-                if (capacityId) {
-                  const selectedCap = capacities.find(
-                    (cap) => cap.id === capacityId
-                  );
-                  if (selectedCap) {
-                    const volume = selectedCap.volumeMl;
-                    // Set exact range for the selected capacity
-                    onCapacityRangeChange({
-                      min: volume,
-                      max: volume,
-                    });
-                  }
-                } else {
-                  // Reset range when no specific capacity is selected
-                  onCapacityRangeChange({ min: 0, max: 9999 });
-                }
-              }}
-              aria-label={t("selectCapacity")}
-              className="w-full px-2 py-1 bg-zinc-800 border border-zinc-700 rounded text-white text-sm focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 cursor-pointer"
-            >
-              <option value="">{t("selectSpecificCapacity")}</option>
-              {capacities.map((capacity) => (
-                <option key={capacity.id} value={capacity.id}>
-                  {capacity.name} ({capacity.volumeMl}ml)
-                </option>
-              ))}
-            </select>
+            <div className="overflow-y-auto max-h-48 bg-zinc-800 border border-zinc-700 rounded">
+              {capacities.map((capacity) => {
+                const isSelected =
+                  capacityRange.min === capacity.volumeMl &&
+                  capacityRange.max === capacity.volumeMl;
+                return (
+                  <button
+                    key={capacity.id}
+                    type="button"
+                    onClick={() => {
+                      if (isSelected) {
+                        onCapacityRangeChange({ min: 0, max: 9999 });
+                      } else {
+                        onCapacityRangeChange({
+                          min: capacity.volumeMl,
+                          max: capacity.volumeMl,
+                        });
+                      }
+                    }}
+                    className={`w-full text-left px-3 py-1.5 text-sm cursor-pointer hover:bg-zinc-700 transition-colors ${
+                      isSelected
+                        ? "bg-zinc-600 text-white"
+                        : "text-zinc-300"
+                    }`}
+                  >
+                    {capacity.name} ({capacity.volumeMl}ml)
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
