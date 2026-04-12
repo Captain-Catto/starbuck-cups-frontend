@@ -322,8 +322,8 @@ export function ProductsFilters({
             <div className="overflow-y-auto max-h-48 bg-zinc-800 border border-zinc-700 rounded">
               {capacities.map((capacity) => {
                 const isSelected =
-                  urlMinCapacity === capacity.volumeMl &&
-                  urlMaxCapacity === capacity.volumeMl;
+                  urlMinCapacity === Number(capacity.volumeMl) &&
+                  urlMaxCapacity === Number(capacity.volumeMl);
                 return (
                   <button
                     key={capacity.id}
