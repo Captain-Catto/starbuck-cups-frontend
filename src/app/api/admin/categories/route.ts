@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
 
     if (data.success) {
-      revalidateTag("categories");
+      revalidateTag("categories", "default");
     }
 
     return NextResponse.json(data, { status: response.status });

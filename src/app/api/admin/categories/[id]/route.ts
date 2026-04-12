@@ -61,7 +61,7 @@ export async function PUT(
     const data = await response.json();
 
     if (data.success) {
-      revalidateTag("categories");
+      revalidateTag("categories", "default");
       revalidatePath("/[locale]/category/[slug]", "page");
     }
 
@@ -92,7 +92,7 @@ export async function DELETE(
     const data = await response.json();
 
     if (data.success) {
-      revalidateTag("categories");
+      revalidateTag("categories", "default");
       revalidatePath("/[locale]/category/[slug]", "page");
     }
 
