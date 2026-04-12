@@ -26,9 +26,11 @@ interface ProductCardProps {
   animationDelay?: number;
   onAddToCart?: (product: Product) => void;
   showAddToCart?: boolean;
-  priority?: boolean; // Thêm prop để control priority cho LCP
+  priority?: boolean;
   imageSizes?: string;
   showSecondaryImage?: boolean;
+  showBadges?: boolean;
+  showInfo?: boolean;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -36,9 +38,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
   animationDelay,
   onAddToCart,
   showAddToCart = false,
-  priority = false, // Thêm prop để control priority cho LCP
+  priority = false,
   imageSizes = "(max-width: 640px) calc((100vw - 3rem)/2), (max-width: 768px) calc((100vw - 4rem)/2), (max-width: 1024px) calc((100vw - 5rem)/3), (max-width: 1280px) calc((100vw - 8rem)/4), (max-width: 1536px) calc((100vw - 10rem)/5), calc((100vw - 12rem)/6)",
   showSecondaryImage = true,
+  showBadges = true,
+  showInfo = true,
 }) => {
   const tProduct = useTranslations("productDetail");
   const isTouch = useIsTouchDevice();
@@ -119,14 +123,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <div className="bg-zinc-900 rounded-2xl overflow-hidden hover:bg-zinc-800 transition-colors duration-300 relative">
         <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
           {/* Featured Badge - TOP LEFT */}
-          <div className="absolute top-3 left-3 z-10">
-            <ConditionalFeaturedBadge product={product} size="md" />
-          </div>
+          {showBadges && (
+            <div className="absolute top-3 left-3 z-10">
+              <ConditionalFeaturedBadge product={product} size="md" />
+            </div>
+          )}
 
           {/* VIP Badge - TOP RIGHT */}
-          <div className="absolute top-3 right-3 z-10">
-            <ConditionalVipBadge product={product} size="sm" />
-          </div>
+          {showBadges && (
+            <div className="absolute top-3 right-3 z-10">
+              <ConditionalVipBadge product={product} size="sm" />
+            </div>
+          )}
 
           {product.productImages && product.productImages.length > 0 ? (
             renderProductVisual()
@@ -173,26 +181,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
       </div>
 
       {/* Product info */}
-      <div className="mt-3">
-        <p
-          className={`text-base lg:text-lg font-medium mb-1 line-clamp-2 ${
-            product.stockQuantity === 0 ? "text-zinc-400" : "text-white"
-          }`}
-        >
-          {product.name}
-        </p>
-        {/* <div className="text-xs text-zinc-500 font-mono mb-1">
-          {product.productCategories
-            ?.map((pc: { category: { name: string } }) => pc.category.name)
-            .join(", ") || "N/A"}{" "}
-          - {product.capacity?.name || "chưa có"}
+      {showInfo && (
+        <div className="mt-3">
+          <p
+            className={`text-base lg:text-lg font-medium mb-1 line-clamp-2 ${
+              product.stockQuantity === 0 ? "text-zinc-400" : "text-white"
+            }`}
+          >
+            {product.name}
+          </p>
         </div>
-        {product.stockQuantity === 0 && (
-          <div className="flex items-center">
-            <span className="text-xs text-zinc-400">Hết hàng</span>
-          </div>
-        )} */}
-      </div>
+      )}
     </Link>
   );
 };

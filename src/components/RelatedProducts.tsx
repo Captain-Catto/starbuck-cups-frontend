@@ -99,17 +99,22 @@ export default function RelatedProducts() {
 
         <Swiper
           modules={[Navigation]}
-          spaceBetween={16}
-          slidesPerView={2}
+          spaceBetween={12}
+          slidesPerView={1.5}
+          slidesPerGroup={1}
           breakpoints={{
             640: {
-              slidesPerView: 2,
+              slidesPerView: 3,
+              slidesPerGroup: 3,
+              spaceBetween: 16,
             },
             768: {
-              slidesPerView: 3,
+              slidesPerView: 4,
+              slidesPerGroup: 4,
             },
             1024: {
-              slidesPerView: 4,
+              slidesPerView: 5,
+              slidesPerGroup: 5,
             },
           }}
           navigation={{
@@ -156,65 +161,54 @@ export default function RelatedProducts() {
 
   return (
     <div className="relative">
-      {/* Custom Navigation Buttons */}
-      <div className="swiper-button-prev-custom absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded-full cursor-pointer transition-colors border border-zinc-700">
-        <svg
-          className="w-6 h-6 text-white"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
-          />
+      {/* Custom Navigation Buttons - desktop only */}
+      <div className="swiper-button-prev-custom hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded-full cursor-pointer transition-colors border border-zinc-700">
+        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
       </div>
-      <div className="swiper-button-next-custom absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded-full cursor-pointer transition-colors border border-zinc-700">
-        <svg
-          className="w-6 h-6 text-white"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 5l7 7-7 7"
-          />
+      <div className="swiper-button-next-custom hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded-full cursor-pointer transition-colors border border-zinc-700">
+        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </div>
 
       <Swiper
         modules={[Navigation]}
         spaceBetween={12}
-        slidesPerView={3}
+        slidesPerView={1.5}
+        slidesPerGroup={1}
         breakpoints={{
           640: {
             slidesPerView: 3,
+            slidesPerGroup: 3,
+            spaceBetween: 16,
           },
           768: {
             slidesPerView: 4,
+            slidesPerGroup: 4,
+            spaceBetween: 16,
           },
           1024: {
             slidesPerView: 5,
+            slidesPerGroup: 5,
+            spaceBetween: 16,
           },
         }}
         navigation={{
           nextEl: ".swiper-button-next-custom",
           prevEl: ".swiper-button-prev-custom",
         }}
-        className="related-products-swiper !px-12"
+        className="related-products-swiper md:!px-12"
       >
         {relatedProducts.map((product) => (
           <SwiperSlide key={product.id}>
             <ProductCard
               product={product}
               onAddToCart={handleAddToCart}
-              showAddToCart={true}
+              showAddToCart={false}
+              showBadges={true}
+              showInfo={false}
             />
           </SwiperSlide>
         ))}
