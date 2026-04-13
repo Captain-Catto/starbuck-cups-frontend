@@ -125,11 +125,12 @@ export function generateProductStructuredData(product: Product) {
 
   const productUrl = `${siteConfig.url}/products/${product.slug}`;
 
-  // Use original image URLs for structured data — Googlebot can crawl lh3.googleusercontent.com directly
-  // Do NOT route through /api/image proxy (adds dependency chain, increases server load)
-  const images = product.productImages?.map((img: { url: string }) =>
-    img.url.startsWith("http") ? img.url : `${siteConfig.url}${img.url}`
-  );
+  // Use /api/image proxy for structured data — returns direct image (no redirect chain)
+  // drive.google.com URLs go through 2 hops (303 → 200) which Google may not follow for rich results
+  const images = product.productImages?.map((img: { url: string }) => {
+    const rawUrl = img.url.startsWith("http") ? img.url : `${siteConfig.url}${img.url}`;
+    return `${siteConfig.url}/api/image?url=${encodeURIComponent(rawUrl)}&w=800&q=85`;
+  });
 
   const category =
     product.productCategories
@@ -159,6 +160,8 @@ export function generateProductStructuredData(product: Product) {
     dateModified: product.updatedAt,
     offers: {
       "@type": "Offer",
+      price: "0",
+      priceCurrency: "VND",
       availability:
         product.stockQuantity > 0
           ? "https://schema.org/InStock"

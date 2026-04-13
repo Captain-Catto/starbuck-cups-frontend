@@ -97,6 +97,14 @@ export default async function LocaleLayout({
   const t = await getTranslations({ locale, namespace: "seo" });
   const organizationData = generateOrganizationStructuredData();
 
+  // WebSite schema — helps Google associate the official logo with this site
+  const websiteData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteConfig.name,
+    url: siteConfig.url,
+  };
+
   // Store structured data — server-side so Googlebot sees it immediately
   const storeData = {
     "@context": "https://schema.org",
@@ -107,8 +115,8 @@ export default async function LocaleLayout({
     logo: {
       "@type": "ImageObject",
       url: `${siteConfig.url}/logo.png`,
-      width: "200",
-      height: "200",
+      width: "479",
+      height: "530",
     },
     image: `${siteConfig.url}/logo.png`,
     telephone: "0896686008",
@@ -166,6 +174,10 @@ export default async function LocaleLayout({
           </>
         )}
 
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteData) }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationData) }}
