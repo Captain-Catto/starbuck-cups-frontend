@@ -36,26 +36,10 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "productDetail" });
   const product = await getProduct(slug, locale);
 
-  const productName =
-    product?.name ||
+  const localeKey = locale as "vi" | "en" | "zh";
+  const translation = product?.translations?.[localeKey];
+  const productName = translation?.metaTitle || product?.name ||
     slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-
-  const description = product?.description
-    ? product.description
-        .replace(/<[^>]*>/g, "")
-        .replace(/&amp;/g, "&")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/\s+/g, " ")
-        .trim()
-        .slice(0, 160)
-    : t("metaDescription", { name: productName });
-
-  const ogImage =
-    product?.productImages?.[0]?.url || `${process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn"}/logo.png`;
 
   const categories =
     product?.productCategories
@@ -66,6 +50,27 @@ export async function generateMetadata({
     product?.productColors
       ?.map((pc) => pc.color.name)
       .join(", ") || "";
+
+  let description: string;
+  if (translation?.metaDescription) {
+    description = translation.metaDescription.slice(0, 160);
+  } else if (product) {
+    const parts = [product.name];
+    if (categories) parts.push(categories);
+    if (colors) parts.push(colors);
+    const suffix =
+      locale === "en"
+        ? "Authentic Starbucks. In stock, express delivery nationwide."
+        : locale === "zh"
+        ? "正品星巴克。现货，全国快速配送。"
+        : "Starbucks chính hãng. Sẵn hàng, ship hỏa tốc toàn quốc.";
+    description = `${parts.join(" · ")} — ${suffix}`.slice(0, 160);
+  } else {
+    description = t("metaDescription", { name: productName });
+  }
+
+  const ogImage =
+    product?.productImages?.[0]?.url || `${process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn"}/logo.png`;
 
   const capacity = product?.capacity?.name || "";
 
