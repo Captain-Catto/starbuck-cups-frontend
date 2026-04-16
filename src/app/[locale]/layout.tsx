@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import React from "react";
 import { notFound } from "next/navigation";
+import NextTopLoader from "nextjs-toploader";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { JetBrains_Mono } from "next/font/google";
@@ -188,6 +189,7 @@ export default async function LocaleLayout({
         />
       </head>
       <body className="antialiased font-sans">
+        <NextTopLoader color="#ffffff" height={2} showSpinner={false} />
         <NextIntlClientProvider messages={messages}>
           <StoreProvider>
             <ClientLayout>{children}</ClientLayout>
