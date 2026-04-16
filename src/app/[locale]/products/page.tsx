@@ -2,6 +2,7 @@ import ProductsPageClient from "@/components/pages/ProductsPageClient";
 import { getApiUrl } from "@/lib/api-config";
 import { buildProductsQueryParams } from "@/lib/products-query";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { generateBreadcrumbStructuredData } from "@/lib/seo";
 import type { Product } from "@/types";
 
 export const revalidate = 3600;
@@ -79,13 +80,26 @@ export default async function ProductsPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [{ products, pagination, queryKey }, t] = await Promise.all([
+  const [{ products, pagination, queryKey }, t, tCommon] = await Promise.all([
     getInitialProducts(locale),
     getTranslations({ locale, namespace: "seo" }),
+    getTranslations({ locale, namespace: "common" }),
   ]);
+
+  const breadcrumbJsonLd = generateBreadcrumbStructuredData(
+    [
+      { name: tCommon("home"), url: "/" },
+      { name: tCommon("products"), url: "/products" },
+    ],
+    locale
+  );
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       {/* SEO intro — server-rendered for Google, visually hidden for users */}
       <div className="sr-only">
         <h1>{t("productsIntroTitle")}</h1>

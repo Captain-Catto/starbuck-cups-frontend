@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { generateSEO, generateBreadcrumbStructuredData } from "@/lib/seo";
+import { generateSEO } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -25,31 +25,11 @@ export async function generateMetadata({
   });
 }
 
-export default async function ProductsLayout({
+export default function ProductsLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
-  const tCommon = await getTranslations({ locale, namespace: "common" });
-
-  const breadcrumbJsonLd = generateBreadcrumbStructuredData(
-    [
-      { name: tCommon("home"), url: "/" },
-      { name: tCommon("products"), url: "/products" },
-    ],
-    locale
-  );
-
-  return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }
