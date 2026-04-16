@@ -75,6 +75,17 @@ const nextConfig: NextConfig = {
   },
   // Disable source maps in production to reduce bundle size (~2-3MB)
   productionBrowserSourceMaps: false,
+  // Hide server fingerprinting headers
+  headers: async () => [
+    {
+      source: "/(.*)",
+      headers: [
+        { key: "X-Powered-By", value: "" },
+        { key: "X-Content-Type-Options", value: "nosniff" },
+        { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      ],
+    },
+  ],
   // Compression
   compress: true,
   modularizeImports: {

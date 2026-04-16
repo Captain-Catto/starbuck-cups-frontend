@@ -4,7 +4,7 @@ import { buildProductsQueryParams } from "@/lib/products-query";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Product } from "@/types";
 
-export const revalidate = 30;
+export const revalidate = 3600;
 export const dynamic = "force-static";
 
 interface ProductsApiResponse {
@@ -47,7 +47,7 @@ async function getInitialProducts(locale: string): Promise<{
     const response = await fetch(
       `${getApiUrl("products/public")}?${params.toString()}`,
       {
-        next: { revalidate: 60 },
+        next: { revalidate: 3600 },
       }
     );
 
