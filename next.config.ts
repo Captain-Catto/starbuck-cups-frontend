@@ -99,5 +99,20 @@ const nextConfig: NextConfig = {
 };
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+import { withSentryConfig } from "@sentry/nextjs";
 
-export default withBundleAnalyzer(withNextIntl(nextConfig));
+export default withSentryConfig(withBundleAnalyzer(withNextIntl(nextConfig)), {
+  org: "starbucks-cups",
+  project: "frontend-shop",
+  sentryUrl: "https://sentry.io/",
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  reactComponentAnnotation: {
+    enabled: true,
+  },
+  hideSourceMaps: true,
+  disableLogger: true,
+});
