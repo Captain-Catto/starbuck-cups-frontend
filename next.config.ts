@@ -110,7 +110,6 @@ export default withSentryConfig(withBundleAnalyzer(withNextIntl(nextConfig)), {
   },
   silent: !process.env.CI,
   widenClientFileUpload: true,
-  hideSourceMaps: true,
   webpack: {
     reactComponentAnnotation: {
       enabled: true,
