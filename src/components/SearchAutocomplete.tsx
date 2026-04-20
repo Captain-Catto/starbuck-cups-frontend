@@ -106,7 +106,7 @@ export function SearchAutocomplete({
       try {
         // Sử dụng cùng endpoint với products page
         const response = await fetch(
-          `/api/products?search=${encodeURIComponent(query)}&limit=8&locale=${locale}`
+          `/api/products?search=${encodeURIComponent(query)}&limit=12&locale=${locale}`
         );
 
         if (response.ok) {
