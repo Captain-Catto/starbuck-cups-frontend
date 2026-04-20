@@ -308,10 +308,8 @@ export function SearchAutocomplete({
         {query.length >= 2 && (
           <div className="border-t border-zinc-700">
             {isLoading && products.length === 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <ProductSkeleton key={i} count={1} layout="homepage" />
-                ))}
+              <div className="p-4">
+                <ProductSkeleton count={8} layout="custom" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" />
               </div>
             ) : showSuggestions && products.length > 0 ? (
               <div className="max-h-[60vh] lg:max-h-[75vh] overflow-y-auto custom-scrollbar">
@@ -384,11 +382,7 @@ export function SearchAutocomplete({
                 <div>
                   <h3 className="text-sm font-medium text-white mb-3 px-2">{t("hotProducts")}</h3>
                   {isLoadingHot ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
-                      {Array.from({ length: 4 }).map((_, i) => (
-                        <ProductSkeleton key={i} count={1} layout="homepage" />
-                      ))}
-                    </div>
+                    <ProductSkeleton count={4} layout="custom" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-2" />
                   ) : hotProducts.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
                       {hotProducts.map((product) => (
