@@ -103,7 +103,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 export default withSentryConfig(withBundleAnalyzer(withNextIntl(nextConfig)), {
   org: "starbucks-cups",
-  project: "frontend-shop",
+  project: "product-cups-frontend",
   sentryUrl: "https://sentry.io/",
   sourcemaps: {
     disable: !process.env.SENTRY_AUTH_TOKEN,
