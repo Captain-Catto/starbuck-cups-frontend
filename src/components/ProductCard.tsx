@@ -31,6 +31,7 @@ interface ProductCardProps {
   showSecondaryImage?: boolean;
   showBadges?: boolean;
   showInfo?: boolean;
+  highlightText?: string;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -43,9 +44,24 @@ const ProductCard: React.FC<ProductCardProps> = ({
   showSecondaryImage = true,
   showBadges = true,
   showInfo = true,
+  highlightText,
 }) => {
   const tProduct = useTranslations("productDetail");
   const isTouch = useIsTouchDevice();
+
+  const renderHighlightedName = (name: string, highlight?: string) => {
+    if (!highlight) return name;
+    const parts = name.split(new RegExp(`(${highlight})`, "gi"));
+    return parts.map((part, i) =>
+      part.toLowerCase() === highlight.toLowerCase() ? (
+        <span key={i} className="font-bold text-emerald-400">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
 
   const renderProductVisual = () => {
     const firstImage = getFirstProductImage(product.productImages);
@@ -188,7 +204,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               product.stockQuantity === 0 ? "text-zinc-400" : "text-white"
             }`}
           >
-            {product.name}
+            {renderHighlightedName(product.name, highlightText)}
           </p>
         </div>
       )}

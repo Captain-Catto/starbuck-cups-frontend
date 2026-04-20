@@ -39,7 +39,10 @@
     "recentSearches": "Recent searches",
     "recentlyViewed": "Recently viewed",
     "clearHistory": "Clear",
-    "noHistory": "No search history yet"
+    "noHistory": "No search history yet",
+    "trending": "Trending Searches",
+    "trendingKeywords": "Stanley,Cold Cup,Tumbler,Reserve,Limited",
+    "hotProducts": "Featured Products"
   },
   "footer": {
     "shopDescription": "Authentic Starbucks cups from around the world",

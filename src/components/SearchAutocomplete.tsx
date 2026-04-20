@@ -5,6 +5,7 @@ import { Search, X, Loader2 } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
 import ProductCard from "@/components/ProductCard";
+import ProductSkeleton from "@/components/ui/ProductSkeleton";
 import { useAppDispatch } from "@/store";
 import { addToCart } from "@/store/slices/cartSlice";
 import type { Product } from "@/types";
@@ -78,6 +79,9 @@ export function SearchAutocomplete({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [hotProducts, setHotProducts] = useState<Product[]>([]);
+  const [isLoadingHot, setIsLoadingHot] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 
@@ -110,6 +114,7 @@ export function SearchAutocomplete({
           if (data.success && data.data?.items) {
             setProducts(data.data.items);
             setShowSuggestions(true);
+            setFocusedIndex(-1);
 
             // Track search event
             trackSearch(query, data.data.items.length);
@@ -137,10 +142,34 @@ export function SearchAutocomplete({
       if (inputRef.current) {
         inputRef.current.focus();
       }
-      setSearchHistory(getSearchHistory());
-      setRecentlyViewed(getRecentlyViewed());
+      const history = getSearchHistory();
+      const viewed = getRecentlyViewed();
+      
+      setSearchHistory(history);
+      setRecentlyViewed(viewed);
+      setFocusedIndex(-1);
+
+      if (viewed.length === 0) {
+        let isMounted = true;
+        setIsLoadingHot(true);
+        fetch(`/api/products?sort=featured&limit=4&locale=${locale}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (isMounted && data.success && data.data?.items) {
+              setHotProducts(data.data.items);
+            }
+          })
+          .catch((error) => console.error("Error fetching hot products:", error))
+          .finally(() => {
+            if (isMounted) setIsLoadingHot(false);
+          });
+
+        return () => {
+          isMounted = false;
+        };
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, locale]);
 
   const handleProductClick = (product: Product) => {
     const updatedHistory = saveRecentlyViewedProduct(product);
@@ -210,7 +239,7 @@ export function SearchAutocomplete({
       onClick={handleClose}
     >
       <div
-        className="bg-zinc-900 rounded-lg max-w-2xl w-full mx-4 overflow-hidden shadow-2xl"
+        className="bg-zinc-900 rounded-lg max-w-2xl lg:max-w-4xl w-full mx-4 overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -237,10 +266,36 @@ export function SearchAutocomplete({
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (!showSuggestions || products.length === 0) return;
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setFocusedIndex((prev) => Math.min(prev + 1, products.length - 1));
+                    } else if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setFocusedIndex((prev) => Math.max(prev - 1, -1));
+                    } else if (e.key === "Enter" && focusedIndex >= 0) {
+                      e.preventDefault();
+                      handleProductClick(products[focusedIndex]);
+                    }
+                  }}
                   placeholder={t("placeholder")}
                   aria-label={t("placeholder")}
                   className="flex-1 bg-transparent text-white placeholder-zinc-400 outline-none"
                 />
+                {query.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuery("");
+                      inputRef.current?.focus();
+                    }}
+                    className="text-zinc-400 hover:text-white transition-colors flex-shrink-0 cursor-pointer"
+                    aria-label="Clear search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
                 {isLoading && (
                   <Loader2 className="w-4 h-4 text-zinc-400 animate-spin flex-shrink-0" />
                 )}
@@ -253,26 +308,28 @@ export function SearchAutocomplete({
         {query.length >= 2 && (
           <div className="border-t border-zinc-700">
             {isLoading && products.length === 0 ? (
-              <div className="p-4 text-center">
-                <div className="flex items-center justify-center gap-2 text-zinc-400">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>{t("searching")}</span>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <ProductSkeleton key={i} count={1} layout="homepage" />
+                ))}
               </div>
             ) : showSuggestions && products.length > 0 ? (
               <div className="max-h-96 overflow-y-auto">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
-                  {products.map((product) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
+                  {products.map((product, index) => (
                     <div
                       key={product.id}
                       onClick={() => handleProductClick(product)}
-                      className="cursor-pointer"
+                      className={`cursor-pointer rounded-2xl transition-shadow ${
+                        focusedIndex === index ? "ring-2 ring-emerald-500" : ""
+                      }`}
                     >
                       <ProductCard
                         product={product}
                         onAddToCart={handleAddToCart}
                         showAddToCart={false}
                         showSecondaryImage={false}
+                        highlightText={query}
                       />
                     </div>
                   ))}
@@ -307,10 +364,50 @@ export function SearchAutocomplete({
         {query.length < 2 && (
           <div className="p-4 border-t border-zinc-700 min-h-[300px] overflow-y-auto max-h-[70vh] custom-scrollbar">
             {searchHistory.length === 0 && recentlyViewed.length === 0 ? (
-              <div className="p-8 text-center h-full flex flex-col items-center justify-center min-h-[250px]">
-                <Search className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-                <p className="text-zinc-400">{t("noHistory")}</p>
-                <p className="text-zinc-500 text-sm mt-2">{t("minChars")}</p>
+              <div className="p-4 space-y-6">
+                <div>
+                  <h3 className="text-sm font-medium text-white mb-3 px-2">{t("trending")}</h3>
+                  <div className="trending flex flex-wrap gap-2 px-2">
+                    {t("trendingKeywords").split(",").map((keyword) => (
+                      <button
+                        key={keyword.trim()}
+                        type="button"
+                        onClick={() => setQuery(keyword.trim())}
+                        className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm rounded-full transition-colors cursor-pointer"
+                      >
+                        {keyword.trim()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-medium text-white mb-3 px-2">{t("hotProducts")}</h3>
+                  {isLoadingHot ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <ProductSkeleton key={i} count={1} layout="homepage" />
+                      ))}
+                    </div>
+                  ) : hotProducts.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
+                      {hotProducts.map((product) => (
+                        <div
+                          key={product.id}
+                          onClick={() => handleProductClick(product)}
+                          className="cursor-pointer"
+                        >
+                          <ProductCard
+                            product={product}
+                            onAddToCart={handleAddToCart}
+                            showAddToCart={false}
+                            showSecondaryImage={false}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               </div>
             ) : (
               <div className="space-y-6">
@@ -355,7 +452,7 @@ export function SearchAutocomplete({
                         {t("clearHistory")}
                       </button>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       {recentlyViewed.map((product) => (
                         <div
                           key={product.id}

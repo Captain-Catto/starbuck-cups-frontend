@@ -39,7 +39,10 @@
     "recentSearches": "最近搜索",
     "recentlyViewed": "最近浏览",
     "clearHistory": "清除",
-    "noHistory": "暂无搜索记录"
+    "noHistory": "暂无搜索记录",
+    "trending": "热门搜索",
+    "trendingKeywords": "Stanley,Cold Cup,Tumbler,Reserve,Limited",
+    "hotProducts": "精选产品"
   },
   "footer": {
     "shopDescription": "各国正品Starbucks杯子",
