@@ -36,7 +36,10 @@
     "noResults": "No products found",
     "searchOnProductsPage": "Search on products page",
     "minChars": "Enter at least 2 characters to start searching",
-    "suggestionsHint": "Suggestions will appear within 300ms"
+    "recentSearches": "Recent searches",
+    "recentlyViewed": "Recently viewed",
+    "clearHistory": "Clear",
+    "noHistory": "No search history yet"
   },
   "footer": {
     "shopDescription": "Authentic Starbucks cups from around the world",

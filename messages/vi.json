@@ -36,7 +36,10 @@
     "noResults": "Không tìm thấy sản phẩm nào",
     "searchOnProductsPage": "Tìm kiếm trên trang sản phẩm",
     "minChars": "Nhập ít nhất 2 ký tự để bắt đầu tìm kiếm",
-    "suggestionsHint": "Gợi ý sẽ xuất hiện trong vòng 300ms"
+    "recentSearches": "Tìm kiếm gần đây",
+    "recentlyViewed": "Đã xem gần đây",
+    "clearHistory": "Xóa",
+    "noHistory": "Chưa có lịch sử tìm kiếm"
   },
   "footer": {
     "shopDescription": "Ly Starbucks CHÍNH HÃNG các nước",

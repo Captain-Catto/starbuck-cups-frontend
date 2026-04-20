@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useRef, useEffect, useState } from "react";
 import { Search, X, Loader2 } from "lucide-react";
@@ -9,6 +9,51 @@ import { useAppDispatch } from "@/store";
 import { addToCart } from "@/store/slices/cartSlice";
 import type { Product } from "@/types";
 import { trackAddToCart, trackSearch } from "@/lib/analytics";
+
+const SEARCH_HISTORY_KEY = "starbucks-search-history";
+const RECENTLY_VIEWED_KEY = "starbucks-recently-viewed";
+
+const getSearchHistory = (): string[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(SEARCH_HISTORY_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveSearchTermToStorage = (term: string): string[] | undefined => {
+  if (typeof window === "undefined" || !term.trim()) return;
+  const history = getSearchHistory();
+  const newHistory = [
+    term.trim(),
+    ...history.filter((t) => t.toLowerCase() !== term.trim().toLowerCase()),
+  ].slice(0, 8);
+  localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(newHistory));
+  return newHistory;
+};
+
+const getRecentlyViewed = (): Product[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(RECENTLY_VIEWED_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveRecentlyViewedProduct = (product: Product): Product[] | undefined => {
+  if (typeof window === "undefined") return;
+  const history = getRecentlyViewed();
+  const newHistory = [
+    product,
+    ...history.filter((p) => p.id !== product.id),
+  ].slice(0, 8);
+  localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(newHistory));
+  return newHistory;
+};
 
 interface SearchAutocompleteProps {
   isOpen: boolean;
@@ -31,6 +76,8 @@ export function SearchAutocomplete({
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 
@@ -86,16 +133,24 @@ export function SearchAutocomplete({
 
   // Focus input when modal opens
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
+    if (isOpen) {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+      setSearchHistory(getSearchHistory());
+      setRecentlyViewed(getRecentlyViewed());
     }
   }, [isOpen]);
 
-  const handleProductClick = (slug: string) => {
+  const handleProductClick = (product: Product) => {
+    const updatedHistory = saveRecentlyViewedProduct(product);
+    if (updatedHistory) {
+      setRecentlyViewed(updatedHistory);
+    }
     if (onProductSelect) {
-      onProductSelect(slug);
+      onProductSelect(product.slug);
     } else {
-      router.push(`/products/${slug}`);
+      router.push(`/products/${product.slug}`);
     }
     handleClose();
   };
@@ -107,9 +162,21 @@ export function SearchAutocomplete({
     onClose();
   };
 
+  const handleClearHistory = (type: "search" | "viewed") => {
+    if (type === "search") {
+      localStorage.removeItem(SEARCH_HISTORY_KEY);
+      setSearchHistory([]);
+    } else {
+      localStorage.removeItem(RECENTLY_VIEWED_KEY);
+      setRecentlyViewed([]);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
+      const updatedHistory = saveSearchTermToStorage(query.trim());
+      if (updatedHistory) setSearchHistory(updatedHistory);
       router.push(`/products?search=${encodeURIComponent(query.trim())}`);
       handleClose();
     }
@@ -117,6 +184,8 @@ export function SearchAutocomplete({
 
   const handleViewAllResults = () => {
     if (query.trim()) {
+      const updatedHistory = saveSearchTermToStorage(query.trim());
+      if (updatedHistory) setSearchHistory(updatedHistory);
       router.push(`/products?search=${encodeURIComponent(query.trim())}`);
       handleClose();
     }
@@ -196,7 +265,7 @@ export function SearchAutocomplete({
                   {products.map((product) => (
                     <div
                       key={product.id}
-                      onClick={() => handleProductClick(product.slug)}
+                      onClick={() => handleProductClick(product)}
                       className="cursor-pointer"
                     >
                       <ProductCard
@@ -234,16 +303,78 @@ export function SearchAutocomplete({
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Empty State / History */}
         {query.length < 2 && (
-          <div className="p-8 text-center border-t border-zinc-700">
-            <Search className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-            <p className="text-zinc-400">
-              {t("minChars")}
-            </p>
-            <p className="text-zinc-500 text-sm mt-2">
-              {t("suggestionsHint")}
-            </p>
+          <div className="p-4 border-t border-zinc-700 min-h-[300px] overflow-y-auto max-h-[70vh] custom-scrollbar">
+            {searchHistory.length === 0 && recentlyViewed.length === 0 ? (
+              <div className="p-8 text-center h-full flex flex-col items-center justify-center min-h-[250px]">
+                <Search className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
+                <p className="text-zinc-400">{t("noHistory")}</p>
+                <p className="text-zinc-500 text-sm mt-2">{t("minChars")}</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Search History */}
+                {searchHistory.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-3 px-2">
+                      <h3 className="text-sm font-medium text-white">{t("recentSearches")}</h3>
+                      <button 
+                        onClick={() => handleClearHistory("search")}
+                        type="button"
+                        className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                      >
+                        {t("clearHistory")}
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 px-2">
+                      {searchHistory.map((term, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setQuery(term)}
+                          type="button"
+                          className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm rounded-full transition-colors cursor-pointer"
+                        >
+                          {term}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recently Viewed */}
+                {recentlyViewed.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-3 px-2">
+                      <h3 className="text-sm font-medium text-white">{t("recentlyViewed")}</h3>
+                      <button 
+                        onClick={() => handleClearHistory("viewed")}
+                        type="button"
+                        className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                      >
+                        {t("clearHistory")}
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {recentlyViewed.map((product) => (
+                        <div
+                          key={product.id}
+                          onClick={() => handleProductClick(product)}
+                          className="cursor-pointer"
+                        >
+                          <ProductCard
+                            product={product}
+                            onAddToCart={handleAddToCart}
+                            showAddToCart={false}
+                            showSecondaryImage={false}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

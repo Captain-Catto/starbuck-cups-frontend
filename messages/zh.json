@@ -36,7 +36,10 @@
     "noResults": "未找到任何产品",
     "searchOnProductsPage": "在产品页面搜索",
     "minChars": "请输入至少2个字符开始搜索",
-    "suggestionsHint": "建议将在300毫秒内显示"
+    "recentSearches": "最近搜索",
+    "recentlyViewed": "最近浏览",
+    "clearHistory": "清除",
+    "noHistory": "暂无搜索记录"
   },
   "footer": {
     "shopDescription": "各国正品Starbucks杯子",
