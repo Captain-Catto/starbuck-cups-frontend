@@ -314,7 +314,7 @@ export function SearchAutocomplete({
                 ))}
               </div>
             ) : showSuggestions && products.length > 0 ? (
-              <div className="max-h-96 overflow-y-auto">
+              <div className="max-h-[60vh] lg:max-h-[75vh] overflow-y-auto custom-scrollbar">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
                   {products.map((product, index) => (
                     <div
@@ -362,7 +362,7 @@ export function SearchAutocomplete({
 
         {/* Empty State / History */}
         {query.length < 2 && (
-          <div className="p-4 border-t border-zinc-700 min-h-[300px] overflow-y-auto max-h-[70vh] custom-scrollbar">
+          <div className="p-4 border-t border-zinc-700 min-h-[300px] overflow-y-auto max-h-[60vh] lg:max-h-[75vh] custom-scrollbar">
             {searchHistory.length === 0 && recentlyViewed.length === 0 ? (
               <div className="p-4 space-y-6">
                 <div>
