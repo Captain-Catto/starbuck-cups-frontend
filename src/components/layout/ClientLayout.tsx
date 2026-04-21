@@ -10,6 +10,7 @@ import { clearLastAction } from "@/store/slices/cartSlice";
 import { SettingsSocketProvider } from "@/components/providers/SettingsSocketProvider";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { ScrollToTop } from "@/components/layout/ScrollToTop";
 
 // Dynamic imports for non-critical interactive widgets
 const EffectManager = dynamic(() => import("@/components/effects/EffectManager"), {
@@ -76,6 +77,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <ScrollToTop />
       <Header />
       <SettingsSocketProvider>
         {isRuntimeReady && <EffectManager />}
