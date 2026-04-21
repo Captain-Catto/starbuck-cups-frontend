@@ -101,39 +101,25 @@ export function useProducts(): UseProductsReturn {
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        // Fetch categories
-        const categoriesRes = await fetch("/api/categories");
-        const categoriesData = await categoriesRes.json();
+        const [categoriesRes, colorsRes, capacitiesRes] = await Promise.all([
+          fetch("/api/categories"),
+          fetch("/api/colors?limit=-1"),
+          fetch("/api/capacities?limit=-1"),
+        ]);
 
-        if (
-          categoriesData.success &&
-          categoriesData.data?.items &&
-          Array.isArray(categoriesData.data.items)
-        ) {
+        const [categoriesData, colorsData, capacitiesData] = await Promise.all([
+          categoriesRes.json(),
+          colorsRes.json(),
+          capacitiesRes.json(),
+        ]);
+
+        if (categoriesData.success && Array.isArray(categoriesData.data?.items)) {
           setCategories(categoriesData.data.items);
         }
-
-        // Fetch colors
-        const colorsRes = await fetch("/api/colors?limit=-1");
-        const colorsData = await colorsRes.json();
-
-        if (
-          colorsData.success &&
-          colorsData.data?.items &&
-          Array.isArray(colorsData.data.items)
-        ) {
+        if (colorsData.success && Array.isArray(colorsData.data?.items)) {
           setColors(colorsData.data.items);
         }
-
-        // Fetch capacities
-        const capacitiesRes = await fetch("/api/capacities?limit=-1");
-        const capacitiesData = await capacitiesRes.json();
-
-        if (
-          capacitiesData.success &&
-          capacitiesData.data?.items &&
-          Array.isArray(capacitiesData.data.items)
-        ) {
+        if (capacitiesData.success && Array.isArray(capacitiesData.data?.items)) {
           setCapacities(capacitiesData.data.items);
         }
       } catch {
