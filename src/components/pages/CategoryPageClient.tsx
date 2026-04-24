@@ -6,7 +6,7 @@ import { ProductsFilters } from "@/components/products/ProductsFilters";
 import { ProductsToolbar } from "@/components/products/ProductsToolbar";
 import { ProductsContent } from "@/components/products/ProductsContent";
 import { Cart } from "@/components/ui/Cart";
-import type { CapacityRange, Product } from "@/types";
+import type { CapacityRange, Category, Color, Capacity, Product } from "@/types";
 
 interface InitialPaginationData {
   totalPages: number;
@@ -20,6 +20,9 @@ interface CategoryPageClientProps {
   initialProducts?: Product[];
   initialPaginationData?: InitialPaginationData | null;
   initialQueryKey?: string;
+  initialCategories?: Category[];
+  initialColors?: Color[];
+  initialCapacities?: Capacity[];
 }
 
 export default function CategoryPageClient({
@@ -28,6 +31,9 @@ export default function CategoryPageClient({
   initialProducts = [],
   initialPaginationData = null,
   initialQueryKey,
+  initialCategories = [],
+  initialColors = [],
+  initialCapacities = [],
 }: CategoryPageClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -52,7 +58,7 @@ export default function CategoryPageClient({
     updateURL,
     debouncedUpdateURL,
     clearFilters,
-  } = useProducts();
+  } = useProducts({ initialCategories, initialColors, initialCapacities });
 
   // hasActiveFilters: không tính category vì nó luôn được set trên trang này
   const hasOtherActiveFilters =

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
@@ -54,7 +54,20 @@ interface UseProductsReturn {
   }) => void;
 }
 
-export function useProducts(): UseProductsReturn {
+interface UseProductsOptions {
+  /** Initial filter option lists pre-fetched on the server (SSR) */
+  initialCategories?: Category[];
+  initialColors?: Color[];
+  initialCapacities?: Capacity[];
+}
+
+export function useProducts(options: UseProductsOptions = {}): UseProductsReturn {
+  const {
+    initialCategories = [],
+    initialColors = [],
+    initialCapacities = [],
+  } = options;
+
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -83,10 +96,16 @@ export function useProducts(): UseProductsReturn {
   );
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Filter options data from API
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [colors, setColors] = useState<Color[]>([]);
-  const [capacities, setCapacities] = useState<Capacity[]>([]);
+  // Filter options data — initialized from SSR props to avoid client-side waterfall fetch
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [colors, setColors] = useState<Color[]>(initialColors);
+  const [capacities, setCapacities] = useState<Capacity[]>(initialCapacities);
+
+  // Suppress unused-variable warning — these setters are kept for potential
+  // future use (e.g., optimistic updates when admin adds a new category).
+  void setCategories;
+  void setColors;
+  void setCapacities;
 
   // Ensure filter panel is closed on mount (prevents stale state from router cache)
   useEffect(() => {
@@ -96,39 +115,6 @@ export function useProducts(): UseProductsReturn {
   // Debounce timer refs
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const searchDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Fetch filter options (categories, colors, capacities)
-  useEffect(() => {
-    const fetchFilterOptions = async () => {
-      try {
-        const [categoriesRes, colorsRes, capacitiesRes] = await Promise.all([
-          fetch("/api/categories"),
-          fetch("/api/colors?limit=-1"),
-          fetch("/api/capacities?limit=-1"),
-        ]);
-
-        const [categoriesData, colorsData, capacitiesData] = await Promise.all([
-          categoriesRes.json(),
-          colorsRes.json(),
-          capacitiesRes.json(),
-        ]);
-
-        if (categoriesData.success && Array.isArray(categoriesData.data?.items)) {
-          setCategories(categoriesData.data.items);
-        }
-        if (colorsData.success && Array.isArray(colorsData.data?.items)) {
-          setColors(colorsData.data.items);
-        }
-        if (capacitiesData.success && Array.isArray(capacitiesData.data?.items)) {
-          setCapacities(capacitiesData.data.items);
-        }
-      } catch {
-        // Silently handle fetch errors
-      }
-    };
-
-    fetchFilterOptions();
-  }, []);
 
   // Wait for hydration to avoid mismatch
   useEffect(() => {

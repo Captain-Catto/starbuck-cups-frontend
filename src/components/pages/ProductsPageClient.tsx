@@ -6,7 +6,7 @@ import { ProductsFilters } from "@/components/products/ProductsFilters";
 import { ProductsToolbar } from "@/components/products/ProductsToolbar";
 import { ProductsContent } from "@/components/products/ProductsContent";
 import { Cart } from "@/components/ui/Cart";
-import type { CapacityRange, Product } from "@/types";
+import type { CapacityRange, Category, Color, Capacity, Product } from "@/types";
 
 interface InitialPaginationData {
   totalPages: number;
@@ -18,12 +18,18 @@ interface ProductsPageClientProps {
   initialProducts?: Product[];
   initialPaginationData?: InitialPaginationData | null;
   initialQueryKey?: string;
+  initialCategories?: Category[];
+  initialColors?: Color[];
+  initialCapacities?: Capacity[];
 }
 
 export default function ProductsPageClient({
   initialProducts = [],
   initialPaginationData = null,
   initialQueryKey,
+  initialCategories = [],
+  initialColors = [],
+  initialCapacities = [],
 }: ProductsPageClientProps) {
   const router = useRouter();
   const {
@@ -49,7 +55,7 @@ export default function ProductsPageClient({
     updateURL,
     debouncedUpdateURL,
     clearFilters,
-  } = useProducts();
+  } = useProducts({ initialCategories, initialColors, initialCapacities });
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);

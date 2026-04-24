@@ -3,7 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { getApiUrl } from "@/lib/api-config";
 import { buildProductsQueryParams } from "@/lib/products-query";
 import CategoryPageClient from "@/components/pages/CategoryPageClient";
-import type { Category, Product } from "@/types";
+import type { Category, Color, Capacity, Product } from "@/types";
 
 const DEFAULT_LIMIT = 24;
 
@@ -18,6 +18,8 @@ interface ProductsApiResponse {
     };
   };
 }
+
+// ─── Server-side helpers ────────────────────────────────────────────────────
 
 async function getCategory(slug: string): Promise<Category | null> {
   try {
@@ -67,6 +69,56 @@ async function getInitialProducts(slug: string, locale: string) {
   }
 }
 
+/** Fetch all categories for the filter sidebar. Falls back to [] on error. */
+async function getFilterCategories(): Promise<Category[]> {
+  try {
+    const response = await fetch(getApiUrl("categories/public"), {
+      next: { revalidate: 3600, tags: ["categories"] },
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.success && Array.isArray(data.data?.items)
+      ? data.data.items
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Fetch colors for the filter sidebar. Falls back to [] on error. */
+async function getFilterColors(): Promise<Color[]> {
+  try {
+    const response = await fetch(`${getApiUrl("colors/public")}?limit=-1`, {
+      next: { revalidate: 3600 },
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.success && Array.isArray(data.data?.items)
+      ? data.data.items
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Fetch capacities for the filter sidebar. Falls back to [] on error. */
+async function getFilterCapacities(): Promise<Capacity[]> {
+  try {
+    const response = await fetch(`${getApiUrl("capacities/public")}?limit=-1`, {
+      next: { revalidate: 3600 },
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.success && Array.isArray(data.data?.items)
+      ? data.data.items
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+// ─── Page ───────────────────────────────────────────────────────────────────
+
 export default async function CategoryPage({
   params,
 }: {
@@ -75,11 +127,20 @@ export default async function CategoryPage({
   const { slug, locale } = await params;
   setRequestLocale(locale);
 
-  const [category, { products, pagination, queryKey }] =
-    await Promise.all([
-      getCategory(slug),
-      getInitialProducts(slug, locale),
-    ]);
+  // All data fetched in parallel — zero waterfalls
+  const [
+    category,
+    { products, pagination, queryKey },
+    categories,
+    colors,
+    capacities,
+  ] = await Promise.all([
+    getCategory(slug),
+    getInitialProducts(slug, locale),
+    getFilterCategories(),
+    getFilterColors(),
+    getFilterCapacities(),
+  ]);
 
   if (!category) notFound();
 
@@ -105,6 +166,9 @@ export default async function CategoryPage({
         initialProducts={products}
         initialPaginationData={pagination}
         initialQueryKey={queryKey}
+        initialCategories={categories}
+        initialColors={colors}
+        initialCapacities={capacities}
       />
     </div>
   );

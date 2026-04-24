@@ -3,7 +3,7 @@ import { getApiUrl } from "@/lib/api-config";
 import { buildProductsQueryParams } from "@/lib/products-query";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { generateBreadcrumbStructuredData } from "@/lib/seo";
-import type { Product } from "@/types";
+import type { Category, Color, Capacity, Product } from "@/types";
 
 export const revalidate = 3600;
 export const dynamic = "force-static";
@@ -27,6 +27,8 @@ interface InitialPaginationData {
 }
 
 const DEFAULT_PRODUCTS_LIMIT = 24;
+
+// ─── Server-side helpers ────────────────────────────────────────────────────
 
 async function getInitialProducts(locale: string): Promise<{
   products: Product[];
@@ -72,6 +74,56 @@ async function getInitialProducts(locale: string): Promise<{
   }
 }
 
+/** Fetch categories for the filter sidebar. Falls back to [] on error. */
+async function getFilterCategories(): Promise<Category[]> {
+  try {
+    const response = await fetch(getApiUrl("categories/public"), {
+      next: { revalidate: 3600 },
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.success && Array.isArray(data.data?.items)
+      ? data.data.items
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Fetch colors for the filter sidebar. Falls back to [] on error. */
+async function getFilterColors(): Promise<Color[]> {
+  try {
+    const response = await fetch(`${getApiUrl("colors/public")}?limit=-1`, {
+      next: { revalidate: 3600 },
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.success && Array.isArray(data.data?.items)
+      ? data.data.items
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Fetch capacities for the filter sidebar. Falls back to [] on error. */
+async function getFilterCapacities(): Promise<Capacity[]> {
+  try {
+    const response = await fetch(`${getApiUrl("capacities/public")}?limit=-1`, {
+      next: { revalidate: 3600 },
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.success && Array.isArray(data.data?.items)
+      ? data.data.items
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+// ─── Page ───────────────────────────────────────────────────────────────────
+
 export default async function ProductsPage({
   params,
 }: {
@@ -80,10 +132,21 @@ export default async function ProductsPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [{ products, pagination, queryKey }, t, tCommon] = await Promise.all([
+  // All data fetched in parallel — zero waterfalls
+  const [
+    { products, pagination, queryKey },
+    t,
+    tCommon,
+    categories,
+    colors,
+    capacities,
+  ] = await Promise.all([
     getInitialProducts(locale),
     getTranslations({ locale, namespace: "seo" }),
     getTranslations({ locale, namespace: "common" }),
+    getFilterCategories(),
+    getFilterColors(),
+    getFilterCapacities(),
   ]);
 
   const breadcrumbJsonLd = generateBreadcrumbStructuredData(
@@ -113,6 +176,9 @@ export default async function ProductsPage({
         initialProducts={products}
         initialPaginationData={pagination}
         initialQueryKey={queryKey}
+        initialCategories={categories}
+        initialColors={colors}
+        initialCapacities={capacities}
       />
     </>
   );
