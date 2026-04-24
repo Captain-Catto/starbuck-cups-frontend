@@ -36,8 +36,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("🔍 [API ROUTE DEBUG] Error in GET:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to fetch products" },
       { status: 500 }
@@ -48,15 +47,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-
-    // 🔍 DEBUG: Log request body from frontend
-    console.log("🔍 [API ROUTE DEBUG] Request body from frontend:", {
-      body,
-      isVipInBody: body.isVip,
-      isVipType: typeof body.isVip,
-      bodyKeys: Object.keys(body),
-      hasIsVipProperty: body.hasOwnProperty("isVip"),
-    });
 
     const response = await fetch(getApiUrl("admin/products"), {
       method: "POST",
@@ -69,20 +59,8 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
 
-    // 🔍 DEBUG: Log backend response
-    console.log("🔍 [API ROUTE DEBUG] Backend response:", {
-      success: data.success,
-      status: response.status,
-      responseData: data,
-    });
-
-    if (data.error && data.error.details) {
-    }
-
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("🔍 [API ROUTE DEBUG] Error in POST:", error);
-
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to create product" },
       { status: 500 }

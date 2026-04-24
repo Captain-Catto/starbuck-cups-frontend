@@ -1,7 +1,8 @@
 ﻿"use client";
 
-import { Component, ReactNode } from "react";
+import { Component, ReactNode, ErrorInfo } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import * as Sentry from "@sentry/nextjs";
 
 interface Props {
   children: ReactNode;
@@ -29,8 +30,8 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch() {
-    // Error logging could be implemented here
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
   }
 
   render() {

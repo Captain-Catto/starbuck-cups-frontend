@@ -39,26 +39,6 @@ export function Cart({ className = "" }: CartProps) {
       return;
     }
 
-    // Log cart items trước khi chuyển sang consultation
-    console.log("🛒 CART ITEMS BEFORE CONSULTATION:", {
-      totalItems: items.length,
-      items: items.map((item, index) => ({
-        index,
-        productId: item.product.id,
-        productName: item.product.name,
-        selectedColor: item.colorRequest,
-        productDetails: {
-          capacity: item.product.capacity?.name,
-          categories: item.product.productCategories?.map(
-            (pc) => pc.category.name
-          ),
-          availableColors: item.product.productColors?.map(
-            (pc) => pc.color.name
-          ),
-        },
-      })),
-    });
-
     // Close cart modal
     dispatch(closeCart());
 

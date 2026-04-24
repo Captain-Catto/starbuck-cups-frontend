@@ -271,3 +271,34 @@ export interface ProductFilters {
   page?: number;
   limit?: number;
 }
+
+// News Types
+export type NewsLocale = "vi" | "en" | "zh";
+export type NewsStatus = "draft" | "published";
+
+export interface NewsTranslation {
+  id?: string;
+  newsId?: string;
+  locale: NewsLocale;
+  title: string;
+  summary?: string;
+  content?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+}
+
+export interface News {
+  id: string;
+  slug: string;
+  thumbnail?: string;
+  status: NewsStatus;
+  publishedAt?: string | null;
+  viewCount: number;
+  isDeleted: boolean;
+  createdByAdminId: string;
+  createdAt: string;
+  updatedAt: string;
+  translations?: NewsTranslation[];
+}
+
+export type NewsTranslationsInput = Partial<Record<NewsLocale, Omit<NewsTranslation, "id" | "newsId" | "locale">>>;

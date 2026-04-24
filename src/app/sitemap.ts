@@ -29,6 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPaths = [
     { path: "", changeFrequency: "daily" as const, priority: 1 },
     { path: "/products", changeFrequency: "daily" as const, priority: 0.9 },
+    { path: "/news", changeFrequency: "daily" as const, priority: 0.85 },
     { path: "/contacts", changeFrequency: "monthly" as const, priority: 0.7 },
   ];
 
@@ -115,5 +116,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Fallback to empty array if API fails
   }
 
-  return [...staticPages, ...categoryPages, ...productPages];
+  // Fetch news pages
+  let newsPages: MetadataRoute.Sitemap = [];
+  try {
+    const newsRes = await fetch(`${apiUrl}/news/public?limit=200`, {
+      next: { revalidate: 3600 },
+      headers: { "User-Agent": "Sitemap Generator" },
+    });
+    const newsData = await newsRes.json();
+    if (newsData.success && Array.isArray(newsData.data?.items)) {
+      newsPages = newsData.data.items.flatMap(
+        (news: { slug: string; publishedAt?: string; updatedAt?: string; createdAt: string }) =>
+          locales.map((locale) => ({
+            url: getLocalizedUrl(`/news/${news.slug}`, locale),
+            lastModified: new Date(news.updatedAt || news.publishedAt || news.createdAt),
+            changeFrequency: "weekly" as const,
+            priority: 0.75,
+            alternates: getAlternates(`/news/${news.slug}`),
+          }))
+      );
+    }
+  } catch {
+    // Fallback to empty array if API fails
+  }
+
+  return [...staticPages, ...categoryPages, ...productPages, ...newsPages];
 }

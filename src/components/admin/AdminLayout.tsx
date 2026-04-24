@@ -34,6 +34,7 @@ import {
   Image,
   BarChart3,
   Megaphone,
+  Newspaper,
 } from "lucide-react";
 
 interface SidebarItem {
@@ -125,6 +126,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       icon: Megaphone,
       label: "Banner quảng cáo",
       path: "/admin/promotional-banners",
+    },
+    {
+      icon: Newspaper,
+      label: "Tin tức",
+      path: "/admin/news",
     },
     {
       icon: BarChart3,

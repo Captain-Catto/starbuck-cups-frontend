@@ -88,25 +88,6 @@ export default function CartPage() {
     setIsSubmitting(true);
 
     try {
-      console.log("🛒 CART ITEMS DEBUG:", {
-        totalItems: items.length,
-        items: items.map((item, index) => ({
-          index,
-          productId: item.product.id,
-          productName: item.product.name,
-          selectedColor: item.colorRequest,
-          availableColors: item.product.productColors?.map((pc) => ({
-            id: pc.color.id,
-            name: pc.color.name,
-            hexCode: pc.color.hexCode,
-          })),
-          capacity: item.product.capacity?.name,
-          categories: item.product.productCategories?.map(
-            (pc) => pc.category.name
-          ),
-        })),
-      });
-
       const consultationData = {
         customer: {
           ...formData,
