@@ -1,10 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Save, ArrowLeft } from "lucide-react";
+import { Save, ArrowLeft, Upload, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import type { News, NewsTranslationsInput, NewsStatus } from "@/types";
+import { useUpload } from "@/hooks/useUpload";
+
+const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-96 border border-gray-300 rounded-lg bg-gray-50 animate-pulse" />
+  ),
+});
 
 const LOCALES = [
   { key: "vi" as const, label: "Tiếng Việt" },
@@ -19,9 +28,12 @@ interface NewsFormProps {
 export function NewsForm({ initialData }: NewsFormProps) {
   const router = useRouter();
   const isEdit = !!initialData;
+  const { uploadSingle } = useUpload();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [status, setStatus] = useState<NewsStatus>(initialData?.status ?? "draft");
   const [thumbnail, setThumbnail] = useState(initialData?.thumbnail ?? "");
+  const [thumbnailUploading, setThumbnailUploading] = useState(false);
   const [activeLocale, setActiveLocale] = useState<"vi" | "en" | "zh">("vi");
   const [translations, setTranslations] = useState<NewsTranslationsInput>(() => {
     const result: NewsTranslationsInput = {};
@@ -44,6 +56,29 @@ export function NewsForm({ initialData }: NewsFormProps) {
       ...prev,
       [locale]: { ...prev[locale], [field]: value },
     }));
+  };
+
+  const handleThumbnailFile = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Chỉ chấp nhận file ảnh");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Ảnh không được vượt quá 5MB");
+      return;
+    }
+    setThumbnailUploading(true);
+    try {
+      const res = await uploadSingle(file, "uploads");
+      if (res.data?.url) {
+        setThumbnail(res.data.url);
+        toast.success("Đã upload thumbnail");
+      }
+    } catch {
+      toast.error("Upload thumbnail thất bại");
+    } finally {
+      setThumbnailUploading(false);
+    }
   };
 
   const handleSave = async (saveStatus?: NewsStatus) => {
@@ -80,7 +115,13 @@ export function NewsForm({ initialData }: NewsFormProps) {
     }
   };
 
-  const current = translations[activeLocale] ?? { title: "", summary: "", content: "", metaTitle: "", metaDescription: "" };
+  const current = translations[activeLocale] ?? {
+    title: "",
+    summary: "",
+    content: "",
+    metaTitle: "",
+    metaDescription: "",
+  };
 
   return (
     <div className="space-y-6">
@@ -159,13 +200,12 @@ export function NewsForm({ initialData }: NewsFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nội dung</label>
-              <textarea
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nội dung</label>
+              <RichTextEditor
                 value={current.content ?? ""}
-                onChange={(e) => updateTranslation(activeLocale, "content", e.target.value)}
-                placeholder="Nội dung bài viết..."
-                rows={16}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-y font-mono"
+                onChange={(val) => updateTranslation(activeLocale, "content", val)}
+                placeholder="Nhập nội dung bài viết..."
+                height={500}
               />
             </div>
           </div>
@@ -193,7 +233,9 @@ export function NewsForm({ initialData }: NewsFormProps) {
                 maxLength={160}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
               />
-              <p className="text-xs text-gray-400 mt-1">{(current.metaDescription ?? "").length}/160</p>
+              <p className="text-xs text-gray-400 mt-1">
+                {(current.metaDescription ?? "").length}/160
+              </p>
             </div>
           </div>
         </div>
@@ -213,17 +255,59 @@ export function NewsForm({ initialData }: NewsFormProps) {
                 <option value="published">Xuất bản</option>
               </select>
             </div>
+
+            {/* Thumbnail upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Ảnh thumbnail (URL)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Thumbnail</label>
               <input
-                type="text"
-                value={thumbnail}
-                onChange={(e) => setThumbnail(e.target.value)}
-                placeholder="https://..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleThumbnailFile(file);
+                  e.target.value = "";
+                }}
               />
-              {thumbnail && (
-                <img src={thumbnail} alt="thumbnail" className="mt-2 w-full aspect-video object-cover rounded-lg" />
+              {thumbnail ? (
+                <div className="relative group">
+                  <img
+                    src={thumbnail}
+                    alt="thumbnail"
+                    className="w-full aspect-video object-cover rounded-lg border border-gray-200"
+                  />
+                  <button
+                    onClick={() => setThumbnail("")}
+                    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4 text-red-500" />
+                  </button>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="mt-2 w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Đổi ảnh
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={thumbnailUploading}
+                  className="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center gap-2 hover:border-green-400 hover:bg-green-50 transition-colors disabled:opacity-50"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleThumbnailFile(file);
+                  }}
+                >
+                  <Upload className="w-6 h-6 text-gray-400" />
+                  <span className="text-sm text-gray-500">
+                    {thumbnailUploading ? "Đang upload..." : "Click hoặc kéo thả ảnh"}
+                  </span>
+                  <span className="text-xs text-gray-400">PNG, JPG, WebP tối đa 5MB</span>
+                </button>
               )}
             </div>
           </div>
