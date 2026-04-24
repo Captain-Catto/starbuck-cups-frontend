@@ -97,40 +97,40 @@ export default function AdminNewsPage() {
           onAction={() => router.push("/admin/news/new")}
         />
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-700/50 border-b border-gray-700">
               <tr>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Tiêu đề</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Ngày tạo</th>
-                <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">Thao tác</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-400 uppercase">Tiêu đề</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-400 uppercase">Trạng thái</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-400 uppercase">Ngày tạo</th>
+                <th className="text-right px-6 py-3 text-xs font-medium text-gray-400 uppercase">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-700">
               {newsList.map((news) => (
-                <tr key={news.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={news.id} className="hover:bg-gray-700/40 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       {news.thumbnail && (
                         <img src={news.thumbnail} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
                       )}
                       <div>
-                        <p className="text-sm font-medium text-gray-900 line-clamp-1">{getTitle(news)}</p>
-                        <p className="text-xs text-gray-400">{news.slug}</p>
+                        <p className="text-sm font-medium text-white line-clamp-1">{getTitle(news)}</p>
+                        <p className="text-xs text-gray-500">{news.slug}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       news.status === "published"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-600"
+                        ? "bg-green-900/50 text-green-400"
+                        : "bg-gray-700 text-gray-400"
                     }`}>
                       {news.status === "published" ? "Đã xuất bản" : "Nháp"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm text-gray-400">
                     {new Date(news.createdAt).toLocaleDateString("vi-VN")}
                   </td>
                   <td className="px-6 py-4">

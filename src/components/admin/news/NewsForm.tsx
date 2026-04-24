@@ -129,7 +129,7 @@ export function NewsForm({ initialData }: NewsFormProps) {
       <div className="flex items-center justify-between">
         <button
           onClick={() => router.push("/admin/news")}
-          className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Quay lại
@@ -138,7 +138,7 @@ export function NewsForm({ initialData }: NewsFormProps) {
           <button
             onClick={() => handleSave("draft")}
             disabled={saving}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
             Lưu nháp
           </button>
@@ -157,7 +157,7 @@ export function NewsForm({ initialData }: NewsFormProps) {
         {/* Main content */}
         <div className="lg:col-span-2 space-y-4">
           {/* Locale tabs */}
-          <div className="flex gap-2 border-b border-gray-200">
+          <div className="flex gap-2 border-b border-gray-700">
             {LOCALES.map(({ key, label }) => (
               <button
                 key={key}
@@ -165,7 +165,7 @@ export function NewsForm({ initialData }: NewsFormProps) {
                 className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                   activeLocale === key
                     ? "border-green-600 text-green-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    : "border-transparent text-gray-400 hover:text-gray-200"
                 }`}
               >
                 {label}
@@ -174,9 +174,9 @@ export function NewsForm({ initialData }: NewsFormProps) {
             ))}
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
                 Tiêu đề {activeLocale === "vi" && <span className="text-red-500">*</span>}
               </label>
               <input
@@ -184,23 +184,23 @@ export function NewsForm({ initialData }: NewsFormProps) {
                 value={current.title ?? ""}
                 onChange={(e) => updateTranslation(activeLocale, "title", e.target.value)}
                 placeholder="Nhập tiêu đề bài viết..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white placeholder-gray-400 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tóm tắt</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Tóm tắt</label>
               <textarea
                 value={current.summary ?? ""}
                 onChange={(e) => updateTranslation(activeLocale, "summary", e.target.value)}
                 placeholder="Tóm tắt ngắn hiển thị trên trang danh sách và SEO..."
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+                className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white placeholder-gray-400 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Nội dung</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Nội dung</label>
               <RichTextEditor
                 value={current.content ?? ""}
                 onChange={(val) => updateTranslation(activeLocale, "content", val)}
@@ -211,29 +211,29 @@ export function NewsForm({ initialData }: NewsFormProps) {
           </div>
 
           {/* SEO */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-            <h3 className="text-sm font-semibold text-gray-900">SEO</h3>
+          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 space-y-4">
+            <h3 className="text-sm font-semibold text-white">SEO</h3>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Meta Title</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Meta Title</label>
               <input
                 type="text"
                 value={current.metaTitle ?? ""}
                 onChange={(e) => updateTranslation(activeLocale, "metaTitle", e.target.value)}
                 placeholder="Tiêu đề SEO (để trống sẽ dùng tiêu đề bài viết)"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white placeholder-gray-400 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Meta Description</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Meta Description</label>
               <textarea
                 value={current.metaDescription ?? ""}
                 onChange={(e) => updateTranslation(activeLocale, "metaDescription", e.target.value)}
                 placeholder="Mô tả SEO (tối đa 160 ký tự)"
                 rows={3}
                 maxLength={160}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+                className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white placeholder-gray-400 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
               />
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 {(current.metaDescription ?? "").length}/160
               </p>
             </div>
@@ -242,14 +242,14 @@ export function NewsForm({ initialData }: NewsFormProps) {
 
         {/* Sidebar */}
         <div className="space-y-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-            <h3 className="text-sm font-semibold text-gray-900">Cài đặt</h3>
+          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 space-y-4">
+            <h3 className="text-sm font-semibold text-white">Cài đặt</h3>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Trạng thái</label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as NewsStatus)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white placeholder-gray-400 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="draft">Nháp</option>
                 <option value="published">Xuất bản</option>
@@ -258,7 +258,7 @@ export function NewsForm({ initialData }: NewsFormProps) {
 
             {/* Thumbnail upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Thumbnail</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Thumbnail</label>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -275,7 +275,7 @@ export function NewsForm({ initialData }: NewsFormProps) {
                   <img
                     src={thumbnail}
                     alt="thumbnail"
-                    className="w-full aspect-video object-cover rounded-lg border border-gray-200"
+                    className="w-full aspect-video object-cover rounded-lg border border-gray-600"
                   />
                   <button
                     onClick={() => setThumbnail("")}
@@ -285,7 +285,7 @@ export function NewsForm({ initialData }: NewsFormProps) {
                   </button>
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="mt-2 w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="mt-2 w-full px-3 py-1.5 text-xs border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     Đổi ảnh
                   </button>
@@ -294,7 +294,7 @@ export function NewsForm({ initialData }: NewsFormProps) {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={thumbnailUploading}
-                  className="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center gap-2 hover:border-green-400 hover:bg-green-50 transition-colors disabled:opacity-50"
+                  className="w-full border-2 border-dashed border-gray-600 rounded-lg p-6 flex flex-col items-center gap-2 hover:border-green-500 hover:bg-green-900/20 transition-colors disabled:opacity-50"
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
                     e.preventDefault();
@@ -302,11 +302,11 @@ export function NewsForm({ initialData }: NewsFormProps) {
                     if (file) handleThumbnailFile(file);
                   }}
                 >
-                  <Upload className="w-6 h-6 text-gray-400" />
-                  <span className="text-sm text-gray-500">
+                  <Upload className="w-6 h-6 text-gray-500" />
+                  <span className="text-sm text-gray-400">
                     {thumbnailUploading ? "Đang upload..." : "Click hoặc kéo thả ảnh"}
                   </span>
-                  <span className="text-xs text-gray-400">PNG, JPG, WebP tối đa 5MB</span>
+                  <span className="text-xs text-gray-500">PNG, JPG, WebP tối đa 5MB</span>
                 </button>
               )}
             </div>
