@@ -31,9 +31,11 @@ export default async function EditNewsPage({
   if (!news) notFound();
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <h1 className="text-xl font-semibold text-gray-900 mb-6">Chỉnh sửa bài viết</h1>
-      <NewsForm initialData={news} />
+    <div className="bg-gray-900 min-h-screen p-6">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-xl font-semibold text-white mb-6">Chỉnh sửa bài viết</h1>
+        <NewsForm initialData={news} />
+      </div>
     </div>
   );
 }

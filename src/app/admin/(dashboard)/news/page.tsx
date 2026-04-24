@@ -73,7 +73,7 @@ export default function AdminNewsPage() {
   if (loading) return <LoadingState />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gray-900 min-h-screen p-6">
       <PageHeader
         title="Quản lý Bài viết"
         description="Tạo và quản lý nội dung tin tức, blog để tăng SEO"
