@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef } from "react";
 import ProductCard from "@/components/ProductCard";
@@ -53,50 +53,75 @@ export default function ProductsGrid({
   const [paginationData, setPaginationData] = useState<PaginationData | null>(
     initialPaginationData
   );
+
+  // Track whether we already skipped the initial fetch (used server data)
   const didSkipInitialFetch = useRef(false);
+  // Track the params of the last *completed* fetch to avoid redundant requests
   const lastFetchedParams = useRef<string | null>(null);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
+    // Each render of this effect gets its own AbortController.
+    // When the effect re-runs (deps changed) or the component unmounts,
+    // the previous controller is aborted — cancelling any in-flight request.
+    const controller = new AbortController();
+    const { signal } = controller;
+
     const fetchProducts = async () => {
+      const productsLimit = getProductsPageLimit();
+      const params = buildProductsQueryParams({
+        searchQuery,
+        selectedCategory,
+        selectedColor,
+        capacityRange,
+        sortBy,
+        currentPage,
+        limit: productsLimit,
+        locale,
+      });
+      const currentParams = params.toString();
+
+      // --- Skip logic: reuse SSR data on first render ---
+      if (
+        !didSkipInitialFetch.current &&
+        initialQueryKey &&
+        initialQueryKey === currentParams
+      ) {
+        didSkipInitialFetch.current = true;
+        lastFetchedParams.current = currentParams;
+        setLoading(false);
+        return;
+      }
+      didSkipInitialFetch.current = true;
+
+      // --- Dedup: skip if we already have results for these exact params ---
+      if (lastFetchedParams.current === currentParams) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
+
       try {
-        const productsLimit = getProductsPageLimit();
-        const params = buildProductsQueryParams({
-          searchQuery,
-          selectedCategory,
-          selectedColor,
-          capacityRange,
-          sortBy,
-          currentPage,
-          limit: productsLimit,
-          locale,
+        const response = await fetch(`/api/products?${currentParams}`, {
+          signal,
         });
 
-        if (
-          !didSkipInitialFetch.current &&
-          initialQueryKey &&
-          initialQueryKey === params.toString()
-        ) {
-          didSkipInitialFetch.current = true;
-          lastFetchedParams.current = params.toString();
-          setLoading(false);
-          return;
-        }
-        didSkipInitialFetch.current = true;
+        // If the request was aborted, bail out without touching state.
+        // (fetch will throw a DOMException with name "AbortError")
+        if (signal.aborted) return;
 
-        // Skip if same params as last fetch (prevents double-fetch on hydration)
-        const currentParams = params.toString();
-        if (lastFetchedParams.current === currentParams) {
-          setLoading(false);
-          return;
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
         }
-        lastFetchedParams.current = currentParams;
 
-        const response = await fetch(`/api/products?${params.toString()}`);
         const data = await response.json();
 
+        // Double-check after await — a later render may have already aborted us.
+        if (signal.aborted) return;
+
         if (data.success && data.data?.items) {
+          lastFetchedParams.current = currentParams;
           setProducts(data.data.items);
           const totalPages = data.data.pagination?.total_pages || 1;
           setPaginationData({
@@ -110,19 +135,35 @@ export default function ProductsGrid({
             onPageChange(1);
           }
         } else {
+          lastFetchedParams.current = currentParams;
           setProducts([]);
           setPaginationData(null);
         }
-      } catch (error) {
+      } catch (error: unknown) {
+        // AbortError is expected when a newer fetch supersedes this one — not a bug.
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+        if (signal.aborted) return;
+
         console.error("Error fetching products:", error);
         setProducts([]);
         setPaginationData(null);
+        lastFetchedParams.current = null; // Allow retry on next filter change
       } finally {
-        setLoading(false);
+        // Only clear loading if this request wasn't superseded.
+        if (!signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProducts();
+
+    // Cleanup: abort the in-flight request when deps change or on unmount.
+    return () => {
+      controller.abort();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     searchQuery,

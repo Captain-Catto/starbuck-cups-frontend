@@ -3,7 +3,6 @@
 import { Search } from "lucide-react";
 import type { Category, Color, Capacity, CapacityRange } from "@/types";
 import { useTranslations } from "next-intl";
-import { useSearchParams } from "next/navigation";
 
 interface ProductsFiltersProps {
   // Data
@@ -55,9 +54,6 @@ export function ProductsFilters({
   onClearFilters,
 }: ProductsFiltersProps) {
   const t = useTranslations("filters");
-  const searchParams = useSearchParams();
-  const urlMinCapacity = parseInt(searchParams.get("minCapacity") || "0");
-  const urlMaxCapacity = parseInt(searchParams.get("maxCapacity") || "9999");
 
   const searchInputId = "products-filter-search";
   const categorySelectId = "products-filter-category";
@@ -322,8 +318,8 @@ export function ProductsFilters({
             <div className="overflow-y-auto max-h-48 bg-zinc-800 border border-zinc-700 rounded">
               {capacities.map((capacity) => {
                 const isSelected =
-                  urlMinCapacity === Number(capacity.volumeMl) &&
-                  urlMaxCapacity === Number(capacity.volumeMl);
+                  capacityRange.min === capacity.volumeMl &&
+                  capacityRange.max === capacity.volumeMl;
                 return (
                   <button
                     key={capacity.id}

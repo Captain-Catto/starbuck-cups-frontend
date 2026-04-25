@@ -126,11 +126,18 @@ export const useResponsiveProductsPerPage = (
 };
 
 /**
+ * Single source of truth for the products page limit.
+ * Used by both the server (page.tsx) and the client (ProductsGrid.tsx)
+ * so that `initialQueryKey` always matches client-side params.
+ */
+export const PRODUCTS_PAGE_LIMIT = 24;
+
+/**
  * Get fixed limit for products page
  * Returns 24 products per page to reduce initial render/main-thread pressure
  */
 export const getProductsPageLimit = (): number => {
-  return 24;
+  return PRODUCTS_PAGE_LIMIT;
 };
 
 // Extend Window interface for TypeScript

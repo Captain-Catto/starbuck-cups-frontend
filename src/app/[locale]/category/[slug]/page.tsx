@@ -3,9 +3,8 @@ import { setRequestLocale } from "next-intl/server";
 import { getApiUrl } from "@/lib/api-config";
 import { buildProductsQueryParams } from "@/lib/products-query";
 import CategoryPageClient from "@/components/pages/CategoryPageClient";
+import { PRODUCTS_PAGE_LIMIT } from "@/utils/layoutCalculator";
 import type { Category, Color, Capacity, Product } from "@/types";
-
-const DEFAULT_LIMIT = 24;
 
 interface ProductsApiResponse {
   success: boolean;
@@ -42,7 +41,7 @@ async function getInitialProducts(slug: string, locale: string) {
     capacityRange: { min: 0, max: 9999 },
     sortBy: "featured",
     currentPage: 1,
-    limit: DEFAULT_LIMIT,
+    limit: PRODUCTS_PAGE_LIMIT,
     locale,
   });
 
@@ -58,7 +57,7 @@ async function getInitialProducts(slug: string, locale: string) {
     const pagination = data.success
       ? {
           totalPages: data.data?.pagination?.total_pages ?? 1,
-          limit: data.data?.pagination?.per_page ?? DEFAULT_LIMIT,
+          limit: data.data?.pagination?.per_page ?? PRODUCTS_PAGE_LIMIT,
           totalItems: data.data?.pagination?.total_items ?? products.length,
         }
       : null;

@@ -1,8 +1,11 @@
+import { Suspense } from "react";
 import ProductsPageClient from "@/components/pages/ProductsPageClient";
 import { getApiUrl } from "@/lib/api-config";
 import { buildProductsQueryParams } from "@/lib/products-query";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { generateBreadcrumbStructuredData } from "@/lib/seo";
+import { PRODUCTS_PAGE_LIMIT } from "@/utils/layoutCalculator";
+import ProductsPageSkeleton from "@/components/ui/ProductsPageSkeleton";
 import type { Category, Color, Capacity, Product } from "@/types";
 
 export const revalidate = 3600;
@@ -26,7 +29,6 @@ interface InitialPaginationData {
   totalItems: number;
 }
 
-const DEFAULT_PRODUCTS_LIMIT = 24;
 
 // ─── Server-side helpers ────────────────────────────────────────────────────
 
@@ -42,7 +44,7 @@ async function getInitialProducts(locale: string): Promise<{
     capacityRange: { min: 0, max: 9999 },
     sortBy: "featured",
     currentPage: 1,
-    limit: DEFAULT_PRODUCTS_LIMIT,
+    limit: PRODUCTS_PAGE_LIMIT,
     locale,
   });
 
@@ -63,7 +65,7 @@ async function getInitialProducts(locale: string): Promise<{
     const pagination = data.success
       ? {
           totalPages: data.data?.pagination?.total_pages ?? 1,
-          limit: data.data?.pagination?.per_page ?? DEFAULT_PRODUCTS_LIMIT,
+          limit: data.data?.pagination?.per_page ?? PRODUCTS_PAGE_LIMIT,
           totalItems: data.data?.pagination?.total_items ?? products.length,
         }
       : null;
@@ -172,14 +174,16 @@ export default async function ProductsPage({
         <p>{t("productsIntroP4")}</p>
       </div>
 
-      <ProductsPageClient
-        initialProducts={products}
-        initialPaginationData={pagination}
-        initialQueryKey={queryKey}
-        initialCategories={categories}
-        initialColors={colors}
-        initialCapacities={capacities}
-      />
+      <Suspense fallback={<ProductsPageSkeleton />}>
+        <ProductsPageClient
+          initialProducts={products}
+          initialPaginationData={pagination}
+          initialQueryKey={queryKey}
+          initialCategories={categories}
+          initialColors={colors}
+          initialCapacities={capacities}
+        />
+      </Suspense>
     </>
   );
 }
