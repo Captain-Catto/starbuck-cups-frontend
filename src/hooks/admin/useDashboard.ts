@@ -154,7 +154,7 @@ export function useDashboard(): UseDashboardReturn {
           ?.then((stats) => {
             setDashboardStats(stats);
           })
-          .catch(() => {})
+          .catch(() => { setError((prev) => prev || "Không thể tải thống kê dashboard"); })
           .finally(() => setStatsLoading(false));
       }
 
@@ -186,7 +186,7 @@ export function useDashboard(): UseDashboardReturn {
           ?.then((orders) => {
             setRecentOrders(orders);
           })
-          .catch(() => {})
+          .catch(() => { setError((prev) => prev || "Không thể tải đơn hàng gần đây"); })
           .finally(() => setOrdersLoading(false));
       }
 
@@ -217,7 +217,7 @@ export function useDashboard(): UseDashboardReturn {
           ?.then((revenue) => {
             setRevenueData(revenue);
           })
-          .catch(() => {})
+          .catch(() => { setError((prev) => prev || "Không thể tải dữ liệu doanh thu"); })
           .finally(() => setRevenueLoading(false));
       }
 
@@ -246,7 +246,7 @@ export function useDashboard(): UseDashboardReturn {
           ?.then((count) => {
             setPendingConsultations(count);
           })
-          .catch(() => {});
+          .catch(() => { setError((prev) => prev || "Không thể tải dữ liệu tư vấn"); });
       }
     },
     [token]

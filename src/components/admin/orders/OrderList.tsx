@@ -280,8 +280,8 @@ export function OrderList(props: OrderListProps) {
                   Ngày tạo
                 </div>
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                Thao tác
+              <th className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">
+                Hành động
               </th>
             </tr>
           </thead>

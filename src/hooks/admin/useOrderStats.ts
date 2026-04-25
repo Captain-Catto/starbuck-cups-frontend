@@ -156,7 +156,7 @@ export function useOrderStats(): UseOrderStatsReturn {
       if (previous === 0) {
         return {
           change: current > 0 ? "+100%" : "0%",
-          trend: current > 0 ? "up" : "up",
+          trend: current > 0 ? "up" : "down",
         };
       }
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Plus, Pencil, Trash2, Eye, EyeOff, Newspaper } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/admin/PageHeader";
@@ -15,16 +16,24 @@ export default function AdminNewsPage() {
   const router = useRouter();
   const [newsList, setNewsList] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const fetchNews = useCallback(async () => {
     try {
+      setError(null);
       const res = await fetch("/api/admin/news?limit=50");
       const data = await res.json();
-      if (data.success) setNewsList(data.data?.items ?? []);
-    } catch {
-      toast.error("Không thể tải danh sách bài viết");
+      if (data.success) {
+        setNewsList(data.data?.items ?? []);
+      } else {
+        throw new Error(data.message || "Không thể tải danh sách bài viết");
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Không thể tải danh sách bài viết";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -72,6 +81,23 @@ export default function AdminNewsPage() {
 
   if (loading) return <LoadingState />;
 
+  if (error) {
+    return (
+      <div className="space-y-6 bg-gray-900 min-h-screen p-6">
+        <PageHeader title="Quản lý Bài viết" description="Tạo và quản lý nội dung tin tức, blog để tăng SEO" />
+        <div className="bg-gray-800 rounded-xl border border-red-700 p-8 text-center">
+          <p className="text-red-400 mb-4">{error}</p>
+          <button
+            onClick={fetchNews}
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            Thử lại
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 bg-gray-900 min-h-screen p-6">
       <PageHeader
@@ -80,7 +106,7 @@ export default function AdminNewsPage() {
         action={
           <button
             onClick={() => router.push("/admin/news/new")}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Thêm bài viết
@@ -113,7 +139,7 @@ export default function AdminNewsPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       {news.thumbnail && (
-                        <img src={news.thumbnail} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
+                        <Image src={news.thumbnail} alt={getTitle(news)} width={40} height={40} className="rounded object-cover flex-shrink-0" />
                       )}
                       <div>
                         <p className="text-sm font-medium text-white line-clamp-1">{getTitle(news)}</p>
@@ -139,6 +165,7 @@ export default function AdminNewsPage() {
                         onClick={() => handleToggleStatus(news)}
                         disabled={togglingId === news.id}
                         title={news.status === "published" ? "Chuyển về nháp" : "Xuất bản"}
+                        aria-label={news.status === "published" ? "Chuyển về nháp" : "Xuất bản"}
                         className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
                       >
                         {news.status === "published" ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -146,6 +173,7 @@ export default function AdminNewsPage() {
                       <button
                         onClick={() => router.push(`/admin/news/${news.id}`)}
                         title="Chỉnh sửa"
+                        aria-label="Chỉnh sửa bài viết"
                         className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
                       >
                         <Pencil className="w-4 h-4" />
@@ -154,6 +182,7 @@ export default function AdminNewsPage() {
                         onClick={() => handleDelete(news.id)}
                         disabled={deletingId === news.id}
                         title="Xóa"
+                        aria-label="Xóa bài viết"
                         className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                       >
                         <Trash2 className="w-4 h-4" />

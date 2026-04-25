@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, Search, Filter, Download } from "lucide-react";
 import Link from "next/link";
 import { CustomerList } from "@/components/admin/customers/CustomerList";
+import { PageHeader } from "@/components/admin/PageHeader";
 
 export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,28 +17,25 @@ export default function CustomersPage() {
 
   return (
     <div className="space-y-6 bg-gray-900 min-h-screen p-6">
-      {/* Page Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Quản lý khách hàng</h1>
-          <p className="text-gray-300 mt-1">
-            Quản lý thông tin khách hàng và địa chỉ giao hàng
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 text-gray-300 bg-gray-800 border border-gray-600 rounded-lg hover:bg-gray-700">
-            <Download className="w-4 h-4" />
-            Xuất Excel
-          </button>
-          <Link
-            href="/admin/customers/new"
-            className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
-          >
-            <Plus className="w-4 h-4" />
-            Thêm khách hàng
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Quản lý khách hàng"
+        description="Quản lý thông tin khách hàng và địa chỉ giao hàng"
+        action={
+          <div className="flex gap-3">
+            <button className="inline-flex items-center gap-2 px-4 py-2 text-gray-300 bg-gray-800 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors">
+              <Download className="w-4 h-4" />
+              Xuất Excel
+            </button>
+            <Link
+              href="/admin/customers/new"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Thêm khách hàng
+            </Link>
+          </div>
+        }
+      />
 
       {/* Filters & Search */}
       <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">

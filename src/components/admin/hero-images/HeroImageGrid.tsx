@@ -81,12 +81,7 @@ export function HeroImageGrid({
       })
     );
 
-    // Force React to re-render by clearing and setting
-    setLocalHeroImages([]);
-    setTimeout(() => {
-      setLocalHeroImages(reorderedItems);
-    }, 0);
-
+    setLocalHeroImages(reorderedItems);
     setLastUpdateTime(Date.now()); // Block sync for 500ms
 
     // Update order values and call API

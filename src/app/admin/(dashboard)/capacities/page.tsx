@@ -1,8 +1,9 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { useCapacities } from "@/hooks/admin/useCapacities";
-import { CapacitiesHeader } from "@/components/admin/capacities/CapacitiesHeader";
-import { CapacitiesSearchFilter } from "@/components/admin/capacities/CapacitiesSearchFilter";
+import { PageHeader } from "@/components/admin/PageHeader";
+import { SearchFilter } from "@/components/admin/SearchFilter";
 import { CapacitiesTable } from "@/components/admin/capacities/CapacitiesTable";
 import { CapacityFormModal } from "@/components/admin/capacities/CapacityFormModal";
 import { CapacityDeleteModal } from "@/components/admin/capacities/CapacityDeleteModal";
@@ -54,32 +55,42 @@ export default function CapacitiesManagement() {
   } = useCapacities();
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <CapacitiesHeader onAddCapacity={handleAddCapacity} />
+    <div className="space-y-6 bg-gray-900 min-h-screen p-6">
+      <PageHeader
+        title="Quản lý dung tích"
+        description="Quản lý các loại dung tích cốc và ly"
+        action={
+          <button
+            onClick={handleAddCapacity}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Thêm dung tích
+          </button>
+        }
+      />
 
-        {/* Search & Filter */}
-        <CapacitiesSearchFilter
-          searchQuery={searchQuery}
-          statusFilter={statusFilter}
-          onSearchChange={setSearchQuery}
-          onStatusFilterChange={setStatusFilter}
-        />
+      {/* Search & Filter */}
+      <SearchFilter
+        searchQuery={searchQuery}
+        statusFilter={statusFilter}
+        onSearchChange={setSearchQuery}
+        onStatusFilterChange={setStatusFilter}
+        searchPlaceholder="Tìm kiếm dung tích..."
+      />
 
-        {/* Capacities Table */}
-        <CapacitiesTable
-          capacities={filteredCapacities}
-          loading={loading}
-          actionLoading={actionLoading}
-          searchQuery={searchQuery}
-          pagination={pagination}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onToggleStatus={handleToggleStatus}
-          onPageChange={onPageChange}
-        />
-      </div>
+      {/* Capacities Table */}
+      <CapacitiesTable
+        capacities={filteredCapacities}
+        loading={loading}
+        actionLoading={actionLoading}
+        searchQuery={searchQuery}
+        pagination={pagination}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onToggleStatus={handleToggleStatus}
+        onPageChange={onPageChange}
+      />
 
       {/* Form Modal */}
       <CapacityFormModal

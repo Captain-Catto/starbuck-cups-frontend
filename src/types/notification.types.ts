@@ -91,6 +91,19 @@ export type NotificationPayload =
   | PaymentNotification
   | InventoryNotification;
 
+export function isConsultationData(
+  data: NotificationData["data"]
+): data is ConsultationData {
+  return !!data && "consultationId" in data;
+}
+
+export function isOrderData(
+  data: NotificationData["data"]
+): data is OrderData {
+  // OrderData has totalAmount; PaymentData (also has orderId) has status instead
+  return !!data && "orderId" in data && "totalAmount" in data;
+}
+
 export interface NotificationState {
   notifications: NotificationData[];
   unreadCount: number;

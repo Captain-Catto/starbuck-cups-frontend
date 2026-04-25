@@ -15,14 +15,13 @@ interface CustomerListProps {
   dateTo?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
-  refreshTrigger?: number;
 }
 
 export function CustomerList({
   searchTerm,
-  vipStatus,
-  dateFrom,
-  dateTo,
+  vipStatus = "all",
+  dateFrom = "",
+  dateTo = "",
   sortBy = "createdAt",
   sortOrder = "desc",
 }: CustomerListProps) {
@@ -34,65 +33,12 @@ export function CustomerList({
     handleDelete,
     performDelete,
     setConfirmModal,
-  } = useAdminCustomers();
+  } = useAdminCustomers(searchTerm, vipStatus, dateFrom, dateTo);
 
-  // Filter and sort customers based on all criteria
-  const filteredAndSortedCustomers = useMemo(() => {
-    if (!customers) return [];
-
-    // First, filter customers
-    const filtered = customers.filter((customer) => {
-      // Search term filter
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase();
-        const matchesName =
-          customer.fullName?.toLowerCase().includes(searchLower) || false;
-        const matchesPhone =
-          customer.customerPhones?.some((phone) =>
-            phone.phoneNumber.includes(searchTerm)
-          ) || false;
-        const matchesAddress =
-          customer.addresses?.some(
-            (addr) =>
-              addr.addressLine.toLowerCase().includes(searchLower) ||
-              addr.city.toLowerCase().includes(searchLower) ||
-              addr.district?.toLowerCase().includes(searchLower) ||
-              addr.ward?.toLowerCase().includes(searchLower)
-          ) || false;
-
-        if (!matchesName && !matchesPhone && !matchesAddress) {
-          return false;
-        }
-      }
-
-      // VIP status filter
-      if (vipStatus && vipStatus !== "all") {
-        if (vipStatus === "vip" && !customer.isVip) return false;
-        if (vipStatus === "regular" && customer.isVip) return false;
-      }
-
-      // Date range filter
-      if (dateFrom || dateTo) {
-        const customerDate = new Date(customer.createdAt);
-
-        if (dateFrom) {
-          const fromDate = new Date(dateFrom);
-          fromDate.setHours(0, 0, 0, 0); // Start of day
-          if (customerDate < fromDate) return false;
-        }
-
-        if (dateTo) {
-          const toDate = new Date(dateTo);
-          toDate.setHours(23, 59, 59, 999); // End of day
-          if (customerDate > toDate) return false;
-        }
-      }
-
-      return true;
-    });
-
-    // Then, sort filtered results
-    const sorted = [...filtered].sort((a, b) => {
+  // Sort API results client-side since backend always returns createdAt DESC
+  const sortedCustomers = useMemo(() => {
+    if (!customers.length) return customers;
+    return [...customers].sort((a, b) => {
       let aValue: string | number | Date;
       let bValue: string | number | Date;
 
@@ -122,99 +68,69 @@ export function CustomerList({
           : (bValue as string).localeCompare(aValue);
       }
 
-      if (sortOrder === "asc") {
-        return (aValue as number) > (bValue as number)
-          ? 1
-          : (aValue as number) < (bValue as number)
-          ? -1
-          : 0;
-      } else {
-        return (bValue as number) > (aValue as number)
-          ? 1
-          : (bValue as number) < (aValue as number)
-          ? -1
-          : 0;
-      }
+      const diff = (aValue as number) > (bValue as number) ? 1 : (aValue as number) < (bValue as number) ? -1 : 0;
+      return sortOrder === "asc" ? diff : -diff;
     });
+  }, [customers, sortBy, sortOrder]);
 
-    return sorted;
-  }, [customers, searchTerm, vipStatus, dateFrom, dateTo, sortBy, sortOrder]);
-
-  // TODO: Implement search filtering later
-  // For now, just load all customers and sort on frontend
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("vi-VN", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(amount);
-  };
 
   if (loading) {
     return (
       <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-        <div className="animate-pulse">
-          {/* Table Header Skeleton */}
-          <div className="bg-gray-700 px-6 py-3">
-            <div className="grid grid-cols-7 gap-4">
-              <div className="h-4 bg-gray-600 rounded w-32"></div>
+        <div className="overflow-x-auto">
+          <div className="animate-pulse min-w-[800px]">
+            <div className="bg-gray-700 px-6 py-3 flex gap-4">
+              <div className="h-4 bg-gray-600 rounded w-40"></div>
               <div className="h-4 bg-gray-600 rounded w-24"></div>
-              <div className="h-4 bg-gray-600 rounded w-20"></div>
-              <div className="h-4 bg-gray-600 rounded w-20"></div>
               <div className="h-4 bg-gray-600 rounded w-24"></div>
-              <div className="h-4 bg-gray-600 rounded w-20"></div>
+              <div className="h-4 bg-gray-600 rounded w-24"></div>
+              <div className="h-4 bg-gray-600 rounded w-28"></div>
+              <div className="h-4 bg-gray-600 rounded w-24"></div>
+              <div className="h-4 bg-gray-600 rounded w-16 ml-auto"></div>
             </div>
-          </div>
-          {/* Table Rows Skeleton */}
-          <div className="divide-y divide-gray-700">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="px-6 py-4 bg-gray-800">
-                <div className="grid grid-cols-7 gap-4 items-center">
-                  {/* Customer Info */}
-                  <div className="space-y-2">
+            <div className="divide-y divide-gray-700">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="px-6 py-4 flex gap-4 items-center">
+                  <div className="space-y-2 w-40 shrink-0">
                     <div className="h-4 bg-gray-700 rounded w-36"></div>
                     <div className="h-3 bg-gray-700 rounded w-20"></div>
                   </div>
-                  {/* Contact */}
-                  <div className="space-y-2">
-                    <div className="h-4 bg-gray-700 rounded w-28"></div>
-                    <div className="h-3 bg-gray-700 rounded w-24"></div>
+                  <div className="h-4 bg-gray-700 rounded w-24 shrink-0"></div>
+                  <div className="h-4 bg-gray-700 rounded w-24 shrink-0"></div>
+                  <div className="space-y-2 w-24 shrink-0">
+                    <div className="h-4 bg-gray-700 rounded w-20"></div>
+                    <div className="h-3 bg-gray-700 rounded w-16"></div>
                   </div>
-                  {/* Address */}
-                  <div className="space-y-2">
+                  <div className="space-y-2 w-28 shrink-0">
                     <div className="h-4 bg-gray-700 rounded w-24"></div>
                     <div className="h-3 bg-gray-700 rounded w-16"></div>
                   </div>
-                  {/* Status */}
-                  <div>
-                    <div className="h-6 bg-gray-700 rounded-full w-20"></div>
+                  <div className="space-y-2 w-24 shrink-0">
+                    <div className="h-4 bg-gray-700 rounded w-20"></div>
+                    <div className="h-3 bg-gray-700 rounded w-16"></div>
                   </div>
-                  {/* Created */}
-                  <div className="space-y-2">
-                    <div className="h-4 bg-gray-700 rounded w-24"></div>
-                    <div className="h-3 bg-gray-700 rounded w-20"></div>
-                  </div>
-                  {/* Actions */}
-                  <div className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <div className="w-8 h-8 bg-gray-700 rounded"></div>
-                      <div className="w-8 h-8 bg-gray-700 rounded"></div>
-                      <div className="w-8 h-8 bg-gray-700 rounded"></div>
-                    </div>
+                  <div className="flex justify-end gap-2 ml-auto">
+                    <div className="w-8 h-8 bg-gray-700 rounded"></div>
+                    <div className="w-8 h-8 bg-gray-700 rounded"></div>
+                    <div className="w-8 h-8 bg-gray-700 rounded"></div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -246,12 +162,12 @@ export function CustomerList({
                 Đơn hàng cuối
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">
-                Thao tác
+                Hành động
               </th>
             </tr>
           </thead>
           <tbody className="bg-gray-800 divide-y divide-gray-700">
-            {filteredAndSortedCustomers.map((customer) => (
+            {sortedCustomers.map((customer) => (
               <tr key={customer.id} className="hover:bg-gray-700 cursor-pointer">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="max-w-48">
@@ -280,22 +196,18 @@ export function CustomerList({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="space-y-1">
-                    {customer.customerPhones &&
-                      customer.customerPhones.length > 0 && (
-                        <div className="flex items-center gap-2 text-sm text-white">
-                          {customer.customerPhones[0].phoneNumber}
-                        </div>
-                      )}
+                    {customer.customerPhones && customer.customerPhones.length > 0 && (
+                      <div className="flex items-center gap-2 text-sm text-white">
+                        {customer.customerPhones[0].phoneNumber}
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-white max-w-32">
                     {customer.addresses && customer.addresses.length > 0 ? (
                       <div className="min-w-0">
-                        <div
-                          className="truncate"
-                          title={customer.addresses[0].city}
-                        >
+                        <div className="truncate" title={customer.addresses[0].city}>
                           {customer.addresses[0].city}
                         </div>
                         <div className="text-gray-300 text-xs">
@@ -308,12 +220,8 @@ export function CustomerList({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-white">
-                    {timeAgo(customer.createdAt)}
-                  </div>
-                  <div className="text-sm text-gray-400">
-                    {formatDate(customer.createdAt)}
-                  </div>
+                  <div className="text-sm text-white">{timeAgo(customer.createdAt)}</div>
+                  <div className="text-sm text-gray-400">{formatDate(customer.createdAt)}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-white">
@@ -326,12 +234,8 @@ export function CustomerList({
                 <td className="px-6 py-4 whitespace-nowrap">
                   {customer.lastOrderDate ? (
                     <>
-                      <div className="text-sm text-white">
-                        {timeAgo(customer.lastOrderDate)}
-                      </div>
-                      <div className="text-sm text-gray-400">
-                        {formatDate(customer.lastOrderDate)}
-                      </div>
+                      <div className="text-sm text-white">{timeAgo(customer.lastOrderDate)}</div>
+                      <div className="text-sm text-gray-400">{formatDate(customer.lastOrderDate)}</div>
                     </>
                   ) : (
                     <div className="text-sm text-gray-400">Chưa có đơn</div>
@@ -343,6 +247,7 @@ export function CustomerList({
                       href={`/admin/customers/${customer.id}`}
                       className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer"
                       title="Xem chi tiết"
+                      aria-label="Xem chi tiết khách hàng"
                     >
                       <Eye className="w-4 h-4" />
                     </Link>
@@ -350,14 +255,16 @@ export function CustomerList({
                       href={`/admin/customers/${customer.id}?edit=true`}
                       className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer"
                       title="Chỉnh sửa"
+                      aria-label="Chỉnh sửa khách hàng"
                     >
                       <Edit className="w-4 h-4" />
                     </Link>
                     <button
                       onClick={() => handleDelete(customer)}
                       disabled={actionLoading === `delete-${customer.id}`}
-                      className="text-white hover:bg-gray-700 p-1 rounded transition-colors"
+                      className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer"
                       title="Xóa"
+                      aria-label="Xóa khách hàng"
                     >
                       {actionLoading === `delete-${customer.id}` ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
@@ -373,35 +280,21 @@ export function CustomerList({
         </table>
       </div>
 
-      {/* Empty State */}
-      {filteredAndSortedCustomers.length === 0 && (
+      {sortedCustomers.length === 0 && (
         <div className="px-6 py-12 text-center">
           <div className="text-gray-300">
-            {searchTerm
-              ? "Không tìm thấy khách hàng nào"
-              : "Chưa có khách hàng nào"}
+            {searchTerm ? "Không tìm thấy khách hàng nào" : "Chưa có khách hàng nào"}
           </div>
         </div>
       )}
 
-      {/* Confirmation Modal */}
       <CustomerConfirmModal
         confirmModal={confirmModal}
-        onCancel={() =>
-          setConfirmModal({
-            show: false,
-            customer: null,
-            action: "delete",
-          })
-        }
+        onCancel={() => setConfirmModal({ show: false, customer: null, action: "delete" })}
         onConfirm={() => {
           if (confirmModal.customer) {
             performDelete(confirmModal.customer);
-            setConfirmModal({
-              show: false,
-              customer: null,
-              action: "delete",
-            });
+            setConfirmModal({ show: false, customer: null, action: "delete" });
           }
         }}
       />

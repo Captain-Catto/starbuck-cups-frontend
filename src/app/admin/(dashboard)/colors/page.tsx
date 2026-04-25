@@ -1,8 +1,9 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { useColors } from "@/hooks/admin/useColors";
-import { ColorsHeader } from "@/components/admin/colors/ColorsHeader";
-import { ColorsSearchFilter } from "@/components/admin/colors/ColorsSearchFilter";
+import { PageHeader } from "@/components/admin/PageHeader";
+import { SearchFilter } from "@/components/admin/SearchFilter";
 import { ColorsTable } from "@/components/admin/colors/ColorsTable";
 import { ColorFormModal } from "@/components/admin/colors/ColorFormModal";
 import { ColorConfirmModal } from "@/components/admin/colors/ColorConfirmModal";
@@ -44,15 +45,27 @@ export default function ColorsManagement() {
 
   return (
     <div className="space-y-6 bg-gray-900 min-h-screen p-6">
-      {/* Header */}
-      <ColorsHeader onAddColor={handleAddColor} />
+      <PageHeader
+        title="Quản lý màu sắc"
+        description="Quản lý các màu sắc cho sản phẩm"
+        action={
+          <button
+            onClick={handleAddColor}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Thêm màu mới
+          </button>
+        }
+      />
 
       {/* Search & Filter */}
-      <ColorsSearchFilter
+      <SearchFilter
         searchQuery={searchQuery}
         statusFilter={statusFilter}
         onSearchChange={setSearchQuery}
         onStatusFilterChange={setStatusFilter}
+        searchPlaceholder="Tìm kiếm màu sắc..."
       />
 
       {/* Colors Table */}

@@ -82,7 +82,7 @@ export function ConsultationsTable({
             {loading ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-700 mx-auto"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400 mx-auto"></div>
                   <p className="text-gray-300 mt-2">Đang tải...</p>
                 </td>
               </tr>
@@ -95,8 +95,8 @@ export function ConsultationsTable({
               </tr>
             ) : (
               consultations.map((consultation) => {
-                const statusInfo = statusConfig[consultation.status];
-                const StatusIcon = statusInfo.icon;
+                const statusInfo = statusConfig[consultation.status as keyof typeof statusConfig];
+                const StatusIcon = statusInfo?.icon ?? Clock;
 
                 return (
                   <tr key={consultation.id} className="hover:bg-gray-700 cursor-pointer">
@@ -140,9 +140,9 @@ export function ConsultationsTable({
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full bg-gray-700 text-white">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${statusInfo?.color ?? "bg-gray-700 text-white"}`}>
                         <StatusIcon className="w-3 h-3" />
-                        {statusInfo.label}
+                        {statusInfo?.label ?? consultation.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-white">

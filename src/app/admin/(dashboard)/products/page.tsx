@@ -1,15 +1,11 @@
 "use client";
 
 import { useCallback } from "react";
+import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useProducts } from "@/hooks/admin/useProducts";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-
-// Dynamic imports for better performance
-const ProductsHeader = dynamic(
-  () => import("@/components/admin/products/ProductsHeader").then(mod => ({ default: mod.ProductsHeader })),
-  { loading: () => <div className="h-16 bg-gray-100 animate-pulse rounded" /> }
-);
+import { PageHeader } from "@/components/admin/PageHeader";
 
 const ProductsFilters = dynamic(
   () => import("@/components/admin/products/ProductsFilters").then(mod => ({ default: mod.ProductsFilters })),
@@ -99,49 +95,58 @@ export default function AdminProductsPage() {
   }, [setSelectedProducts]);
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <ProductsHeader onCreateProduct={handleCreateProduct} />
+    <div className="space-y-6 bg-gray-900 min-h-screen p-6">
+      <PageHeader
+        title="Quản lý sản phẩm"
+        description="Quản lý danh sách sản phẩm, tồn kho và trạng thái"
+        action={
+          <button
+            onClick={handleCreateProduct}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Thêm sản phẩm
+          </button>
+        }
+      />
 
-        {/* Filters */}
-        <ProductsFilters
-          filters={filters}
-          categories={categories}
-          colors={colors}
-          capacities={capacities}
-          onFilterChange={handleFilterChange}
-        />
+      {/* Filters */}
+      <ProductsFilters
+        filters={filters}
+        categories={categories}
+        colors={colors}
+        capacities={capacities}
+        onFilterChange={handleFilterChange}
+      />
 
-        {/* Bulk Actions */}
-        <ProductsBulkActions
-          selectedCount={selectedProducts.length}
-          onBulkAction={handleBulkAction}
-        />
+      {/* Bulk Actions */}
+      <ProductsBulkActions
+        selectedCount={selectedProducts.length}
+        onBulkAction={handleBulkAction}
+      />
 
-        {/* Products Table */}
-        <ProductsTable
-          products={products}
-          loading={loading}
-          actionLoading={actionLoading}
-          selectedProducts={selectedProducts}
-          isAllSelected={isAllSelected}
-          isIndeterminate={isIndeterminate}
-          onSelectAll={handleSelectAll}
-          onSelectProduct={handleSelectProduct}
-          onEditProduct={handleEditProduct}
-          onProductAction={handleProductAction}
-          getProductStatus={getProductStatus}
-        />
+      {/* Products Table */}
+      <ProductsTable
+        products={products}
+        loading={loading}
+        actionLoading={actionLoading}
+        selectedProducts={selectedProducts}
+        isAllSelected={isAllSelected}
+        isIndeterminate={isIndeterminate}
+        onSelectAll={handleSelectAll}
+        onSelectProduct={handleSelectProduct}
+        onEditProduct={handleEditProduct}
+        onProductAction={handleProductAction}
+        getProductStatus={getProductStatus}
+      />
 
-        {/* Pagination */}
-        <ProductsPagination
-          pagination={pagination}
-          onPageChange={(page) =>
-            setPagination((prev) => ({ ...prev, current_page: page }))
-          }
-        />
-      </div>
+      {/* Pagination */}
+      <ProductsPagination
+        pagination={pagination}
+        onPageChange={(page) =>
+          setPagination((prev) => ({ ...prev, current_page: page }))
+        }
+      />
 
       {/* Product Modal */}
       <ProductModal

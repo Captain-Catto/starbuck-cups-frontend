@@ -1,7 +1,7 @@
 "use client";
 
 import { useConsultations } from "@/hooks/admin/useConsultations";
-import { ConsultationsHeader } from "@/components/admin/consultations/ConsultationsHeader";
+import { PageHeader } from "@/components/admin/PageHeader";
 import { ConsultationsFilters } from "@/components/admin/consultations/ConsultationsFilters";
 import { ConsultationsTable } from "@/components/admin/consultations/ConsultationsTable";
 import { ConsultationDetailModal } from "@/components/admin/consultations/ConsultationDetailModal";
@@ -39,29 +39,29 @@ export default function ConsultationsManagement() {
   } = useConsultations();
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <ConsultationsHeader />
+    <div className="space-y-6 bg-gray-900 min-h-screen p-6">
+      <PageHeader
+        title="Quản lý tư vấn khách hàng"
+        description="Xử lý các yêu cầu tư vấn từ khách hàng qua Messenger"
+      />
 
-        {/* Filters */}
-        <ConsultationsFilters
-          filters={filters}
-          onFilterChange={handleFilterChange}
-        />
+      {/* Filters */}
+      <ConsultationsFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+      />
 
-        {/* Consultations Table */}
-        <ConsultationsTable
-          consultations={consultations}
-          loading={loading}
-          pagination={pagination}
-          onViewConsultation={handleViewConsultation}
-          onDeleteConsultation={handleDeleteConsultation}
-          onPageChange={(page) =>
-            setPagination((prev) => ({ ...prev, current_page: page }))
-          }
-        />
-      </div>
+      {/* Consultations Table */}
+      <ConsultationsTable
+        consultations={consultations}
+        loading={loading}
+        pagination={pagination}
+        onViewConsultation={handleViewConsultation}
+        onDeleteConsultation={handleDeleteConsultation}
+        onPageChange={(page) =>
+          setPagination((prev) => ({ ...prev, current_page: page }))
+        }
+      />
 
       {/* Consultation Detail Modal */}
       <ConsultationDetailModal

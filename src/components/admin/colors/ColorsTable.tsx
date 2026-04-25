@@ -60,12 +60,27 @@ export function ColorsTable({
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Trạng thái
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Thao tác
+                <th className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">
+                  Hành động
                 </th>
               </tr>
             </thead>
             <tbody className="bg-gray-800 divide-y divide-gray-700">
+              {colors.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center">
+                    <AlertCircle className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-white mb-2">
+                      Không tìm thấy màu sắc
+                    </h3>
+                    <p className="text-gray-300">
+                      {searchQuery
+                        ? "Thử tìm kiếm với từ khóa khác"
+                        : "Chưa có màu sắc nào được tạo"}
+                    </p>
+                  </td>
+                </tr>
+              )}
               {colors.map((color) => (
                 <tr key={color.id} className="hover:bg-gray-700 cursor-pointer">
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -159,21 +174,6 @@ export function ColorsTable({
         </div>
       </div>
 
-      {colors.length === 0 && (
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-8">
-          <div className="text-center">
-            <AlertCircle className="w-12 h-12 text-white mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">
-              Không tìm thấy màu sắc
-            </h3>
-            <p className="text-gray-300">
-              {searchQuery
-                ? "Thử tìm kiếm với từ khóa khác"
-                : "Chưa có màu sắc nào được tạo"}
-            </p>
-          </div>
-        </div>
-      )}
     </>
   );
 }

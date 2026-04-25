@@ -61,7 +61,7 @@ export function CapacitiesTable({
             {loading ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400 mx-auto"></div>
                   <p className="text-gray-500 mt-2">Đang tải...</p>
                 </td>
               </tr>

@@ -183,7 +183,7 @@ export function useConsultations(): UseConsultationsReturn {
     value: string
   ) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
-    setPagination((prev) => ({ ...prev, page: 1 }));
+    setPagination((prev) => ({ ...prev, current_page: 1 }));
   };
 
   const handleDeleteConsultation = (consultationId: string) => {
@@ -198,7 +198,7 @@ export function useConsultations(): UseConsultationsReturn {
       setActionLoading("delete");
 
       const response = await fetch(
-        `${apiBaseUrl}/consultations/${consultationToDelete}`,
+        `${apiBaseUrl}/admin/consultations/${consultationToDelete}`,
         {
           method: "DELETE",
           headers: {

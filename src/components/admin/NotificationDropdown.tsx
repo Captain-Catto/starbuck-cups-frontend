@@ -8,9 +8,12 @@ import {
   markAllAsRead,
 } from "@/store/slices/notificationSlice";
 import { apiWithAuth } from "@/lib/apiWithAuth";
-import type { ConsultationData, OrderData } from "@/types/notification.types";
-import { Bell, X, Clock, CheckCircle2, Eye } from "lucide-react";
+import {
+  isConsultationData,
+  isOrderData,
+} from "@/types/notification.types";
 import type { NotificationData } from "@/types/notification.types";
+import { Bell, X, Clock, CheckCircle2, Eye } from "lucide-react";
 
 interface NotificationDropdownProps {
   isOpen: boolean;
@@ -203,27 +206,14 @@ export function NotificationDropdown({
                     {/* Additional data if available */}
                     {notification.data && (
                       <div className="mt-2 text-xs text-gray-500">
-                        {notification.type === "consultation" &&
-                          (() => {
-                            const consultationData =
-                              notification.data as ConsultationData;
-                            return (
-                              consultationData.customerName && (
-                                <span>
-                                  Khách hàng: {consultationData.customerName}
-                                </span>
-                              )
-                            );
-                          })()}
-                        {notification.type === "order" &&
-                          (() => {
-                            const orderData = notification.data as OrderData;
-                            return (
-                              orderData.orderId && (
-                                <span>Đơn hàng: #{orderData.orderId}</span>
-                              )
-                            );
-                          })()}
+                        {isConsultationData(notification.data) &&
+                          notification.data.customerName && (
+                            <span>Khách hàng: {notification.data.customerName}</span>
+                          )}
+                        {isOrderData(notification.data) &&
+                          notification.data.orderId && (
+                            <span>Đơn hàng: #{notification.data.orderId}</span>
+                          )}
                       </div>
                     )}
                   </div>

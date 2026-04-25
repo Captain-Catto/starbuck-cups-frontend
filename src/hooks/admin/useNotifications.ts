@@ -10,10 +10,10 @@ import {
   setNotifications,
 } from "@/store/slices/notificationSlice";
 import { apiWithAuth } from "@/lib/apiWithAuth";
-import type {
-  NotificationData,
-  ConsultationData,
-  OrderData,
+import type { NotificationData } from "@/types/notification.types";
+import {
+  isConsultationData,
+  isOrderData,
 } from "@/types/notification.types";
 
 interface NotificationFilters {
@@ -123,14 +123,12 @@ export function useNotifications(): UseNotificationsReturn {
 
       // Navigate based on notification type and data
       if (notification.type === "consultation") {
-        const consultationData = notification.data as ConsultationData;
-        if (consultationData?.consultationId) {
+        if (isConsultationData(notification.data) && notification.data.consultationId) {
           router.push(`/admin/consultations`);
         }
       } else if (notification.type === "order") {
-        const orderData = notification.data as OrderData;
-        if (orderData?.orderId) {
-          router.push(`/admin/orders/${orderData.orderId}`);
+        if (isOrderData(notification.data) && notification.data.orderId) {
+          router.push(`/admin/orders/${notification.data.orderId}`);
         }
       }
     } catch (error) {

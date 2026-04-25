@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
@@ -52,8 +52,12 @@ interface ConfirmModal {
   action: "delete";
 }
 
-export function useAdminCustomers() {
-  // Get auth token from Redux store
+export function useAdminCustomers(
+  search = "",
+  vipStatus = "all",
+  dateFrom = "",
+  dateTo = ""
+) {
   const token = useSelector((state: RootState) => state.auth.token);
 
   const [customers, setCustomers] = useState<CustomerAdmin[]>([]);
@@ -72,48 +76,36 @@ export function useAdminCustomers() {
       : baseHeaders;
   }, [token]);
 
-  const fetchCustomers = useCallback(
-    async (params?: Record<string, string>) => {
-      try {
-        setLoading(true);
-        const queryParams = new URLSearchParams({
-          page: "1",
-          limit: "50",
-          ...params,
-        });
+  const fetchCustomers = useCallback(async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({ page: "1", limit: "50" });
+      if (search) params.set("search", search);
+      if (vipStatus !== "all") params.set("vipStatus", vipStatus);
+      if (dateFrom) params.set("dateFrom", dateFrom);
+      if (dateTo) params.set("dateTo", dateTo);
 
-        const response = await fetch(`/api/admin/customers?${queryParams}`, {
-          headers: getAuthHeaders(),
-        });
+      const response = await fetch(`/api/admin/customers?${params}`, {
+        headers: getAuthHeaders(),
+      });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch customers");
-        }
+      if (!response.ok) throw new Error("Failed to fetch customers");
 
-        const data = await response.json();
-
-        if (data.success) {
-          setCustomers(data.data.items || []);
-        } else {
-          throw new Error(data.message || "Failed to fetch customers");
-        }
-      } catch (error) {
-
-        toast.error("Lỗi khi tải danh sách khách hàng");
-      } finally {
-        setLoading(false);
+      const data = await response.json();
+      if (data.success) {
+        setCustomers(data.data.items || []);
+      } else {
+        throw new Error(data.message || "Failed to fetch customers");
       }
-    },
-    [getAuthHeaders]
-  );
+    } catch {
+      toast.error("Lỗi khi tải danh sách khách hàng");
+    } finally {
+      setLoading(false);
+    }
+  }, [getAuthHeaders, search, vipStatus, dateFrom, dateTo]);
 
-  const handleDelete = async (customer: CustomerAdmin) => {
-    // Luôn hiển thị confirmation modal
-    setConfirmModal({
-      show: true,
-      customer,
-      action: "delete",
-    });
+  const handleDelete = (customer: CustomerAdmin) => {
+    setConfirmModal({ show: true, customer, action: "delete" });
   };
 
   const performDelete = async (customer: CustomerAdmin) => {
@@ -124,9 +116,7 @@ export function useAdminCustomers() {
         headers: getAuthHeaders(),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete customer");
-      }
+      if (!response.ok) throw new Error("Failed to delete customer");
 
       const data = await response.json();
       if (data.success) {
@@ -135,8 +125,7 @@ export function useAdminCustomers() {
       } else {
         throw new Error(data.message || "Failed to delete customer");
       }
-    } catch (error) {
-
+    } catch {
       toast.error("Lỗi khi xóa khách hàng");
     } finally {
       setActionLoading(null);
@@ -144,21 +133,14 @@ export function useAdminCustomers() {
   };
 
   useEffect(() => {
-    if (token) {
-      fetchCustomers();
-    }
+    if (token) fetchCustomers();
   }, [fetchCustomers, token]);
 
   return {
-    // Data
     customers,
-
-    // State
     loading,
     actionLoading,
     confirmModal,
-
-    // Actions
     handleDelete,
     performDelete,
     fetchCustomers,

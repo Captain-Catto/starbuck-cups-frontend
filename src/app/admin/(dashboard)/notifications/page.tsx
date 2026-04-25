@@ -7,7 +7,7 @@ import { NotificationHeader } from "@/components/admin/notifications/Notificatio
 import { NotificationStats } from "@/components/admin/notifications/NotificationStats";
 import { NotificationFilters } from "@/components/admin/notifications/NotificationFilters";
 import { NotificationList } from "@/components/admin/notifications/NotificationList";
-import type { OrderData } from "@/types/notification.types";
+import { isOrderData } from "@/types/notification.types";
 
 export default function NotificationsPage() {
   const router = useRouter();
@@ -30,11 +30,9 @@ export default function NotificationsPage() {
 
   // Chuyển đổi NotificationData thành format phù hợp với components
   const convertedNotifications = filteredNotifications.map((notification) => {
-    let orderId = undefined;
-    if (notification.type === "order" && notification.data) {
-      const orderData = notification.data as OrderData;
-      orderId = orderData.orderId;
-    }
+    const orderId = isOrderData(notification.data)
+      ? notification.data.orderId
+      : undefined;
 
     return {
       id: notification.id,
