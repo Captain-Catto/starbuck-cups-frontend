@@ -20,7 +20,7 @@ export default function AdminNewsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  const authHeader = () => {
+  const authHeader = (): Record<string, string> => {
     const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
