@@ -173,7 +173,9 @@ export default function AdminProductsPage() {
           if (confirmModal.product) {
             performProductAction(
               confirmModal.product.id,
-              confirmModal.action === "toggle" ? "deactivate" : "delete"
+              confirmModal.action === "toggle"
+                ? confirmModal.product.isActive ? "deactivate" : "activate"
+                : "delete"
             );
             setConfirmModal({
               show: false,

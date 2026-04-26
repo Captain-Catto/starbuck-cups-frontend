@@ -120,7 +120,7 @@ export function ConsultationDetailModal({
           </div>
 
           {/* Products */}
-          {consultation.consultationItems.length > 0 && (
+          {consultation.consultationItems?.length > 0 && (
             <div className="mb-6">
               <h4 className="text-sm font-medium text-white mb-3">
                 Sản phẩm quan tâm
