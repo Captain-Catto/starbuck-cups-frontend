@@ -20,10 +20,15 @@ export default function AdminNewsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
+  const authHeader = () => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const fetchNews = useCallback(async () => {
     try {
       setError(null);
-      const res = await fetch("/api/admin/news?limit=50");
+      const res = await fetch("/api/admin/news?limit=50", { headers: authHeader() });
       const data = await res.json();
       if (data.success) {
         setNewsList(data.data?.items ?? []);
@@ -44,7 +49,7 @@ export default function AdminNewsPage() {
   const handleToggleStatus = async (news: News) => {
     setTogglingId(news.id);
     try {
-      const res = await fetch(`/api/admin/news/${news.id}/status`, { method: "PATCH" });
+      const res = await fetch(`/api/admin/news/${news.id}/status`, { method: "PATCH", headers: authHeader() });
       const data = await res.json();
       if (data.success) {
         toast.success(news.status === "published" ? "Đã chuyển về nháp" : "Đã xuất bản");
@@ -61,7 +66,7 @@ export default function AdminNewsPage() {
     if (!confirm("Bạn có chắc muốn xóa bài viết này?")) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/admin/news/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/news/${id}`, { method: "DELETE", headers: authHeader() });
       const data = await res.json();
       if (data.success) {
         toast.success("Đã xóa bài viết");

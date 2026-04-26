@@ -95,9 +95,13 @@ export function NewsForm({ initialData }: NewsFormProps) {
       const url = isEdit ? `/api/admin/news/${initialData!.id}` : "/api/admin/news";
       const method = isEdit ? "PUT" : "POST";
 
+      const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(body),
       });
 
