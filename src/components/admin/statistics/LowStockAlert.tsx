@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
 import { Pagination } from "@/components/ui/Pagination";
 import { useLowStock } from "@/hooks/admin/useLowStock";
+import Link from "next/link";
 
 export function LowStockAlert() {
   const { products, pagination, loading, error, handlePageChange } = useLowStock({
@@ -83,16 +84,17 @@ export function LowStockAlert() {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((product) => (
-            <div
+            <Link
               key={product.id}
-              className="p-4 border border-gray-700 rounded-lg bg-gray-800"
+              href="/admin/products"
+              className="block p-4 border border-gray-700 rounded-lg bg-gray-800 hover:border-gray-500 hover:bg-gray-750 transition-colors cursor-pointer"
             >
               <h4 className="font-medium text-white">{product.name}</h4>
               <p className="text-sm text-gray-400">{product.capacity?.name || "N/A"}</p>
               <p className="text-lg font-bold text-red-400 mt-2">
                 Còn lại: {product.stockQuantity}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
 
