@@ -7,6 +7,7 @@ import { Pagination } from "@/components/ui/Pagination";
 
 interface TopConversionProductsProps {
   page: number;
+  totalPages: number;
   onPageChange: (page: number) => void;
   products: ProductAnalytics[];
   loading?: boolean;
@@ -14,6 +15,7 @@ interface TopConversionProductsProps {
 
 export function TopConversionProducts({
   page,
+  totalPages,
   onPageChange,
   products,
   loading,
@@ -132,15 +134,15 @@ export function TopConversionProducts({
           <div>🟡 Tỷ lệ trung bình: 25-49% (Có thể cải thiện)</div>
           <div>🔴 Tỷ lệ thấp: &lt;25% (Cần tối ưu)</div>
         </div>
-        {products.length === itemsPerPage && (
+        {totalPages > 1 && (
           <Pagination
             data={{
               current_page: page,
-              total_pages: 999,
-              has_next: products.length === itemsPerPage,
+              total_pages: totalPages,
+              has_next: page < totalPages,
               has_prev: page > 1,
               per_page: itemsPerPage,
-              total_items: page * itemsPerPage,
+              total_items: totalPages * itemsPerPage,
             }}
             onPageChange={onPageChange}
           />

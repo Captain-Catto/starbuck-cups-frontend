@@ -81,6 +81,7 @@ export const useTopClickedProducts = (
 ) => {
   const { token } = useAppSelector((state) => state.auth);
   const [products, setProducts] = useState<ProductAnalytics[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const requestControllerRef = useRef<AbortController | null>(null);
@@ -129,6 +130,7 @@ export const useTopClickedProducts = (
 
       if (data.success) {
         setProducts(data.data);
+        setTotalPages(data.pagination?.totalPages ?? 1);
       } else {
         throw new Error(data.message || "Failed to fetch top clicked products");
       }
@@ -163,6 +165,7 @@ export const useTopClickedProducts = (
 
   return {
     products,
+    totalPages,
     loading,
     error,
     refetch: fetchTopClicked,
@@ -176,6 +179,7 @@ export const useTopConversionProducts = (
 ) => {
   const { token } = useAppSelector((state) => state.auth);
   const [products, setProducts] = useState<ProductAnalytics[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const requestControllerRef = useRef<AbortController | null>(null);
@@ -224,6 +228,7 @@ export const useTopConversionProducts = (
 
       if (data.success) {
         setProducts(data.data);
+        setTotalPages(data.pagination?.totalPages ?? 1);
       } else {
         throw new Error(
           data.message || "Failed to fetch top conversion products"
@@ -260,6 +265,7 @@ export const useTopConversionProducts = (
 
   return {
     products,
+    totalPages,
     loading,
     error,
     refetch: fetchTopConversion,

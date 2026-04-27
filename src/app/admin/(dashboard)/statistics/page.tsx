@@ -120,10 +120,10 @@ export default function StatisticsPage() {
   }, [data?.productAnalytics, enableAnalyticsFetch]);
 
   // Fetch paginated analytics data only when analytics section is near viewport
-  const { products: clickedProducts, loading: clickedLoading } =
+  const { products: clickedProducts, totalPages: clickedTotalPages, loading: clickedLoading } =
     useTopClickedProducts(10, clickedProductsPage, enableAnalyticsFetch);
 
-  const { products: conversionProducts, loading: conversionLoading } =
+  const { products: conversionProducts, totalPages: conversionTotalPages, loading: conversionLoading } =
     useTopConversionProducts(10, conversionProductsPage, enableAnalyticsFetch);
 
   const handlePeriodChange = (newPeriod: "week" | "month" | "year") => {
@@ -241,12 +241,14 @@ export default function StatisticsPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <TopClickedProducts
                   page={clickedProductsPage}
+                  totalPages={clickedTotalPages}
                   onPageChange={handleClickedProductsPageChange}
                   products={clickedProducts}
                   loading={clickedLoading}
                 />
                 <TopConversionProducts
                   page={conversionProductsPage}
+                  totalPages={conversionTotalPages}
                   onPageChange={handleConversionProductsPageChange}
                   products={conversionProducts}
                   loading={conversionLoading}

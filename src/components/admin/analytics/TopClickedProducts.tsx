@@ -7,6 +7,7 @@ import { Pagination } from "@/components/ui/Pagination";
 
 interface TopClickedProductsProps {
   page: number;
+  totalPages: number;
   onPageChange: (page: number) => void;
   products: ProductAnalytics[];
   loading?: boolean;
@@ -14,6 +15,7 @@ interface TopClickedProductsProps {
 
 export function TopClickedProducts({
   page,
+  totalPages,
   onPageChange,
   products,
   loading,
@@ -117,16 +119,16 @@ export function TopClickedProducts({
         ))}
       </div>
 
-      {products.length === itemsPerPage && (
+      {totalPages > 1 && (
         <div className="mt-6 pt-4 border-t border-gray-700">
           <Pagination
             data={{
               current_page: page,
-              total_pages: 999,
-              has_next: products.length === itemsPerPage,
+              total_pages: totalPages,
+              has_next: page < totalPages,
               has_prev: page > 1,
               per_page: itemsPerPage,
-              total_items: page * itemsPerPage,
+              total_items: totalPages * itemsPerPage,
             }}
             onPageChange={onPageChange}
           />
