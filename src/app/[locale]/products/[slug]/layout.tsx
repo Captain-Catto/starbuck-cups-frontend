@@ -92,15 +92,9 @@ export async function generateMetadata({
     .filter(Boolean)
     .join(", ");
 
-  // Google blocks Facebook's crawler from lh3.googleusercontent.com (inter-company CDN restriction).
-  // Solution: use /api/image proxy URL, but warm the disk cache here during ISR so Facebook
-  // gets a sub-100ms cache-hit response instead of a 5-30s cache-miss timeout.
-  let ogImageUrl = `${siteUrl}/logo.png`;
-  if (rawOgImage) {
-    const proxyUrl = `${siteUrl}/api/image?url=${encodeURIComponent(convertDriveUrl(rawOgImage))}&w=1200&q=85&f=jpeg`;
-    await fetch(proxyUrl, { cache: "no-store" }).catch(() => {});
-    ogImageUrl = proxyUrl;
-  }
+  // Use lh3.googleusercontent.com directly — Facebook crawler can fetch this URL fine
+  // (confirmed by Sharing Debugger showing no image error with this URL).
+  const ogImageUrl = rawOgImage ? convertDriveUrl(rawOgImage) : `${siteUrl}/logo.png`;
 
   const ogTitleSuffix: Record<string, string> = {
     vi: "Mua ly Starbucks chính hãng",
