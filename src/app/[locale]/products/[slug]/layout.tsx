@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-
-export const revalidate = 3600;
 import {
   generateSEO,
   generateProductStructuredData,
   generateBreadcrumbStructuredData,
 } from "@/lib/seo";
 import { getApiUrl } from "@/lib/api-config";
+import { convertDriveUrl } from "@/utils/googleDriveHelper";
 import { Product } from "@/types";
+
+export const revalidate = 3600;
 
 interface Props {
   params: Promise<{ slug: string; locale: string }>;
@@ -91,11 +92,12 @@ export async function generateMetadata({
     .filter(Boolean)
     .join(", ");
 
-  // Facebook/Zalo crawlers cannot load Google Drive (lh3.googleusercontent.com) URLs directly —
-  // Google blocks bot user-agents and the redirect chain (303→200) is not followed reliably.
-  // Run through the /api/image proxy which serves a direct JPEG with no redirects.
+  // Convert drive.google.com/uc?export=view&id=X → lh3.googleusercontent.com/d/X (no redirects).
+  // Facebook/Zalo crawlers can fetch lh3 URLs directly — no proxy needed, no timeout risk.
+  // Avoid /api/image proxy for OG: proxy requires server-side processing on cache-miss (~5-30s),
+  // which exceeds Facebook's scraper timeout and causes "cannot process image" errors.
   const ogImageUrl = rawOgImage
-    ? `${siteUrl}/api/image?url=${encodeURIComponent(rawOgImage)}&w=1200&q=85&f=jpeg`
+    ? convertDriveUrl(rawOgImage)
     : `${siteUrl}/logo.png`;
 
   const ogTitleSuffix: Record<string, string> = {
