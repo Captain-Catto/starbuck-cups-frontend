@@ -76,6 +76,10 @@ export function generateSEO(
         {
           url: image,
           alt: seo.openGraph?.title || title,
+          ...(image.includes('lh3.googleusercontent.com') && {
+            type: 'image/jpeg',
+            width: 1200,
+          }),
         },
       ],
       locale: ogLocale,
