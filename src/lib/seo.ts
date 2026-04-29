@@ -75,8 +75,6 @@ export function generateSEO(
       images: [
         {
           url: image,
-          width: 1200,
-          height: 630,
           alt: seo.openGraph?.title || title,
         },
       ],
