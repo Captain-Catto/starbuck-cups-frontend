@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+
+export const revalidate = 3600;
 import {
   generateSEO,
   generateProductStructuredData,
@@ -69,8 +71,8 @@ export async function generateMetadata({
     description = t("metaDescription", { name: productName });
   }
 
-  const ogImage =
-    product?.productImages?.[0]?.url || `${process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn"}/logo.png`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn";
+  const rawOgImage = product?.productImages?.[0]?.url ?? null;
 
   const capacity = product?.capacity?.name || "";
 
@@ -89,9 +91,12 @@ export async function generateMetadata({
     .filter(Boolean)
     .join(", ");
 
-  // Use original image URL for OG — social crawlers (Facebook, Zalo) load it directly,
-  // proxy adds latency risk and timeout potential with no page-speed benefit.
-  const ogImageUrl = ogImage;
+  // Facebook/Zalo crawlers cannot load Google Drive (lh3.googleusercontent.com) URLs directly —
+  // Google blocks bot user-agents and the redirect chain (303→200) is not followed reliably.
+  // Run through the /api/image proxy which serves a direct JPEG with no redirects.
+  const ogImageUrl = rawOgImage
+    ? `${siteUrl}/api/image?url=${encodeURIComponent(rawOgImage)}&w=1200&q=85&f=jpeg`
+    : `${siteUrl}/logo.png`;
 
   const ogTitleSuffix: Record<string, string> = {
     vi: "Mua ly Starbucks chính hãng",
