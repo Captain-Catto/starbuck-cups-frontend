@@ -70,13 +70,11 @@ export default async function ProductDetailPage({
     <>
       {/* Preload the main gallery image so browser starts fetching before JS hydration (LCP) */}
       {firstImageUrl && (
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore — imagesrcset/imagesizes are valid HTML attrs not yet in React types
         <link
           rel="preload"
           as="image"
-          imagesrcset={buildPreloadSrcSet(firstImageUrl)}
-          imagesizes="(max-width: 1024px) 100vw, calc(50vw - 2rem)"
+          imageSrcSet={buildPreloadSrcSet(firstImageUrl)}
+          imageSizes="(max-width: 1024px) 100vw, calc(50vw - 2rem)"
         />
       )}
     <div className="min-h-screen bg-black text-white">
