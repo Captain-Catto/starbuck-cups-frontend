@@ -45,8 +45,6 @@ export function generateSEO(
     return new URL(localizedPath, siteConfig.url).toString();
   };
 
-  const fbAppId = process.env.NEXT_PUBLIC_FB_APP_ID;
-
   return {
     title,
     description,
@@ -59,9 +57,6 @@ export function generateSEO(
       address: false,
       telephone: false,
     },
-    ...(fbAppId && {
-      other: { "fb:app_id": fbAppId },
-    }),
     metadataBase: new URL(siteConfig.url),
     alternates: {
       canonical: canonicalUrl,

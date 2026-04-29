@@ -146,6 +146,9 @@ export default async function LocaleLayout({
       <head>
 
         <meta name="theme-color" content="#000000" />
+        {process.env.NEXT_PUBLIC_FB_APP_ID && (
+          <meta property="fb:app_id" content={process.env.NEXT_PUBLIC_FB_APP_ID} />
+        )}
         <meta httpEquiv="x-dns-prefetch-control" content="on" />
         <link rel="preconnect" href="https://lh3.googleusercontent.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
