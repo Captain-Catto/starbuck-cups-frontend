@@ -92,13 +92,15 @@ export async function generateMetadata({
     .filter(Boolean)
     .join(", ");
 
-  // Convert drive.google.com/uc?export=view&id=X → lh3.googleusercontent.com/d/X (no redirects).
-  // Facebook/Zalo crawlers can fetch lh3 URLs directly — no proxy needed, no timeout risk.
-  // Avoid /api/image proxy for OG: proxy requires server-side processing on cache-miss (~5-30s),
-  // which exceeds Facebook's scraper timeout and causes "cannot process image" errors.
-  const ogImageUrl = rawOgImage
-    ? convertDriveUrl(rawOgImage)
-    : `${siteUrl}/logo.png`;
+  // Google blocks Facebook's crawler from lh3.googleusercontent.com (inter-company CDN restriction).
+  // Solution: use /api/image proxy URL, but warm the disk cache here during ISR so Facebook
+  // gets a sub-100ms cache-hit response instead of a 5-30s cache-miss timeout.
+  let ogImageUrl = `${siteUrl}/logo.png`;
+  if (rawOgImage) {
+    const proxyUrl = `${siteUrl}/api/image?url=${encodeURIComponent(convertDriveUrl(rawOgImage))}&w=1200&q=85&f=jpeg`;
+    await fetch(proxyUrl, { cache: "no-store" }).catch(() => {});
+    ogImageUrl = proxyUrl;
+  }
 
   const ogTitleSuffix: Record<string, string> = {
     vi: "Mua ly Starbucks chính hãng",
