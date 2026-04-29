@@ -1,6 +1,8 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { locales } from "@/i18n/config";
+import { getApiUrl } from "@/lib/api-config";
+import { convertDriveUrl } from "@/utils/googleDriveHelper";
 
 /**
  * On-demand revalidation endpoint.
@@ -29,6 +31,19 @@ export async function POST(request: NextRequest) {
         const prefix = locale === "vi" ? "" : `/${locale}`;
         revalidatePath(`${prefix}/products/${slug}`);
       }
+
+      // Warm the OG image proxy cache so Messenger gets a fast response.
+      // Fire-and-forget: don't block the revalidate response.
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn";
+      fetch(getApiUrl(`products/public/${slug}`))
+        .then((r) => r.json())
+        .then((data) => {
+          const imageUrl = data?.data?.productImages?.[0]?.url;
+          if (!imageUrl) return;
+          const proxyUrl = `${siteUrl}/api/image?url=${encodeURIComponent(convertDriveUrl(imageUrl))}&w=1200&q=85&f=jpeg`;
+          return fetch(proxyUrl, { signal: AbortSignal.timeout(30_000) });
+        })
+        .catch(() => {});
     }
 
     // Invalidate all fetches tagged "products" + key pages

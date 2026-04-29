@@ -92,13 +92,12 @@ export async function generateMetadata({
     .filter(Boolean)
     .join(", ");
 
-  // Use lh3.googleusercontent.com with Google image serving params:
-  // =w1200 resizes to 1200px wide, -rj forces JPEG output (no redirect, explicit MIME type).
-  // Messenger's renderer is stricter than the Debugger scraper — direct JPEG is required.
-  const baseOgImage = rawOgImage ? convertDriveUrl(rawOgImage) : `${siteUrl}/logo.png`;
-  const ogImageUrl = baseOgImage.includes('lh3.googleusercontent.com')
-    ? baseOgImage.replace(/=w\d+[-\w]*$/, '') + '=w1200-rj'
-    : baseOgImage;
+  // Serve OG image through our own /api/image proxy (hasron.vn domain).
+  // Facebook/Messenger blocks lh3.googleusercontent.com; our proxy bypasses this.
+  // The proxy caches to disk so subsequent Facebook crawls are instant.
+  const ogImageUrl = rawOgImage
+    ? `${siteUrl}/api/image?url=${encodeURIComponent(convertDriveUrl(rawOgImage))}&w=1200&q=85&f=jpeg`
+    : `${siteUrl}/logo.png`;
 
   const ogTitleSuffix: Record<string, string> = {
     vi: "Mua ly Starbucks chính hãng",
