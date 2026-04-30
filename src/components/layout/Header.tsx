@@ -92,7 +92,7 @@ export function Header({ className = "" }: HeaderProps) {
                 <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
               </svg>
               {isHydrated && totalCartItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-white text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                   {totalCartItems}
                 </span>
               )}
@@ -121,36 +121,23 @@ export function Header({ className = "" }: HeaderProps) {
           </Link>
 
           <div className="flex items-center gap-6">
-            <Link
-              href="/"
-              className={`transition-colors tracking-wider ${
-                pathname === "/" 
-                  ? "text-xl font-bold text-white tracking-widest" 
-                  : "text-lg font-medium text-zinc-400 hover:text-zinc-300"
-              }`}
-            >
-              {t("home")}
-            </Link>
-            <Link
-              href="/products"
-              className={`transition-colors tracking-wider ${
-                pathname === "/products"
-                  ? "text-xl font-bold text-white tracking-widest"
-                  : "text-lg font-medium text-zinc-400 hover:text-zinc-300"
-              }`}
-            >
-              {t("products")}
-            </Link>
-            <Link
-              href="/contacts"
-              className={`transition-colors tracking-wider ${
-                pathname === "/contacts"
-                  ? "text-xl font-bold text-white tracking-widest"
-                  : "text-lg font-medium text-zinc-400 hover:text-zinc-300"
-              }`}
-            >
-              {t("contacts")}
-            </Link>
+            {[
+              { href: "/", label: t("home") },
+              { href: "/products", label: t("products") },
+              { href: "/contacts", label: t("contacts") },
+            ].map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`text-lg font-medium tracking-wider transition-colors relative pb-0.5 ${
+                  pathname === href
+                    ? "text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-white after:rounded-full"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
           </div>
 
           <div className="flex items-center gap-4">
@@ -176,7 +163,7 @@ export function Header({ className = "" }: HeaderProps) {
                 <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
               </svg>
               {isHydrated && totalCartItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-white text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                   {totalCartItems}
                 </span>
               )}
@@ -186,15 +173,15 @@ export function Header({ className = "" }: HeaderProps) {
       </header>
 
       {/* Sidebar Overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 backdrop-blur-sm bg-opacity-50 z-50"
-          onClick={() => {
-            setIsSidebarOpen(false);
-            trackMobileMenu("close");
-          }}
-        />
-      )}
+      <div
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 ${
+          isSidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => {
+          setIsSidebarOpen(false);
+          trackMobileMenu("close");
+        }}
+      />
 
       {/* Sidebar */}
       <div
@@ -235,70 +222,40 @@ export function Header({ className = "" }: HeaderProps) {
             <LanguageSwitcher />
           </div>
 
-          <div className="space-y-2">
-            <Link
-              href="/"
-              onClick={() => setIsSidebarOpen(false)}
-              className={`block py-3 px-4 rounded-lg transition-colors ${
-                pathname === "/"
-                  ? "bg-zinc-800 text-white text-xl font-bold tracking-widest"
-                  : "text-lg font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white tracking-wider"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+          <div className="space-y-1">
+            {[
+              {
+                href: "/",
+                label: t("home"),
+                icon: "M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z",
+              },
+              {
+                href: "/products",
+                label: t("products"),
+                icon: "M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z",
+              },
+              {
+                href: "/contacts",
+                label: t("contacts"),
+                icon: "M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z",
+              },
+            ].map(({ href, label, icon }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setIsSidebarOpen(false)}
+                className={`flex items-center gap-3 py-3 px-4 rounded-lg text-base font-medium tracking-wide transition-colors ${
+                  pathname === href
+                    ? "bg-zinc-800 text-white"
+                    : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                }`}
+              >
+                <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path d={icon} />
                 </svg>
-                {t("home")}
-              </div>
-            </Link>
-            <Link
-              href="/products"
-              onClick={() => setIsSidebarOpen(false)}
-              className={`block py-3 px-4 rounded-lg transition-colors ${
-                pathname === "/products"
-                  ? "bg-zinc-800 text-white text-xl font-bold tracking-widest"
-                  : "text-lg font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white tracking-wider"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 2L3 7v11a2 2 0 002 2h10a2 2 0 002-2V7l-7-5zM10 18V9l5.5-4H4.5L10 9v9z"
-                  />
-                </svg>
-                {t("products")}
-              </div>
-            </Link>
-            <Link
-              href="/contacts"
-              onClick={() => setIsSidebarOpen(false)}
-              className={`block py-3 px-4 rounded-lg transition-colors ${
-                pathname === "/contacts"
-                  ? "bg-zinc-800 text-white text-xl font-bold tracking-widest"
-                  : "text-lg font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white tracking-wider"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                </svg>
-                {t("contacts")}
-              </div>
-            </Link>
+                {label}
+              </Link>
+            ))}
           </div>
 
           <div className="mt-8 pt-8 border-t border-zinc-700">
@@ -337,7 +294,7 @@ export function Header({ className = "" }: HeaderProps) {
                     <span>{t("shoppingCartAria")}</span>
                   </div>
                   {isHydrated && totalCartItems > 0 && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full shrink-0 ml-2">
+                    <span className="bg-white text-black text-xs font-bold px-2 py-1 rounded-full shrink-0 ml-2">
                       {totalCartItems}
                     </span>
                   )}

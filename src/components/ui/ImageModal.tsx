@@ -18,6 +18,7 @@ export function ImageModal({
   currentIndex,
   isOpen,
   onClose,
+  title,
 }: ImageModalProps) {
   const t = useTranslations("imageViewer");
   const [activeIndex, setActiveIndex] = useState(currentIndex);
@@ -390,7 +391,7 @@ export function ImageModal({
   };
 
   const modal = (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-95 flex items-center justify-center">
+    <div role="dialog" aria-label={title} className="fixed inset-0 z-50 bg-black bg-opacity-95 flex items-center justify-center">
       {/* Close button */}
       <button
         onClick={onClose}

@@ -8,7 +8,6 @@ interface CartState {
   lastAction?: {
     type: "added" | "already_exists" | "removed";
     productName?: string;
-    colorRequest?: string;
   };
 }
 
@@ -42,44 +41,31 @@ const cartSlice = createSlice({
   reducers: {
     addToCart: (
       state,
-      action: PayloadAction<{ product: Product; colorRequest?: string }>
+      action: PayloadAction<{ product: Product }>
     ) => {
-      const { product } = action.payload; // Remove colorRequest usage
+      const { product } = action.payload;
 
-      // Check if product already exists (ignore color - all colors included)
       const existingItem = state.items.find(
         (item) => item.product.id === product.id
       );
 
       if (existingItem) {
-        // Product already exists in cart (with all colors)
-        state.lastAction = {
-          type: "already_exists",
-          productName: product.name,
-          colorRequest: undefined, // No specific color since all colors included
-        };
+        state.lastAction = { type: "already_exists", productName: product.name };
         return;
       }
 
-      // Add product to cart (includes all available colors)
-      state.items.push({ product, colorRequest: undefined });
-      state.lastAction = {
-        type: "added",
-        productName: product.name,
-        colorRequest: undefined, // No specific color since all colors included
-      };
+      state.items.push({ product });
+      state.lastAction = { type: "added", productName: product.name };
 
       saveCartToStorage(state.items);
     },
 
     removeFromCart: (
       state,
-      action: PayloadAction<{ productId: string; colorRequest?: string }>
+      action: PayloadAction<{ productId: string }>
     ) => {
-      const { productId } = action.payload; // Remove colorRequest usage
-      state.items = state.items.filter(
-        (item) => item.product.id !== productId // Only check product ID
-      );
+      const { productId } = action.payload;
+      state.items = state.items.filter((item) => item.product.id !== productId);
       saveCartToStorage(state.items);
     },
 

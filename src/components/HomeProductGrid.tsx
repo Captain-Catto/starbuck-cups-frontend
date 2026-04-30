@@ -22,7 +22,6 @@ function ProductRow({
 }: {
   row: Product[];
   rowIndex: number;
-  onAddToCart: (product: Product) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -76,7 +75,6 @@ export default function HomeProductGrid({
 }: HomeProductGridProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const dispatch = useAppDispatch();
   const t = useTranslations("homePage");
   const locale = useLocale();
 
@@ -99,10 +97,6 @@ export default function HomeProductGrid({
     };
     fetchProducts();
   }, [locale]);
-
-  const handleAddToCart = (product: Product) => {
-    dispatch(addToCart({ product }));
-  };
 
   if (loading) {
     return (
@@ -145,7 +139,6 @@ export default function HomeProductGrid({
             key={`${selectedCategory}-${rowIndex}`}
             row={row}
             rowIndex={rowIndex}
-            onAddToCart={handleAddToCart}
           />
         ))}
       </div>

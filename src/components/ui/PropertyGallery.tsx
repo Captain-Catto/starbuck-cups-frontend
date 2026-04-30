@@ -18,6 +18,7 @@ export function PropertyGallery({
 }: PropertyGalleryProps) {
   const t = useTranslations("imageViewer");
   const [currentImage, setCurrentImage] = useState(0);
+  const [imgVisible, setImgVisible] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Swipe states for all devices
@@ -26,14 +27,22 @@ export function PropertyGallery({
   const [swipeStartY, setSwipeStartY] = useState(0);
   const [swipeCurrentX, setSwipeCurrentX] = useState(0);
 
-  // Navigation functions
+  // Navigation functions with crossfade
+  const switchToImage = useCallback((getNext: (prev: number) => number) => {
+    setImgVisible(false);
+    setTimeout(() => {
+      setCurrentImage(getNext);
+      setImgVisible(true);
+    }, 150);
+  }, []);
+
   const nextImage = useCallback(() => {
-    setCurrentImage((prev) => (prev < images.length - 1 ? prev + 1 : 0));
-  }, [images.length]);
+    switchToImage((prev) => (prev < images.length - 1 ? prev + 1 : 0));
+  }, [images.length, switchToImage]);
 
   const prevImage = useCallback(() => {
-    setCurrentImage((prev) => (prev > 0 ? prev - 1 : images.length - 1));
-  }, [images.length]);
+    switchToImage((prev) => (prev > 0 ? prev - 1 : images.length - 1));
+  }, [images.length, switchToImage]);
 
   // Touch handlers for swipe - enabled for all devices
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -159,10 +168,10 @@ export function PropertyGallery({
   }
 
   const handleThumbnailClick = (index: number, event: React.MouseEvent) => {
-    setCurrentImage(index);
-    // Remove focus from the clicked button to prevent hover state persistence
+    if (index === currentImage) return;
     const target = event.target as HTMLElement;
     target.blur();
+    switchToImage(() => index);
   };
 
   const openModal = () => {
@@ -195,7 +204,7 @@ export function PropertyGallery({
                 index: currentImage + 1,
               })}
               fill
-              className="object-contain"
+              className={`object-contain transition-opacity duration-150 ${imgVisible ? "opacity-100" : "opacity-0"}`}
               priority
               style={{ objectFit: "contain" }}
               onError={(e) => {
@@ -297,12 +306,12 @@ export function PropertyGallery({
                   <button
                     key={index}
                     onClick={(e) => handleThumbnailClick(index, e)}
-                    className={`relative h-16 w-20 md:h-20 md:w-28 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all transform focus:outline-none cursor-pointer ${
+                    className={`relative h-16 w-20 md:h-20 md:w-28 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200 focus:outline-none cursor-pointer ${
                       index === currentImage
-                        ? "border-zinc-400 shadow-lg"
-                        : "border-zinc-700 hover:border-zinc-600 focus:border-zinc-500"
+                        ? "border-white scale-[1.04] shadow-lg shadow-black/50"
+                        : "border-zinc-700 hover:border-zinc-500 hover:scale-[1.02] opacity-70 hover:opacity-100"
                     }`}
-                    style={{ minWidth: "5rem" }} // Force minimum width
+                    style={{ minWidth: "5rem" }}
                   >
                     <OptimizedImage
                       src={image}
@@ -315,10 +324,6 @@ export function PropertyGallery({
                         target.src = "/images/placeholder-product.jpg";
                       }}
                     />
-                    {/* Active indicator */}
-                    {index === currentImage && (
-                      <div className="absolute inset-0 border-2 border-zinc-400 rounded-lg pointer-events-none"></div>
-                    )}
                   </button>
                 ))}
               </div>

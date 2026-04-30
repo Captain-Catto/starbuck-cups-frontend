@@ -19,7 +19,7 @@ export function FeaturedBadge({
   return (
     <div className={`inline-block featured-shimmer ${className}`}>
       <span
-        className={`${sizes[size]} font-bold text-white bg-red-500 rounded-sm uppercase tracking-wide`}
+        className={`${sizes[size]} font-bold text-black bg-white rounded-sm uppercase tracking-wide`}
       >
         HOT
       </span>

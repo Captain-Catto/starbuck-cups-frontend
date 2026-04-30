@@ -146,6 +146,7 @@ export default function ProductsPageClient({
       <div className="container mx-auto px-4 pt-20 pb-4 md:px-6 lg:px-8 md:pt-24 md:pb-8">
         {showFilters && (
           <div
+            aria-hidden="true"
             className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
             onClick={() => setShowFilters(false)}
           />

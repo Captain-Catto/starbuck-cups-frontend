@@ -49,7 +49,6 @@ export default function EffectManager() {
     if (!socket) return;
 
     const handleSettingsUpdate = (newSettings: EffectSettings) => {
-      console.log("Received settings update:", newSettings);
       dispatch(updateFromSocket(newSettings));
     };
 

@@ -47,6 +47,8 @@ export function LanguageSwitcher() {
       <div className="hidden md:block relative" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-zinc-300 hover:text-white rounded transition-colors cursor-pointer"
         >
           <Image 
@@ -92,7 +94,7 @@ export function LanguageSwitcher() {
       <div className="flex md:hidden items-center gap-1">
         {locales.map((loc, index) => (
           <span key={loc} className="flex items-center">
-            {index > 0 && <span className="text-zinc-600 mx-1">|</span>}
+            {index > 0 && <span aria-hidden="true" className="text-zinc-600 mx-1">|</span>}
             <button
               onClick={() => handleLocaleChange(loc)}
               className={`text-xs font-medium px-1.5 py-0.5 rounded transition-colors cursor-pointer ${

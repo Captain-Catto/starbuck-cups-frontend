@@ -46,19 +46,21 @@ export function Cart({ className = "" }: CartProps) {
     router.push("/cart");
   };
 
-  if (!isOpen) return null;
-
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-black/50 transition-opacity"
+        className={`fixed inset-0 z-40 bg-black/60 transition-opacity duration-300 ${
+          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
         onClick={() => dispatch(closeCart())}
       />
 
-      {/* Cart Panel */}
+      {/* Cart Panel — always mounted so slide transition works */}
       <div
-        className={`fixed right-0 top-0 h-full w-full max-w-md z-50 bg-zinc-900 shadow-xl transform transition-transform flex flex-col ${className}`}
+        className={`fixed right-0 top-0 h-full w-full max-w-md z-50 bg-zinc-900 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        } ${className}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-zinc-800 flex-shrink-0">
@@ -215,12 +217,6 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
           )}
         </div>
 
-        {/* Product Label */}
-        <div className="flex items-center gap-2">
-          <span className="px-2 py-1 bg-zinc-700 border border-zinc-600 rounded text-xs text-zinc-300">
-            {t("interested")}
-          </span>
-        </div>
       </div>
 
       {/* Remove Button */}

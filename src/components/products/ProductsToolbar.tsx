@@ -26,7 +26,9 @@ export function ProductsToolbar({
             <Filter className="w-4 h-4" />
             {t("title")}
             {hasActiveFilters && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full"></span>
+              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-white text-black text-[9px] font-black rounded-full flex items-center justify-center leading-none">
+                ✓
+              </span>
             )}
           </button>
         </div>

@@ -319,7 +319,7 @@ export function SearchAutocomplete({
                       key={product.id}
                       onClick={() => handleProductClick(product)}
                       className={`cursor-pointer rounded-2xl transition-shadow ${
-                        focusedIndex === index ? "ring-2 ring-emerald-500" : ""
+                        focusedIndex === index ? "ring-2 ring-white/60" : ""
                       }`}
                     >
                       <ProductCard

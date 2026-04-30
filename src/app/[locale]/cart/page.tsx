@@ -8,7 +8,6 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ChevronLeft, FileText, Phone, User, MapPin, Mail } from "lucide-react";
 import type { CartItem } from "@/types";
-import { Cart } from "@/components/ui/Cart";
 import { getFirstProductImageUrl } from "@/lib/utils/image";
 import { trackConsultationSubmission } from "@/lib/analytics";
 import {
@@ -308,7 +307,6 @@ export default function CartPage() {
           </div>
         </div>
       </div>
-      <Cart />
     </div>
   );
 }

@@ -51,12 +51,10 @@ export function SettingsSocketProvider({
     });
 
     socketInstance.on("connect", () => {
-      console.log("Connected to socket server");
       setIsConnected(true);
     });
 
     socketInstance.on("disconnect", () => {
-      console.log("Disconnected from socket server");
       setIsConnected(false);
     });
 

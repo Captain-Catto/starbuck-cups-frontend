@@ -136,7 +136,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
         });
       }}
     >
-      <div className="bg-zinc-900 rounded-2xl overflow-hidden hover:bg-zinc-800 transition-colors duration-300 relative">
+      <div className={`bg-zinc-900 rounded-2xl overflow-hidden transition-all duration-300 relative ${
+        product.stockQuantity === 0
+          ? "opacity-60 grayscale"
+          : "hover:bg-zinc-800 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/60"
+      }`}>
         <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
           {/* Featured Badge - TOP LEFT */}
           {showBadges && (
@@ -178,10 +182,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   }
                 }}
                 disabled={product.stockQuantity === 0}
-                className={`w-10 h-10 rounded-full transition-colors duration-200 flex items-center justify-center shadow-lg ${
+                className={`w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
                   product.stockQuantity === 0
                     ? "bg-zinc-600 text-zinc-400 cursor-not-allowed"
-                    : "bg-white text-black hover:bg-black hover:text-white"
+                    : "bg-white text-black hover:bg-black hover:text-white active:scale-90"
                 }`}
                 aria-label={
                   product.stockQuantity === 0

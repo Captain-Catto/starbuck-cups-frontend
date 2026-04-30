@@ -28,7 +28,10 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
                 {item.label}
               </Link>
             ) : (
-              <span className="flex items-center gap-1 text-white">
+              <span
+                className="flex items-center gap-1 text-white font-medium"
+                aria-current="page"
+              >
                 {isFirst && <Home className="w-4 h-4" />}
                 {item.label}
               </span>

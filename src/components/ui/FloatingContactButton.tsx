@@ -55,8 +55,11 @@ export function FloatingContactButton({
   return (
     <div className="fixed bottom-6 right-6 z-30">
       {/* Messenger Button - Appears when open */}
-      {isOpen && (
-        <div className="absolute bottom-34 right-0 animate-in fade-in slide-in-from-bottom-2 duration-200">
+      <div
+        className={`absolute bottom-[8.5rem] right-0 transition-all duration-200 ${
+          isOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-3 pointer-events-none"
+        }`}
+      >
           <button
             onClick={handleMessengerClick}
             className="flex items-center justify-center w-14 h-14 bg-black hover:bg-zinc-800 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-zinc-700 cursor-pointer"
@@ -82,11 +85,13 @@ export function FloatingContactButton({
             </svg>
           </button>
         </div>
-      )}
 
       {/* Zalo Button - Appears when open */}
-      {isOpen && (
-        <div className="absolute bottom-18 right-0 animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <div
+        className={`absolute bottom-[4.5rem] right-0 transition-all duration-200 delay-75 ${
+          isOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-3 pointer-events-none"
+        }`}
+      >
           <button
             onClick={handleZaloClick}
             className="flex items-center justify-center w-14 h-14 bg-black hover:bg-zinc-800 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-zinc-700 cursor-pointer"
@@ -105,7 +110,6 @@ export function FloatingContactButton({
             </svg>
           </button>
         </div>
-      )}
 
       {/* Main Toggle Button */}
       <button

@@ -142,10 +142,10 @@ export default function ProductClient({ product, relatedTitle }: Props) {
             <button
               onClick={handleAddToCart}
               disabled={product.stockQuantity === 0}
-              className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold text-sm md:text-base transition-colors ${
+              className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold text-sm md:text-base transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
                 product.stockQuantity === 0
                   ? "bg-zinc-700 text-zinc-400 cursor-not-allowed"
-                  : "bg-white text-black hover:bg-zinc-100 cursor-pointer"
+                  : "bg-white text-black hover:bg-zinc-100 active:scale-[0.97] cursor-pointer"
               }`}
             >
               <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
@@ -157,7 +157,7 @@ export default function ProductClient({ product, relatedTitle }: Props) {
                 href={product.productUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-medium text-xs md:text-sm border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 transition-all cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-medium text-xs md:text-sm border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 active:scale-[0.97] transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <ExternalLink className="w-4 h-4" />
                 {t("viewClip")}

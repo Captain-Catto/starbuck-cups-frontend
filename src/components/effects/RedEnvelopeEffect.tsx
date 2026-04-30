@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 interface RedEnvelopeSettings {
   fallSpeed: number;
@@ -54,7 +54,7 @@ export default function RedEnvelopeEffect({
   const sparklesRef = useRef<Sparkle[]>([]);
   const animationFrameRef = useRef<number | undefined>(undefined);
 
-  const settings = redEnvelopeSettings || {
+  const settings = useMemo(() => redEnvelopeSettings || {
     fallSpeed: 0.3,
     rotationSpeed: 1.0,
     windStrength: 0.3,
@@ -65,7 +65,7 @@ export default function RedEnvelopeEffect({
     flipSpeed: 1.0,
     swaySpeed: 1.0,
     hue: 0,
-  };
+  }, [redEnvelopeSettings]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

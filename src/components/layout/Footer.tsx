@@ -84,15 +84,7 @@ export function Footer() {
                       rel="noopener noreferrer"
                       className="text-zinc-200 hover:text-white transition-colors"
                     >
-                      Zalo:{" "}
-                    </a>
-                    <a
-                      href="https://zalo.me/84896686008"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-zinc-200 hover:text-white transition-colors"
-                    >
-                      0896 686 008
+                      Zalo: 0896 686 008
                     </a>
                   </p>
                 </div>

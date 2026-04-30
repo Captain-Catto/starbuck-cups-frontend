@@ -2,11 +2,11 @@
 
 import React, { lazy, Suspense } from "react";
 import { useTranslations } from "next-intl";
-import { Category } from "@/types";
 import { ProductGridSkeleton } from "@/components/ui/LoadingSkeleton";
 
 // Hero Section không lazy load để tối ưu LCP
 import HeroSection from "@/components/home/HeroSection";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
 // Lazy load các components khác để giảm bundle size và TBT
 const HomeProductGrid = lazy(() =>
@@ -35,7 +35,6 @@ interface PromotionalBannerData {
 }
 
 interface HomePageProps {
-  categories: Category[];
   heroImages?: HeroImageData[];
   promotionalBanner?: PromotionalBannerData | null;
   loading?: boolean;
@@ -66,7 +65,9 @@ const HomePage: React.FC<HomePageProps> = ({
       {/* Categories Section */}
       <section className="py-4 md:py-8">
         <div className="container mx-auto px-6">
-          <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6">{t("latestProducts")}</h2>
+          <ScrollReveal>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6">{t("latestProducts")}</h2>
+          </ScrollReveal>
 
           {/* Products Grid */}
           <Suspense fallback={<ProductGridSkeleton />}>

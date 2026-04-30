@@ -11,7 +11,7 @@ import { ArrowRight } from "lucide-react";
 const SwiperCarousel = dynamic(() => import("./SwiperCarousel"), {
   ssr: false,
   loading: () => (
-    <div className="h-full bg-gray-200 rounded-2xl md:rounded-3xl animate-pulse" />
+    <div className="h-full bg-zinc-800 rounded-2xl md:rounded-3xl animate-pulse" />
   ),
 });
 
@@ -73,9 +73,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   promotionalBanner = null,
 }) => {
   const t = useTranslations("homePage");
-  // Load Swiper immediately to enable priority loading for first hero image (LCP optimization)
-  const showSwiper = true;
-
   if (loading) {
     return <HeroSectionSkeleton />;
   }
@@ -147,7 +144,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             />
             <Link
               href={bannerData.buttonLink}
-              className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-medium hover:bg-gray-200 transition-all duration-300 w-fit text-sm md:text-base"
+              className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-medium hover:bg-zinc-100 hover:shadow-[0_0_24px_rgba(255,255,255,0.25)] active:scale-[0.97] transition-all duration-300 w-fit text-sm md:text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
             >
               {bannerData.buttonText}
               <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
@@ -157,13 +154,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           {/* Hero carousel - lazy loaded sau LCP */}
           <div className="lg:col-span-2 order-1 lg:order-2">
             <div className="h-64 md:h-96 lg:h-full rounded-2xl md:rounded-3xl overflow-hidden bg-zinc-900">
-              {!showSwiper ? (
-                // Fast loading fallback - skeleton placeholder
-                <div className="relative h-full bg-gray-200 rounded-2xl md:rounded-3xl animate-pulse" />
-              ) : (
-                // Swiper carousel sau khi LCP đã tối ưu
-                <SwiperCarousel images={activeImages} />
-              )}
+              <SwiperCarousel images={activeImages} />
             </div>
           </div>
         </div>

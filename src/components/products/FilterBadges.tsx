@@ -170,10 +170,10 @@ export function FilterBadges({
       )}
 
       {/* Clear All Button */}
-      {activeFiltersCount >= 2 && (
+      {activeFiltersCount >= 1 && (
         <button
           onClick={onClearAll}
-          className="text-red-600 hover:text-red-700 text-sm font-medium cursor-pointer transition-colors"
+          className="text-zinc-400 hover:text-white text-sm font-medium cursor-pointer transition-colors underline underline-offset-2"
         >
           {t("clearAll")}
         </button>

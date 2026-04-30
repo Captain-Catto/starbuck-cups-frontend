@@ -165,10 +165,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Image optimization error:", error);
     return NextResponse.json(
-      {
-        error: "Failed to optimize image",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Failed to optimize image" },
       { status: 500 }
     );
   }

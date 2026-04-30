@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface PaginationData {
@@ -30,9 +31,17 @@ export function Pagination({
 }: PaginationProps) {
   const t = useTranslations("pagination");
   const [isInputMode, setIsInputMode] = useState(false);
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState(data ? String(data.current_page) : "1");
   const [desktopInputMode, setDesktopInputMode] = useState(false);
-  const [desktopInputValue, setDesktopInputValue] = useState("");
+  const [desktopInputValue, setDesktopInputValue] = useState(data ? String(data.current_page) : "1");
+
+  // Sync input values when page changes externally
+  useEffect(() => {
+    if (data) {
+      setInputValue(String(data.current_page));
+      setDesktopInputValue(String(data.current_page));
+    }
+  }, [data?.current_page]);
 
   // Handle case when data is undefined or null
   if (!data) {
@@ -45,14 +54,6 @@ export function Pagination({
     has_next,
     has_prev
   } = data;
-
-  // Initialize input values based on current page
-  if (inputValue === "") {
-    setInputValue(currentPage.toString());
-  }
-  if (desktopInputValue === "") {
-    setDesktopInputValue(currentPage.toString());
-  }
 
   const getDesktopPages = () => {
     const pages = [];
@@ -137,14 +138,14 @@ export function Pagination({
           }
           disabled={!has_prev}
           className={classNames(
-            "relative inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+            "relative inline-flex items-center px-2 py-2 text-sm font-medium rounded-lg transition-colors",
             !has_prev
-              ? "text-zinc-600 cursor-not-allowed bg-zinc-800"
-              : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 cursor-pointer"
+              ? "text-zinc-700 cursor-not-allowed bg-zinc-900 border border-zinc-800"
+              : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:text-white cursor-pointer"
           )}
           aria-label={t("previousPage")}
         >
-          &lt;
+          <ChevronLeft className="w-4 h-4" />
         </button>
 
         {/* Mobile Version - Shows on < lg (1024px) */}
@@ -211,8 +212,8 @@ export function Pagination({
               className={classNames(
                 "relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors",
                 page === currentPage
-                  ? "z-10 bg-zinc-600 border-zinc-600 text-white cursor-default"
-                  : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 cursor-pointer"
+                  ? "bg-white text-black font-semibold cursor-default"
+                  : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:text-white cursor-pointer"
               )}
               aria-current={page === currentPage ? "page" : undefined}
             >
@@ -280,14 +281,14 @@ export function Pagination({
           }
           disabled={!has_next}
           className={classNames(
-            "relative inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+            "relative inline-flex items-center px-2 py-2 text-sm font-medium rounded-lg transition-colors",
             !has_next
-              ? "text-zinc-600 cursor-not-allowed bg-zinc-800"
-              : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 cursor-pointer"
+              ? "text-zinc-700 cursor-not-allowed bg-zinc-900 border border-zinc-800"
+              : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:text-white cursor-pointer"
           )}
           aria-label={t("nextPage")}
         >
-          &gt;
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </nav>
