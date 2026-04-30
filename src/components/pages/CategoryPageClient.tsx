@@ -144,13 +144,7 @@ export default function CategoryPageClient({
   };
 
   const handleClearAllFilters = () => {
-    // Xóa filters phụ nhưng giữ nguyên trên trang category
-    setSearchQuery("");
-    setSelectedColor("");
-    setCapacityRange({ min: 0, max: 9999 });
-    setSortBy("featured");
-    setCurrentPage(1);
-    router.replace(pathname, { scroll: false });
+    router.push("/products");
   };
 
   const useInitialServerData = !hasOtherActiveFilters && currentPage === 1;
