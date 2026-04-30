@@ -89,7 +89,7 @@ export function FilterBadges({
           </span>
           <button
             onClick={onRemoveSearch}
-            className="hover:bg-zinc-700 rounded p-0.5 transition-colors"
+            className="hover:bg-zinc-700 rounded p-0.5 transition-colors cursor-pointer"
             aria-label={t("removeSearch")}
           >
             <X className="w-4 h-4" />
@@ -108,7 +108,7 @@ export function FilterBadges({
           </span>
           <button
             onClick={onRemoveCategory}
-            className="hover:bg-zinc-700 rounded p-0.5 transition-colors"
+            className="hover:bg-zinc-700 rounded p-0.5 transition-colors cursor-pointer"
             aria-label={t("removeCategory")}
           >
             <X className="w-4 h-4" />
@@ -125,7 +125,7 @@ export function FilterBadges({
           </span>
           <button
             onClick={onRemoveColor}
-            className="hover:bg-zinc-700 rounded p-0.5 transition-colors"
+            className="hover:bg-zinc-700 rounded p-0.5 transition-colors cursor-pointer"
             aria-label={t("removeColor")}
           >
             <X className="w-4 h-4" />
@@ -145,7 +145,7 @@ export function FilterBadges({
           </span>
           <button
             onClick={onRemoveCapacity}
-            className="hover:bg-zinc-700 rounded p-0.5 transition-colors"
+            className="hover:bg-zinc-700 rounded p-0.5 transition-colors cursor-pointer"
             aria-label={t("removeCapacity")}
           >
             <X className="w-4 h-4" />
@@ -161,7 +161,7 @@ export function FilterBadges({
           </span>
           <button
             onClick={onRemoveSort}
-            className="hover:bg-zinc-700 rounded p-0.5 transition-colors"
+            className="hover:bg-zinc-700 rounded p-0.5 transition-colors cursor-pointer"
             aria-label={t("removeSort")}
           >
             <X className="w-4 h-4" />

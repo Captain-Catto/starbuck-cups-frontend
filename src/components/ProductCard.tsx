@@ -185,7 +185,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 className={`w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
                   product.stockQuantity === 0
                     ? "bg-zinc-600 text-zinc-400 cursor-not-allowed"
-                    : "bg-white text-black hover:bg-black hover:text-white active:scale-90"
+                    : "bg-white text-black hover:bg-black hover:text-white active:scale-90 cursor-pointer"
                 }`}
                 aria-label={
                   product.stockQuantity === 0
