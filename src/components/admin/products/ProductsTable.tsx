@@ -59,6 +59,7 @@ interface ProductsTableProps {
   getProductStatus: (product: ProductListItem) => ProductStatus;
   onCategoryClick?: (categorySlug: string) => void;
   onColorClick?: (colorSlug: string) => void;
+  onCapacityClick?: (volumeMl: number) => void;
 }
 
 const LoadingSkeleton = memo(function LoadingSkeleton() {
@@ -124,6 +125,7 @@ interface ProductRowProps {
   ) => void;
   onCategoryClick?: (categorySlug: string) => void;
   onColorClick?: (colorSlug: string) => void;
+  onCapacityClick?: (volumeMl: number) => void;
 }
 
 const ProductRow = memo(
@@ -137,6 +139,7 @@ const ProductRow = memo(
     onProductAction,
     onCategoryClick,
     onColorClick,
+    onCapacityClick,
   }: ProductRowProps) {
     const firstImage = getFirstProductImage(product.productImages);
 
@@ -226,7 +229,16 @@ const ProductRow = memo(
                 <span className="text-xs">{pc.color.name}</span>
               </button>
             )) || "No colors"}
-            <div className="text-xs text-gray-300">{product.capacity?.name}</div>
+            {product.capacity ? (
+              <button
+                type="button"
+                onClick={() => onCapacityClick?.(product.capacity!.volumeMl)}
+                className="text-xs text-gray-300 text-left hover:text-blue-400 hover:underline transition-colors cursor-pointer"
+                title={`Lọc theo: ${product.capacity.name}`}
+              >
+                {product.capacity.name}
+              </button>
+            ) : null}
           </div>
         </td>
         <td className="px-6 py-4 text-sm text-white">
@@ -313,6 +325,7 @@ export function ProductsTable({
   getProductStatus,
   onCategoryClick,
   onColorClick,
+  onCapacityClick,
 }: ProductsTableProps) {
   const selectedProductIds = useMemo(
     () => new Set(selectedProducts),
@@ -390,6 +403,7 @@ export function ProductsTable({
                     onProductAction={onProductAction}
                     onCategoryClick={onCategoryClick}
                     onColorClick={onColorClick}
+                    onCapacityClick={onCapacityClick}
                   />
                 );
               })

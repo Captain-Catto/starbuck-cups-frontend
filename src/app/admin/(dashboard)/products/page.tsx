@@ -140,6 +140,10 @@ export default function AdminProductsPage() {
         getProductStatus={getProductStatus}
         onCategoryClick={(slug) => handleFilterChange("category", slug)}
         onColorClick={(slug) => handleFilterChange("color", slug)}
+        onCapacityClick={(volumeMl) => {
+          handleFilterChange("minCapacity", volumeMl.toString());
+          handleFilterChange("maxCapacity", volumeMl.toString());
+        }}
       />
 
       {/* Pagination */}

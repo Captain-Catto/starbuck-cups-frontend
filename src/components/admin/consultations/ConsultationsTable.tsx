@@ -99,7 +99,7 @@ export function ConsultationsTable({
                 const StatusIcon = statusInfo?.icon ?? Clock;
 
                 return (
-                  <tr key={consultation.id} className="hover:bg-gray-700 cursor-pointer">
+                  <tr key={consultation.id} className="hover:bg-gray-700 cursor-pointer" onClick={() => onViewConsultation(consultation)}>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
@@ -155,14 +155,14 @@ export function ConsultationsTable({
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => onViewConsultation(consultation)}
-                          className="text-white hover:bg-gray-700 p-1 rounded transition-colors"
+                          className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer"
                           title="Xem chi tiết"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => onDeleteConsultation(consultation.id)}
-                          className="text-white hover:bg-gray-700 p-1 rounded transition-colors"
+                          onClick={(e) => { e.stopPropagation(); onDeleteConsultation(consultation.id); }}
+                          className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer"
                           title="Xóa consultation"
                         >
                           <Trash2 className="w-4 h-4" />
