@@ -28,6 +28,7 @@ interface ProductColor {
     id: string;
     name: string;
     hexCode: string;
+    slug: string;
   };
 }
 
@@ -57,6 +58,7 @@ interface ProductsTableProps {
   ) => void;
   getProductStatus: (product: ProductListItem) => ProductStatus;
   onCategoryClick?: (categorySlug: string) => void;
+  onColorClick?: (colorSlug: string) => void;
 }
 
 const LoadingSkeleton = memo(function LoadingSkeleton() {
@@ -121,6 +123,7 @@ interface ProductRowProps {
     action: "activate" | "deactivate" | "delete"
   ) => void;
   onCategoryClick?: (categorySlug: string) => void;
+  onColorClick?: (colorSlug: string) => void;
 }
 
 const ProductRow = memo(
@@ -133,6 +136,7 @@ const ProductRow = memo(
     onEditProduct,
     onProductAction,
     onCategoryClick,
+    onColorClick,
   }: ProductRowProps) {
     const firstImage = getFirstProductImage(product.productImages);
 
@@ -182,7 +186,7 @@ const ProductRow = memo(
             <div className="ml-4">
               <button
                 onClick={() => onEditProduct(product)}
-                className="text-sm font-medium text-white hover:text-green-400 hover:underline transition-colors text-left"
+                className="text-sm font-medium text-white hover:text-green-400 hover:underline transition-colors text-left cursor-pointer"
               >
                 {product.name}
               </button>
@@ -208,13 +212,19 @@ const ProductRow = memo(
         <td className="px-6 py-4 text-sm text-white">
           <div className="space-y-1">
             {product.productColors?.map((pc: ProductColor) => (
-              <div key={pc.color.id} className="flex items-center gap-2">
+              <button
+                key={pc.color.id}
+                type="button"
+                onClick={() => onColorClick?.(pc.color.slug)}
+                className="flex items-center gap-2 text-left hover:text-blue-400 hover:underline transition-colors cursor-pointer"
+                title={`Lọc theo: ${pc.color.name}`}
+              >
                 <div
-                  className="w-3 h-3 rounded-full border"
+                  className="w-3 h-3 rounded-full border flex-shrink-0"
                   style={{ backgroundColor: pc.color.hexCode }}
                 />
                 <span className="text-xs">{pc.color.name}</span>
-              </div>
+              </button>
             )) || "No colors"}
             <div className="text-xs text-gray-300">{product.capacity?.name}</div>
           </div>
@@ -302,6 +312,7 @@ export function ProductsTable({
   onProductAction,
   getProductStatus,
   onCategoryClick,
+  onColorClick,
 }: ProductsTableProps) {
   const selectedProductIds = useMemo(
     () => new Set(selectedProducts),
@@ -378,6 +389,7 @@ export function ProductsTable({
                     onEditProduct={onEditProduct}
                     onProductAction={onProductAction}
                     onCategoryClick={onCategoryClick}
+                    onColorClick={onColorClick}
                   />
                 );
               })
