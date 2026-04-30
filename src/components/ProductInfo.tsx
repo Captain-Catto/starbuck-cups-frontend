@@ -87,12 +87,7 @@ export default function ProductInfo() {
   const handleAddToCart = () => {
     if (product && product.stockQuantity > 0) {
       // Add to cart without specific color selection
-      dispatch(
-        addToCart({
-          product,
-          colorRequest: undefined, // No specific color selected
-        })
-      );
+      dispatch(addToCart({ product }));
 
       // GA4 tracking
       trackAddToCart({

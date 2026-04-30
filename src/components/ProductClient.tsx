@@ -52,7 +52,7 @@ export default function ProductClient({ product, relatedTitle }: Props) {
 
   const handleAddToCart = () => {
     if (product.stockQuantity > 0) {
-      dispatch(addToCart({ product, colorRequest: undefined }));
+      dispatch(addToCart({ product }));
       trackAddToCart({ id: product.id, name: product.name, category: product.productCategories?.[0]?.category?.name });
       trackAddToCartClick({ id: product.id, name: product.name, category: product.productCategories?.[0]?.category?.name });
     } else {
