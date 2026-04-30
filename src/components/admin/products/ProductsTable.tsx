@@ -19,6 +19,7 @@ interface ProductCategory {
   category: {
     id: string;
     name: string;
+    slug: string;
   };
 }
 
@@ -55,6 +56,7 @@ interface ProductsTableProps {
     action: "activate" | "deactivate" | "delete"
   ) => void;
   getProductStatus: (product: ProductListItem) => ProductStatus;
+  onCategoryClick?: (categorySlug: string) => void;
 }
 
 const LoadingSkeleton = memo(function LoadingSkeleton() {
@@ -118,6 +120,7 @@ interface ProductRowProps {
     productId: string,
     action: "activate" | "deactivate" | "delete"
   ) => void;
+  onCategoryClick?: (categorySlug: string) => void;
 }
 
 const ProductRow = memo(
@@ -129,11 +132,12 @@ const ProductRow = memo(
     onSelectProduct,
     onEditProduct,
     onProductAction,
+    onCategoryClick,
   }: ProductRowProps) {
     const firstImage = getFirstProductImage(product.productImages);
 
     return (
-      <tr className="hover:bg-gray-700 cursor-pointer">
+      <tr className="hover:bg-gray-700">
         <td className="px-6 py-4">
           <input
             type="checkbox"
@@ -189,10 +193,16 @@ const ProductRow = memo(
         <td className="px-6 py-4 text-sm text-white">
           <div className="space-y-1">
             {product.productCategories?.map((pc: ProductCategory) => (
-              <div key={pc.category.id} className="text-xs">
+              <button
+                key={pc.category.id}
+                type="button"
+                onClick={() => onCategoryClick?.(pc.category.slug)}
+                className="block text-xs text-left hover:text-blue-400 hover:underline transition-colors cursor-pointer"
+                title={`Lọc theo: ${pc.category.name}`}
+              >
                 {pc.category.name}
-              </div>
-            )) || "No categories"}
+              </button>
+            )) || <span className="text-gray-400 text-xs">—</span>}
           </div>
         </td>
         <td className="px-6 py-4 text-sm text-white">
@@ -229,7 +239,7 @@ const ProductRow = memo(
           <div className="flex items-center justify-end gap-2">
             <button
               onClick={() => onEditProduct(product)}
-              className="text-white hover:bg-gray-700 p-1 rounded transition-colors"
+              className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer"
               title="Chỉnh sửa"
             >
               <Edit className="w-4 h-4" />
@@ -240,7 +250,7 @@ const ProductRow = memo(
                 onProductAction(product.id, targetAction);
               }}
               disabled={rowActionLoading}
-              className="text-white hover:bg-gray-700 p-1 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               title={product.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
             >
               {rowActionLoading ? (
@@ -254,7 +264,7 @@ const ProductRow = memo(
             <button
               onClick={() => onProductAction(product.id, "delete")}
               disabled={rowActionLoading}
-              className="text-white hover:bg-gray-700 p-1 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               title="Xóa"
             >
               {rowActionLoading ? (
@@ -291,6 +301,7 @@ export function ProductsTable({
   onEditProduct,
   onProductAction,
   getProductStatus,
+  onCategoryClick,
 }: ProductsTableProps) {
   const selectedProductIds = useMemo(
     () => new Set(selectedProducts),
@@ -366,6 +377,7 @@ export function ProductsTable({
                     onSelectProduct={onSelectProduct}
                     onEditProduct={onEditProduct}
                     onProductAction={onProductAction}
+                    onCategoryClick={onCategoryClick}
                   />
                 );
               })

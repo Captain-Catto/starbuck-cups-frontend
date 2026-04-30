@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import type {
   Product,
@@ -90,6 +91,10 @@ export interface UseProductsReturn {
 }
 
 export function useProducts(): UseProductsReturn {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [colors, setColors] = useState<Color[]>([]);
@@ -116,14 +121,14 @@ export function useProducts(): UseProductsReturn {
   });
 
   const [filters, setFilters] = useState<ProductFilters>({
-    search: "",
-    category: "",
-    color: "",
-    minCapacity: "",
-    maxCapacity: "",
-    status: "all",
-    sortBy: "createdAt",
-    sortOrder: "desc",
+    search: searchParams.get("search") || "",
+    category: searchParams.get("category") || "",
+    color: searchParams.get("color") || "",
+    minCapacity: searchParams.get("minCapacity") || "",
+    maxCapacity: searchParams.get("maxCapacity") || "",
+    status: (searchParams.get("status") as ProductFilters["status"]) || "all",
+    sortBy: searchParams.get("sortBy") || "createdAt",
+    sortOrder: (searchParams.get("sortOrder") as "asc" | "desc") || "desc",
   });
 
   // Debounced search query
@@ -277,7 +282,22 @@ export function useProducts(): UseProductsReturn {
   }, []);
 
   const handleFilterChange = (field: keyof ProductFilters, value: string) => {
-    setFilters((prev) => ({ ...prev, [field]: value }));
+    setFilters((prev) => {
+      const next = { ...prev, [field]: value };
+      // Sync to URL so filters survive page refresh and can be shared
+      const params = new URLSearchParams();
+      if (next.search) params.set("search", next.search);
+      if (next.category) params.set("category", next.category);
+      if (next.color) params.set("color", next.color);
+      if (next.minCapacity) params.set("minCapacity", next.minCapacity);
+      if (next.maxCapacity) params.set("maxCapacity", next.maxCapacity);
+      if (next.status && next.status !== "all") params.set("status", next.status);
+      if (next.sortBy && next.sortBy !== "createdAt") params.set("sortBy", next.sortBy);
+      if (next.sortOrder && next.sortOrder !== "desc") params.set("sortOrder", next.sortOrder);
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      return next;
+    });
     setPagination((prev) => ({ ...prev, current_page: 1 }));
   };
 

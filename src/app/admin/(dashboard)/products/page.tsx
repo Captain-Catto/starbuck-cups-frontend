@@ -138,6 +138,7 @@ export default function AdminProductsPage() {
         onEditProduct={handleEditProduct}
         onProductAction={handleProductAction}
         getProductStatus={getProductStatus}
+        onCategoryClick={(slug) => handleFilterChange("category", slug)}
       />
 
       {/* Pagination */}
