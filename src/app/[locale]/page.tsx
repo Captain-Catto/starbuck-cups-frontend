@@ -135,7 +135,6 @@ export default async function HomePage({
 
   return (
     <HomePageComponent
-      categories={homePageData.categories || []}
       heroImages={homePageData.heroImages || []}
       promotionalBanner={homePageData.promotionalBanner}
     />
