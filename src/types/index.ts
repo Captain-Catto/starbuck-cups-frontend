@@ -159,8 +159,10 @@ export interface ProductSnapshot {
   description: string;
   category: string;
   color: string;
-  capacity: string;
+  capacity?: { name: string };
   images: string[];
+  colors?: Array<{ id: string; name: string; hexCode?: string }>;
+  categories?: Array<{ id: string; name: string; slug?: string }>;
 }
 
 export interface CustomerInfo {

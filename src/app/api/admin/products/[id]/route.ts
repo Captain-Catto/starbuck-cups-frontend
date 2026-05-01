@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 export async function GET(
   request: NextRequest,
@@ -7,11 +8,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const searchParams = request.nextUrl.searchParams;
     const url = new URL(getApiUrl(`admin/products/${id}`));
-
-    // Forward query parameters
-    searchParams.forEach((value, key) => {
+    request.nextUrl.searchParams.forEach((value, key) => {
       url.searchParams.append(key, value);
     });
 
@@ -19,17 +17,11 @@ export async function GET(
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        ...(request.headers.get("authorization") && {
-          authorization: request.headers.get("authorization") as string,
-        }),
-        ...(request.headers.get("cookie") && {
-          cookie: request.headers.get("cookie") as string,
-        }),
+        ...getAdminForwardHeaders(request),
       },
     });
 
-    const data = await response.json();
-
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
@@ -51,18 +43,12 @@ export async function PUT(
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        ...(request.headers.get("authorization") && {
-          authorization: request.headers.get("authorization") as string,
-        }),
-        ...(request.headers.get("cookie") && {
-          cookie: request.headers.get("cookie") as string,
-        }),
+        ...getAdminForwardHeaders(request),
       },
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
-
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
@@ -83,17 +69,11 @@ export async function DELETE(
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        ...(request.headers.get("authorization") && {
-          authorization: request.headers.get("authorization") as string,
-        }),
-        ...(request.headers.get("cookie") && {
-          cookie: request.headers.get("cookie") as string,
-        }),
+        ...getAdminForwardHeaders(request),
       },
     });
 
-    const data = await response.json();
-
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(

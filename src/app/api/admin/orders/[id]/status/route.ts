@@ -1,23 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
-
-interface StatusUpdateRequest {
-  status: string;
-}
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 const validStatuses = [
-  "PENDING",
-  "CONFIRMED",
-  "PROCESSING",
-  "SHIPPED",
-  "DELIVERED",
-  "CANCELLED",
-  "pending",
-  "confirmed",
-  "processing",
-  "shipped",
-  "delivered",
-  "cancelled",
+  "PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED",
+  "pending", "confirmed", "processing", "shipped", "delivered", "cancelled",
 ];
 
 export async function PATCH(
@@ -27,43 +14,33 @@ export async function PATCH(
   try {
     const { id: orderId } = await params;
 
-    if (!orderId) {
+    const body = await request.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
       return NextResponse.json(
-        { success: false, message: "Order ID is required" },
+        { success: false, message: "Dữ liệu không hợp lệ" },
         { status: 400 }
       );
     }
 
-    const body: StatusUpdateRequest = await request.json();
-    const { status } = body;
-
+    const { status } = body as { status?: string };
     if (!status || !validStatuses.includes(status)) {
       return NextResponse.json(
-        { success: false, message: "Invalid status provided" },
+        { success: false, message: "Trạng thái không hợp lệ" },
         { status: 400 }
       );
     }
 
-    // Here you would call your backend API
-    const backendResponse = await fetch(
-      `${getApiUrl("admin/orders")}/${orderId}/status`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: request.headers.get("Authorization") || "",
-        },
-        body: JSON.stringify({ status }),
-      }
-    );
+    const response = await fetch(getApiUrl(`admin/orders/${orderId}/status`), {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAdminForwardHeaders(request),
+      },
+      body: JSON.stringify({ status }),
+    });
 
-    const result = await backendResponse.json();
-
-    if (!backendResponse.ok) {
-      return NextResponse.json(result, { status: backendResponse.status });
-    }
-
-    return NextResponse.json(result);
+    const data = await handleAdminBackendResponse(response);
+    return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
       { success: false, message: "Internal server error" },

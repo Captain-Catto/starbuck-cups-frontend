@@ -1,13 +1,11 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
     const url = new URL(getApiUrl("admin/products/low-stock"));
-
-    // Forward query parameters (threshold, etc.)
-    searchParams.forEach((value, key) => {
+    request.nextUrl.searchParams.forEach((value, key) => {
       url.searchParams.append(key, value);
     });
 
@@ -15,17 +13,11 @@ export async function GET(request: NextRequest) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        ...(request.headers.get("authorization") && {
-          authorization: request.headers.get("authorization") as string,
-        }),
-        ...(request.headers.get("cookie") && {
-          cookie: request.headers.get("cookie") as string,
-        }),
+        ...getAdminForwardHeaders(request),
       },
     });
 
-    const data = await response.json();
-
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(

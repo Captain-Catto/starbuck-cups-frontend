@@ -30,6 +30,7 @@ export function SettingsSocketProvider({
     // Backend currently requires JWT for all Socket.IO connections.
     // Skip connection when no token to avoid repeated auth failures on public pages.
     if (!token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSocket(null);
       setIsConnected(false);
       return;

@@ -1,18 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
-
-// Helper function to forward auth headers
-function getAuthHeaders(request: NextRequest): Record<string, string> {
-  const headers: Record<string, string> = {};
-
-  // Forward authorization header from client request
-  const authHeader = request.headers.get("authorization");
-  if (authHeader) {
-    headers["authorization"] = authHeader;
-  }
-
-  return headers;
-}
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 export async function POST(
   request: NextRequest,
@@ -21,21 +9,23 @@ export async function POST(
   try {
     const { id } = await params;
     const body = await request.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json(
+        { success: false, message: "Dữ liệu không hợp lệ" },
+        { status: 400 }
+      );
+    }
 
-    const response = await fetch(
-      getApiUrl(`admin/consultations/${id}/respond`),
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...getAuthHeaders(request),
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    const response = await fetch(getApiUrl(`admin/consultations/${id}/respond`), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAdminForwardHeaders(request),
+      },
+      body: JSON.stringify(body),
+    });
 
-    const data = await response.json();
-
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(

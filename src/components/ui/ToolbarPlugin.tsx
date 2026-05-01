@@ -116,7 +116,6 @@ const ToolbarPlugin = () => {
         const paragraphNodes = new Set();
 
         selectedNodes.forEach((node) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let currentNode: any = node;
           while (currentNode) {
             if (currentNode.getType() === 'paragraph') {
@@ -129,7 +128,6 @@ const ToolbarPlugin = () => {
         });
 
         // Áp dụng style cho từng paragraph
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         paragraphNodes.forEach((paragraphNode: any) => {
           const writableNode = paragraphNode.getWritable();
           const currentStyle = writableNode.getStyle() || '';
@@ -194,11 +192,9 @@ const ToolbarPlugin = () => {
               const children = root.getChildren();
 
               // Tìm và xóa image node cũ
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               children.forEach((child: any) => {
                 if (child.getType() === 'paragraph') {
                   const paragraphChildren = child.getChildren();
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   paragraphChildren.forEach((grandChild: any) => {
                     if ($isImageNode(grandChild) && grandChild.getSrc() === tempSrc) {
 

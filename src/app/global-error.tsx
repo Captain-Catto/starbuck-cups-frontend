@@ -65,6 +65,7 @@ export default function GlobalError({
             >
               Thử lại
             </button>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- global-error.tsx runs outside React tree, Link is not available */}
             <a
               href="/"
               style={{

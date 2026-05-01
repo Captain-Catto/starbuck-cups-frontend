@@ -132,6 +132,7 @@ export default function ImageReorder({
       url,
       order: index,
     }));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setImageItems(newItems);
   }, [images]);
 

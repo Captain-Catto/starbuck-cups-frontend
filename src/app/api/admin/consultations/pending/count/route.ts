@@ -1,35 +1,19 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 export async function GET(request: NextRequest) {
   try {
-    // Get authorization header from the request
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: "Authorization header missing" },
-        { status: 401 }
-      );
-    }
-
     const response = await fetch(getApiUrl("consultations/pending/count"), {
       method: "GET",
       headers: {
-        Authorization: authHeader,
         "Content-Type": "application/json",
+        ...getAdminForwardHeaders(request),
       },
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { success: false, message: data.message || "Failed to fetch pending consultations count" },
-        { status: response.status }
-      );
-    }
-
-    return NextResponse.json(data);
+    const data = await handleAdminBackendResponse(response);
+    return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
       { success: false, message: "Failed to fetch pending consultations count" },

@@ -47,9 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Invalidate all fetches tagged "products" + key pages
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore — Next.js 16 type mismatch for revalidateTag
-    revalidateTag("products");
+    revalidateTag("products", "default");
     revalidatePath("/[locale]", "layout");
     revalidatePath("/[locale]/products", "layout");
 
@@ -63,20 +61,3 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Keep GET for backward compatibility (manual trigger from browser)
-export async function GET(request: NextRequest) {
-  const secret = process.env.REVALIDATE_SECRET;
-  const querySecret = request.nextUrl.searchParams.get("secret");
-
-  if (!secret || querySecret !== secret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore — Next.js 16 type mismatch for revalidateTag
-  revalidateTag("products");
-  revalidatePath("/[locale]", "layout");
-  revalidatePath("/[locale]/products", "layout");
-
-  return NextResponse.json({ revalidated: true, timestamp: new Date().toISOString() });
-}

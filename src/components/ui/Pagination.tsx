@@ -38,10 +38,11 @@ export function Pagination({
   // Sync input values when page changes externally
   useEffect(() => {
     if (data) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInputValue(String(data.current_page));
       setDesktopInputValue(String(data.current_page));
     }
-  }, [data?.current_page]);
+  }, [data]);
 
   // Handle case when data is undefined or null
   if (!data) {

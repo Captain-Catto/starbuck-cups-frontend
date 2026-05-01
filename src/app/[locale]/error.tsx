@@ -15,7 +15,9 @@ export default function Error({
   const t = useTranslations("error");
   const tCommon = useTranslations("common");
 
-  useEffect(() => {}, [error]);
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">

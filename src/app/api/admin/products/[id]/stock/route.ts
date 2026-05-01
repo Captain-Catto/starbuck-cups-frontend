@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 export async function PATCH(
   request: NextRequest,
@@ -9,25 +10,16 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const response = await fetch(
-      getApiUrl(`admin/products/${id}/stock`),
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(request.headers.get("authorization") && {
-            authorization: request.headers.get("authorization") as string,
-          }),
-          ...(request.headers.get("cookie") && {
-            cookie: request.headers.get("cookie") as string,
-          }),
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    const response = await fetch(getApiUrl(`admin/products/${id}/stock`), {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAdminForwardHeaders(request),
+      },
+      body: JSON.stringify(body),
+    });
 
-    const data = await response.json();
-
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(

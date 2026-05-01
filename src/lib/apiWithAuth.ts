@@ -1,119 +1,58 @@
 import { store } from "@/store";
-import { apiService } from "./api";
 import { getApiUrl } from "@/lib/api-config";
+import type { ApiResponse } from "@/types";
+import type { NotificationData } from "@/types/notification.types";
 
-/**
- * API service wrapper that gets auth token from Redux store
- * instead of localStorage
- */
 class ApiWithAuth {
-  private getTokenFromStore(): string | null {
-    const state = store.getState();
-    return state.auth.token;
+  private getToken(): string | null {
+    return store.getState().auth.token;
   }
 
-  // Notifications
+  private authHeaders(): HeadersInit {
+    const token = this.getToken();
+    if (!token) throw new Error("No auth token available");
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+  }
+
   async getNotifications(params?: {
     page?: number;
     limit?: number;
     type?: string;
-  }) {
-    const token = this.getTokenFromStore();
-    if (!token) {
-      throw new Error("No auth token available");
-    }
+  }): Promise<ApiResponse<NotificationData[]>> {
+    const url = new URL(getApiUrl("admin/notifications"));
+    if (params?.page) url.searchParams.set("page", String(params.page));
+    if (params?.limit) url.searchParams.set("limit", String(params.limit));
+    if (params?.type) url.searchParams.set("type", params.type);
 
-    // Temporarily set token in the original service
-    const originalToken = localStorage.getItem("admin_token");
-    localStorage.setItem("admin_token", token);
-
-    try {
-      const result = await apiService.getNotifications(params);
-      return result;
-    } finally {
-      // Restore original token or remove if none existed
-      if (originalToken) {
-        localStorage.setItem("admin_token", originalToken);
-      } else {
-        localStorage.removeItem("admin_token");
-      }
-    }
+    const response = await fetch(url.toString(), { headers: this.authHeaders() });
+    return response.json();
   }
 
-  async markNotificationAsRead(notificationId: string) {
-    const token = this.getTokenFromStore();
-    if (!token) {
-      throw new Error("No auth token available");
-    }
-
-    const originalToken = localStorage.getItem("admin_token");
-    localStorage.setItem("admin_token", token);
-
-    try {
-      const result = await apiService.markNotificationAsRead(notificationId);
-      return result;
-    } finally {
-      if (originalToken) {
-        localStorage.setItem("admin_token", originalToken);
-      } else {
-        localStorage.removeItem("admin_token");
-      }
-    }
+  async markNotificationAsRead(notificationId: string): Promise<ApiResponse<NotificationData>> {
+    const response = await fetch(
+      getApiUrl(`admin/notifications/${notificationId}/read`),
+      { method: "PUT", headers: this.authHeaders() }
+    );
+    return response.json();
   }
 
-  async getUnreadCount() {
-    const token = this.getTokenFromStore();
-    if (!token) {
-      throw new Error("No auth token available");
-    }
-
-    const originalToken = localStorage.getItem("admin_token");
-    localStorage.setItem("admin_token", token);
-
-    try {
-      const result = await apiService.getUnreadCount();
-      return result;
-    } finally {
-      if (originalToken) {
-        localStorage.setItem("admin_token", originalToken);
-      } else {
-        localStorage.removeItem("admin_token");
-      }
-    }
+  async getUnreadCount(): Promise<ApiResponse<{ unreadCount: number }>> {
+    const response = await fetch(
+      getApiUrl("admin/notifications/unread/count"),
+      { headers: this.authHeaders() }
+    );
+    return response.json();
   }
 
-  async markAllNotificationsAsRead() {
-    const token = this.getTokenFromStore();
-    if (!token) {
-      throw new Error("No auth token available");
-    }
-
-    const originalToken = localStorage.getItem("admin_token");
-    localStorage.setItem("admin_token", token);
-
-    try {
-      // Directly call backend API since it's not in the main apiService yet
-      const response = await fetch(getApiUrl("admin/notifications/mark-all-read"), {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      return result;
-    } finally {
-      if (originalToken) {
-        localStorage.setItem("admin_token", originalToken);
-      } else {
-        localStorage.removeItem("admin_token");
-      }
-    }
+  async markAllNotificationsAsRead(): Promise<ApiResponse<unknown>> {
+    const response = await fetch(
+      getApiUrl("admin/notifications/mark-all-read"),
+      { method: "PUT", headers: this.authHeaders() }
+    );
+    return response.json();
   }
 }
 

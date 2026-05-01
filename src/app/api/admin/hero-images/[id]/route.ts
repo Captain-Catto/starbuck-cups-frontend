@@ -1,18 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
-
-// Helper function to forward auth headers
-function getAuthHeaders(request: NextRequest): Record<string, string> {
-  const headers: Record<string, string> = {};
-
-  // Forward authorization header from client request
-  const authHeader = request.headers.get("authorization");
-  if (authHeader) {
-    headers["authorization"] = authHeader;
-  }
-
-  return headers;
-}
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 export async function GET(
   request: NextRequest,
@@ -24,11 +12,11 @@ export async function GET(
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       },
     });
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
 
     return NextResponse.json(data, { status: response.status });
   } catch {
@@ -54,7 +42,7 @@ export async function PUT(
       // File upload
       body = await request.formData();
       headers = {
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
         // Don't set Content-Type for FormData
       };
     } else {
@@ -62,7 +50,7 @@ export async function PUT(
       body = JSON.stringify(await request.json());
       headers = {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       };
     }
 
@@ -72,7 +60,7 @@ export async function PUT(
       body,
     });
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
 
     return NextResponse.json(data, { status: response.status });
   } catch {
@@ -93,11 +81,11 @@ export async function DELETE(
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       },
     });
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
 
     return NextResponse.json(data, { status: response.status });
   } catch {

@@ -39,6 +39,7 @@ export function BannerFormModal({
 
   useEffect(() => {
     if (banner) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         title: banner.title || "",
         highlightText: banner.highlightText || "",

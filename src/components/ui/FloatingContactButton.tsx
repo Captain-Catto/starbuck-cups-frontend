@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -12,12 +12,8 @@ export function FloatingContactButton({
   zaloPhone = "0896686008",
 }: FloatingContactButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const isHydrated = useSyncExternalStore(() => () => {}, () => true, () => false);
   const t = useTranslations("floating");
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   if (!isHydrated) return null;
 

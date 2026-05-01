@@ -1,22 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
-// Helper function to forward auth headers
-function getAuthHeaders(request: NextRequest): Record<string, string> {
-  const headers: Record<string, string> = {};
-
-  const authHeader = request.headers.get("authorization");
-  if (authHeader) {
-    headers["authorization"] = authHeader;
-  }
-
-  return headers;
-}
-
-/**
- * GET /api/admin/promotional-banners/[id]
- * Get promotional banner by ID
- */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -29,24 +14,13 @@ export async function GET(
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       },
       cache: "no-store",
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: data.message || "Failed to fetch promotional banner",
-        },
-        { status: response.status }
-      );
-    }
-
-    return NextResponse.json(data);
+    const data = await handleAdminBackendResponse(response);
+    return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
       { success: false, message: "Internal server error" },
@@ -55,10 +29,6 @@ export async function GET(
   }
 }
 
-/**
- * PUT /api/admin/promotional-banners/[id]
- * Update promotional banner
- */
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -66,31 +36,26 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json(
+        { success: false, message: "Dữ liệu không hợp lệ" },
+        { status: 400 }
+      );
+    }
+
     const url = new URL(getApiUrl(`promotional-banners/admin/${id}`));
 
     const response = await fetch(url.toString(), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       },
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: data.message || "Failed to update promotional banner",
-          errors: data.errors,
-        },
-        { status: response.status }
-      );
-    }
-
-    return NextResponse.json(data);
+    const data = await handleAdminBackendResponse(response);
+    return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
       { success: false, message: "Internal server error" },
@@ -99,10 +64,6 @@ export async function PUT(
   }
 }
 
-/**
- * DELETE /api/admin/promotional-banners/[id]
- * Delete promotional banner
- */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -115,23 +76,12 @@ export async function DELETE(
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       },
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: data.message || "Failed to delete promotional banner",
-        },
-        { status: response.status }
-      );
-    }
-
-    return NextResponse.json(data);
+    const data = await handleAdminBackendResponse(response);
+    return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
       { success: false, message: "Internal server error" },

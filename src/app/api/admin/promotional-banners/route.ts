@@ -1,23 +1,7 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
-// Helper function to forward auth headers
-function getAuthHeaders(request: NextRequest): Record<string, string> {
-  const headers: Record<string, string> = {};
-
-  // Forward authorization header from client request
-  const authHeader = request.headers.get("authorization");
-  if (authHeader) {
-    headers["authorization"] = authHeader;
-  }
-
-  return headers;
-}
-
-/**
- * GET /api/admin/promotional-banners
- * Get all promotional banners (admin)
- */
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(getApiUrl("promotional-banners/admin"));
@@ -26,73 +10,47 @@ export async function GET(request: NextRequest) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       },
-      cache: "no-store", // Don't cache admin requests
+      cache: "no-store",
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: data.message || "Failed to fetch promotional banners",
-        },
-        { status: response.status }
-      );
-    }
-
-    return NextResponse.json(data);
+    const data = await handleAdminBackendResponse(response);
+    return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
-      {
-        success: false,
-        message: "Internal server error",
-      },
+      { success: false, message: "Internal server error" },
       { status: 500 }
     );
   }
 }
 
-/**
- * POST /api/admin/promotional-banners
- * Create new promotional banner
- */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json(
+        { success: false, message: "Dữ liệu không hợp lệ" },
+        { status: 400 }
+      );
+    }
+
     const url = new URL(getApiUrl("promotional-banners/admin"));
 
     const response = await fetch(url.toString(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       },
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: data.message || "Failed to create promotional banner",
-          errors: data.errors,
-        },
-        { status: response.status }
-      );
-    }
-
-    return NextResponse.json(data, { status: 201 });
+    const data = await handleAdminBackendResponse(response);
+    return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
-      {
-        success: false,
-        message: "Internal server error",
-      },
+      { success: false, message: "Internal server error" },
       { status: 500 }
     );
   }

@@ -1,18 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
-
-// Helper function to forward auth headers
-function getAuthHeaders(request: NextRequest): Record<string, string> {
-  const headers: Record<string, string> = {};
-
-  // Forward authorization header from client request
-  const authHeader = request.headers.get("authorization");
-  if (authHeader) {
-    headers["authorization"] = authHeader;
-  }
-
-  return headers;
-}
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 // PUT /api/admin/customers/{customerId}/addresses/{addressId} - Update address
 export async function PUT(
@@ -29,13 +17,13 @@ export async function PUT(
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          ...getAuthHeaders(request),
+          ...getAdminForwardHeaders(request),
         },
         body: JSON.stringify(body),
       }
     );
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
@@ -58,12 +46,12 @@ export async function DELETE(
       {
         method: "DELETE",
         headers: {
-          ...getAuthHeaders(request),
+          ...getAdminForwardHeaders(request),
         },
       }
     );
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(

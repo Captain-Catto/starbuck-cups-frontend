@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, notFound } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
 import { ShoppingCart, ExternalLink } from "lucide-react";
@@ -39,7 +39,7 @@ export default function ProductInfo() {
   const dispatch = useAppDispatch();
   const t = useTranslations("productDetail");
   const locale = useLocale();
-  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
+  const hasAttemptedFetch = useRef(false);
 
   // Get product data from Redux store
   const {
@@ -53,12 +53,11 @@ export default function ProductInfo() {
   // Fetch product data
   useEffect(() => {
     const slug = params.slug;
-    if (typeof slug === "string" && !hasAttemptedFetch) {
-      setHasAttemptedFetch(true);
+    if (typeof slug === "string" && !hasAttemptedFetch.current) {
+      hasAttemptedFetch.current = true;
       dispatch(fetchProductBySlug({ slug, locale }));
-    } else {
     }
-  }, [params.slug, dispatch, hasAttemptedFetch, locale]);
+  }, [params.slug, dispatch, locale]);
 
   // Track product view when product is loaded
   useEffect(() => {

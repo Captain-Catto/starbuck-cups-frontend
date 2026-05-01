@@ -131,7 +131,6 @@ export interface UseProductFormOptions {
 export interface UseProductFormReturn {
   formData: ProductFormData;
   errors: ValidationErrors;
-  loading: boolean;
   isSubmitting: boolean;
   updateField: (field: keyof ProductFormData, value: unknown) => void;
   updateTranslation: (
@@ -174,14 +173,13 @@ export function useProductForm(
     isActive: initialData?.isActive ?? true,
     isVip: initialData?.isVip ?? false,
     isFeatured: initialData?.isFeatured ?? false,
-    hasVariants: (initialData as any)?.hasVariants ?? true,
+    hasVariants: initialData?.hasVariants ?? true,
     stockQuantity: initialData?.stockQuantity || 0,
     productUrl: initialData?.productUrl || "",
     translations: createInitialTranslations(initialData),
   });
 
   const [errors, setErrors] = useState<ValidationErrors>({});
-  const [loading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
@@ -459,7 +457,7 @@ export function useProductForm(
       isActive: initialData?.isActive ?? true,
       isVip: initialData?.isVip ?? false,
       isFeatured: initialData?.isFeatured ?? false,
-      hasVariants: (initialData as any)?.hasVariants ?? true,
+      hasVariants: initialData?.hasVariants ?? true,
       stockQuantity: initialData?.stockQuantity || 0,
       productUrl: initialData?.productUrl || "",
       translations: createInitialTranslations(initialData) || EMPTY_TRANSLATIONS,
@@ -471,7 +469,6 @@ export function useProductForm(
   return {
     formData,
     errors,
-    loading,
     isSubmitting,
     updateField,
     updateTranslation,

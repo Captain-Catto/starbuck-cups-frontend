@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/routing";
 import type { Category, Color, Capacity, CapacityRange } from "@/types";
@@ -94,7 +94,7 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
   const [currentPage, setCurrentPage] = useState(
     parseInt(searchParams.get("page") || "1")
   );
-  const [isHydrated, setIsHydrated] = useState(false);
+  const isHydrated = useSyncExternalStore(() => () => {}, () => true, () => false);
 
   // Filter options data — initialized from SSR props to avoid client-side waterfall fetch
   const [categories, setCategories] = useState<Category[]>(initialCategories);
@@ -107,19 +107,9 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
   void setColors;
   void setCapacities;
 
-  // Ensure filter panel is closed on mount (prevents stale state from router cache)
-  useEffect(() => {
-    setShowFilters(false);
-  }, []);
-
   // Debounce timer refs
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const searchDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Wait for hydration to avoid mismatch
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   // Debounce search query for API calls (500ms delay)
   useEffect(() => {
@@ -151,8 +141,9 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
     const page = parseInt(searchParams.get("page") || "1");
 
     // Update state to match URL params
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchQuery(search);
-    setDebouncedSearchQuery(search); // Also update debounced version immediately when URL changes
+    setDebouncedSearchQuery(search);
     setSelectedCategory(category);
     setSelectedColor(color);
     //chỉ update khi capacity range thay đổi, nếu ko sẽ trigger render

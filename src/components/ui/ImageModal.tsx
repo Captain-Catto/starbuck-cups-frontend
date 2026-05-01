@@ -265,6 +265,7 @@ export function ImageModal({
 
   // Sync activeIndex với currentIndex và reset zoom
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveIndex(currentIndex);
     resetZoom(); // Reset zoom khi chuyển ảnh
   }, [currentIndex, isOpen, resetZoom]);

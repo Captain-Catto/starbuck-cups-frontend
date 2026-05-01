@@ -52,6 +52,7 @@ export function HeroImageGrid({
   // Sync local state with props, but only when not dragging
   useEffect(() => {
     if (!activeId && Date.now() - lastUpdateTime > 500) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalHeroImages(heroImages);
     }
   }, [heroImages, activeId, lastUpdateTime]);

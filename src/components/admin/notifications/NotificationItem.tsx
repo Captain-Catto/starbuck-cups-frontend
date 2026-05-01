@@ -1,3 +1,4 @@
+import React from "react";
 import {
   ShoppingBag,
   Settings,
@@ -20,58 +21,36 @@ interface NotificationItemProps {
   onClick: (notification: Notification) => void;
 }
 
+type NotificationType = Notification["type"];
+
+const ICON_MAP: Record<NotificationType, React.FC<{ className?: string }>> = {
+  order: ShoppingBag,
+  system: Settings,
+  message: MessageCircle,
+  warning: AlertTriangle,
+};
+
+const COLOR_MAP: Record<NotificationType, string> = {
+  order: "text-green-400",
+  system: "text-blue-400",
+  message: "text-purple-400",
+  warning: "text-yellow-400",
+};
+
+const LABEL_MAP: Record<NotificationType, string> = {
+  order: "Đơn hàng",
+  system: "Hệ thống",
+  message: "Tin nhắn",
+  warning: "Cảnh báo",
+};
+
 export function NotificationItem({
   notification,
   onClick,
 }: NotificationItemProps) {
-  const getIcon = (type: string) => {
-    switch (type) {
-      case "order":
-        return ShoppingBag;
-      case "system":
-        return Settings;
-      case "message":
-        return MessageCircle;
-      case "warning":
-        return AlertTriangle;
-      default:
-        return MessageCircle;
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "order":
-        return "text-green-400";
-      case "system":
-        return "text-blue-400";
-      case "message":
-        return "text-purple-400";
-      case "warning":
-        return "text-yellow-400";
-      default:
-        return "text-gray-400";
-    }
-  };
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case "order":
-        return "Đơn hàng";
-      case "system":
-        return "Hệ thống";
-      case "message":
-        return "Tin nhắn";
-      case "warning":
-        return "Cảnh báo";
-      default:
-        return "Khác";
-    }
-  };
-
-  const Icon = getIcon(notification.type);
-  const typeColor = getTypeColor(notification.type);
-  const typeLabel = getTypeLabel(notification.type);
+  const Icon = ICON_MAP[notification.type] ?? MessageCircle;
+  const typeColor = COLOR_MAP[notification.type] ?? "text-gray-400";
+  const typeLabel = LABEL_MAP[notification.type] ?? "Khác";
 
   return (
     <div

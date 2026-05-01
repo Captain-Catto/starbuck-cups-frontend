@@ -1,39 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
-// Helper function to forward auth headers
-function getAuthHeaders(request: NextRequest): Record<string, string> {
-  const headers: Record<string, string> = {};
-
-  // Forward authorization header from client request
-  const authHeader = request.headers.get("authorization");
-
-  if (authHeader) {
-    headers["authorization"] = authHeader;
-  }
-
-  return headers;
-}
-
-// GET /api/admin/customers/{customerId} - Get single customer by ID
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ customerId: string }> }
 ) {
   try {
     const { customerId } = await params;
-    const authHeaders = getAuthHeaders(request);
 
     const response = await fetch(getApiUrl(`admin/customers/${customerId}`), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        ...authHeaders,
+        ...getAdminForwardHeaders(request),
       },
     });
 
-    const data = await response.json();
-
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
@@ -43,7 +27,6 @@ export async function GET(
   }
 }
 
-// PUT /api/admin/customers/{customerId} - Update customer
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ customerId: string }> }
@@ -56,12 +39,12 @@ export async function PUT(
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       },
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
@@ -71,7 +54,6 @@ export async function PUT(
   }
 }
 
-// DELETE /api/admin/customers/{customerId} - Delete customer
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ customerId: string }> }
@@ -83,11 +65,11 @@ export async function DELETE(
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       },
     });
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(

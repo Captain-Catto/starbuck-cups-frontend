@@ -80,6 +80,7 @@ export default function OptimizedImage({
 
   if (fill) {
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={imageSrc}
         srcSet={srcSet}
@@ -105,6 +106,7 @@ export default function OptimizedImage({
   }
 
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={imageSrc}
       srcSet={srcSet}

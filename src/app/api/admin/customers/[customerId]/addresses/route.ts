@@ -1,18 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
-
-// Helper function to forward auth headers
-function getAuthHeaders(request: NextRequest): Record<string, string> {
-  const headers: Record<string, string> = {};
-
-  // Forward authorization header from client request
-  const authHeader = request.headers.get("authorization");
-  if (authHeader) {
-    headers["authorization"] = authHeader;
-  }
-
-  return headers;
-}
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 // GET /api/admin/customers/{customerId}/addresses - Get all addresses for a customer
 export async function GET(
@@ -28,12 +16,12 @@ export async function GET(
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          ...getAuthHeaders(request),
+          ...getAdminForwardHeaders(request),
         },
       }
     );
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
@@ -58,13 +46,13 @@ export async function POST(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...getAuthHeaders(request),
+          ...getAdminForwardHeaders(request),
         },
         body: JSON.stringify(body),
       }
     );
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(

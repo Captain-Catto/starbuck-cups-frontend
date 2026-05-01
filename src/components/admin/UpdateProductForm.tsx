@@ -73,7 +73,7 @@ export function UpdateProductForm({
     (newImageUrls: string[]) => {
       updateField("images", newImageUrls);
     },
-    [updateField, formData.images]
+    [updateField]
   );
 
   const handleImageUrlRemove = useCallback(

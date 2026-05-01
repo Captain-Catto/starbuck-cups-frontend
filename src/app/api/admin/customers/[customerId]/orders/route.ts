@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiUrl } from "@/lib/api-config";
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 export async function GET(
   request: NextRequest,
@@ -7,39 +9,21 @@ export async function GET(
   try {
     const { customerId } = await params;
     const { searchParams } = new URL(request.url);
-    const page = searchParams.get("page") || "1";
-    const limit = searchParams.get("limit") || "10";
+    const url = new URL(getApiUrl(`admin/customers/${customerId}/orders`));
+    searchParams.forEach((value, key) => url.searchParams.append(key, value));
 
-    // Get authorization header
-    const authHeader = request.headers.get("authorization");
-
-    if (!authHeader) {
-      return NextResponse.json(
-        { success: false, error: "Authorization header required" },
-        { status: 401 }
-      );
-    }
-
-    // Forward the request to the backend API
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin/customers/${customerId}/orders?page=${page}&limit=${limit}`;
-
-    const response = await fetch(backendUrl, {
+    const response = await fetch(url.toString(), {
       method: "GET",
       headers: {
-        authorization: authHeader,
+        ...getAdminForwardHeaders(request),
       },
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return NextResponse.json(data, { status: response.status });
-    }
-
-    return NextResponse.json(data);
+    const data = await handleAdminBackendResponse(response);
+    return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { success: false, message: "Internal server error" },
       { status: 500 }
     );
   }

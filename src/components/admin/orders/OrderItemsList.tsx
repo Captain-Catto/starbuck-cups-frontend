@@ -69,8 +69,7 @@ export function OrderItemsList({
                   <div className="text-sm text-gray-300 space-y-1">
                     <div>
                       <span className="font-medium">Màu sắc: </span>
-                      {/* @ts-expect-error - productSnapshot has colors array at runtime */}
-                      {item.productSnapshot.colors?.map((c: Color) => c.name).join(" - ") || "N/A"}
+                      {item.productSnapshot.colors?.map((c) => c.name).join(" - ") || "N/A"}
                     </div>
                     <div>
                       <span className="font-medium">Dung tích: </span>
@@ -78,8 +77,7 @@ export function OrderItemsList({
                     </div>
                     <div>
                       <span className="font-medium">Danh mục: </span>
-                      {/* @ts-expect-error - productSnapshot has categories array at runtime */}
-                      {item.productSnapshot.categories?.map((c: Category) => c.name).join(" - ") || "N/A"}
+                      {item.productSnapshot.categories?.map((c) => c.name).join(" - ") || "N/A"}
                     </div>
                   </div>
                 </div>

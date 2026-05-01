@@ -47,6 +47,8 @@ export interface OrderDetailFullData {
       unitPrice: number;
       capturedAt: string;
       description: string;
+      colors?: Array<{ id: string; name: string; hexCode?: string }>;
+      categories?: Array<{ id: string; name: string; slug?: string }>;
     };
     product: { id: string; name: string; slug: string; isActive: boolean };
   }>;
@@ -90,6 +92,7 @@ export interface SelectableProduct {
   category: { id: string; name: string; slug: string };
   productImages: Array<{ url: string; order: number }>;
   isActive: boolean;
+  productColors?: Array<{ color: { id: string; name: string; hexCode: string } }>;
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────

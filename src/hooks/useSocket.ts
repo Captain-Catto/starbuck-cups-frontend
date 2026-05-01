@@ -23,6 +23,7 @@ export const useSocket = () => {
   const hasInitialized = useRef(false);
   const hasLoadedNotifications = useRef(false);
   const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
+  const connectRef = useRef<(() => Promise<void>) | undefined>(undefined);
 
   const loadInitialNotifications = useCallback(async () => {
     if (hasLoadedNotifications.current) {
@@ -176,7 +177,7 @@ export const useSocket = () => {
 
         reconnectTimeout.current = setTimeout(() => {
           if (token && !socketManager.isConnected()) {
-            connect();
+            connectRef.current?.();
           }
         }, 3000);
       });
@@ -202,6 +203,10 @@ export const useSocket = () => {
       });
     }
   }, [token, isConnected, isConnecting, dispatch, loadInitialNotifications]);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   const disconnect = useCallback(() => {
 

@@ -1,18 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
-
-// Helper function to forward auth headers
-function getAuthHeaders(request: NextRequest): Record<string, string> {
-  const headers: Record<string, string> = {};
-
-  // Forward authorization header from client request
-  const authHeader = request.headers.get("authorization");
-  if (authHeader) {
-    headers["authorization"] = authHeader;
-  }
-
-  return headers;
-}
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 // PUT /api/admin/customers/{customerId}/addresses/{addressId}/set-default - Set default address
 export async function PUT(
@@ -27,12 +15,12 @@ export async function PUT(
       {
         method: "PUT",
         headers: {
-          ...getAuthHeaders(request),
+          ...getAdminForwardHeaders(request),
         },
       }
     );
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(

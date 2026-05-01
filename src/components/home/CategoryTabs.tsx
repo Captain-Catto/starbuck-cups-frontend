@@ -13,6 +13,8 @@ interface CategoryTabsProps {
   loading?: boolean;
 }
 
+const SKELETON_WIDTHS = [80, 120, 145, 130, 160, 110];
+
 const CategoryTabsSkeleton = () => (
   <SkeletonTheme baseColor="#18181b" highlightColor="#27272a">
     <div className="flex flex-col items-center mb-8">
@@ -23,11 +25,11 @@ const CategoryTabsSkeleton = () => (
 
       {/* Category tabs skeleton */}
       <div className="flex flex-wrap justify-center gap-3">
-        {[...Array(6)].map((_, index) => (
+        {SKELETON_WIDTHS.map((width, index) => (
           <Skeleton
             key={index}
             height={48}
-            width={index === 0 ? 80 : Math.floor(Math.random() * 60) + 100}
+            width={width}
             className="rounded-full"
           />
         ))}

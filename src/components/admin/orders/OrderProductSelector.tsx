@@ -4,7 +4,6 @@ import OptimizedImage from "@/components/OptimizedImage";
 import { getFirstProductImageUrl } from "@/lib/utils/image";
 import type { SelectableProduct } from "@/hooks/admin/useOrderDetailEdit";
 
-interface ProductColor { color?: { name?: string } }
 
 interface OrderProductSelectorProps {
   show: boolean;
@@ -93,8 +92,7 @@ export function OrderProductSelector({
                       <div className="flex-1">
                         <h5 className="font-medium text-white mb-1">{product.name}</h5>
                         <p className="text-sm text-gray-300 mb-1">
-                          {/* @ts-expect-error - product has productColors array at runtime */}
-                          {product.productColors?.map((pc: ProductColor) => pc.color?.name).join(", ") || "N/A"}
+                          {product.productColors?.map((pc) => pc.color?.name).join(", ") || "N/A"}
                           {" • "}
                           {product.capacity?.name || "N/A"}
                         </p>
@@ -140,8 +138,7 @@ export function OrderProductSelector({
                 )}
                 <div className="flex-1">
                   <p className="text-sm text-gray-300 mb-1">
-                    {/* @ts-expect-error - productColors not in SelectableProduct type but present at runtime */}
-                    {selectedProduct.productColors?.map((pc: ProductColor) => pc.color?.name).join(", ") || "N/A"}
+                    {selectedProduct.productColors?.map((pc) => pc.color?.name).join(", ") || "N/A"}
                     {" • "}
                     {selectedProduct.capacity?.name || "N/A"}
                   </p>

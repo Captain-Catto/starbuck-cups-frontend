@@ -61,7 +61,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       }
       dispatch(clearLastAction());
     }
-  }, [lastAction, dispatch]);
+  }, [lastAction, dispatch, t]);
 
   useEffect(() => {
     const idleCallback = window.requestIdleCallback;

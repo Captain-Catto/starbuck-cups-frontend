@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
-
-function getAuthHeaders(request: NextRequest): Record<string, string> {
-  const headers: Record<string, string> = {};
-  const authHeader = request.headers.get("authorization");
-  if (authHeader) {
-    headers["authorization"] = authHeader;
-  }
-  return headers;
-}
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 function validateColorBody(body: unknown): string | null {
-  if (!body || typeof body !== "object") return "Dữ liệu không hợp lệ";
+  if (!body || typeof body !== "object" || Array.isArray(body)) return "Dữ liệu không hợp lệ";
   const b = body as Record<string, unknown>;
 
   if (!b.name || typeof b.name !== "string" || !b.name.trim()) {
@@ -32,7 +24,6 @@ function validateColorBody(body: unknown): string | null {
   return null;
 }
 
-// PUT /api/admin/colors/[id] - Update color
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -53,12 +44,12 @@ export async function PUT(
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       },
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
 
     return NextResponse.json(data, { status: response.status });
   } catch {
@@ -81,11 +72,11 @@ export async function DELETE(
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       },
     });
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
 
     return NextResponse.json(data, { status: response.status });
   } catch {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 export async function PATCH(
   request: NextRequest,
@@ -7,21 +8,21 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const auth = request.headers.get("authorization");
-    const cookie = request.headers.get("cookie");
 
     const response = await fetch(getApiUrl(`news/admin/${id}/status`), {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        ...(auth && { authorization: auth }),
-        ...(cookie && { cookie }),
+        ...getAdminForwardHeaders(request),
       },
     });
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
-    return NextResponse.json({ success: false, message: "Failed to update news status" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Failed to update news status" },
+      { status: 500 }
+    );
   }
 }

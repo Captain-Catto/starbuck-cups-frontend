@@ -38,7 +38,6 @@ export interface UseCustomerFormOptions {
 export interface UseCustomerFormReturn {
   formData: CustomerFormData;
   errors: ValidationErrors;
-  loading: boolean;
   isSubmitting: boolean;
   updateField: (
     field: keyof CustomerFormData | string,
@@ -83,7 +82,6 @@ export function useCustomerForm(
   });
 
   const [errors, setErrors] = useState<ValidationErrors>({});
-  const [loading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateField = useCallback(
@@ -293,7 +291,6 @@ export function useCustomerForm(
   return {
     formData,
     errors,
-    loading,
     isSubmitting,
     updateField,
     updateAddress,

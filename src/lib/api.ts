@@ -42,10 +42,7 @@ class ApiService {
             config.headers.Authorization = `Bearer ${token}`;
           }
 
-          // Debug log for cookie tracking
-          if (config.url?.includes('auth') || config.url?.includes('refresh')) {
 
-          }
         }
         return config;
       },
@@ -178,9 +175,7 @@ class ApiService {
       } else {
         throw new Error("Invalid refresh response");
       }
-    } catch (error: unknown) {
-      const axiosError = error as { response?: { status: number; statusText?: string; data?: unknown }; message?: string };
-
+    } catch (error) {
       throw error;
     }
   }

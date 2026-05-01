@@ -1,18 +1,10 @@
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
-
-function getAuthHeaders(request: NextRequest): Record<string, string> {
-  const headers: Record<string, string> = {};
-  const authHeader = request.headers.get("authorization");
-  if (authHeader) {
-    headers["authorization"] = authHeader;
-  }
-  return headers;
-}
+import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-api-helper";
 
 function validateCategoryBody(body: unknown): string | null {
-  if (!body || typeof body !== "object") return "Dữ liệu không hợp lệ";
+  if (!body || typeof body !== "object" || Array.isArray(body)) return "Dữ liệu không hợp lệ";
   const b = body as Record<string, unknown>;
 
   if (!b.name || typeof b.name !== "string" || !b.name.trim()) {
@@ -43,11 +35,11 @@ export async function GET(request: NextRequest) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       },
     });
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
     return NextResponse.json(data, { status: response.status });
   } catch {
     return NextResponse.json(
@@ -73,16 +65,15 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(request),
+        ...getAdminForwardHeaders(request),
       },
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    const data = await handleAdminBackendResponse(response);
 
     if (data.success) {
-      revalidateTag("categories");
-      revalidateTag("default");
+      revalidateTag("categories", "default");
     }
 
     return NextResponse.json(data, { status: response.status });

@@ -2,7 +2,8 @@
 
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useState, useSyncExternalStore } from "react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { openCart } from "@/store/slices/cartSlice";
 import { Search, Menu as MenuIcon, X } from "lucide-react";
@@ -30,15 +31,11 @@ export function Header({ className = "" }: HeaderProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { items: cartItems } = useAppSelector((state) => state.cart);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const isHydrated = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const totalCartItems = cartItems.length;
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   const handleMenuClick = () => {
     setIsSidebarOpen(true);
@@ -104,15 +101,12 @@ export function Header({ className = "" }: HeaderProps) {
         <div className="hidden md:flex container mx-auto px-6 py-4 items-center justify-between">
           <Link href="/" className="flex items-center">
             {isHydrated && (
-              <img
+              <Image
                 src="/logo-32.png"
                 alt={t("brandName")}
                 width={32}
                 height={32}
                 className="w-8 h-8 brightness-0 invert"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
               />
             )}
             <span className="text-2xl font-semibold text-white">
@@ -193,15 +187,12 @@ export function Header({ className = "" }: HeaderProps) {
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center">
               {isHydrated && (
-                <img
+                <Image
                   src="/logo-32.png"
                   alt={t("brandName")}
                   width={32}
                   height={32}
                   className="w-8 h-8 brightness-0 invert"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
                 />
               )}
               <div className="text-2xl font-bold text-white tracking-wider">

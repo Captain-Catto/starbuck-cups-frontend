@@ -278,6 +278,7 @@ export function NewsForm({ initialData }: NewsFormProps) {
               />
               {thumbnail ? (
                 <div className="relative group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={thumbnail}
                     alt="thumbnail"

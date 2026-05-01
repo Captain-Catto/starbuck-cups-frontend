@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "@/i18n/routing";
 import { ShoppingCart } from "lucide-react";
 import { Product } from "@/types";
@@ -12,12 +12,10 @@ import OptimizedImage from "@/components/OptimizedImage";
 import { useTranslations } from "next-intl";
 
 function useIsTouchDevice() {
-  const [isTouch, setIsTouch] = useState(false);
-  useEffect(() => {
-    setIsTouch(
-      "ontouchstart" in window || navigator.maxTouchPoints > 0
-    );
-  }, []);
+  const [isTouch] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  });
   return isTouch;
 }
 

@@ -96,6 +96,7 @@ export default async function NewsDetailPage({
           {/* Thumbnail */}
           {news.thumbnail && (
             <div className="aspect-video rounded-xl overflow-hidden mb-8">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={news.thumbnail} alt={t?.title ?? ""} className="w-full h-full object-cover" />
             </div>
           )}
