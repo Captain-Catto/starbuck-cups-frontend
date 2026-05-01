@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+﻿import { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { Category } from "@/types";
@@ -114,12 +114,31 @@ export function useCategories(): UseCategoriesReturn {
     action: "toggle",
   });
 
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const fetchControllerRef = useRef<AbortController | null>(null);
   const token = useSelector((state: RootState) => state.auth.token);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, [token]);
+
+  // Debounce searchQuery → debouncedSearchQuery (300ms)
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, [searchQuery]);
+
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, statusFilter]);
 
   const fetchCategories = useCallback(async () => {
     if (fetchControllerRef.current) {
@@ -131,8 +150,13 @@ export function useCategories(): UseCategoriesReturn {
     try {
       setLoading(true);
 
+      const params = new URLSearchParams({ page: String(currentPage), size: "20" });
+      if (debouncedSearchQuery) params.set("search", debouncedSearchQuery);
+      if (statusFilter === "active") params.set("isActive", "true");
+      else if (statusFilter === "inactive") params.set("isActive", "false");
+
       const response = await fetch(
-        `/api/admin/categories?page=${currentPage}&size=20`,
+        `/api/admin/categories?${params}`,
         {
           headers: getAuthHeaders(),
           signal: controller.signal,
@@ -166,7 +190,7 @@ export function useCategories(): UseCategoriesReturn {
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [getAuthHeaders, currentPage]);
+  }, [getAuthHeaders, currentPage, debouncedSearchQuery, statusFilter]);
 
   const validateForm = (): boolean => {
     const errors: CategoryFormErrors = {};
@@ -367,20 +391,8 @@ export function useCategories(): UseCategoriesReturn {
     setCurrentPage(page);
   }, []);
 
-  const filteredCategories = useMemo(
-    () =>
-      categories.filter((category) => {
-        const matchesSearch = category.name
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-        const matchesStatus =
-          statusFilter === "all" ||
-          (statusFilter === "active" && category.isActive) ||
-          (statusFilter === "inactive" && !category.isActive);
-        return matchesSearch && matchesStatus;
-      }),
-    [categories, searchQuery, statusFilter]
-  );
+  // Server already applies search and status filtering; expose as-is.
+  const filteredCategories = categories;
 
   useEffect(() => {
     fetchCategories();

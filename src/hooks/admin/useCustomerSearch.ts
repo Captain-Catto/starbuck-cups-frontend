@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { useAppSelector } from "@/store";
 import { Customer } from "@/types/orders";
 
@@ -14,6 +14,8 @@ export function useCustomerSearch() {
   const [searchingCustomers, setSearchingCustomers] = useState(false);
   const [searchResults, setSearchResults] = useState<Customer[]>([]);
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+
+  const searchAbortRef = useRef<AbortController | null>(null);
 
   // Fetch latest 4 customers on component mount
   useEffect(() => {
@@ -75,10 +77,13 @@ export function useCustomerSearch() {
       return;
     }
 
+    searchAbortRef.current?.abort();
+    const controller = new AbortController();
+    searchAbortRef.current = controller;
+
     setSearchingCustomers(true);
 
     try {
-      // Include authorization header
       const headers: HeadersInit = {
         "Content-Type": "application/json",
       };
@@ -87,26 +92,25 @@ export function useCustomerSearch() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      // Real API call to search customers
       const response = await fetch(
-        `/api/admin/customers?search=${encodeURIComponent(
-          searchTerm
-        )}&limit=10`,
-        { headers }
+        `/api/admin/customers?search=${encodeURIComponent(searchTerm)}&limit=10`,
+        { headers, signal: controller.signal }
       );
       const data = await response.json();
 
       if (data.success && data.data && data.data.items) {
         setSearchResults(data.data.items);
       } else {
-
         setSearchResults([]);
       }
-    } catch {
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
       setSearchResults([]);
     } finally {
-      setSearchingCustomers(false);
-      setShowCustomerDropdown(true);
+      if (!controller.signal.aborted) {
+        setSearchingCustomers(false);
+        setShowCustomerDropdown(true);
+      }
     }
   };
 

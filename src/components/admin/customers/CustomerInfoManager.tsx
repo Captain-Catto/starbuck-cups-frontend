@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   User,
   MessageSquare,
@@ -100,8 +101,8 @@ export function CustomerInfoManager({
       setIsEditing(false);
     } catch (error) {
 
-      alert(
-        error instanceof Error ? error.message : "Failed to update customer"
+      toast.error(
+        error instanceof Error ? error.message : "Có lỗi xảy ra khi cập nhật thông tin khách hàng"
       );
     }
   };

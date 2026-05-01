@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: data.error || "Failed to fetch pending consultations count" },
+        { success: false, message: data.message || "Failed to fetch pending consultations count" },
         { status: response.status }
       );
     }
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
   } catch {
     return NextResponse.json(
-      { error: "Internal server error" },
+      { success: false, message: "Failed to fetch pending consultations count" },
       { status: 500 }
     );
   }

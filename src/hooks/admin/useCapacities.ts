@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+﻿import { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { Capacity, PaginationMeta } from "@/types";
@@ -111,12 +111,31 @@ export function useCapacities(): UseCapacitiesReturn {
     action: "toggle",
   });
 
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const fetchControllerRef = useRef<AbortController | null>(null);
   const token = useSelector((state: RootState) => state.auth.token);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, [token]);
+
+  // Debounce searchQuery → debouncedSearchQuery (300ms)
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, [searchQuery]);
+
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, statusFilter]);
 
   const fetchCapacities = useCallback(async () => {
     if (fetchControllerRef.current) {
@@ -128,8 +147,13 @@ export function useCapacities(): UseCapacitiesReturn {
     try {
       setLoading(true);
 
+      const params = new URLSearchParams({ page: String(currentPage), size: "20" });
+      if (debouncedSearchQuery) params.set("search", debouncedSearchQuery);
+      if (statusFilter === "active") params.set("isActive", "true");
+      else if (statusFilter === "inactive") params.set("isActive", "false");
+
       const response = await fetch(
-        `/api/admin/capacities?page=${currentPage}&size=20`,
+        `/api/admin/capacities?${params}`,
         {
           headers: getAuthHeaders(),
           signal: controller.signal,
@@ -163,7 +187,7 @@ export function useCapacities(): UseCapacitiesReturn {
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [getAuthHeaders, currentPage]);
+  }, [getAuthHeaders, currentPage, debouncedSearchQuery, statusFilter]);
 
   const validateForm = (): boolean => {
     const errors: CapacityFormErrors = {};
@@ -355,20 +379,8 @@ export function useCapacities(): UseCapacitiesReturn {
     setCurrentPage(page);
   }, []);
 
-  const filteredCapacities = useMemo(
-    () =>
-      capacities.filter((capacity) => {
-        const matchesSearch = capacity.name
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-        const matchesStatus =
-          statusFilter === "all" ||
-          (statusFilter === "active" && capacity.isActive) ||
-          (statusFilter === "inactive" && !capacity.isActive);
-        return matchesSearch && matchesStatus;
-      }),
-    [capacities, searchQuery, statusFilter]
-  );
+  // Server already applies search and status filtering; expose as-is.
+  const filteredCapacities = capacities;
 
   useEffect(() => {
     fetchCapacities();

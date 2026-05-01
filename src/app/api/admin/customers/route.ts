@@ -10,7 +10,6 @@ function getAuthHeaders(request: NextRequest): Record<string, string> {
 
   if (authHeader) {
     headers["authorization"] = authHeader;
-  } else {
   }
 
   return headers;

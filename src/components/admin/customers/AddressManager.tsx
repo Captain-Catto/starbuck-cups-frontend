@@ -220,7 +220,7 @@ export function AddressManager({ customerId }: AddressManagerProps) {
         isDefault: false,
       });
     } catch (error) {
-      toast.error(`Có lỗi xảy ra khi lưu địa chỉ, ${error}`);
+      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra khi lưu địa chỉ");
     }
   };
 
@@ -272,7 +272,7 @@ export function AddressManager({ customerId }: AddressManagerProps) {
         toast.success("Đã xóa địa chỉ thành công");
       }
     } catch (error) {
-      toast.error(`Có lỗi xảy ra khi xóa địa chỉ, ${error}`);
+      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra khi xóa địa chỉ");
     }
   };
 
@@ -330,7 +330,7 @@ export function AddressManager({ customerId }: AddressManagerProps) {
       // Network error, rollback to original state
       setAddresses(originalAddresses);
 
-      toast.error(`Có lỗi xảy ra khi đặt địa chỉ mặc định, ${error}`);
+      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra khi đặt địa chỉ mặc định");
     } finally {
       setActionLoading(null);
     }

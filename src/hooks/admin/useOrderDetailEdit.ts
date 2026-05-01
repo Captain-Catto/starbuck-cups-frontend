@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { useAppSelector } from "@/store";
 import { invalidateOrderDependentCaches } from "@/lib/adminCacheInvalidation";
@@ -118,10 +118,12 @@ export function useOrderDetailEdit(orderId: string) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<SelectableProduct | null>(null);
 
-  const filteredProducts = useMemo(
-    () => products.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase())),
-    [products, searchTerm]
-  );
+  const showProductSelectorRef = useRef(showProductSelector);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => { showProductSelectorRef.current = showProductSelector; }, [showProductSelector]);
+
+  // Server already filters by search; expose products directly.
+  const filteredProducts = products;
 
   // ─── Fetch ────────────────────────────────────────────────────────────────
 
@@ -245,11 +247,13 @@ export function useOrderDetailEdit(orderId: string) {
 
   // ─── Product selector ─────────────────────────────────────────────────────
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async (search = "") => {
     if (!token) return;
     setLoadingProducts(true);
     try {
-      const response = await fetch("/api/admin/products", {
+      const params = new URLSearchParams({ limit: "50" });
+      if (search) params.set("search", search);
+      const response = await fetch(`/api/admin/products?${params}`, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       });
       const data = await response.json();
@@ -263,7 +267,19 @@ export function useOrderDetailEdit(orderId: string) {
     } finally {
       setLoadingProducts(false);
     }
-  };
+  }, [token]);
+
+  // Debounce searchTerm → refetch from server while selector is open
+  useEffect(() => {
+    if (!showProductSelectorRef.current) return;
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      fetchProducts(searchTerm);
+    }, 300);
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, [searchTerm, fetchProducts]);
 
   const addProduct = (product: SelectableProduct, quantity = 1, customPrice?: number) => {
     const finalPrice = customPrice !== undefined ? customPrice : product.unitPrice;
