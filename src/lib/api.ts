@@ -1,4 +1,4 @@
-﻿import axios from "axios";
+import axios from "axios";
 import type { AxiosInstance, AxiosResponse } from "axios";
 import type {
   ApiResponse,
@@ -143,25 +143,14 @@ class ApiService {
     accessToken?: string;
   }> {
     try {
-      // Check if refresh token cookie exists before making request
-      const refreshTokenCookie = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("admin_refresh_token="));
-
-      if (!refreshTokenCookie) {
-
-        throw new Error("No refresh token available");
-      }
-
       // Backend có thể lấy refresh token từ cookie hoặc body
-      // Gửi empty body để dựa vào cookie
+      // Gửi empty body để dựa vào cookie (trình duyệt tự gửi HttpOnly cookie)
       const response = await axios.post(
-        `${this.api.defaults.baseURL}/auth/admin/refresh`,
+        "/api/auth/admin/refresh",
         {}, // Empty body - backend sẽ lấy từ cookie
         {
           headers: { "Content-Type": "application/json" },
           timeout: 10000,
-          withCredentials: true, // Để gửi cookies
         }
       );
 
@@ -439,7 +428,7 @@ class ApiService {
       user: { id: string; email: string; name: string; role: string };
     }>
   > {
-    const response = await this.api.post("/auth/admin/login", {
+    const response = await axios.post("/api/auth/admin/login", {
       email,
       password,
     });
@@ -451,7 +440,7 @@ class ApiService {
       user: { id: string; email: string; name: string; role: string };
     }>
   > {
-    const response = await this.api.get("/auth/admin/verify");
+    const response = await axios.get("/api/auth/admin/verify");
     return response.data;
   }
 
@@ -461,14 +450,14 @@ class ApiService {
       refreshToken: string;
     }>
   > {
-    const response = await this.api.post("/auth/admin/refresh", {
+    const response = await axios.post("/api/auth/admin/refresh", {
       refreshToken,
     });
     return response.data;
   }
 
   async logout(): Promise<ApiResponse<null>> {
-    const response = await this.api.post("/auth/admin/logout");
+    const response = await axios.post("/api/auth/admin/logout");
     return response.data;
   }
 
@@ -478,8 +467,7 @@ class ApiService {
       token: string;
     }>
   > {
-
-    const response = await this.api.get("/auth/admin/session");
+    const response = await axios.get("/api/auth/admin/session");
     return response.data;
   }
 
