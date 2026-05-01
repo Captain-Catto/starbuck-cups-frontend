@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/store";
+import { toast } from "sonner";
 import {
   markNotificationAsRead,
   markAllAsRead,
@@ -56,19 +57,15 @@ export function useNotifications(): UseNotificationsReturn {
     searchQuery: "",
   });
 
-  // Load notifications on mount
   const loadNotifications = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiWithAuth.getNotifications({ limit: 100 });
       if (response.success && response.data) {
-
-
-
         dispatch(setNotifications(response.data));
       }
-    } catch (error) {
-
+    } catch {
+      toast.error("Không thể tải thông báo");
     } finally {
       setLoading(false);
     }
@@ -105,23 +102,21 @@ export function useNotifications(): UseNotificationsReturn {
     return filtered;
   }, [notifications, filters]);
 
-  const handleFilterChange = (filter: string) => {
+  const handleFilterChange = useCallback((filter: string) => {
     setFilters((prev) => ({ ...prev, filter }));
-  };
+  }, []);
 
-  const handleSearchChange = (searchQuery: string) => {
+  const handleSearchChange = useCallback((searchQuery: string) => {
     setFilters((prev) => ({ ...prev, searchQuery }));
-  };
+  }, []);
 
-  const handleNotificationClick = async (notification: NotificationData) => {
+  const handleNotificationClick = useCallback(async (notification: NotificationData) => {
     try {
-      // Mark as read if not already read (check read !== true để bao gồm undefined và false)
       if (notification.read !== true) {
         await apiWithAuth.markNotificationAsRead(notification.id);
         dispatch(markNotificationAsRead(notification.id));
       }
 
-      // Navigate based on notification type and data
       if (notification.type === "consultation") {
         if (isConsultationData(notification.data) && notification.data.consultationId) {
           router.push(`/admin/consultations`);
@@ -131,28 +126,27 @@ export function useNotifications(): UseNotificationsReturn {
           router.push(`/admin/orders/${notification.data.orderId}`);
         }
       }
-    } catch (error) {
-
+    } catch {
+      toast.error("Không thể xử lý thông báo");
     }
-  };
+  }, [dispatch, router]);
 
-  const handleMarkAllAsRead = async () => {
+  const handleMarkAllAsRead = useCallback(async () => {
     try {
       await apiWithAuth.markAllNotificationsAsRead();
       dispatch(markAllAsRead());
-    } catch (error) {
-
+    } catch {
+      toast.error("Không thể đánh dấu đã đọc");
     }
-  };
+  }, [dispatch]);
 
-  const handleClearAll = async () => {
+  const handleClearAll = useCallback(async () => {
     try {
-      // Chỉ clear ở local store vì API không có clearAllNotifications
       dispatch(clearNotifications());
-    } catch (error) {
-
+    } catch {
+      toast.error("Không thể xóa thông báo");
     }
-  };
+  }, [dispatch]);
 
   const formatTimestamp = (timestamp: string): string => {
     const now = new Date();

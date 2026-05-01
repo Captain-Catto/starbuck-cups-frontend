@@ -35,8 +35,7 @@ export async function GET(
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Get customer API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to fetch customer" },
       { status: 500 }
@@ -64,8 +63,7 @@ export async function PUT(
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Update customer API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to update customer" },
       { status: 500 }
@@ -91,8 +89,7 @@ export async function DELETE(
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Delete customer API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to delete customer" },
       { status: 500 }

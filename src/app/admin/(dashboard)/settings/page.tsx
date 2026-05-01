@@ -35,14 +35,9 @@ const DEFAULT_WATERMARK_SETTINGS: ProductWatermarkSettings = {
   margin: 12,
 };
 
-const getAdminAuthHeaders = (): Record<string, string> => {
-  if (typeof window === "undefined") return {};
-  const token = localStorage.getItem("admin_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
 export default function SettingsPage() {
   const dispatch = useDispatch<AppDispatch>();
+  const token = useSelector((state: RootState) => state.auth.token);
   const {
     enabled,
     activeEffects,
@@ -77,8 +72,7 @@ export default function SettingsPage() {
       } else {
         setWatermarkSettings(DEFAULT_WATERMARK_SETTINGS);
       }
-    } catch (error) {
-      console.error("Failed to fetch watermark settings:", error);
+    } catch {
       setWatermarkSettings(DEFAULT_WATERMARK_SETTINGS);
     } finally {
       setIsWatermarkLoading(false);
@@ -106,16 +100,13 @@ export default function SettingsPage() {
       await Promise.all([
         dispatch(updateEffectSettings(localSettings)).unwrap(),
         axios.put(WATERMARK_SETTINGS_API_URL, watermarkSettings, {
-          headers: {
-            ...getAdminAuthHeaders(),
-          },
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
           withCredentials: true,
         }),
       ]);
       toast.success("Cập nhật cài đặt thành công!");
-    } catch (error) {
+    } catch {
       toast.error("Lỗi khi cập nhật cài đặt");
-      console.error(error);
     }
   };
 

@@ -37,8 +37,7 @@ export async function GET(
     }
 
     return NextResponse.json(data);
-  } catch (error) {
-    console.error("Customer Orders API Route error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

@@ -39,8 +39,7 @@ export async function GET(
       data: data.data,
       error: null,
     });
-  } catch (error) {
-    console.error("API Error:", error);
+  } catch {
     return NextResponse.json(
       {
         success: false,

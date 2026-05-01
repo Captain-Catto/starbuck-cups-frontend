@@ -170,7 +170,7 @@ export default function StatisticsPage() {
             period === "week"
               ? "bg-gray-700 text-white"
               : "bg-gray-800 text-gray-400 hover:text-gray-300"
-          }`}
+          } cursor-pointer`}
         >
           Tuần
         </button>
@@ -180,7 +180,7 @@ export default function StatisticsPage() {
             period === "month"
               ? "bg-gray-700 text-white"
               : "bg-gray-800 text-gray-400 hover:text-gray-300"
-          }`}
+          } cursor-pointer`}
         >
           Tháng
         </button>
@@ -190,7 +190,7 @@ export default function StatisticsPage() {
             period === "year"
               ? "bg-gray-700 text-white"
               : "bg-gray-800 text-gray-400 hover:text-gray-300"
-          }`}
+          } cursor-pointer`}
         >
           Năm
         </button>

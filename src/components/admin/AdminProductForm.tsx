@@ -44,8 +44,7 @@ export default function AdminProductForm() {
         alert("Sản phẩm đã được tạo thành công!");
         // Reset form or redirect
       }
-    } catch (error) {
-      console.error("Error creating product:", error);
+    } catch {
       alert("Có lỗi xảy ra khi tạo sản phẩm");
     } finally {
       setLoading(false);

@@ -146,7 +146,6 @@ export default function ProductsGrid({
         }
         if (signal.aborted) return;
 
-        console.error("Error fetching products:", error);
         setProducts([]);
         setPaginationData(null);
         lastFetchedParams.current = null; // Allow retry on next filter change

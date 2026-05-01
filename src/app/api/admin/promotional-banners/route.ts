@@ -44,13 +44,11 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(data);
-  } catch (error: unknown) {
-
+  } catch {
     return NextResponse.json(
       {
         success: false,
         message: "Internal server error",
-        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
@@ -89,13 +87,11 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(data, { status: 201 });
-  } catch (error: unknown) {
-
+  } catch {
     return NextResponse.json(
       {
         success: false,
         message: "Internal server error",
-        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

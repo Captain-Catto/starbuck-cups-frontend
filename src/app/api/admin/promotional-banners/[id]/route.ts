@@ -47,14 +47,9 @@ export async function GET(
     }
 
     return NextResponse.json(data);
-  } catch (error: unknown) {
-    console.error("Error fetching promotional banner:", error);
+  } catch {
     return NextResponse.json(
-      {
-        success: false,
-        message: "Internal server error",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
+      { success: false, message: "Internal server error" },
       { status: 500 }
     );
   }
@@ -96,14 +91,9 @@ export async function PUT(
     }
 
     return NextResponse.json(data);
-  } catch (error: unknown) {
-    console.error("Error updating promotional banner:", error);
+  } catch {
     return NextResponse.json(
-      {
-        success: false,
-        message: "Internal server error",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
+      { success: false, message: "Internal server error" },
       { status: 500 }
     );
   }
@@ -142,14 +132,9 @@ export async function DELETE(
     }
 
     return NextResponse.json(data);
-  } catch (error: unknown) {
-    console.error("Error deleting promotional banner:", error);
+  } catch {
     return NextResponse.json(
-      {
-        success: false,
-        message: "Internal server error",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
+      { success: false, message: "Internal server error" },
       { status: 500 }
     );
   }

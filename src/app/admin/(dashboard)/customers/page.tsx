@@ -22,7 +22,7 @@ export default function CustomersPage() {
         description="Quản lý thông tin khách hàng và địa chỉ giao hàng"
         action={
           <div className="flex gap-3">
-            <button className="inline-flex items-center gap-2 px-4 py-2 text-gray-300 bg-gray-800 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors">
+            <button className="inline-flex items-center gap-2 px-4 py-2 text-gray-300 bg-gray-800 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer">
               <Download className="w-4 h-4" />
               Xuất Excel
             </button>
@@ -52,7 +52,7 @@ export default function CustomersPage() {
           </div>
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="flex items-center gap-2 px-4 py-2 text-gray-300 bg-gray-700 rounded-lg hover:bg-gray-600"
+            className="flex items-center gap-2 px-4 py-2 text-gray-300 bg-gray-700 rounded-lg hover:bg-gray-600 cursor-pointer"
           >
             <Filter className="w-4 h-4" />
             Bộ lọc

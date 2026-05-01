@@ -2,6 +2,7 @@
 
 import { memo, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Eye,
   Package,
@@ -127,8 +128,9 @@ interface OrderRowProps {
 
 const OrderRow = memo(
   function OrderRow({ order }: OrderRowProps) {
+    const router = useRouter();
     return (
-      <tr className="hover:bg-gray-700 cursor-pointer">
+      <tr className="hover:bg-gray-700 cursor-pointer" onClick={() => router.push(`/admin/orders/${order.id}`)}>
         <td className="px-6 py-4 whitespace-nowrap">
           <div>
             <div className="text-sm font-medium text-white">{order.orderNumber}</div>
@@ -189,6 +191,7 @@ const OrderRow = memo(
         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
           <Link
             href={`/admin/orders/${order.id}`}
+            onClick={(e) => e.stopPropagation()}
             className="inline-flex items-center gap-1 px-3 py-2 text-sm text-white hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
           >
             <Eye className="w-4 h-4" />

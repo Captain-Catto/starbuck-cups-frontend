@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
+import type { RootState } from "@/store";
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -37,11 +39,7 @@ export function useApi<T = unknown>(options: UseApiOptions = {}): UseApiReturn<T
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getAuthHeaders = (): Record<string, string> => {
-    if (typeof window === "undefined") return {};
-    const token = localStorage.getItem("admin_token");
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  const token = useSelector((state: RootState) => state.auth.token);
 
   const execute = useCallback(async (url: string, options: RequestInit = {}): Promise<T> => {
     try {
@@ -50,7 +48,7 @@ export function useApi<T = unknown>(options: UseApiOptions = {}): UseApiReturn<T
 
       const headers = {
         "Content-Type": "application/json",
-        ...getAuthHeaders(),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       };
 
@@ -89,7 +87,7 @@ export function useApi<T = unknown>(options: UseApiOptions = {}): UseApiReturn<T
     } finally {
       setLoading(false);
     }
-  }, [showSuccessToast, showErrorToast, successMessage, errorMessage]);
+  }, [showSuccessToast, showErrorToast, successMessage, errorMessage, token]);
 
   const reset = useCallback(() => {
     setData(null);

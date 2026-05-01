@@ -1,7 +1,9 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
+import type { RootState } from "@/store";
 
 export interface OrderItem {
   id: string;
@@ -96,11 +98,11 @@ export function useOrders(options: UseOrdersOptions = {}): UseOrdersReturn {
   });
   const [filters, setFiltersState] = useState<OrderFilters>(initialFilters);
 
-  const getAuthHeaders = (): Record<string, string> => {
-    if (typeof window === "undefined") return {};
-    const token = localStorage.getItem("admin_token");
+  const token = useSelector((state: RootState) => state.auth.token);
+
+  const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  }, [token]);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -140,15 +142,14 @@ export function useOrders(options: UseOrdersOptions = {}): UseOrdersReturn {
         setError(errorMsg);
         toast.error(errorMsg);
       }
-    } catch (err) {
+    } catch {
       const errorMsg = "Có lỗi xảy ra khi tải danh sách đơn hàng";
       setError(errorMsg);
       toast.error(errorMsg);
-
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, filters]);
+  }, [pagination.page, pagination.limit, filters, getAuthHeaders]);
 
   const setPage = useCallback((page: number) => {
     setPagination(prev => ({ ...prev, page }));
@@ -204,7 +205,7 @@ export function useOrders(options: UseOrdersOptions = {}): UseOrdersReturn {
       toast.error(errorMsg);
       throw err;
     }
-  }, []);
+  }, [getAuthHeaders]);
 
   useEffect(() => {
     if (autoFetch) {

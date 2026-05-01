@@ -109,8 +109,7 @@ export function useConsultations(): UseConsultationsReturn {
 
         toast.error(data.message || "Không thể tải danh sách tư vấn");
       }
-    } catch (error) {
-
+    } catch {
       toast.error("Có lỗi xảy ra khi tải danh sách tư vấn");
     } finally {
       setLoading(false);
@@ -121,18 +120,16 @@ export function useConsultations(): UseConsultationsReturn {
     fetchConsultations();
   }, [fetchConsultations]);
 
-  const handleUpdateConsultation = async () => {
+  const handleUpdateConsultation = useCallback(async () => {
     if (!selectedConsultation) return;
 
     try {
       setActionLoading("response");
 
-      // Update status and notes
       const updateData = {
         status: selectedStatus,
         notes: adminResponse.trim() || null,
       };
-
 
       const response = await fetch(
         `${apiBaseUrl}/admin/consultations/${selectedConsultation.id}/status`,
@@ -157,41 +154,40 @@ export function useConsultations(): UseConsultationsReturn {
       } else {
         toast.error(data.message || "Có lỗi xảy ra");
       }
-    } catch (error) {
-
+    } catch {
       toast.error("Có lỗi xảy ra khi cập nhật consultation");
     } finally {
       setActionLoading(null);
     }
-  };
+  }, [selectedConsultation, selectedStatus, adminResponse, apiBaseUrl, getAuthHeaders, fetchConsultations]);
 
-  const handleViewConsultation = (consultation: Consultation) => {
+  const handleViewConsultation = useCallback((consultation: Consultation) => {
     setSelectedConsultation(consultation);
     setAdminResponse(consultation.notes || "");
     setSelectedStatus(consultation.status);
     setIsDetailModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseDetailModal = () => {
+  const handleCloseDetailModal = useCallback(() => {
     setIsDetailModalOpen(false);
     setSelectedConsultation(null);
     setAdminResponse("");
-  };
+  }, []);
 
-  const handleFilterChange = (
+  const handleFilterChange = useCallback((
     field: keyof ConsultationFilters,
     value: string
   ) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
     setPagination((prev) => ({ ...prev, current_page: 1 }));
-  };
+  }, []);
 
-  const handleDeleteConsultation = (consultationId: string) => {
+  const handleDeleteConsultation = useCallback((consultationId: string) => {
     setConsultationToDelete(consultationId);
     setIsDeleteModalOpen(true);
-  };
+  }, []);
 
-  const confirmDeleteConsultation = async () => {
+  const confirmDeleteConsultation = useCallback(async () => {
     if (!consultationToDelete) return;
 
     try {
@@ -220,18 +216,17 @@ export function useConsultations(): UseConsultationsReturn {
       } else {
         toast.error(data.message || "Có lỗi xảy ra khi xóa consultation");
       }
-    } catch (error) {
-
+    } catch {
       toast.error("Có lỗi xảy ra khi xóa consultation");
     } finally {
       setActionLoading(null);
     }
-  };
+  }, [consultationToDelete, apiBaseUrl, getAuthHeaders]);
 
-  const cancelDeleteConsultation = () => {
+  const cancelDeleteConsultation = useCallback(() => {
     setIsDeleteModalOpen(false);
     setConsultationToDelete(null);
-  };
+  }, []);
 
   return {
     // Data

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import { X, User, MapPin, Save } from "lucide-react";
 import { toast } from "sonner";
+import type { RootState } from "@/store";
 
 interface CreateCustomerModalProps {
   isOpen: boolean;
@@ -16,6 +18,7 @@ export default function CreateCustomerModal({
   onCustomerCreated,
 }: CreateCustomerModalProps) {
   const [loading, setLoading] = useState(false);
+  const token = useSelector((state: RootState) => state.auth.token);
   const [customerData, setCustomerData] = useState({
     messengerId: "",
     zaloId: "",
@@ -30,11 +33,6 @@ export default function CreateCustomerModal({
       isDefault: true,
     },
   });
-
-  const getAuthHeaders = (): Record<string, string> => {
-    const token = localStorage.getItem("admin_token");
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +74,7 @@ export default function CreateCustomerModal({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...getAuthHeaders(),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });
@@ -90,8 +88,7 @@ export default function CreateCustomerModal({
       } else {
         toast.error(data.message || "Có lỗi xảy ra khi tạo khách hàng");
       }
-    } catch (error) {
-
+    } catch {
       toast.error("Có lỗi xảy ra khi tạo khách hàng");
     } finally {
       setLoading(false);

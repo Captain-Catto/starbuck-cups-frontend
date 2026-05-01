@@ -162,8 +162,7 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
-  } catch (error) {
-    console.error("Image optimization error:", error);
+  } catch {
     return NextResponse.json(
       { error: "Failed to optimize image" },
       { status: 500 }

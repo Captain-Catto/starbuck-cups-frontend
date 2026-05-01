@@ -1,8 +1,10 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { PaginationMeta } from "@/types";
+import type { RootState } from "@/store";
 
 export interface CustomerAdmin {
   id: string;
@@ -76,11 +78,11 @@ export function useCustomers(
   });
   const [currentSearchTerm, setCurrentSearchTerm] = useState<string>("");
 
-  const getAuthHeaders = (): Record<string, string> => {
-    if (typeof window === "undefined") return {};
-    const token = localStorage.getItem("admin_token");
+  const token = useSelector((state: RootState) => state.auth.token);
+
+  const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  }, [token]);
 
   const fetchCustomers = useCallback(
     async (
@@ -126,16 +128,15 @@ export function useCustomers(
           setError(errorMsg);
           toast.error(errorMsg);
         }
-      } catch (err) {
+      } catch {
         const errorMsg = "Có lỗi xảy ra khi tải danh sách khách hàng";
         setError(errorMsg);
         toast.error(errorMsg);
-
       } finally {
         setLoading(false);
       }
     },
-    [pagination.current_page, pagination.per_page, currentSearchTerm]
+    [pagination.current_page, pagination.per_page, currentSearchTerm, getAuthHeaders]
   );
 
   const setPage = useCallback((page: number) => {

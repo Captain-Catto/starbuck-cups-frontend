@@ -29,7 +29,7 @@ export const useProductAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAnalyticsSummary = async () => {
+  const fetchAnalyticsSummary = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -37,15 +37,11 @@ export const useProductAnalytics = () => {
       const response = await fetch("/api/analytics/summary", {
         method: "GET",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) {
-        throw new Error(
-          `Failed to fetch analytics summary: ${response.statusText}`
-        );
+        throw new Error(`Failed to fetch analytics summary: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -60,11 +56,11 @@ export const useProductAnalytics = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchAnalyticsSummary();
-  }, []);
+  }, [fetchAnalyticsSummary]);
 
   return {
     summary,

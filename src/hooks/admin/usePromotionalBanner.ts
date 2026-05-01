@@ -1,5 +1,7 @@
 ﻿import { useState, useCallback } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
+import type { RootState } from "@/store";
 
 export interface PromotionalBanner {
   id: string;
@@ -51,10 +53,11 @@ export function usePromotionalBanner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getAuthHeaders = (): Record<string, string> => {
-    const token = localStorage.getItem("admin_token");
+  const token = useSelector((state: RootState) => state.auth.token);
+
+  const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  }, [token]);
 
   const fetchBanners = useCallback(async () => {
     try {
@@ -83,9 +86,9 @@ export function usePromotionalBanner() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getAuthHeaders]);
 
-  const createBanner = async (
+  const createBanner = useCallback(async (
     bannerData: CreatePromotionalBannerData
   ): Promise<boolean> => {
     try {
@@ -107,7 +110,7 @@ export function usePromotionalBanner() {
       }
 
       toast.success("Banner quảng cáo đã được tạo thành công!");
-      await fetchBanners(); // Refresh list
+      await fetchBanners();
       return true;
     } catch (err: unknown) {
       const errorMessage =
@@ -115,14 +118,13 @@ export function usePromotionalBanner() {
           ? err.message
           : "Failed to create promotional banner";
       toast.error(errorMessage);
-
       return false;
     } finally {
       setLoading(false);
     }
-  };
+  }, [getAuthHeaders, fetchBanners]);
 
-  const updateBanner = async (
+  const updateBanner = useCallback(async (
     bannerId: string,
     bannerData: UpdatePromotionalBannerData
   ): Promise<boolean> => {
@@ -148,7 +150,7 @@ export function usePromotionalBanner() {
       }
 
       toast.success("Banner quảng cáo đã được cập nhật thành công!");
-      await fetchBanners(); // Refresh list
+      await fetchBanners();
       return true;
     } catch (err: unknown) {
       const errorMessage =
@@ -156,14 +158,13 @@ export function usePromotionalBanner() {
           ? err.message
           : "Failed to update promotional banner";
       toast.error(errorMessage);
-
       return false;
     } finally {
       setLoading(false);
     }
-  };
+  }, [getAuthHeaders, fetchBanners]);
 
-  const deleteBanner = async (bannerId: string): Promise<boolean> => {
+  const deleteBanner = useCallback(async (bannerId: string): Promise<boolean> => {
     try {
       setLoading(true);
 
@@ -182,7 +183,7 @@ export function usePromotionalBanner() {
       }
 
       toast.success("Banner quảng cáo đã được xóa thành công!");
-      await fetchBanners(); // Refresh list
+      await fetchBanners();
       return true;
     } catch (err: unknown) {
       const errorMessage =
@@ -190,14 +191,13 @@ export function usePromotionalBanner() {
           ? err.message
           : "Failed to delete promotional banner";
       toast.error(errorMessage);
-
       return false;
     } finally {
       setLoading(false);
     }
-  };
+  }, [getAuthHeaders, fetchBanners]);
 
-  const clearError = () => setError(null);
+  const clearError = useCallback(() => setError(null), []);
 
   return {
     banners,

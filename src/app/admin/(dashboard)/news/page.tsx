@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Plus, Pencil, Trash2, Eye, EyeOff, Newspaper } from "lucide-react";
@@ -8,6 +9,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { LoadingState } from "@/components/admin/LoadingState";
 import { EmptyState } from "@/components/admin/EmptyState";
+import type { RootState } from "@/store";
 import type { News } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -20,15 +22,16 @@ export default function AdminNewsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  const authHeader = (): Record<string, string> => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+  const token = useSelector((state: RootState) => state.auth.token);
+
+  const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  }, [token]);
 
   const fetchNews = useCallback(async () => {
     try {
       setError(null);
-      const res = await fetch("/api/admin/news?limit=50", { headers: authHeader() });
+      const res = await fetch("/api/admin/news?limit=50", { headers: getAuthHeaders() });
       const data = await res.json();
       if (data.success) {
         setNewsList(data.data?.items ?? []);
@@ -42,14 +45,14 @@ export default function AdminNewsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getAuthHeaders]);
 
   useEffect(() => { fetchNews(); }, [fetchNews]);
 
   const handleToggleStatus = async (news: News) => {
     setTogglingId(news.id);
     try {
-      const res = await fetch(`/api/admin/news/${news.id}/status`, { method: "PATCH", headers: authHeader() });
+      const res = await fetch(`/api/admin/news/${news.id}/status`, { method: "PATCH", headers: getAuthHeaders() });
       const data = await res.json();
       if (data.success) {
         toast.success(news.status === "published" ? "Đã chuyển về nháp" : "Đã xuất bản");
@@ -66,7 +69,7 @@ export default function AdminNewsPage() {
     if (!confirm("Bạn có chắc muốn xóa bài viết này?")) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/admin/news/${id}`, { method: "DELETE", headers: authHeader() });
+      const res = await fetch(`/api/admin/news/${id}`, { method: "DELETE", headers: getAuthHeaders() });
       const data = await res.json();
       if (data.success) {
         toast.success("Đã xóa bài viết");
@@ -140,7 +143,7 @@ export default function AdminNewsPage() {
             </thead>
             <tbody className="divide-y divide-gray-700">
               {newsList.map((news) => (
-                <tr key={news.id} className="hover:bg-gray-700/40 transition-colors">
+                <tr key={news.id} className="hover:bg-gray-700/40 transition-colors cursor-pointer" onClick={() => router.push(`/admin/news/${news.id}`)}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       {news.thumbnail && (
@@ -167,28 +170,28 @@ export default function AdminNewsPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => handleToggleStatus(news)}
+                        onClick={(e) => { e.stopPropagation(); handleToggleStatus(news); }}
                         disabled={togglingId === news.id}
                         title={news.status === "published" ? "Chuyển về nháp" : "Xuất bản"}
                         aria-label={news.status === "published" ? "Chuyển về nháp" : "Xuất bản"}
-                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
+                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50 cursor-pointer"
                       >
                         {news.status === "published" ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                       <button
-                        onClick={() => router.push(`/admin/news/${news.id}`)}
+                        onClick={(e) => { e.stopPropagation(); router.push(`/admin/news/${news.id}`); }}
                         title="Chỉnh sửa"
                         aria-label="Chỉnh sửa bài viết"
-                        className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+                        className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors cursor-pointer"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(news.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(news.id); }}
                         disabled={deletingId === news.id}
                         title="Xóa"
                         aria-label="Xóa bài viết"
-                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50 cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

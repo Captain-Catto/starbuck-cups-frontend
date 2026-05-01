@@ -1,6 +1,8 @@
-﻿import { useState, useEffect, useCallback, useRef } from "react";
+﻿import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useSelector } from "react-redux";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
+import type { RootState } from "@/store";
 import type {
   Product,
   Category,
@@ -94,6 +96,7 @@ export function useProducts(): UseProductsReturn {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const token = useSelector((state: RootState) => state.auth.token);
 
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -145,10 +148,9 @@ export function useProducts(): UseProductsReturn {
     total_pages: 0,
   });
 
-  const getAuthHeaders = (): Record<string, string> => {
-    const token = localStorage.getItem("admin_token");
+  const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  }, [token]);
 
   // Debounce search query (500ms delay)
   useEffect(() => {
@@ -236,7 +238,7 @@ export function useProducts(): UseProductsReturn {
         setLoading(false);
       }
     }
-  }, [debouncedSearch, filters.category, filters.color, filters.minCapacity, filters.maxCapacity, filters.status, filters.sortBy, filters.sortOrder, pagination.current_page, pagination.per_page]);
+  }, [getAuthHeaders, debouncedSearch, filters.category, filters.color, filters.minCapacity, filters.maxCapacity, filters.status, filters.sortBy, filters.sortOrder, pagination.current_page, pagination.per_page]);
 
   const loadFilterOptions = useCallback(async () => {
     try {
@@ -272,16 +274,14 @@ export function useProducts(): UseProductsReturn {
           : [];
         setCapacities(caps);
       }
-    } catch (error) {
-
-      // Set empty arrays as fallback
+    } catch {
       setCategories([]);
       setColors([]);
       setCapacities([]);
     }
-  }, []);
+  }, [getAuthHeaders]);
 
-  const handleFilterChange = (field: keyof ProductFilters, value: string) => {
+  const handleFilterChange = useCallback((field: keyof ProductFilters, value: string) => {
     setFilters((prev) => {
       const next = { ...prev, [field]: value };
       // Sync to URL so filters survive page refresh and can be shared
@@ -299,9 +299,9 @@ export function useProducts(): UseProductsReturn {
       return next;
     });
     setPagination((prev) => ({ ...prev, current_page: 1 }));
-  };
+  }, [router, pathname]);
 
-  const handleBulkAction = async (
+  const handleBulkAction = useCallback(async (
     action: "activate" | "deactivate" | "delete"
   ) => {
     if (selectedProducts.length === 0) {
@@ -344,8 +344,7 @@ export function useProducts(): UseProductsReturn {
       );
       setSelectedProducts([]);
       loadProducts();
-    } catch (error) {
-
+    } catch {
       toast.error(
         `Lỗi khi ${
           action === "delete"
@@ -358,9 +357,9 @@ export function useProducts(): UseProductsReturn {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedProducts, products, loadProducts]);
 
-  const handleProductAction = async (
+  const handleProductAction = useCallback(async (
     productId: string,
     action: "activate" | "deactivate" | "delete"
   ) => {
@@ -386,17 +385,13 @@ export function useProducts(): UseProductsReturn {
       });
       return;
     }
-  };
+  }, [products]);
 
-  const performProductAction = async (
+  const performProductAction = useCallback(async (
     productId: string,
     action: "activate" | "deactivate" | "delete"
   ) => {
-    // Prevent double clicks by checking if already loading
-    if (actionLoading) {
-
-      return;
-    }
+    if (actionLoading) return;
 
     setActionLoading(`${action}-${productId}`);
 
@@ -448,47 +443,43 @@ export function useProducts(): UseProductsReturn {
           setProducts(originalProducts);
           toast.error(result.error || "Có lỗi xảy ra");
         }
-      } catch (toggleError) {
-        // Rollback on network error
+      } catch {
         setProducts(originalProducts);
-
         toast.error("Có lỗi xảy ra khi thực hiện hành động");
       }
-    } catch (error) {
-
+    } catch {
       toast.error("Có lỗi xảy ra");
     } finally {
       setActionLoading(null);
     }
-  };
+  }, [actionLoading, products, loadProducts]);
 
-  const handleCreateProduct = () => {
+  const handleCreateProduct = useCallback(() => {
     setEditingProduct(null);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleEditProduct = (product: ProductListItem) => {
+  const handleEditProduct = useCallback((product: ProductListItem) => {
     setEditingProduct(product);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setEditingProduct(null);
-  };
+  }, []);
 
-  const handleModalSuccess = () => {
+  const handleModalSuccess = useCallback(() => {
     invalidateProductDependentCaches();
     loadProducts();
-  };
+  }, [loadProducts]);
 
-  const getProductStatus = (
+  const getProductStatus = useCallback((
     product: ProductListItem
   ): {
     type: "active" | "inactive" | "low-stock" | "out-of-stock";
     label: string;
   } => {
-
     if (!product.isActive) {
       return { type: "inactive", label: "Không hoạt động" };
     }
@@ -499,12 +490,16 @@ export function useProducts(): UseProductsReturn {
       return { type: "low-stock", label: "Sắp hết hàng" };
     }
     return { type: "active", label: "Hoạt động" };
-  };
+  }, []);
 
-  const isAllSelected =
-    selectedProducts.length === products.length && products.length > 0;
-  const isIndeterminate =
-    selectedProducts.length > 0 && selectedProducts.length < products.length;
+  const isAllSelected = useMemo(
+    () => selectedProducts.length === products.length && products.length > 0,
+    [selectedProducts.length, products.length]
+  );
+  const isIndeterminate = useMemo(
+    () => selectedProducts.length > 0 && selectedProducts.length < products.length,
+    [selectedProducts.length, products.length]
+  );
 
   // Load products when filters or pagination change
   useEffect(() => {

@@ -1,6 +1,8 @@
-﻿import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { Capacity, PaginationMeta } from "@/types";
+import type { RootState } from "@/store";
 
 interface CapacityWithCount extends Capacity {
   _count?: {
@@ -109,12 +111,20 @@ export function useCapacities(): UseCapacitiesReturn {
     action: "toggle",
   });
 
-  const getAuthHeaders = (): Record<string, string> => {
-    const token = localStorage.getItem("admin_token");
+  const fetchControllerRef = useRef<AbortController | null>(null);
+  const token = useSelector((state: RootState) => state.auth.token);
+
+  const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  }, [token]);
 
   const fetchCapacities = useCallback(async () => {
+    if (fetchControllerRef.current) {
+      fetchControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    fetchControllerRef.current = controller;
+
     try {
       setLoading(true);
 
@@ -122,6 +132,7 @@ export function useCapacities(): UseCapacitiesReturn {
         `/api/admin/capacities?page=${currentPage}&size=20`,
         {
           headers: getAuthHeaders(),
+          signal: controller.signal,
         }
       );
 
@@ -130,7 +141,6 @@ export function useCapacities(): UseCapacitiesReturn {
       if (data.success && data.data) {
         const capacitiesList = data.data.items || [];
 
-        // Set pagination data from response
         const paginationInfo = data.data.pagination;
         if (paginationInfo) {
           setPagination({
@@ -147,12 +157,13 @@ export function useCapacities(): UseCapacitiesReturn {
       } else {
         toast.error(data.message || "Không thể tải danh sách dung tích");
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
       toast.error("Có lỗi xảy ra khi tải dung tích");
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
-  }, [currentPage]);
+  }, [getAuthHeaders, currentPage]);
 
   const validateForm = (): boolean => {
     const errors: CapacityFormErrors = {};
@@ -208,8 +219,7 @@ export function useCapacities(): UseCapacitiesReturn {
       } else {
         toast.error(data.message || "Có lỗi xảy ra");
       }
-    } catch (error) {
-
+    } catch {
       toast.error("Có lỗi xảy ra khi lưu dung tích");
     } finally {
       setActionLoading(null);
@@ -254,8 +264,7 @@ export function useCapacities(): UseCapacitiesReturn {
       } else {
         toast.error(data.message || "Có lỗi xảy ra khi xóa");
       }
-    } catch (error) {
-
+    } catch {
       toast.error("Có lỗi xảy ra khi xóa dung tích");
     } finally {
       setActionLoading(null);
@@ -315,10 +324,8 @@ export function useCapacities(): UseCapacitiesReturn {
         setCapacities(capacities);
         toast.error(data.message || "Có lỗi xảy ra");
       }
-    } catch (error) {
-      // Rollback on network error
+    } catch {
       setCapacities(capacities);
-
       toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
     } finally {
       setActionLoading(null);
@@ -346,21 +353,30 @@ export function useCapacities(): UseCapacitiesReturn {
     setCurrentPage(page);
   }, []);
 
-  const filteredCapacities = capacities.filter((capacity) => {
-    const matchesSearch = capacity.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "active" && capacity.isActive) ||
-      (statusFilter === "inactive" && !capacity.isActive);
-
-    return matchesSearch && matchesStatus;
-  });
+  const filteredCapacities = useMemo(
+    () =>
+      capacities.filter((capacity) => {
+        const matchesSearch = capacity.name
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+        const matchesStatus =
+          statusFilter === "all" ||
+          (statusFilter === "active" && capacity.isActive) ||
+          (statusFilter === "inactive" && !capacity.isActive);
+        return matchesSearch && matchesStatus;
+      }),
+    [capacities, searchQuery, statusFilter]
+  );
 
   useEffect(() => {
     fetchCapacities();
   }, [fetchCapacities]);
+
+  useEffect(() => {
+    return () => {
+      fetchControllerRef.current?.abort();
+    };
+  }, []);
 
   return {
     // Data

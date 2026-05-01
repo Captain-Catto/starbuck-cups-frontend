@@ -34,13 +34,11 @@ export async function GET() {
         'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=86400',
       },
     });
-  } catch (error: unknown) {
-
+  } catch {
     return NextResponse.json(
       {
         success: false,
         message: "Internal server error",
-        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

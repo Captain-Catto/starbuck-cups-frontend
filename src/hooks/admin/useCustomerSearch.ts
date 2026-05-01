@@ -58,8 +58,7 @@ export function useCustomerSearch() {
           // Fallback to empty array
           setCustomers([]);
         }
-      } catch (error) {
-
+      } catch {
         setCustomers([]);
       } finally {
         setLoadingCustomers(false);
@@ -103,8 +102,7 @@ export function useCustomerSearch() {
 
         setSearchResults([]);
       }
-    } catch (error) {
-
+    } catch {
       setSearchResults([]);
     } finally {
       setSearchingCustomers(false);

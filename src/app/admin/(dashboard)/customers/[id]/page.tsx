@@ -50,8 +50,7 @@ export default function CustomerDetailPage({
       } else {
         throw new Error(data.message || "Failed to delete customer");
       }
-    } catch (error) {
-      console.error("Error deleting customer:", error);
+    } catch {
       toast.error("Có lỗi xảy ra khi xóa khách hàng");
     } finally {
       setDeleteLoading(false);

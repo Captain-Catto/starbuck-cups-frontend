@@ -104,8 +104,7 @@ export function useProductSearch() {
 
         setProductSearchResults([]);
       }
-    } catch (error) {
-
+    } catch {
       setProductSearchResults([]);
     } finally {
       setSearchingProducts(false);

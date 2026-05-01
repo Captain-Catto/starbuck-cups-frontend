@@ -35,8 +35,7 @@ export async function GET(
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Get customer addresses API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to fetch customer addresses" },
       { status: 500 }
@@ -67,8 +66,7 @@ export async function POST(
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Add customer address API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to add customer address" },
       { status: 500 }

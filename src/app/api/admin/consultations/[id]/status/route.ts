@@ -37,8 +37,7 @@ export async function PUT(
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Update consultation status API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to update consultation status" },
       { status: 500 }

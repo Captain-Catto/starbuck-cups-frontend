@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { useAppSelector } from "@/store";
 import { invalidateOrderDependentCaches } from "@/lib/adminCacheInvalidation";
@@ -118,8 +118,9 @@ export function useOrderDetailEdit(orderId: string) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<SelectableProduct | null>(null);
 
-  const filteredProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = useMemo(
+    () => products.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase())),
+    [products, searchTerm]
   );
 
   // ─── Fetch ────────────────────────────────────────────────────────────────

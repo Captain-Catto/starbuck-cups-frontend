@@ -74,12 +74,6 @@ const initialState: EffectSettingsState = {
 
 const EFFECT_SETTINGS_API_URL = getApiUrl("settings/effect-settings");
 
-const getAdminAuthHeaders = (): Record<string, string> => {
-  if (typeof window === "undefined") return {};
-  const token = localStorage.getItem("admin_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
 // Thunks
 export const fetchEffectSettings = createAsyncThunk(
   "effectSettings/fetch",
@@ -95,12 +89,12 @@ export const fetchEffectSettings = createAsyncThunk(
 
 export const updateEffectSettings = createAsyncThunk(
   "effectSettings/update",
-  async (settings: EffectSettings) => {
+  async (settings: EffectSettings, { getState }) => {
+    const state = getState() as { auth: { token: string | null } };
+    const token = state.auth.token;
     try {
       const response = await axios.put(EFFECT_SETTINGS_API_URL, settings, {
-        headers: {
-          ...getAdminAuthHeaders(),
-        },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         withCredentials: true,
       });
       return response.data.data;

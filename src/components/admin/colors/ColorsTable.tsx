@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Edit2, Trash2, Eye, EyeOff, AlertCircle } from "lucide-react";
 import type { Color } from "@/types";
 
@@ -17,6 +18,103 @@ interface ColorsTableProps {
   onToggleStatus: (color: ColorWithCount) => void;
 }
 
+interface ColorRowProps {
+  color: ColorWithCount;
+  actionLoading: string | null;
+  onEdit: (color: ColorWithCount) => void;
+  onDelete: (color: ColorWithCount) => void;
+  onToggleStatus: (color: ColorWithCount) => void;
+}
+
+const ColorRow = memo(function ColorRow({
+  color,
+  actionLoading,
+  onEdit,
+  onDelete,
+  onToggleStatus,
+}: ColorRowProps) {
+  const isToggling = actionLoading === `toggle-${color.id}`;
+  const isDeleting = actionLoading === `delete-${color.id}`;
+  const productCount = color._count?.productColors || 0;
+  return (
+    <tr className="hover:bg-gray-700 cursor-pointer" onClick={() => onEdit(color)}>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-8 h-8 rounded-lg border border-gray-600 flex-shrink-0"
+            style={{ backgroundColor: color.hexCode }}
+          />
+          <div>
+            <div className="text-sm font-medium text-white">{color.name}</div>
+            {color.slug && (
+              <div className="text-xs text-gray-300">slug: {color.slug}</div>
+            )}
+          </div>
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm font-mono text-white">{color.hexCode}</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-white">{productCount} sản phẩm</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-700 text-white">
+          {color.isActive ? "Đang sử dụng" : "Ẩn"}
+        </span>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+        <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(color); }}
+            className="text-white hover:bg-gray-600 p-1 rounded transition-colors cursor-pointer"
+            title="Chỉnh sửa"
+          >
+            <Edit2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleStatus(color); }}
+            disabled={isToggling}
+            className="text-white hover:bg-gray-600 p-1 rounded transition-colors cursor-pointer relative disabled:opacity-50"
+            title={
+              color.isActive && productCount > 0
+                ? `Tắt màu (${productCount} sản phẩm đang sử dụng)`
+                : color.isActive
+                ? "Tắt màu"
+                : "Kích hoạt màu"
+            }
+          >
+            {isToggling ? (
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : color.isActive ? (
+              <>
+                <EyeOff className="w-4 h-4" />
+                {productCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-gray-500 rounded-full" />
+                )}
+              </>
+            ) : (
+              <Eye className="w-4 h-4" />
+            )}
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(color); }}
+            disabled={isDeleting}
+            className="text-white hover:bg-gray-600 p-1 rounded transition-colors cursor-pointer disabled:opacity-50"
+            title="Xóa màu"
+          >
+            {isDeleting ? (
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Trash2 className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+});
+
 export function ColorsTable({
   colors,
   loading,
@@ -30,10 +128,10 @@ export function ColorsTable({
     return (
       <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-700 rounded w-1/4"></div>
+          <div className="h-4 bg-gray-700 rounded w-1/4" />
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-20 bg-gray-700 rounded"></div>
+              <div key={i} className="h-20 bg-gray-700 rounded" />
             ))}
           </div>
         </div>
@@ -42,138 +140,58 @@ export function ColorsTable({
   }
 
   return (
-    <>
-      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-gray-700">
+    <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-700">
+          <thead className="bg-gray-700">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                Màu sắc
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                Mã màu
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                Sản phẩm
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                Trạng thái
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">
+                Hành động
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-gray-800 divide-y divide-gray-700">
+            {colors.length === 0 ? (
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  <div className="flex items-center gap-2">Màu sắc</div>
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Mã màu
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Sản phẩm
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                  Trạng thái
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">
-                  Hành động
-                </th>
+                <td colSpan={5} className="px-6 py-12 text-center">
+                  <AlertCircle className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-white mb-2">
+                    Không tìm thấy màu sắc
+                  </h3>
+                  <p className="text-gray-300">
+                    {searchQuery
+                      ? "Thử tìm kiếm với từ khóa khác"
+                      : "Chưa có màu sắc nào được tạo"}
+                  </p>
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-gray-800 divide-y divide-gray-700">
-              {colors.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
-                    <AlertCircle className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-white mb-2">
-                      Không tìm thấy màu sắc
-                    </h3>
-                    <p className="text-gray-300">
-                      {searchQuery
-                        ? "Thử tìm kiếm với từ khóa khác"
-                        : "Chưa có màu sắc nào được tạo"}
-                    </p>
-                  </td>
-                </tr>
-              )}
-              {colors.map((color) => (
-                <tr key={color.id} className="hover:bg-gray-700 cursor-pointer">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-8 h-8 rounded-lg border border-gray-600"
-                        style={{ backgroundColor: color.hexCode }}
-                      />
-                      <div>
-                        <div className="text-sm font-medium text-white">
-                          {color.name}
-                        </div>
-                        {color.slug && (
-                          <div className="text-xs text-gray-300">
-                            slug: {color.slug}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-mono text-white">
-                      {color.hexCode}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-white">
-                      {color._count?.productColors || 0} sản phẩm
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-700 text-white">
-                      {color.isActive ? "Đang sử dụng" : "Ẩn"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => onEdit(color)}
-                        className="text-white hover:bg-gray-700 p-1 rounded transition-colors"
-                        title="Chỉnh sửa"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => onToggleStatus(color)}
-                        disabled={actionLoading === `toggle-${color.id}`}
-                        className="text-white hover:bg-gray-700 p-1 rounded transition-colors relative"
-                        title={
-                          color.isActive &&
-                          (color._count?.productColors || 0) > 0
-                            ? `Tắt màu (${
-                                color._count?.productColors || 0
-                              } sản phẩm đang sử dụng)`
-                            : color.isActive
-                            ? "Tắt màu"
-                            : "Kích hoạt màu"
-                        }
-                      >
-                        {actionLoading === `toggle-${color.id}` ? (
-                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        ) : color.isActive ? (
-                          <>
-                            <EyeOff className="w-4 h-4" />
-                            {(color._count?.productColors || 0) > 0 && (
-                              <span className="absolute -top-1 -right-1 w-2 h-2 bg-gray-500 rounded-full" />
-                            )}
-                          </>
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => onDelete(color)}
-                        disabled={actionLoading === `delete-${color.id}`}
-                        className="text-white hover:bg-gray-700 p-1 rounded transition-colors"
-                        title="Xóa màu"
-                      >
-                        {actionLoading === `delete-${color.id}` ? (
-                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ) : (
+              colors.map((color) => (
+                <ColorRow
+                  key={color.id}
+                  color={color}
+                  actionLoading={actionLoading}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onToggleStatus={onToggleStatus}
+                />
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
-
-    </>
+    </div>
   );
 }

@@ -57,8 +57,7 @@ export function useHeroImages(): UseHeroImagesReturn {
       } else {
         setError(data.message || "Không thể tải danh sách hero images");
       }
-    } catch (error) {
-
+    } catch {
       setError("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       setLoading(false);
@@ -87,8 +86,7 @@ export function useHeroImages(): UseHeroImagesReturn {
           toast.error("Không thể xóa hero image");
           return false;
         }
-      } catch (error) {
-
+      } catch {
         setError("Lỗi kết nối. Vui lòng thử lại.");
         toast.error("Lỗi kết nối khi xóa hero image");
         return false;
@@ -125,8 +123,7 @@ export function useHeroImages(): UseHeroImagesReturn {
           toast.error("Không thể cập nhật thứ tự hero images");
           return false;
         }
-      } catch (error) {
-
+      } catch {
         setError("Lỗi kết nối. Vui lòng thử lại.");
         toast.error("Lỗi kết nối khi cập nhật thứ tự");
         return false;

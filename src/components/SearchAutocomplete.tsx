@@ -120,8 +120,7 @@ export function SearchAutocomplete({
             trackSearch(query, data.data.items.length);
           }
         }
-      } catch (error) {
-        console.error("Search autocomplete error:", error);
+      } catch {
         setProducts([]);
       } finally {
         setIsLoading(false);
@@ -159,7 +158,7 @@ export function SearchAutocomplete({
               setHotProducts(data.data.items);
             }
           })
-          .catch((error) => console.error("Error fetching hot products:", error))
+          .catch(() => {})
           .finally(() => {
             if (isMounted) setIsLoadingHot(false);
           });

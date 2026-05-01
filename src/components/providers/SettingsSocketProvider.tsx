@@ -58,8 +58,7 @@ export function SettingsSocketProvider({
       setIsConnected(false);
     });
 
-    socketInstance.on("connect_error", (error) => {
-      console.error("Settings socket connect error:", error.message);
+    socketInstance.on("connect_error", () => {
       setIsConnected(false);
     });
 

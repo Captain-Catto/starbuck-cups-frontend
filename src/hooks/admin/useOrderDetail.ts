@@ -84,8 +84,7 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
       } else {
         setError(data.message || "Không thể tải thông tin đơn hàng");
       }
-    } catch (error) {
-
+    } catch {
       setError("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       setLoading(false);
@@ -124,8 +123,7 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
           setError(data.message || "Không thể cập nhật trạng thái đơn hàng");
           return false;
         }
-      } catch (error) {
-
+      } catch {
         setError("Lỗi kết nối. Vui lòng thử lại.");
         return false;
       } finally {

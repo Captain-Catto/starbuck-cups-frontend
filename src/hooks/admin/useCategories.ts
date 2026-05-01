@@ -1,6 +1,8 @@
-﻿import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { Category } from "@/types";
+import type { RootState } from "@/store";
 
 interface CategoryWithCount extends Category {
   _count?: {
@@ -112,12 +114,20 @@ export function useCategories(): UseCategoriesReturn {
     action: "toggle",
   });
 
-  const getAuthHeaders = (): Record<string, string> => {
-    const token = localStorage.getItem("admin_token");
+  const fetchControllerRef = useRef<AbortController | null>(null);
+  const token = useSelector((state: RootState) => state.auth.token);
+
+  const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  }, [token]);
 
   const fetchCategories = useCallback(async () => {
+    if (fetchControllerRef.current) {
+      fetchControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    fetchControllerRef.current = controller;
+
     try {
       setLoading(true);
 
@@ -125,6 +135,7 @@ export function useCategories(): UseCategoriesReturn {
         `/api/admin/categories?page=${currentPage}&size=20`,
         {
           headers: getAuthHeaders(),
+          signal: controller.signal,
         }
       );
 
@@ -133,7 +144,6 @@ export function useCategories(): UseCategoriesReturn {
       if (data.success && data.data) {
         const categoriesList = data.data.items || [];
 
-        // Set pagination data from response
         const paginationInfo = data.data.pagination;
         if (paginationInfo) {
           setPagination({
@@ -150,12 +160,13 @@ export function useCategories(): UseCategoriesReturn {
       } else {
         toast.error(data.message || "Không thể tải danh sách danh mục");
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
       toast.error("Có lỗi xảy ra khi tải danh mục");
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
-  }, [currentPage]);
+  }, [getAuthHeaders, currentPage]);
 
   const validateForm = (): boolean => {
     const errors: CategoryFormErrors = {};
@@ -353,21 +364,30 @@ export function useCategories(): UseCategoriesReturn {
     setCurrentPage(page);
   }, []);
 
-  const filteredCategories = categories.filter((category) => {
-    const matchesSearch = category.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "active" && category.isActive) ||
-      (statusFilter === "inactive" && !category.isActive);
-
-    return matchesSearch && matchesStatus;
-  });
+  const filteredCategories = useMemo(
+    () =>
+      categories.filter((category) => {
+        const matchesSearch = category.name
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+        const matchesStatus =
+          statusFilter === "all" ||
+          (statusFilter === "active" && category.isActive) ||
+          (statusFilter === "inactive" && !category.isActive);
+        return matchesSearch && matchesStatus;
+      }),
+    [categories, searchQuery, statusFilter]
+  );
 
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
+
+  useEffect(() => {
+    return () => {
+      fetchControllerRef.current?.abort();
+    };
+  }, []);
 
   return {
     // Data

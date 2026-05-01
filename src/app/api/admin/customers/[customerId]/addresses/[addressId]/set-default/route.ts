@@ -34,8 +34,7 @@ export async function PUT(
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Set default address API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to set default address" },
       { status: 500 }

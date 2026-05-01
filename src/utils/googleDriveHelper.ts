@@ -53,7 +53,6 @@ export function convertDriveUrl(originalUrl: string): string {
     }
 
     if (!id) {
-      console.warn('Could not extract file ID from Google Drive URL:', originalUrl);
       return originalUrl;
     }
 

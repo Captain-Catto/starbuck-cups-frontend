@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, Edit, Trash2 } from "lucide-react";
 
 import { useAdminCustomers } from "@/hooks/admin/useCustomers";
@@ -25,6 +26,7 @@ export function CustomerList({
   sortBy = "createdAt",
   sortOrder = "desc",
 }: CustomerListProps) {
+  const router = useRouter();
   const {
     customers,
     loading,
@@ -168,7 +170,7 @@ export function CustomerList({
           </thead>
           <tbody className="bg-gray-800 divide-y divide-gray-700">
             {sortedCustomers.map((customer) => (
-              <tr key={customer.id} className="hover:bg-gray-700 cursor-pointer">
+              <tr key={customer.id} className="hover:bg-gray-700 cursor-pointer" onClick={() => router.push(`/admin/customers/${customer.id}`)}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="max-w-48">
                     <div className="flex items-center gap-2">
@@ -245,6 +247,7 @@ export function CustomerList({
                   <div className="flex items-center justify-end gap-2">
                     <Link
                       href={`/admin/customers/${customer.id}`}
+                      onClick={(e) => e.stopPropagation()}
                       className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer"
                       title="Xem chi tiết"
                       aria-label="Xem chi tiết khách hàng"
@@ -253,6 +256,7 @@ export function CustomerList({
                     </Link>
                     <Link
                       href={`/admin/customers/${customer.id}?edit=true`}
+                      onClick={(e) => e.stopPropagation()}
                       className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer"
                       title="Chỉnh sửa"
                       aria-label="Chỉnh sửa khách hàng"
@@ -260,7 +264,7 @@ export function CustomerList({
                       <Edit className="w-4 h-4" />
                     </Link>
                     <button
-                      onClick={() => handleDelete(customer)}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(customer); }}
                       disabled={actionLoading === `delete-${customer.id}`}
                       className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer"
                       title="Xóa"

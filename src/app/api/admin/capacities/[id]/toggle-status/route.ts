@@ -34,8 +34,7 @@ export async function PATCH(
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Toggle capacity status API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to toggle capacity status" },
       { status: 500 }

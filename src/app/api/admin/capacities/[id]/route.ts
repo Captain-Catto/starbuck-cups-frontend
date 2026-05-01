@@ -31,8 +31,7 @@ export async function GET(
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Get capacity API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to fetch capacity" },
       { status: 500 }
@@ -60,8 +59,7 @@ export async function PUT(
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Update capacity API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to update capacity" },
       { status: 500 }
@@ -86,8 +84,7 @@ export async function DELETE(
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Delete capacity API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to delete capacity" },
       { status: 500 }

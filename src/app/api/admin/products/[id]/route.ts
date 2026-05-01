@@ -31,8 +31,7 @@ export async function GET(
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Get product API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to fetch product" },
       { status: 500 }
@@ -65,8 +64,7 @@ export async function PUT(
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Update product API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to update product" },
       { status: 500 }
@@ -97,8 +95,7 @@ export async function DELETE(
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Delete product API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to delete product" },
       { status: 500 }

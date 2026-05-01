@@ -35,8 +35,7 @@ export async function PUT(
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Colors PUT error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to update color" },
       { status: 500 }
@@ -63,8 +62,7 @@ export async function DELETE(
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Colors DELETE error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to delete color" },
       { status: 500 }

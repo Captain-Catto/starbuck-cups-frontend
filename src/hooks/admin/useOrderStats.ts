@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 
@@ -123,8 +123,7 @@ export function useOrderStats(): UseOrderStatsReturn {
 
         const freshStats = await orderStatsCache.inFlight;
         setStats(freshStats);
-      } catch (error) {
-        // Keep stale data without showing blocking error when background revalidation fails
+      } catch {
         if (!hasCachedStats || forceRefresh) {
           setError("Lỗi kết nối. Vui lòng thử lại.");
         }
@@ -173,7 +172,7 @@ export function useOrderStats(): UseOrderStatsReturn {
   );
 
   // Prepare stats for display
-  const displayStats = stats
+  const displayStats = useMemo(() => stats
     ? [
         {
           label: "Tổng đơn hàng",
@@ -231,7 +230,7 @@ export function useOrderStats(): UseOrderStatsReturn {
           change: "0%",
           trend: "up" as const,
         },
-      ];
+      ], [stats, calculateChange]);
 
   return {
     stats,

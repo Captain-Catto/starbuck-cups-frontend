@@ -40,13 +40,11 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error fetching top clicked products:", error);
+  } catch {
     return NextResponse.json(
       {
         success: false,
         message: "Failed to fetch top clicked products",
-        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

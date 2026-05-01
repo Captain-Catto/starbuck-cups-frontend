@@ -37,8 +37,7 @@ export async function POST(
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Respond to consultation API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to respond to consultation" },
       { status: 500 }

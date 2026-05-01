@@ -34,8 +34,7 @@ export async function GET(
     const data = await response.json();
 
     return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error fetching product:", error);
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch product" },
       { status: 500 }

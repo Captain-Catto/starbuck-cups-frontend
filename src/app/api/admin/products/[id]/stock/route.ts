@@ -29,8 +29,7 @@ export async function PATCH(
     const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Update product stock API error:", error);
+  } catch {
     return NextResponse.json(
       { success: false, message: "Failed to update product stock" },
       { status: 500 }

@@ -1,6 +1,8 @@
-﻿import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { Color } from "@/types";
+import type { RootState } from "@/store";
 
 interface ColorWithCount extends Color {
   _count?: {
@@ -88,16 +90,25 @@ export function useColors(): UseColorsReturn {
     action: "toggle",
   });
 
-  const getAuthHeaders = (): Record<string, string> => {
-    const token = localStorage.getItem("admin_token");
+  const fetchControllerRef = useRef<AbortController | null>(null);
+  const token = useSelector((state: RootState) => state.auth.token);
+
+  const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  }, [token]);
 
   const fetchColors = useCallback(async () => {
+    if (fetchControllerRef.current) {
+      fetchControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    fetchControllerRef.current = controller;
+
     try {
       setLoading(true);
       const response = await fetch("/api/admin/colors", {
         headers: getAuthHeaders(),
+        signal: controller.signal,
       });
       const data = await response.json();
 
@@ -106,12 +117,13 @@ export function useColors(): UseColorsReturn {
       } else {
         toast.error(data.message || "Không thể tải danh sách màu sắc");
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
       toast.error("Có lỗi xảy ra khi tải màu sắc");
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
-  }, []);
+  }, [getAuthHeaders]);
 
   const validateForm = (): boolean => {
     const errors: ColorFormErrors = {};
@@ -221,7 +233,7 @@ export function useColors(): UseColorsReturn {
       } else {
         toast.error(data.message || "Có lỗi xảy ra khi xóa");
       }
-    } catch (error) {
+    } catch {
       toast.error("Có lỗi xảy ra khi xóa màu");
     } finally {
       setActionLoading(null);
@@ -275,10 +287,8 @@ export function useColors(): UseColorsReturn {
         setColors(colors);
         toast.error(data.error?.message || data.message || "Có lỗi xảy ra");
       }
-    } catch (error) {
-      // Rollback nếu có lỗi network
+    } catch {
       setColors(colors);
-
       toast.error("Có lỗi xảy ra khi thay đổi trạng thái màu");
     } finally {
       setActionLoading(null);
@@ -301,21 +311,30 @@ export function useColors(): UseColorsReturn {
     setShowModal(true);
   };
 
-  const filteredColors = colors.filter((color) => {
-    const matchesSearch = color.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "active" && color.isActive) ||
-      (statusFilter === "inactive" && !color.isActive);
-
-    return matchesSearch && matchesStatus;
-  });
+  const filteredColors = useMemo(
+    () =>
+      colors.filter((color) => {
+        const matchesSearch = color.name
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+        const matchesStatus =
+          statusFilter === "all" ||
+          (statusFilter === "active" && color.isActive) ||
+          (statusFilter === "inactive" && !color.isActive);
+        return matchesSearch && matchesStatus;
+      }),
+    [colors, searchQuery, statusFilter]
+  );
 
   useEffect(() => {
     fetchColors();
   }, [fetchColors]);
+
+  useEffect(() => {
+    return () => {
+      fetchControllerRef.current?.abort();
+    };
+  }, []);
 
   return {
     // Data

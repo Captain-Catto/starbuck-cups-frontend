@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
+import type { RootState } from "@/store";
 import type {
   ProductLocale,
   ProductTranslationsInput,
@@ -158,11 +160,11 @@ export function useUpdateProduct(
     keepExistingImages: true,
   });
 
-  const getAuthHeaders = (): Record<string, string> => {
-    if (typeof window === "undefined") return {};
-    const token = localStorage.getItem("admin_token");
+  const token = useSelector((state: RootState) => state.auth.token);
+
+  const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  }, [token]);
 
   const loadProductData = useCallback(async () => {
     try {
@@ -232,7 +234,7 @@ export function useUpdateProduct(
     } finally {
       setLoading(false);
     }
-  }, [productId, onError]);
+  }, [productId, onError, getAuthHeaders]);
 
   useEffect(() => {
     if (productId) {
@@ -493,7 +495,7 @@ export function useUpdateProduct(
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, productId, validateForm, onSuccess, onError]);
+  }, [formData, productId, validateForm, onSuccess, onError, getAuthHeaders]);
 
   return {
     formData,

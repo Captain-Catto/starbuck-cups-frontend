@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import type { RootState } from "@/store";
 import { Save, ArrowLeft, Upload, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { News, NewsTranslationsInput, NewsStatus } from "@/types";
@@ -29,6 +31,7 @@ export function NewsForm({ initialData }: NewsFormProps) {
   const router = useRouter();
   const isEdit = !!initialData;
   const { uploadSingle } = useUpload();
+  const token = useSelector((state: RootState) => state.auth.token);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [status, setStatus] = useState<NewsStatus>(initialData?.status ?? "draft");
@@ -95,7 +98,6 @@ export function NewsForm({ initialData }: NewsFormProps) {
       const url = isEdit ? `/api/admin/news/${initialData!.id}` : "/api/admin/news";
       const method = isEdit ? "PUT" : "POST";
 
-      const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
       const res = await fetch(url, {
         method,
         headers: {
