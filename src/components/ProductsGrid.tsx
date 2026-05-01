@@ -168,7 +168,8 @@ export default function ProductsGrid({
     searchQuery,
     selectedCategory,
     selectedColor,
-    capacityRange,
+    capacityRange.min,
+    capacityRange.max,
     sortBy,
     currentPage,
     initialQueryKey,
@@ -201,8 +202,10 @@ export default function ProductsGrid({
     }
   };
 
-  // Skeleton loading
-  if (loading) {
+  // Skeleton loading — only on first load when there are no products to show yet.
+  // When products already exist and we're fetching new ones (filter change), show
+  // the stale results instead of replacing them with a skeleton.
+  if (loading && products.length === 0) {
     // Render only above-the-fold placeholders to reduce main-thread/layout work.
     const skeletonCount = 12;
     return (

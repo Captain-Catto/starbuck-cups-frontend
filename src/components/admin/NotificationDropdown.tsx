@@ -59,9 +59,7 @@ export function NotificationDropdown({
         dispatch(markNotificationAsRead(notification.id));
         // Update server
         await apiWithAuth.markNotificationAsRead(notification.id);
-      } catch (error) {
-
-      }
+      } catch { }
     }
 
     // Navigate based on notification type
@@ -81,10 +79,7 @@ export function NotificationDropdown({
       dispatch(markAllAsRead());
       // Update server
       await apiWithAuth.markAllNotificationsAsRead();
-
-    } catch (error) {
-
-    }
+    } catch { }
   };
 
   const formatTimestamp = (timestamp: string) => {

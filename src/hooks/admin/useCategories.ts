@@ -303,10 +303,9 @@ export function useCategories(): UseCategoriesReturn {
     setActionLoading(`toggle-${category.id}`);
 
     // Optimistic update
-    const updatedCategories = categories.map((c) =>
-      c.id === category.id ? { ...c, isActive: !c.isActive } : c
+    setCategories((prev) =>
+      prev.map((c) => c.id === category.id ? { ...c, isActive: !c.isActive } : c)
     );
-    setCategories(updatedCategories);
 
     try {
       const response = await fetch(
@@ -330,13 +329,17 @@ export function useCategories(): UseCategoriesReturn {
           `Đã ${statusText} danh mục "${category.name}"${productInfo}`
         );
       } else {
-        // Rollback on error
-        setCategories(categories);
+        // Rollback — chỉ revert item này, giữ nguyên thay đổi khác
+        setCategories((prev) =>
+          prev.map((c) => c.id === category.id ? { ...c, isActive: category.isActive } : c)
+        );
         toast.error(data.message || "Có lỗi xảy ra");
       }
     } catch {
       // Rollback on network error
-      setCategories(categories);
+      setCategories((prev) =>
+        prev.map((c) => c.id === category.id ? { ...c, isActive: category.isActive } : c)
+      );
       toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
     } finally {
       setActionLoading(null);

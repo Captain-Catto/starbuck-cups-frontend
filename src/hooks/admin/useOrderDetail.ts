@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { invalidateOrderDependentCaches } from "@/lib/adminCacheInvalidation";
@@ -57,24 +57,27 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Get auth token from Redux store
+  const fetchControllerRef = useRef<AbortController | null>(null);
   const token = useSelector((state: RootState) => state.auth.token);
 
-  // Fetch order detail
   const fetchOrder = useCallback(async () => {
     if (!orderId || !token) return;
+
+    if (fetchControllerRef.current) {
+      fetchControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    fetchControllerRef.current = controller;
 
     setLoading(true);
     setError(null);
     try {
-      const authHeaders: Record<string, string> = {
-        Authorization: `Bearer ${token}`,
-      };
       const response = await fetch(`/api/admin/orders/${orderId}`, {
         headers: {
-          ...authHeaders,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        signal: controller.signal,
       });
 
       const data = await response.json();
@@ -84,10 +87,11 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
       } else {
         setError(data.message || "Không thể tải thông tin đơn hàng");
       }
-    } catch {
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
       setError("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }, [orderId, token]);
 
@@ -138,12 +142,17 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
     setError(null);
   }, []);
 
-  // Auto fetch order on mount and when orderId/token changes
   useEffect(() => {
     if (orderId && token) {
       fetchOrder();
     }
   }, [orderId, token, fetchOrder]);
+
+  useEffect(() => {
+    return () => {
+      fetchControllerRef.current?.abort();
+    };
+  }, []);
 
   return {
     order,

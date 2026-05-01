@@ -297,10 +297,9 @@ export function useCapacities(): UseCapacitiesReturn {
     setActionLoading(capacity.id);
 
     // Optimistic update
-    const updatedCapacities = capacities.map((c) =>
-      c.id === capacity.id ? { ...c, isActive: !c.isActive } : c
+    setCapacities((prev) =>
+      prev.map((c) => c.id === capacity.id ? { ...c, isActive: !c.isActive } : c)
     );
-    setCapacities(updatedCapacities);
 
     try {
       const response = await fetch(
@@ -315,17 +314,20 @@ export function useCapacities(): UseCapacitiesReturn {
 
       if (data.success) {
         toast.success(
-          `Đã ${!capacity.isActive ? "kích hoạt" : "tắt"} dung tích "${
-            capacity.name
-          }"`
+          `Đã ${!capacity.isActive ? "kích hoạt" : "tắt"} dung tích "${capacity.name}"`
         );
       } else {
-        // Rollback on error
-        setCapacities(capacities);
+        // Rollback — chỉ revert item này, giữ nguyên thay đổi khác
+        setCapacities((prev) =>
+          prev.map((c) => c.id === capacity.id ? { ...c, isActive: capacity.isActive } : c)
+        );
         toast.error(data.message || "Có lỗi xảy ra");
       }
     } catch {
-      setCapacities(capacities);
+      // Rollback on network error
+      setCapacities((prev) =>
+        prev.map((c) => c.id === capacity.id ? { ...c, isActive: capacity.isActive } : c)
+      );
       toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
     } finally {
       setActionLoading(null);

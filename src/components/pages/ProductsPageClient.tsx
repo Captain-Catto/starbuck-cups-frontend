@@ -196,7 +196,7 @@ export default function ProductsPageClient({
               onRemoveCapacity={handleRemoveCapacity}
               onRemoveSort={handleRemoveSort}
               onClearAll={handleClearAllFilters}
-              initialProducts={useInitialServerData ? initialProducts : undefined}
+              initialProducts={initialProducts}
               initialPaginationData={
                 useInitialServerData ? initialPaginationData : undefined
               }

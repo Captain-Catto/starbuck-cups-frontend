@@ -259,11 +259,10 @@ export function useColors(): UseColorsReturn {
   const performToggleStatus = async (color: ColorWithCount) => {
     setActionLoading(`toggle-${color.id}`);
 
-    // Optimistic update - cập nhật UI ngay lập tức
-    const updatedColors = colors.map((c) =>
-      c.id === color.id ? { ...c, isActive: !c.isActive } : c
+    // Optimistic update
+    setColors((prev) =>
+      prev.map((c) => c.id === color.id ? { ...c, isActive: !c.isActive } : c)
     );
-    setColors(updatedColors);
 
     try {
       const response = await fetch(
@@ -283,12 +282,17 @@ export function useColors(): UseColorsReturn {
           productCount > 0 ? ` (${productCount} sản phẩm vẫn giữ màu này)` : "";
         toast.success(`Đã ${statusText} màu "${color.name}"${productInfo}`);
       } else {
-        // Rollback nếu có lỗi
-        setColors(colors);
+        // Rollback — chỉ revert item này, giữ nguyên thay đổi khác
+        setColors((prev) =>
+          prev.map((c) => c.id === color.id ? { ...c, isActive: color.isActive } : c)
+        );
         toast.error(data.error?.message || data.message || "Có lỗi xảy ra");
       }
     } catch {
-      setColors(colors);
+      // Rollback on network error
+      setColors((prev) =>
+        prev.map((c) => c.id === color.id ? { ...c, isActive: color.isActive } : c)
+      );
       toast.error("Có lỗi xảy ra khi thay đổi trạng thái màu");
     } finally {
       setActionLoading(null);

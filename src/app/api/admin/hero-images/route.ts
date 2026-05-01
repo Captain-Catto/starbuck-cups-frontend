@@ -43,10 +43,35 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+]);
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+
 export async function POST(request: NextRequest) {
   try {
-    // For file uploads, we need to pass the FormData directly
     const formData = await request.formData();
+
+    // Validate uploaded file
+    const file = formData.get("image");
+    if (file instanceof File) {
+      if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+        return NextResponse.json(
+          { success: false, message: "Chỉ chấp nhận file ảnh (JPEG, PNG, WebP, GIF, AVIF)" },
+          { status: 400 }
+        );
+      }
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        return NextResponse.json(
+          { success: false, message: "Kích thước file không được vượt quá 10MB" },
+          { status: 400 }
+        );
+      }
+    }
 
     const response = await fetch(getApiUrl("admin/hero-images"), {
       method: "POST",

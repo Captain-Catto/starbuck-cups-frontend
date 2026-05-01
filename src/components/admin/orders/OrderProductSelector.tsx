@@ -140,8 +140,8 @@ export function OrderProductSelector({
                 )}
                 <div className="flex-1">
                   <p className="text-sm text-gray-300 mb-1">
-                    {/* @ts-expect-error */}
-                    {selectedProduct.productColors?.map((pc: any) => pc.color?.name).join(", ") || "N/A"}
+                    {/* @ts-expect-error - productColors not in SelectableProduct type but present at runtime */}
+                    {selectedProduct.productColors?.map((pc: ProductColor) => pc.color?.name).join(", ") || "N/A"}
                     {" • "}
                     {selectedProduct.capacity?.name || "N/A"}
                   </p>
