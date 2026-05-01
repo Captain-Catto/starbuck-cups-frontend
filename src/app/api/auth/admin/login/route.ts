@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/api-config";
 
 export async function POST(request: NextRequest) {
@@ -35,11 +35,12 @@ export async function POST(request: NextRequest) {
     });
 
     // Set refresh token in httpOnly cookie
-    if (data.data.refreshToken) {
-      nextResponse.cookies.set("admin_refresh_token", data.data.refreshToken, {
+    const tokenToSet = data.data.refreshToken || data.data.token;
+    if (tokenToSet) {
+      nextResponse.cookies.set("admin_refresh_token", tokenToSet, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: request.nextUrl.protocol === "https:",
+        sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60, // 7 days
         path: "/",
       });
