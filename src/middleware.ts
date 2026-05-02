@@ -24,12 +24,12 @@ export default function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // If logged in and trying to access login page, redirect to dashboard
-    if (isLoginPage && hasAuthCookie) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/admin/dashboard";
-      return NextResponse.redirect(url);
-    }
+    // NOTE: Do NOT redirect from /admin/login to /admin/dashboard here.
+    // The login page's own useEffect handles that redirect after verifying
+    // the session is actually valid. Redirecting from middleware based solely
+    // on the cookie being present causes an infinite loop when the cookie is
+    // expired: middleware sends to dashboard → auth check fails → client sends
+    // back to login → middleware sends to dashboard → repeat.
 
     // If trying to access admin API without auth, return 401 Unauthorized
     if (isAdminApiRoute && !hasAuthCookie) {
