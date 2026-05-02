@@ -31,18 +31,12 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      const result = await dispatch(loginAdmin(formData));
-      if (loginAdmin.fulfilled.match(result)) {
-        toast.success("Đăng nhập thành công!");
-        router.push("/admin/dashboard");
-      }
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(`Đăng nhập thất bại. Vui lòng thử lại. ${error.message} `);
-      } else {
-        toast.error(`Đăng nhập thất bại. Vui lòng thử lại. ${String(error)} `);
-      }
+    const result = await dispatch(loginAdmin(formData));
+    if (loginAdmin.fulfilled.match(result)) {
+      toast.success("Đăng nhập thành công!");
+      router.push("/admin/dashboard");
+    } else if (loginAdmin.rejected.match(result)) {
+      toast.error((result.payload as string) || "Đăng nhập thất bại");
     }
   };
 

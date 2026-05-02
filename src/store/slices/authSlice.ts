@@ -133,12 +133,8 @@ export const loginAdmin = createAsyncThunk(
       const response = await apiService.adminLogin(email, password);
       return response.data;
     } catch (error: unknown) {
-      // Handle different error scenarios
-      if (error instanceof Error) {
-        return rejectWithValue(error.message);
-      }
-
-      // Handle axios errors
+      // Check HTTP status codes first — Axios errors extend Error so
+      // `instanceof Error` would match them too, masking the specific messages.
       const axiosError = error as {
         response?: { status?: number; data?: { message?: string } };
         message?: string;
@@ -148,13 +144,12 @@ export const loginAdmin = createAsyncThunk(
         return rejectWithValue("Email hoặc mật khẩu không đúng");
       } else if (axiosError.response?.status === 403) {
         return rejectWithValue("Tài khoản không có quyền truy cập admin");
-      } else if (
-        axiosError.response?.status &&
-        axiosError.response.status >= 500
-      ) {
+      } else if (axiosError.response?.status && axiosError.response.status >= 500) {
         return rejectWithValue("Lỗi server, vui lòng thử lại sau");
-      } else if (axiosError.message) {
-        return rejectWithValue(axiosError.message);
+      } else if (axiosError.response?.data?.message) {
+        return rejectWithValue(axiosError.response.data.message);
+      } else if (error instanceof Error) {
+        return rejectWithValue(error.message);
       }
       return rejectWithValue("Đăng nhập thất bại");
     }
