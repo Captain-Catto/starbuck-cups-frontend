@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { loginAdmin } from "@/store/slices/authSlice";
+import { loginAdmin, clearError } from "@/store/slices/authSlice";
 import { useStandardAuth } from "@/hooks/useStandardAuth";
 import { Eye, EyeOff, Lock, Mail, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -21,6 +21,11 @@ export default function AdminLoginPage() {
   const { loading, error } = useAppSelector((state) => state.auth);
   const { isAuthenticated, isReady } = useStandardAuth();
 
+  // Clear any stale error from a previous session when the page mounts
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
+
   // Redirect if already authenticated
   useEffect(() => {
     if (isReady && isAuthenticated) {
@@ -35,9 +40,9 @@ export default function AdminLoginPage() {
     if (loginAdmin.fulfilled.match(result)) {
       toast.success("Đăng nhập thành công!");
       router.push("/admin/dashboard");
-    } else if (loginAdmin.rejected.match(result)) {
-      toast.error((result.payload as string) || "Đăng nhập thất bại");
     }
+    // On rejection: state.auth.error is set and displayed inline below the form.
+    // No toast needed — the inline error box is the right UX for form validation.
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
