@@ -1,7 +1,6 @@
 ﻿import { useEffect, useCallback, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
-  checkAuthStatus,
   setTokens,
   logout,
 } from "@/store/slices/authSlice";
@@ -98,10 +97,8 @@ export function useAuthRefresh() {
           }
         }
 
-        // Token vẫn còn hạn, verify với server nếu chưa check
-        if (!sessionChecked) {
-          await dispatch(checkAuthStatus()).unwrap();
-        }
+        // Token còn hạn và không cần refresh — useStandardAuth.initializeAuth
+        // đã xử lý session check ban đầu, không gọi lại ở đây.
       } catch (error) {
 
         TokenRefreshNotification.showRefreshError();
