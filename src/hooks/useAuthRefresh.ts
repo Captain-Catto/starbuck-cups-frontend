@@ -2,12 +2,13 @@
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
   checkAuthStatus,
-  refreshAuthToken,
+  setTokens,
   logout,
 } from "@/store/slices/authSlice";
 import { decodeJWT, isTokenExpired } from "@/lib/jwt";
 import { TokenRefreshNotification } from "@/utils/tokenNotification";
 import { AuthDebug } from "@/utils/authDebug";
+import apiService from "@/lib/api";
 
 export function useAuthRefresh() {
   const dispatch = useAppDispatch();
@@ -65,14 +66,21 @@ export function useAuthRefresh() {
           TokenRefreshNotification.showTokenExpiring();
 
           try {
-            const result = await AuthDebug.timeOperation("Token Refresh (Expired)", async () => {
-              return await dispatch(refreshAuthToken()).unwrap();
+            const newToken = await AuthDebug.timeOperation("Token Refresh (Expired)", async () => {
+              return await apiService.doProactiveRefresh();
             });
 
-            TokenRefreshNotification.showRefreshSuccess();
-            AuthDebug.logEvent("Token Refresh Success", { method: "expired" });
-
-            return result;
+            if (newToken) {
+              dispatch(setTokens({ token: newToken }));
+              TokenRefreshNotification.showRefreshSuccess();
+              AuthDebug.logEvent("Token Refresh Success", { method: "expired" });
+              return;
+            } else {
+              AuthDebug.logEvent("Token Refresh Failed", { method: "expired" });
+              TokenRefreshNotification.showRefreshError();
+              dispatch(logout());
+              return;
+            }
           } catch (error) {
 
             AuthDebug.logEvent("Token Refresh Failed", { method: "expired", error });
@@ -93,16 +101,15 @@ export function useAuthRefresh() {
 
             TokenRefreshNotification.showTokenExpiring();
 
-            try {
-              const result = await dispatch(refreshAuthToken()).unwrap();
+            const newToken = await apiService.doProactiveRefresh();
+            if (newToken) {
+              dispatch(setTokens({ token: newToken }));
               TokenRefreshNotification.showRefreshSuccess();
-
-              return result;
-            } catch (error) {
-
+              return;
+            } else {
               TokenRefreshNotification.showRefreshError();
               dispatch(logout());
-              throw error;
+              return;
             }
           }
         }

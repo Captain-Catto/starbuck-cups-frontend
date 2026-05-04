@@ -137,6 +137,31 @@ class ApiService {
     );
   }
 
+  // Public proactive refresh — shares isRefreshing guard with the 401 interceptor
+  // so both paths cannot rotate the refresh token simultaneously.
+  public async doProactiveRefresh(): Promise<string | null> {
+    if (this.isRefreshing && this.refreshPromise) {
+      try {
+        const result = await this.refreshPromise;
+        return result.accessToken || null;
+      } catch {
+        return null;
+      }
+    }
+
+    try {
+      this.isRefreshing = true;
+      this.refreshPromise = this.performTokenRefresh();
+      const result = await this.refreshPromise;
+      return result.accessToken || null;
+    } catch {
+      return null;
+    } finally {
+      this.isRefreshing = false;
+      this.refreshPromise = null;
+    }
+  }
+
   // Hàm thực hiện refresh token
   private async performTokenRefresh(): Promise<{
     success: boolean;
