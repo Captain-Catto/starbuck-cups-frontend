@@ -465,7 +465,7 @@ class ApiService {
       user: { id: string; email: string; name: string; role: string };
     }>
   > {
-    const response = await axios.get("/api/auth/admin/verify");
+    const response = await this.api.get("/auth/admin/verify");
     return response.data;
   }
 
