@@ -299,8 +299,7 @@ export function PropertyGallery({
 
           {/* Thumbnail Gallery - Always show for debugging */}
           <div className="px-4 py-2 bg-zinc-800">
-            {/* Force container width và enable scrolling */}
-            <div className="w-full max-w-full">
+            <div className="w-full overflow-hidden">
               <div className="flex gap-2 md:gap-3 pb-2 thumbnail-scroll">
                 {images.map((image, index) => (
                   <button

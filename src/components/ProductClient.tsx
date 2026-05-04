@@ -66,7 +66,7 @@ export default function ProductClient({ product, relatedTitle }: Props) {
     <>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_450px] gap-6 lg:gap-8">
         {/* Gallery */}
-        <div className="lg:sticky lg:top-20 lg:self-start">
+        <div className="lg:sticky lg:top-20 lg:self-start min-w-0 overflow-hidden">
           <PropertyGallery images={sortedImages} title={product.name} isVip={product.isVip} />
         </div>
 

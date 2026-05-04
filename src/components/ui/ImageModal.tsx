@@ -495,7 +495,7 @@ export function ImageModal({
       {/* Thumbnail gallery - left side vertical (hidden on mobile) */}
       {images.length > 1 && !isMobile && (
         <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10">
-          <div className="flex flex-col gap-2 max-h-96 overflow-y-auto scrollbar-hide bg-black bg-opacity-50 rounded-lg p-2">
+          <div className="flex flex-col gap-2 max-h-[calc(100vh-8rem)] overflow-y-auto bg-black bg-opacity-50 rounded-lg p-2">
             {images.map((image, index) => (
               <button
                 key={index}
