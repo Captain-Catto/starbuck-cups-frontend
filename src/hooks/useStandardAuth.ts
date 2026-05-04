@@ -30,15 +30,9 @@ export function useStandardAuth() {
     try {
       initializationRef.current = true;
 
-      const storedToken = localStorage.getItem("admin_token");
-      const hasRefreshCookie = document.cookie.includes("admin_refresh_token");
-
-      if (storedToken || hasRefreshCookie) {
-        await dispatch(checkAuthStatus()).unwrap();
-      } else {
-        // No tokens found: avoid an unnecessary API call and mark checked locally
-        dispatch(setSessionChecked());
-      }
+      // Always check auth status: verifies access token if present, or tries
+      // to restore session via HttpOnly refresh cookie if not.
+      await dispatch(checkAuthStatus()).unwrap();
     } catch {
       // checkAuthStatus.rejected already sets sessionChecked = true and clears
       // auth state in the Redux reducer — nothing extra needed here.

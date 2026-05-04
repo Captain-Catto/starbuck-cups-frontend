@@ -34,28 +34,12 @@ export function useAuthRefresh() {
       const storedToken = localStorage.getItem("admin_token");
 
       if (!storedToken) {
-        // Kiểm tra có refresh token cookie không
-        if (!document.cookie.includes("admin_refresh_token")) {
-
-          if (isAuthenticated) {
-            dispatch(logout());
-          }
-          return;
+        // Không có access token — useStandardAuth.initializeAuth xử lý session restore.
+        // Ở đây chỉ cần đảm bảo Redux state phản ánh đúng.
+        if (isAuthenticated) {
+          dispatch(logout());
         }
-
-        // Không có access token, thử check session bằng refresh token trong cookie
-        try {
-
-          const sessionResult = await dispatch(checkAuthStatus()).unwrap();
-
-          return sessionResult;
-        } catch {
-
-          if (isAuthenticated) {
-            dispatch(logout());
-          }
-          return;
-        }
+        return;
       }
 
       try {
@@ -136,8 +120,8 @@ export function useAuthRefresh() {
   useEffect(() => {
     const storedToken = localStorage.getItem("admin_token");
 
-    // Chỉ check nếu có token trong localStorage hoặc có thể có session cookie
-    if (storedToken || document.cookie.includes("admin_refresh_token")) {
+    // Chỉ check nếu có access token (session restore được handle bởi useStandardAuth)
+    if (storedToken) {
       const timer = setTimeout(() => {
         checkAndRefreshToken();
       }, 100); // Delay 100ms để tránh race condition

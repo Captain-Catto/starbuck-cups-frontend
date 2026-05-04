@@ -48,12 +48,8 @@ export const checkAuthStatus = createAsyncThunk(
         const response = await apiService.verifyToken();
         return response.data;
       } else {
-        // Kiểm tra có refresh token cookie không trước khi gọi API
-        if (!document.cookie.includes("admin_refresh_token")) {
-          throw new Error("No authentication tokens available");
-        }
-
-        // Không có token, thử check session bằng refresh token cookie
+        // Không có access token, thử restore session bằng refresh token cookie
+        // (cookie là HttpOnly nên không check được qua document.cookie — để server quyết định)
         const sessionResponse = await apiService.checkSession();
 
         // Lưu token mới vào localStorage

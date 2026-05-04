@@ -475,7 +475,10 @@ class ApiService {
   }
 
   async logout(): Promise<ApiResponse<null>> {
-    const response = await axios.post("/api/auth/admin/logout");
+    const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+    const response = await axios.post("/api/auth/admin/logout", {}, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
     return response.data;
   }
 
