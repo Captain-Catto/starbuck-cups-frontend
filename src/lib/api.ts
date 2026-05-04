@@ -444,15 +444,8 @@ class ApiService {
     return response.data;
   }
 
-  async refreshToken(refreshToken: string): Promise<
-    ApiResponse<{
-      token: string;
-      refreshToken: string;
-    }>
-  > {
-    const response = await axios.post("/api/auth/admin/refresh", {
-      refreshToken,
-    });
+  async refreshToken(refreshToken: string): Promise<ApiResponse<{ token: string; refreshToken: string }>> {
+    const response = await this.api.post("/auth/admin/refresh", { refreshToken });
     return response.data;
   }
 

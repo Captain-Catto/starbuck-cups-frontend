@@ -39,8 +39,10 @@ export function useStandardAuth() {
         // No tokens found: avoid an unnecessary API call and mark checked locally
         dispatch(setSessionChecked());
       }
-    } catch (error) {
-      
+    } catch {
+      // checkAuthStatus.rejected already sets sessionChecked = true and clears
+      // auth state in the Redux reducer — nothing extra needed here.
+      dispatch(setSessionChecked());
     } finally {
       initializationRef.current = false;
     }
@@ -103,12 +105,7 @@ export function useStandardAuth() {
 
   // Force refresh token manually
   const forceRefresh = useCallback(async () => {
-    try {
-      await checkAndRefreshToken();
-    } catch (error) {
-      
-      throw error;
-    }
+    await checkAndRefreshToken();
   }, [checkAndRefreshToken]);
 
   return {

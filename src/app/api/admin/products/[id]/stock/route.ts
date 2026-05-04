@@ -10,6 +10,14 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ success: false, message: "Dữ liệu không hợp lệ" }, { status: 400 });
+    }
+    const b = body as Record<string, unknown>;
+    if (typeof b.stockQuantity !== "number" || b.stockQuantity < 0) {
+      return NextResponse.json({ success: false, message: "Số lượng tồn kho không hợp lệ" }, { status: 400 });
+    }
+
     const response = await fetch(getApiUrl(`admin/products/${id}/stock`), {
       method: "PATCH",
       headers: {

@@ -86,46 +86,6 @@ export const getResponsiveGridClasses = (
 };
 
 /**
- * Hook-like function to setup responsive products per page with resize handling
- * Only runs on client-side to avoid hydration mismatch
- */
-export const useResponsiveProductsPerPage = (
-  callback: (config: GridConfig) => void
-) => {
-  // Ensure we're only running on client-side
-  if (typeof window === "undefined") {
-    return () => {}; // No-op for SSR
-  }
-
-  const updateLayout = () => {
-    const config = calculateOptimalProductsPerPage();
-    callback(config);
-  };
-
-  // Initial calculation (only on client)
-  updateLayout();
-
-  // Setup resize listener with debouncing
-  const handleResize = () => {
-    // Debounce resize events
-    if (window.resizeTimeout) {
-      clearTimeout(window.resizeTimeout);
-    }
-    window.resizeTimeout = setTimeout(updateLayout, 150);
-  };
-
-  window.addEventListener("resize", handleResize);
-
-  // Return cleanup function
-  return () => {
-    window.removeEventListener("resize", handleResize);
-    if (window.resizeTimeout) {
-      clearTimeout(window.resizeTimeout);
-    }
-  };
-};
-
-/**
  * Single source of truth for the products page limit.
  * Used by both the server (page.tsx) and the client (ProductsGrid.tsx)
  * so that `initialQueryKey` always matches client-side params.
@@ -139,10 +99,3 @@ export const PRODUCTS_PAGE_LIMIT = 24;
 export const getProductsPageLimit = (): number => {
   return PRODUCTS_PAGE_LIMIT;
 };
-
-// Extend Window interface for TypeScript
-declare global {
-  interface Window {
-    resizeTimeout: NodeJS.Timeout;
-  }
-}
