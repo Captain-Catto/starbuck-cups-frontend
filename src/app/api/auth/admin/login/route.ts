@@ -24,26 +24,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create response with tokens
     const nextResponse = NextResponse.json({
       success: true,
       data: {
         user: data.data.user,
-        token: data.data.token, // Send access token to client
+        token: data.data.token,
       },
       message: data.message,
     });
 
-    // Set refresh token in httpOnly cookie
-    const tokenToSet = data.data.refreshToken || data.data.token;
-    if (tokenToSet) {
-      nextResponse.cookies.set("admin_refresh_token", tokenToSet, {
-        httpOnly: true,
-        secure: request.nextUrl.protocol === "https:",
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60, // 7 days
-        path: "/",
-      });
+    // Forward the HttpOnly refresh token cookie set by the backend (contains the real refresh token)
+    const setCookieHeader = response.headers.get("set-cookie");
+    if (setCookieHeader) {
+      nextResponse.headers.set("set-cookie", setCookieHeader);
     }
 
     return nextResponse;

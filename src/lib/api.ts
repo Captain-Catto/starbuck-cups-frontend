@@ -155,12 +155,12 @@ class ApiService {
       );
 
       if (response.data.success && response.data.data) {
-        const { accessToken } = response.data.data;
+        // Backend returns "token" field; fall back to "accessToken" for compatibility
+        const newToken = response.data.data.token || response.data.data.accessToken;
+        if (!newToken) throw new Error("No token in refresh response");
 
-        // Chỉ lưu access token, refresh token đã trong cookie
-        localStorage.setItem("admin_token", accessToken);
-
-        return { success: true, accessToken };
+        localStorage.setItem("admin_token", newToken);
+        return { success: true, accessToken: newToken };
       } else {
         throw new Error("Invalid refresh response");
       }
