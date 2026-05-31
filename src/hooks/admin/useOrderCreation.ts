@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/store";
 import { OrderFormData, Product } from "@/types/orders";
@@ -167,6 +167,7 @@ export function useOrderCreation() {
       items: [
         ...prev.items,
         {
+          key: Math.random().toString(36).substring(2, 9),
           productId: "",
           quantity: 0,
           unitPrice: 0,

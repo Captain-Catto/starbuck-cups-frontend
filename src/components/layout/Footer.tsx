@@ -56,10 +56,10 @@ export function Footer() {
                 href="https://www.facebook.com/hasron.luong"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-zinc-800 hover:bg-zinc-700 rounded-full flex items-center justify-center transition-colors"
+                className="size-10 bg-zinc-800 hover:bg-zinc-700 rounded-full flex items-center justify-center transition-colors"
                 aria-label="Facebook"
               >
-                <Facebook className="w-5 h-5" />
+                <Facebook className="size-5" />
               </a>
             </div>
           </div>
@@ -69,7 +69,7 @@ export function Footer() {
             <h3 className="text-lg font-bold mb-4">{t("contact")}</h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
-                <Phone className="w-5 h-5 text-zinc-200 flex-shrink-0 mt-0.5" />
+                <Phone className="size-5 text-zinc-200 flex-shrink-0 mt-0.5" />
                 <div>
                   <a
                     href="tel:0896686008"
@@ -90,7 +90,7 @@ export function Footer() {
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <Mail className="w-5 h-5 text-zinc-200 flex-shrink-0 mt-0.5" />
+                <Mail className="size-5 text-zinc-200 flex-shrink-0 mt-0.5" />
                 <a
                   href="mailto:hasronleung@gmail.com"
                   className="text-zinc-200 hover:text-white transition-colors text-sm"
@@ -99,7 +99,7 @@ export function Footer() {
                 </a>
               </li>
               <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-zinc-200 flex-shrink-0 mt-0.5" />
+                <MapPin className="size-5 text-zinc-200 flex-shrink-0 mt-0.5" />
                 <span className="text-zinc-200 text-sm">
                   {tContacts("addressShort")}
                 </span>

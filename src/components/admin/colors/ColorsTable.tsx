@@ -37,11 +37,17 @@ const ColorRow = memo(function ColorRow({
   const isDeleting = actionLoading === `delete-${color.id}`;
   const productCount = color._count?.productColors || 0;
   return (
-    <tr className="hover:bg-gray-700 cursor-pointer" onClick={() => onEdit(color)}>
+    <tr
+      role="button"
+      tabIndex={0}
+      className="hover:bg-gray-700 cursor-pointer"
+      onClick={() => onEdit(color)}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onEdit(color)}
+    >
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center gap-3">
           <div
-            className="w-8 h-8 rounded-lg border border-gray-600 flex-shrink-0"
+            className="size-8 rounded-lg border border-gray-600 flex-shrink-0"
             style={{ backgroundColor: color.hexCode }}
           />
           <div>
@@ -65,14 +71,14 @@ const ColorRow = memo(function ColorRow({
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
         <div className="flex items-center justify-end gap-2">
-          <button
+          <button type="button"
             onClick={(e) => { e.stopPropagation(); onEdit(color); }}
             className="text-white hover:bg-gray-600 p-1 rounded transition-colors cursor-pointer"
             title="Chỉnh sửa"
           >
-            <Edit2 className="w-4 h-4" />
+            <Edit2 className="size-4" />
           </button>
-          <button
+          <button type="button"
             onClick={(e) => { e.stopPropagation(); onToggleStatus(color); }}
             disabled={isToggling}
             className="text-white hover:bg-gray-600 p-1 rounded transition-colors cursor-pointer relative disabled:opacity-50"
@@ -85,28 +91,28 @@ const ColorRow = memo(function ColorRow({
             }
           >
             {isToggling ? (
-              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              <div className="size-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
             ) : color.isActive ? (
               <>
-                <EyeOff className="w-4 h-4" />
+                <EyeOff className="size-4" />
                 {productCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-gray-500 rounded-full" />
+                  <span className="absolute -top-1 -right-1 size-2 bg-gray-500 rounded-full" />
                 )}
               </>
             ) : (
-              <Eye className="w-4 h-4" />
+              <Eye className="size-4" />
             )}
           </button>
-          <button
+          <button type="button"
             onClick={(e) => { e.stopPropagation(); onDelete(color); }}
             disabled={isDeleting}
             className="text-white hover:bg-gray-600 p-1 rounded transition-colors cursor-pointer disabled:opacity-50"
             title="Xóa màu"
           >
             {isDeleting ? (
-              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              <div className="size-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
             ) : (
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="size-4" />
             )}
           </button>
         </div>
@@ -166,7 +172,7 @@ export function ColorsTable({
             {colors.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-12 text-center">
-                  <AlertCircle className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                  <AlertCircle className="size-12 text-gray-500 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-white mb-2">
                     Không tìm thấy màu sắc
                   </h3>

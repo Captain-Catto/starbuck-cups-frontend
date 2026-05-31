@@ -1,4 +1,4 @@
-﻿import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
   setTokens,
@@ -8,6 +8,12 @@ import { decodeJWT, isTokenExpired } from "@/lib/jwt";
 import { TokenRefreshNotification } from "@/utils/tokenNotification";
 import { AuthDebug } from "@/utils/authDebug";
 import apiService from "@/lib/api";
+
+const ADMIN_TOKEN_STORAGE_KEY = "admin_token";
+
+function getStoredAdminToken() {
+  return localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY);
+}
 
 export function useAuthRefresh() {
   const dispatch = useAppDispatch();
@@ -30,7 +36,7 @@ export function useAuthRefresh() {
     try {
       isCheckingRef.current = true;
 
-      const storedToken = localStorage.getItem("admin_token");
+      const storedToken = getStoredAdminToken();
 
       if (!storedToken) {
         // Không có access token — useStandardAuth.initializeAuth xử lý session restore.
@@ -111,11 +117,11 @@ export function useAuthRefresh() {
     } finally {
       isCheckingRef.current = false;
     }
-  }, [dispatch, isAuthenticated, sessionChecked]);
+  }, [dispatch, isAuthenticated]);
 
   // Auto check token khi component mount - chỉ gọi khi có token hoặc có thể có session
   useEffect(() => {
-    const storedToken = localStorage.getItem("admin_token");
+    const storedToken = getStoredAdminToken();
 
     // Chỉ check nếu có access token (session restore được handle bởi useStandardAuth)
     if (storedToken) {
@@ -125,8 +131,7 @@ export function useAuthRefresh() {
 
       return () => clearTimeout(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Intentionally empty để chỉ chạy 1 lần
+  }, [checkAndRefreshToken]);
 
   // Setup interval để check token định kỳ (mỗi 3 phút) - check thường xuyên hơn
   useEffect(() => {

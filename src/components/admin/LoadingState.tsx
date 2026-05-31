@@ -8,7 +8,7 @@ export function LoadingState({
   className = "",
 }: LoadingStateProps) {
   return (
-    <div className={`space-y-6 bg-black min-h-screen p-6 ${className}`}>
+    <div className={`space-y-6 bg-zinc-950 min-h-screen p-6 ${className}`}>
       <div className="animate-pulse space-y-4">
         <div className="h-8 bg-gray-800 rounded w-1/4"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

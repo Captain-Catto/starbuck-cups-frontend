@@ -18,12 +18,20 @@ import { PageHeader } from "@/components/admin/PageHeader";
 
 export const dynamic = "force-dynamic";
 
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+
 export default function PromotionalBannersPage() {
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedBanner, setSelectedBanner] =
     useState<PromotionalBanner | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
 
   const {
     banners,
@@ -42,13 +50,11 @@ export default function PromotionalBannersPage() {
 
   const handleCreate = () => {
     setSelectedBanner(null);
-    setIsEditing(false);
     setShowFormModal(true);
   };
 
   const handleEdit = (banner: PromotionalBanner) => {
     setSelectedBanner(banner);
-    setIsEditing(true);
     setShowFormModal(true);
   };
 
@@ -83,7 +89,7 @@ export default function PromotionalBannersPage() {
   const handleFormSubmit = async (
     data: CreatePromotionalBannerData | UpdatePromotionalBannerData
   ) => {
-    if (isEditing && selectedBanner) {
+    if (selectedBanner) {
       return await updateBanner(
         selectedBanner.id,
         data as UpdatePromotionalBannerData
@@ -93,13 +99,7 @@ export default function PromotionalBannersPage() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
+
 
   if (loading && banners.length === 0) {
     return <LoadingState />;
@@ -111,11 +111,11 @@ export default function PromotionalBannersPage() {
         title="Quản lý Banner Quảng cáo"
         description="Quản lý banner promotional hiển thị trên hero section của trang chủ"
         action={
-          <button
+          <button type="button"
             onClick={handleCreate}
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="size-4" />
             Tạo Banner mới
           </button>
         }
@@ -171,7 +171,7 @@ export default function PromotionalBannersPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && selectedBanner && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-zinc-950 bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-gray-800 rounded-lg max-w-md w-full">
             <div className="p-6">
               <h3 className="text-lg font-medium text-white mb-4">
@@ -182,7 +182,7 @@ export default function PromotionalBannersPage() {
                 &quot;? Thao tác này không thể hoàn tác.
               </p>
               <div className="flex gap-3 justify-end">
-                <button
+                <button type="button"
                   onClick={() => {
                     setShowDeleteModal(false);
                     setSelectedBanner(null);
@@ -191,7 +191,7 @@ export default function PromotionalBannersPage() {
                 >
                   Hủy
                 </button>
-                <button
+                <button type="button"
                   onClick={handleDeleteConfirm}
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >

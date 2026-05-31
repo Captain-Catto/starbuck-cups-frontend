@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-zinc-950 text-white">
       <div className="container mx-auto px-4 pt-20 pb-4 md:px-6 lg:px-8 md:pt-24 md:pb-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar skeleton */}
@@ -12,7 +12,7 @@ export default function Loading() {
           </div>
 
           {/* Products grid skeleton */}
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 gap-y-6">
             {/* Breadcrumb skeleton */}
             <div className="h-5 w-48 bg-zinc-800 rounded animate-pulse" />
 

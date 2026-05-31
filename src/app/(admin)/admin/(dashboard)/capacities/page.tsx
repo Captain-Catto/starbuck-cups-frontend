@@ -12,7 +12,7 @@ import { CapacityConfirmModal } from "@/components/admin/capacities/CapacityConf
 export default function CapacitiesManagement() {
   const {
     // Data
-    filteredCapacities,
+    capacities,
 
     // Pagination
     pagination,
@@ -60,11 +60,11 @@ export default function CapacitiesManagement() {
         title="Quản lý dung tích"
         description="Quản lý các loại dung tích cốc và ly"
         action={
-          <button
+          <button type="button"
             onClick={handleAddCapacity}
             className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="size-4" />
             Thêm dung tích
           </button>
         }
@@ -81,7 +81,7 @@ export default function CapacitiesManagement() {
 
       {/* Capacities Table */}
       <CapacitiesTable
-        capacities={filteredCapacities}
+        capacities={capacities}
         loading={loading}
         actionLoading={actionLoading}
         searchQuery={searchQuery}

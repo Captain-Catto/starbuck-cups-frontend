@@ -1,6 +1,7 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
+import Link from "next/link";
 import { useEffect } from "react";
 
 export default function GlobalError({
@@ -16,70 +17,30 @@ export default function GlobalError({
 
   return (
     <html lang="vi">
-      <body
-        style={{
-          margin: 0,
-          fontFamily: "Inter, sans-serif",
-          backgroundColor: "#000",
-          color: "#fff",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-        }}
-      >
-        <div style={{ textAlign: "center", padding: "2rem", maxWidth: "480px" }}>
-          <div
-            style={{
-              width: "64px",
-              height: "64px",
-              borderRadius: "50%",
-              backgroundColor: "#1a1a1a",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 1.5rem",
-              fontSize: "1.75rem",
-            }}
-          >
+      <body className="m-0 flex min-h-screen items-center justify-center bg-zinc-950 font-sans text-white">
+        <div className="max-w-[480px] p-8 text-center">
+          <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-zinc-900 text-[1.75rem]">
             ☕
           </div>
-          <h1 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.75rem" }}>
+          <h1 className="mb-3 text-2xl font-bold">
             Có lỗi xảy ra
           </h1>
-          <p style={{ color: "#9ca3af", marginBottom: "2rem", lineHeight: 1.6 }}>
+          <p className="mb-8 leading-relaxed text-gray-400">
             Trang web đang gặp sự cố. Vui lòng thử lại hoặc quay về trang chủ.
           </p>
-          <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
-            <button
+          <div className="flex justify-center gap-4">
+            <button type="button"
               onClick={reset}
-              style={{
-                padding: "0.6rem 1.5rem",
-                backgroundColor: "#16a34a",
-                color: "#fff",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: 600,
-              }}
+              className="cursor-pointer rounded-lg bg-green-600 px-6 py-2.5 font-semibold text-white"
             >
               Thử lại
             </button>
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- global-error.tsx runs outside React tree, Link is not available */}
-            <a
+            <Link
               href="/"
-              style={{
-                padding: "0.6rem 1.5rem",
-                backgroundColor: "#1a1a1a",
-                color: "#fff",
-                border: "1px solid #333",
-                borderRadius: "8px",
-                textDecoration: "none",
-                fontWeight: 600,
-              }}
+              className="rounded-lg border border-zinc-700 bg-zinc-900 px-6 py-2.5 font-semibold text-white no-underline"
             >
               Trang chủ
-            </a>
+            </Link>
           </div>
         </div>
       </body>

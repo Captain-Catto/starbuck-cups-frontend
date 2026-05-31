@@ -16,19 +16,19 @@ export function ProductsBulkActions({
           Đã chọn {selectedCount} sản phẩm
         </span>
         <div className="flex gap-2">
-          <button
+          <button type="button"
             onClick={() => onBulkAction("activate")}
             className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
           >
             Kích hoạt
           </button>
-          <button
+          <button type="button"
             onClick={() => onBulkAction("deactivate")}
             className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
           >
             Vô hiệu hóa
           </button>
-          <button
+          <button type="button"
             onClick={() => onBulkAction("delete")}
             className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
           >

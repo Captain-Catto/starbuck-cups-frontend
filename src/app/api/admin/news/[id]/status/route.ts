@@ -10,6 +10,7 @@ export async function PATCH(
     const { id } = await params;
 
     const response = await fetch(getApiUrl(`news/admin/${id}/status`), {
+      cache: "no-store",
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

@@ -47,17 +47,17 @@ export function CategoryFormModal({
   if (!showModal) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <div className="fixed inset-0 bg-zinc-950 bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
       <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto my-8">
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
           <h3 className="text-lg font-semibold text-white">
             {editingCategory ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
           </h3>
-          <button
+          <button type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-300 cursor-pointer"
           >
-            <X className="w-6 h-6" />
+            <X className="size-6" />
           </button>
         </div>
 
@@ -65,10 +65,10 @@ export function CategoryFormModal({
           <div className="space-y-4">
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-white mb-1">
+              <label className="block text-sm font-medium text-white mb-1" htmlFor="categoryformmodal-vd-ly-gi-nhi-t-c-c-s">
                 Tên danh mục *
               </label>
-              <input
+              <input aria-label="Vd: Ly giữ nhiệt, Cốc sứ..."
                 type="text"
                 value={formData.name}
                 onChange={(e) =>
@@ -77,7 +77,7 @@ export function CategoryFormModal({
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-gray-700 text-white placeholder-gray-400 ${
                   formErrors.name ? "border-red-500" : "border-gray-600"
                 }`}
-                placeholder="Vd: Ly giữ nhiệt, Cốc sứ..."
+                placeholder="Vd: Ly giữ nhiệt, Cốc sứ..." id="categoryformmodal-vd-ly-gi-nhi-t-c-c-s"
               />
               {formErrors.name && (
                 <p className="text-red-400 text-sm mt-1">{formErrors.name}</p>
@@ -86,9 +86,9 @@ export function CategoryFormModal({
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-white mb-1">
+              <span className="block text-sm font-medium text-white mb-1">
                 Mô tả
-              </label>
+              </span>
               <RichTextEditor
                 value={formData.description || ""}
                 onChange={(htmlContent) =>
@@ -106,7 +106,7 @@ export function CategoryFormModal({
 
             {/* Active Status */}
             <div className="flex items-center">
-              <input
+              <input aria-label="is Active"
                 type="checkbox"
                 id="isActive"
                 checked={formData.isActive}
@@ -135,7 +135,7 @@ export function CategoryFormModal({
               className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
             >
               {actionLoading === "submit" && (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full size-4 border-b-2 border-white"></div>
               )}
               {editingCategory ? "Cập nhật" : "Tạo mới"}
             </button>

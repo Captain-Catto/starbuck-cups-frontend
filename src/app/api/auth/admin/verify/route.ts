@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await fetch(getApiUrl("auth/admin/verify"), {
+      cache: "no-store",
       method: "GET",
       headers: {
         "Content-Type": "application/json",

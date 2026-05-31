@@ -85,13 +85,13 @@ export default function ProductClient({ product, relatedTitle }: Props) {
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {product.productColors.map((pc: ProductColor) => (
-                    <button
+                    <button type="button"
                       key={pc.color.id}
                       onClick={() => router.push(`/products?color=${pc.color.slug}`)}
                       className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-zinc-800/50 border border-zinc-700 hover:bg-zinc-700 hover:border-zinc-500 rounded-lg transition-all cursor-pointer"
                     >
                       <div
-                        className="w-3.5 h-3.5 md:w-4 md:h-4 rounded-full border border-zinc-500 flex-shrink-0"
+                        className="size-3.5 md:size-4 rounded-full border border-zinc-500 flex-shrink-0"
                         style={{ backgroundColor: pc.color.hexCode || "#000000" }}
                       />
                       <span className="text-xs md:text-sm text-white">{pc.color.name}</span>
@@ -107,7 +107,7 @@ export default function ProductClient({ product, relatedTitle }: Props) {
                 <label className="block text-[10px] md:text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
                   {t("capacity")}
                 </label>
-                <button
+                <button type="button"
                   onClick={() => router.push(`/products?minCapacity=${product.capacity!.volumeMl}&maxCapacity=${product.capacity!.volumeMl}`)}
                   className="inline-flex items-center px-2.5 py-1.5 bg-zinc-800/50 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:border-zinc-500 transition-all cursor-pointer"
                 >
@@ -139,7 +139,7 @@ export default function ProductClient({ product, relatedTitle }: Props) {
 
           {/* Actions */}
           <div className="flex flex-col gap-3 pt-2">
-            <button
+            <button type="button"
               onClick={handleAddToCart}
               disabled={product.stockQuantity === 0}
               className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold text-sm md:text-base transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
@@ -148,7 +148,7 @@ export default function ProductClient({ product, relatedTitle }: Props) {
                   : "bg-white text-black hover:bg-zinc-100 active:scale-[0.97] cursor-pointer"
               }`}
             >
-              <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
+              <ShoppingCart className="size-4 md:size-5" />
               {product.stockQuantity === 0 ? t("outOfStock") : t("addToCart")}
             </button>
 
@@ -159,7 +159,7 @@ export default function ProductClient({ product, relatedTitle }: Props) {
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-medium text-xs md:text-sm border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 active:scale-[0.97] transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="size-4" />
                 {t("viewClip")}
               </a>
             )}
@@ -174,6 +174,7 @@ export default function ProductClient({ product, relatedTitle }: Props) {
               <div className="prose prose-sm prose-invert max-w-none">
                 <div
                   className="text-xs md:text-sm text-zinc-300 leading-relaxed"
+                  // react-doctor-disable-next-line react-doctor/no-danger -- safely sanitized using DOMPurify
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
                 />
               </div>

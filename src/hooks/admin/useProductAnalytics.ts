@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useReducer, useEffect, useCallback, useRef } from "react";
 import { useAppSelector } from "@/store";
 
 export interface ProductAnalytics {
@@ -24,15 +24,95 @@ export interface AnalyticsSummary {
   uniqueProductsAddedToCart: number;
 }
 
+interface SummaryState {
+  summary: AnalyticsSummary | null;
+  loading: boolean;
+  error: string | null;
+}
+
+type SummaryAction =
+  | { type: "FETCH_START" }
+  | { type: "FETCH_SUCCESS"; payload: AnalyticsSummary }
+  | { type: "FETCH_ERROR"; payload: string };
+
+const initialSummaryState: SummaryState = {
+  summary: null,
+  loading: true,
+  error: null,
+};
+
+function summaryReducer(
+  state: SummaryState,
+  action: SummaryAction
+): SummaryState {
+  switch (action.type) {
+    case "FETCH_START":
+      return { ...state, loading: true, error: null };
+    case "FETCH_SUCCESS":
+      return { summary: action.payload, loading: false, error: null };
+    case "FETCH_ERROR":
+      return { ...state, loading: false, error: action.payload };
+    default:
+      return state;
+  }
+}
+
+interface ProductAnalyticsListState {
+  products: ProductAnalytics[];
+  totalPages: number;
+  loading: boolean;
+  error: string | null;
+}
+
+type ProductAnalyticsListAction =
+  | { type: "FETCH_START" }
+  | {
+      type: "FETCH_SUCCESS";
+      products: ProductAnalytics[];
+      totalPages: number;
+    }
+  | { type: "FETCH_ERROR"; payload: string }
+  | { type: "DISABLED" };
+
+const initialProductAnalyticsListState: ProductAnalyticsListState = {
+  products: [],
+  totalPages: 1,
+  loading: true,
+  error: null,
+};
+
+function productAnalyticsListReducer(
+  state: ProductAnalyticsListState,
+  action: ProductAnalyticsListAction
+): ProductAnalyticsListState {
+  switch (action.type) {
+    case "FETCH_START":
+      return { ...state, loading: true, error: null };
+    case "FETCH_SUCCESS":
+      return {
+        products: action.products,
+        totalPages: action.totalPages,
+        loading: false,
+        error: null,
+      };
+    case "FETCH_ERROR":
+      return { ...state, loading: false, error: action.payload };
+    case "DISABLED":
+      return { ...state, loading: false };
+    default:
+      return state;
+  }
+}
+
 export const useProductAnalytics = () => {
-  const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [{ summary, loading, error }, dispatch] = useReducer(
+    summaryReducer,
+    initialSummaryState
+  );
 
   const fetchAnalyticsSummary = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
+      dispatch({ type: "FETCH_START" });
 
       const response = await fetch("/api/analytics/summary", {
         method: "GET",
@@ -47,14 +127,15 @@ export const useProductAnalytics = () => {
       const data = await response.json();
 
       if (data.success) {
-        setSummary(data.data);
+        dispatch({ type: "FETCH_SUCCESS", payload: data.data });
       } else {
         throw new Error(data.message || "Failed to fetch analytics summary");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error occurred");
-    } finally {
-      setLoading(false);
+      dispatch({
+        type: "FETCH_ERROR",
+        payload: err instanceof Error ? err.message : "Unknown error occurred",
+      });
     }
   }, []);
 
@@ -76,10 +157,10 @@ export const useTopClickedProducts = (
   enabled: boolean = true
 ) => {
   const { token } = useAppSelector((state) => state.auth);
-  const [products, setProducts] = useState<ProductAnalytics[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [{ products, totalPages, loading, error }, dispatch] = useReducer(
+    productAnalyticsListReducer,
+    initialProductAnalyticsListState
+  );
   const requestControllerRef = useRef<AbortController | null>(null);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
@@ -88,7 +169,7 @@ export const useTopClickedProducts = (
 
   const fetchTopClicked = useCallback(async () => {
     if (!enabled) {
-      setLoading(false);
+      dispatch({ type: "DISABLED" });
       return;
     }
 
@@ -100,8 +181,7 @@ export const useTopClickedProducts = (
     requestControllerRef.current = controller;
 
     try {
-      setLoading(true);
-      setError(null);
+      dispatch({ type: "FETCH_START" });
 
       const response = await fetch(
         `/api/analytics/top-clicked?limit=${limit}&page=${page}`,
@@ -125,8 +205,11 @@ export const useTopClickedProducts = (
       const data = await response.json();
 
       if (data.success) {
-        setProducts(data.data);
-        setTotalPages(data.pagination?.totalPages ?? 1);
+        dispatch({
+          type: "FETCH_SUCCESS",
+          products: data.data,
+          totalPages: data.pagination?.totalPages ?? 1,
+        });
       } else {
         throw new Error(data.message || "Failed to fetch top clicked products");
       }
@@ -135,11 +218,10 @@ export const useTopClickedProducts = (
         return;
       }
 
-      setError(err instanceof Error ? err.message : "Unknown error occurred");
-    } finally {
-      if (!controller.signal.aborted) {
-        setLoading(false);
-      }
+      dispatch({
+        type: "FETCH_ERROR",
+        payload: err instanceof Error ? err.message : "Unknown error occurred",
+      });
     }
   }, [enabled, limit, page, getAuthHeaders]);
 
@@ -152,9 +234,10 @@ export const useTopClickedProducts = (
   }, [enabled, fetchTopClicked]);
 
   useEffect(() => {
+    const controller = requestControllerRef.current;
     return () => {
-      if (requestControllerRef.current) {
-        requestControllerRef.current.abort();
+      if (controller) {
+        controller.abort();
       }
     };
   }, []);
@@ -174,10 +257,10 @@ export const useTopConversionProducts = (
   enabled: boolean = true
 ) => {
   const { token } = useAppSelector((state) => state.auth);
-  const [products, setProducts] = useState<ProductAnalytics[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [{ products, totalPages, loading, error }, dispatch] = useReducer(
+    productAnalyticsListReducer,
+    initialProductAnalyticsListState
+  );
   const requestControllerRef = useRef<AbortController | null>(null);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
@@ -186,7 +269,7 @@ export const useTopConversionProducts = (
 
   const fetchTopConversion = useCallback(async () => {
     if (!enabled) {
-      setLoading(false);
+      dispatch({ type: "DISABLED" });
       return;
     }
 
@@ -198,8 +281,7 @@ export const useTopConversionProducts = (
     requestControllerRef.current = controller;
 
     try {
-      setLoading(true);
-      setError(null);
+      dispatch({ type: "FETCH_START" });
 
       const response = await fetch(
         `/api/analytics/top-conversion?limit=${limit}&page=${page}`,
@@ -223,8 +305,11 @@ export const useTopConversionProducts = (
       const data = await response.json();
 
       if (data.success) {
-        setProducts(data.data);
-        setTotalPages(data.pagination?.totalPages ?? 1);
+        dispatch({
+          type: "FETCH_SUCCESS",
+          products: data.data,
+          totalPages: data.pagination?.totalPages ?? 1,
+        });
       } else {
         throw new Error(
           data.message || "Failed to fetch top conversion products"
@@ -235,11 +320,10 @@ export const useTopConversionProducts = (
         return;
       }
 
-      setError(err instanceof Error ? err.message : "Unknown error occurred");
-    } finally {
-      if (!controller.signal.aborted) {
-        setLoading(false);
-      }
+      dispatch({
+        type: "FETCH_ERROR",
+        payload: err instanceof Error ? err.message : "Unknown error occurred",
+      });
     }
   }, [enabled, limit, page, getAuthHeaders]);
 
@@ -252,9 +336,10 @@ export const useTopConversionProducts = (
   }, [enabled, fetchTopConversion]);
 
   useEffect(() => {
+    const controller = requestControllerRef.current;
     return () => {
-      if (requestControllerRef.current) {
-        requestControllerRef.current.abort();
+      if (controller) {
+        controller.abort();
       }
     };
   }, []);

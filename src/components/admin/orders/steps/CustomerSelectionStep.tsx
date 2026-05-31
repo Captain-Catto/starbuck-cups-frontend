@@ -54,11 +54,11 @@ export function CustomerSelectionStep({
 
       {/* Customer Search Input */}
       <div className="relative">
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="customerselectionstep-nh-p-t-n-s-i-n-tho-i-ho-c-">
           Tìm kiếm khách hàng <span className="text-red-400">*</span>
         </label>
         <div className="relative">
-          <input
+          <input aria-label="Nhập tên, số điện thoại hoặc email..."
             type="text"
             value={customerSearchTerm}
             onChange={(e) => handleCustomerSearch(e.target.value)}
@@ -68,11 +68,11 @@ export function CustomerSelectionStep({
             className={`w-full px-4 py-3 bg-gray-800 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent text-white placeholder-gray-400 ${
               errors.customer ? "border-red-500" : "border-gray-600"
             }`}
-            placeholder="Nhập tên, số điện thoại hoặc email..."
+            placeholder="Nhập tên, số điện thoại hoặc email..." id="customerselectionstep-nh-p-t-n-s-i-n-tho-i-ho-c-"
           />
           {searchingCustomers && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <div className="w-4 h-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="size-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           )}
         </div>
@@ -81,14 +81,15 @@ export function CustomerSelectionStep({
         {showCustomerDropdown && searchResults.length > 0 && (
           <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
             {searchResults.map((customer) => (
-              <div
+              <button
+                type="button"
                 key={customer.id}
                 onClick={() => handleSelectCustomer(customer)}
-                className="p-3 hover:bg-gray-700 cursor-pointer border-b border-gray-600 last:border-b-0"
+                className="w-full text-left p-3 hover:bg-gray-700 cursor-pointer border-b border-gray-600 last:border-b-0"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-gray-600" />
+                  <div className="size-8 bg-gray-100 rounded-full flex items-center justify-center">
+                    <User className="size-4 text-gray-600" />
                   </div>
                   <div>
                     <div className="font-medium text-white">
@@ -102,7 +103,7 @@ export function CustomerSelectionStep({
                     </div>
                   </div>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -122,8 +123,8 @@ export function CustomerSelectionStep({
       {selectedCustomer && (
         <div className="p-4 bg-gray-900/20 border border-gray-700 rounded-lg">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-gray-300" />
+            <div className="size-10 bg-gray-800 rounded-full flex items-center justify-center">
+              <User className="size-5 text-gray-300" />
             </div>
             <div>
               <div className="font-medium text-white">
@@ -137,7 +138,7 @@ export function CustomerSelectionStep({
                 • {selectedCustomer.notes || "Chưa có ghi chú"}
               </div>
             </div>
-            <button
+            <button type="button"
               onClick={handleClearCustomer}
               className="ml-auto text-red-400 hover:text-red-300 cursor-pointer"
             >
@@ -160,7 +161,7 @@ export function CustomerSelectionStep({
                 className="p-3 border rounded-lg border-gray-600 animate-pulse"
               >
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gray-600 rounded-full"></div>
+                  <div className="size-8 bg-gray-600 rounded-full"></div>
                   <div className="space-y-1">
                     <div className="h-4 bg-gray-600 rounded w-24"></div>
                     <div className="h-3 bg-gray-600 rounded w-20"></div>
@@ -172,18 +173,19 @@ export function CustomerSelectionStep({
         ) : customers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {customers.slice(0, 4).map((customer) => (
-              <div
+              <button
+                type="button"
                 key={customer.id}
                 onClick={() => handleSelectCustomer(customer)}
-                className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                className={`w-full text-left p-3 border rounded-lg cursor-pointer transition-colors ${
                   formData.customerId === customer.id
                     ? "border-gray-500 bg-gray-900/20"
                     : "border-gray-600 hover:border-gray-500 hover:bg-gray-800"
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-gray-300" />
+                  <div className="size-8 bg-gray-800 rounded-full flex items-center justify-center">
+                    <User className="size-4 text-gray-300" />
                   </div>
                   <div>
                     <div className="font-medium text-white text-sm">
@@ -197,7 +199,7 @@ export function CustomerSelectionStep({
                     </div>
                   </div>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         ) : (

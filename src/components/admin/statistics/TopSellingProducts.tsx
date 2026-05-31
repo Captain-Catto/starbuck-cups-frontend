@@ -13,9 +13,8 @@ interface TopSellingProductsProps {
   products: TopProduct[];
 }
 
-const formatNumber = (num: number) => {
-  return new Intl.NumberFormat("vi-VN").format(num);
-};
+const viNumberFormatter = new Intl.NumberFormat("vi-VN");
+const formatNumber = (num: number) => viNumberFormatter.format(num);
 
 export function TopSellingProducts({ products }: TopSellingProductsProps) {
   return (
@@ -32,8 +31,8 @@ export function TopSellingProducts({ products }: TopSellingProductsProps) {
               target="_blank"
               className="flex items-center justify-between p-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors cursor-pointer"
             >
-              <div className="flex items-center space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-sm font-medium text-white">
+              <div className="flex items-center gap-x-3">
+                <div className="flex size-8 items-center justify-center rounded-full bg-gray-700 text-sm font-medium text-white">
                   {index + 1}
                 </div>
                 <div>

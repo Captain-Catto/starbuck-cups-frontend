@@ -61,15 +61,15 @@ export function ConsultationDetailModal({
   if (!isOpen || !consultation) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-zinc-950 bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-700">
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
           <h3 className="text-lg font-semibold text-white">Chi tiết tư vấn</h3>
-          <button
+          <button type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-300 cursor-pointer"
           >
-            <XCircle className="w-6 h-6" />
+            <XCircle className="size-6" />
           </button>
         </div>
 
@@ -138,7 +138,7 @@ export function ConsultationDetailModal({
                       {/* Product Image */}
                       <div className="flex-shrink-0">
                         {firstImage ? (
-                          <div className="w-16 h-16 relative bg-gray-800 rounded-lg overflow-hidden border border-gray-600">
+                          <div className="size-16 relative bg-gray-800 rounded-lg overflow-hidden border border-gray-600">
                             <OptimizedImage
                               src={firstImage}
                               alt={item.productName}
@@ -150,8 +150,8 @@ export function ConsultationDetailModal({
                             />
                           </div>
                         ) : (
-                          <div className="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center">
-                            <Package className="w-8 h-8 text-gray-400" />
+                          <div className="size-16 bg-gray-600 rounded-lg flex items-center justify-center">
+                            <Package className="size-8 text-gray-400" />
                           </div>
                         )}
                       </div>
@@ -167,7 +167,7 @@ export function ConsultationDetailModal({
                             className="text-sm font-medium text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1 cursor-pointer"
                           >
                             {item.productName}
-                            <ExternalLink className="w-3 h-3" />
+                            <ExternalLink className="size-3" />
                           </Link>
                         </div>
                         <div className="space-y-1">
@@ -210,7 +210,7 @@ export function ConsultationDetailModal({
             <h4 className="text-sm font-medium text-white mb-3">
               Cập nhật ghi chú
             </h4>
-            <textarea
+            <textarea aria-label="Thêm ghi chú cho consultation này..."
               value={adminResponse}
               onChange={(e) => onAdminResponseChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
@@ -224,7 +224,7 @@ export function ConsultationDetailModal({
             <h4 className="text-sm font-medium text-white mb-3">
               Cập nhật trạng thái
             </h4>
-            <select
+            <select aria-label="Select option"
               value={selectedStatus}
               onChange={(e) =>
                 onStatusChange(e.target.value as ConsultationStatus)
@@ -242,21 +242,21 @@ export function ConsultationDetailModal({
 
         <div className="border-t border-gray-700 p-6">
           <div className="flex justify-end gap-3">
-            <button
+            <button type="button"
               onClick={onClose}
               className="px-4 py-2 text-gray-300 border border-gray-600 rounded-lg hover:bg-gray-700 cursor-pointer"
             >
               Đóng
             </button>
-            <button
+            <button type="button"
               onClick={onUpdate}
               disabled={actionLoading === "response"}
               className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
             >
               {actionLoading === "response" && (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full size-4 border-b-2 border-white"></div>
               )}
-              <Send className="w-4 h-4" />
+              <Send className="size-4" />
               Cập nhật
             </button>
           </div>

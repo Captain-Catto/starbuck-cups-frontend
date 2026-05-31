@@ -1,6 +1,14 @@
-"use client";
+﻿"use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useReducer,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { toast } from "sonner";
 import { useAppSelector } from "@/store";
 import { invalidateOrderDependentCaches } from "@/lib/adminCacheInvalidation";
@@ -95,23 +103,123 @@ export interface SelectableProduct {
   productColors?: Array<{ color: { id: string; name: string; hexCode: string } }>;
 }
 
+// ─── Module-scope helpers ─────────────────────────────────────────────────────
+
+export const isFreeShipping = (orderData: OrderDetailFullData) =>
+  Number(orderData.shippingDiscount) === Number(orderData.originalShippingCost);
+
+const viCurrencyFormatter = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
+export const formatCurrency = (amount: string | number) =>
+  viCurrencyFormatter.format(typeof amount === "string" ? Number(amount) : amount);
+
+export const formatDate = (dateString: string) =>
+  new Date(dateString).toLocaleDateString("vi-VN", {
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
+
+const initialEditableOrderData: EditableOrderData = {
+  deliveryAddress: {},
+  originalShippingCost: "0",
+  shippingDiscount: "0",
+  shippingCost: "0",
+  totalAmount: "0",
+  notes: "",
+  items: [],
+};
+
+function getEditableOrderData(order: OrderDetailFullData): EditableOrderData {
+  return {
+    deliveryAddress: order.deliveryAddress || {},
+    originalShippingCost: order.originalShippingCost || "0",
+    shippingDiscount: order.shippingDiscount || "0",
+    shippingCost: order.shippingCost || "0",
+    totalAmount: order.totalAmount || "0",
+    notes: order.notes || "",
+    items:
+      order.items?.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice: item.productSnapshot.unitPrice,
+      })) || [],
+  };
+}
+
+interface OrderEditState {
+  order: OrderDetailFullData | null;
+  loading: boolean;
+  saving: boolean;
+  editData: EditableOrderData;
+}
+
+type OrderEditAction =
+  | { type: "FETCH_START" }
+  | { type: "FETCH_SUCCESS"; order: OrderDetailFullData }
+  | { type: "FETCH_ERROR" }
+  | { type: "SAVE_START" }
+  | { type: "SAVE_FINISH" }
+  | { type: "SET_ORDER"; order: OrderDetailFullData }
+  | { type: "SET_EDIT_DATA"; value: SetStateAction<EditableOrderData> };
+
+const initialOrderEditState: OrderEditState = {
+  order: null,
+  loading: true,
+  saving: false,
+  editData: initialEditableOrderData,
+};
+
+function orderEditReducer(
+  state: OrderEditState,
+  action: OrderEditAction
+): OrderEditState {
+  switch (action.type) {
+    case "FETCH_START":
+      return { ...state, loading: true };
+    case "FETCH_SUCCESS":
+      return {
+        ...state,
+        order: action.order,
+        editData: getEditableOrderData(action.order),
+        loading: false,
+      };
+    case "FETCH_ERROR":
+      return { ...state, order: null, loading: false };
+    case "SAVE_START":
+      return { ...state, saving: true };
+    case "SAVE_FINISH":
+      return { ...state, saving: false };
+    case "SET_ORDER":
+      return { ...state, order: action.order };
+    case "SET_EDIT_DATA":
+      return {
+        ...state,
+        editData:
+          typeof action.value === "function"
+            ? action.value(state.editData)
+            : action.value,
+      };
+    default:
+      return state;
+  }
+}
+
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useOrderDetailEdit(orderId: string) {
   const { token } = useAppSelector((state) => state.auth);
 
-  const [order, setOrder] = useState<OrderDetailFullData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [editData, setEditData] = useState<EditableOrderData>({
-    deliveryAddress: {},
-    originalShippingCost: "0",
-    shippingDiscount: "0",
-    shippingCost: "0",
-    totalAmount: "0",
-    notes: "",
-    items: [],
-  });
+  const [orderState, dispatchOrder] = useReducer(
+    orderEditReducer,
+    initialOrderEditState
+  );
+  const { order, loading, saving, editData } = orderState;
+
+  const setEditData: Dispatch<SetStateAction<EditableOrderData>> = useCallback(
+    (value) => {
+      dispatchOrder({ type: "SET_EDIT_DATA", value });
+    },
+    []
+  );
 
   const [products, setProducts] = useState<SelectableProduct[]>([]);
   const [showProductSelector, setShowProductSelector] = useState(false);
@@ -130,11 +238,12 @@ export function useOrderDetailEdit(orderId: string) {
 
   // ─── Fetch ────────────────────────────────────────────────────────────────
 
+  // react-doctor-disable-next-line react-doctor/no-fetch-in-effect -- no react-query/SWR in this project; fetch-on-mount with token guard is the established pattern
   useEffect(() => {
     if (!token) return;
 
     const fetchOrder = async () => {
-      setLoading(true);
+      dispatchOrder({ type: "FETCH_START" });
       try {
         const response = await fetch(`/api/admin/orders/${orderId}`, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -142,30 +251,12 @@ export function useOrderDetailEdit(orderId: string) {
         const data = await response.json();
 
         if (data.success) {
-          setOrder(data.data);
-          setEditData({
-            deliveryAddress: data.data.deliveryAddress || {},
-            originalShippingCost: data.data.originalShippingCost || "0",
-            shippingDiscount: data.data.shippingDiscount || "0",
-            shippingCost: data.data.shippingCost || "0",
-            totalAmount: data.data.totalAmount || "0",
-            notes: data.data.notes || "",
-            items:
-              data.data.items?.map(
-                (item: NonNullable<OrderDetailFullData["items"]>[number]) => ({
-                  productId: item.productId,
-                  quantity: item.quantity,
-                  unitPrice: item.productSnapshot.unitPrice,
-                })
-              ) || [],
-          });
+          dispatchOrder({ type: "FETCH_SUCCESS", order: data.data });
         } else {
-          setOrder(null);
+          dispatchOrder({ type: "FETCH_ERROR" });
         }
       } catch {
-        setOrder(null);
-      } finally {
-        setLoading(false);
+        dispatchOrder({ type: "FETCH_ERROR" });
       }
     };
 
@@ -177,7 +268,7 @@ export function useOrderDetailEdit(orderId: string) {
   const saveChanges = async () => {
     if (!order || !token) return;
 
-    setSaving(true);
+    dispatchOrder({ type: "SAVE_START" });
     try {
       const response = await fetch(`/api/admin/orders/${orderId}`, {
         method: "PUT",
@@ -188,7 +279,7 @@ export function useOrderDetailEdit(orderId: string) {
 
       if (data.success) {
         invalidateOrderDependentCaches();
-        setOrder(data.data);
+        dispatchOrder({ type: "SET_ORDER", order: data.data });
         toast.success("Đơn hàng đã được cập nhật thành công!");
       } else {
         if (data.error?.code === "ORDER_NOT_EDITABLE") {
@@ -202,7 +293,7 @@ export function useOrderDetailEdit(orderId: string) {
     } catch {
       toast.error("Có lỗi xảy ra khi cập nhật đơn hàng");
     } finally {
-      setSaving(false);
+      dispatchOrder({ type: "SAVE_FINISH" });
     }
   };
 
@@ -280,7 +371,8 @@ export function useOrderDetailEdit(orderId: string) {
       fetchProducts(searchTerm);
     }, 300);
     return () => {
-      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+      const timer = searchDebounceRef.current;
+      if (timer) clearTimeout(timer);
     };
   }, [searchTerm, fetchProducts]);
 
@@ -312,22 +404,6 @@ export function useOrderDetailEdit(orderId: string) {
         : `Đã thêm ${product.name} với giá ${formatCurrency(finalPrice)}`
     );
   };
-
-  // ─── Formatters ───────────────────────────────────────────────────────────
-
-  const isFreeShipping = (orderData: OrderDetailFullData) =>
-    Number(orderData.shippingDiscount) === Number(orderData.originalShippingCost);
-
-  const formatCurrency = (amount: string | number) =>
-    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
-      typeof amount === "string" ? Number(amount) : amount
-    );
-
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("vi-VN", {
-      day: "2-digit", month: "2-digit", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
-    });
 
   return {
     order, loading, saving,

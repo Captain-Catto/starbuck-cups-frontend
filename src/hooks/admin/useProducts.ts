@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useReducer, type SetStateAction } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import type { RootState } from "@/store";
 import type {
@@ -27,6 +28,123 @@ interface ProductFilters {
   status: "all" | "active" | "inactive" | "low_stock";
   sortBy: string;
   sortOrder: "asc" | "desc";
+}
+
+interface SearchParamReader {
+  get(name: string): string | null;
+}
+
+const DEFAULT_SEARCH_PARAMS: SearchParamReader = {
+  get: () => null,
+};
+
+const DEFAULT_PAGINATION: PaginationMeta = {
+  current_page: 1,
+  has_next: false,
+  has_prev: false,
+  per_page: 10,
+  total_items: 0,
+  total_pages: 0,
+};
+
+interface ProductListState {
+  products: ProductListItem[];
+  categories: Category[];
+  colors: Color[];
+  capacities: Capacity[];
+  loading: boolean;
+  filters: ProductFilters;
+  pagination: PaginationMeta;
+  debouncedSearch: string;
+}
+
+type ProductListAction =
+  | { type: "SET_DEBOUNCED_SEARCH"; search: string }
+  | { type: "LOAD_PRODUCTS_START" }
+  | {
+      type: "LOAD_PRODUCTS_SUCCESS";
+      products: ProductListItem[];
+      pagination?: PaginationMeta;
+    }
+  | { type: "LOAD_PRODUCTS_FINISH" }
+  | {
+      type: "LOAD_FILTER_OPTIONS_SUCCESS";
+      categories: Category[];
+      colors: Color[];
+      capacities: Capacity[];
+    }
+  | { type: "LOAD_FILTER_OPTIONS_ERROR" }
+  | { type: "SET_FILTER"; field: keyof ProductFilters; value: string }
+  | { type: "SET_PAGINATION"; value: SetStateAction<PaginationMeta> }
+  | { type: "SET_LOADING"; loading: boolean }
+  | { type: "SET_PRODUCTS"; value: SetStateAction<ProductListItem[]> };
+
+function resolveStateValue<T>(value: SetStateAction<T>, current: T): T {
+  return typeof value === "function"
+    ? (value as (previous: T) => T)(current)
+    : value;
+}
+
+function createInitialFilters(searchParams: SearchParamReader): ProductFilters {
+  return {
+    search: searchParams.get("search") || "",
+    category: searchParams.get("category") || "",
+    color: searchParams.get("color") || "",
+    minCapacity: searchParams.get("minCapacity") || "",
+    maxCapacity: searchParams.get("maxCapacity") || "",
+    status: (searchParams.get("status") as ProductFilters["status"]) || "all",
+    sortBy: searchParams.get("sortBy") || "createdAt",
+    sortOrder: (searchParams.get("sortOrder") as "asc" | "desc") || "desc",
+  };
+}
+
+function productListReducer(
+  state: ProductListState,
+  action: ProductListAction
+): ProductListState {
+  switch (action.type) {
+    case "SET_DEBOUNCED_SEARCH":
+      return { ...state, debouncedSearch: action.search };
+    case "LOAD_PRODUCTS_START":
+      return { ...state, loading: true };
+    case "LOAD_PRODUCTS_SUCCESS":
+      return {
+        ...state,
+        products: action.products,
+        pagination: action.pagination ?? state.pagination,
+      };
+    case "LOAD_PRODUCTS_FINISH":
+      return { ...state, loading: false };
+    case "LOAD_FILTER_OPTIONS_SUCCESS":
+      return {
+        ...state,
+        categories: action.categories,
+        colors: action.colors,
+        capacities: action.capacities,
+      };
+    case "LOAD_FILTER_OPTIONS_ERROR":
+      return { ...state, categories: [], colors: [], capacities: [] };
+    case "SET_FILTER":
+      return {
+        ...state,
+        filters: { ...state.filters, [action.field]: action.value },
+        pagination: { ...state.pagination, current_page: 1 },
+      };
+    case "SET_PAGINATION":
+      return {
+        ...state,
+        pagination: resolveStateValue(action.value, state.pagination),
+      };
+    case "SET_LOADING":
+      return { ...state, loading: action.loading };
+    case "SET_PRODUCTS":
+      return {
+        ...state,
+        products: resolveStateValue(action.value, state.products),
+      };
+    default:
+      return state;
+  }
 }
 
 export interface UseProductsReturn {
@@ -92,17 +210,33 @@ export interface UseProductsReturn {
   isIndeterminate: boolean;
 }
 
-export function useProducts(): UseProductsReturn {
-  const searchParams = useSearchParams();
+export function useProducts(
+  searchParams: SearchParamReader = DEFAULT_SEARCH_PARAMS
+): UseProductsReturn {
   const router = useRouter();
   const pathname = usePathname();
   const token = useSelector((state: RootState) => state.auth.token);
 
-  const [products, setProducts] = useState<ProductListItem[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [colors, setColors] = useState<Color[]>([]);
-  const [capacities, setCapacities] = useState<Capacity[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [listState, dispatchList] = useReducer(productListReducer, {
+    products: [],
+    categories: [],
+    colors: [],
+    capacities: [],
+    loading: true,
+    filters: createInitialFilters(searchParams),
+    pagination: DEFAULT_PAGINATION,
+    debouncedSearch: "",
+  });
+  const {
+    products,
+    categories,
+    colors,
+    capacities,
+    loading,
+    filters,
+    pagination,
+    debouncedSearch,
+  } = listState;
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
@@ -123,30 +257,16 @@ export function useProducts(): UseProductsReturn {
     action: "toggle",
   });
 
-  const [filters, setFilters] = useState<ProductFilters>({
-    search: searchParams.get("search") || "",
-    category: searchParams.get("category") || "",
-    color: searchParams.get("color") || "",
-    minCapacity: searchParams.get("minCapacity") || "",
-    maxCapacity: searchParams.get("maxCapacity") || "",
-    status: (searchParams.get("status") as ProductFilters["status"]) || "all",
-    sortBy: searchParams.get("sortBy") || "createdAt",
-    sortOrder: (searchParams.get("sortOrder") as "asc" | "desc") || "desc",
-  });
-
-  // Debounced search query
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const searchDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const productsRequestControllerRef = useRef<AbortController | null>(null);
 
-  const [pagination, setPagination] = useState<PaginationMeta>({
-    current_page: 1,
-    has_next: false,
-    has_prev: false,
-    per_page: 10,
-    total_items: 0,
-    total_pages: 0,
-  });
+  const setProducts = useCallback((value: SetStateAction<ProductListItem[]>) => {
+    dispatchList({ type: "SET_PRODUCTS", value });
+  }, []);
+
+  const setPagination = useCallback((value: SetStateAction<PaginationMeta>) => {
+    dispatchList({ type: "SET_PAGINATION", value });
+  }, []);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
@@ -159,12 +279,13 @@ export function useProducts(): UseProductsReturn {
     }
 
     searchDebounceTimerRef.current = setTimeout(() => {
-      setDebouncedSearch(filters.search);
+      dispatchList({ type: "SET_DEBOUNCED_SEARCH", search: filters.search });
     }, 500);
 
     return () => {
-      if (searchDebounceTimerRef.current) {
-        clearTimeout(searchDebounceTimerRef.current);
+      const timer = searchDebounceTimerRef.current;
+      if (timer) {
+        clearTimeout(timer);
       }
     };
   }, [filters.search]);
@@ -177,7 +298,7 @@ export function useProducts(): UseProductsReturn {
     productsRequestControllerRef.current = controller;
 
     try {
-      setLoading(true);
+      dispatchList({ type: "LOAD_PRODUCTS_START" });
 
       const params = new URLSearchParams({
         page: pagination.current_page.toString(),
@@ -219,10 +340,11 @@ export function useProducts(): UseProductsReturn {
           })
         );
 
-        setProducts(mappedProducts);
-        if (data.data?.pagination) {
-          setPagination(data.data.pagination);
-        }
+        dispatchList({
+          type: "LOAD_PRODUCTS_SUCCESS",
+          products: mappedProducts,
+          pagination: data.data?.pagination,
+        });
       } else {
 
         toast.error(data.message || "Không thể tải danh sách sản phẩm");
@@ -235,7 +357,7 @@ export function useProducts(): UseProductsReturn {
       toast.error("Có lỗi xảy ra khi tải sản phẩm");
     } finally {
       if (!controller.signal.aborted) {
-        setLoading(false);
+        dispatchList({ type: "LOAD_PRODUCTS_FINISH" });
       }
     }
   }, [getAuthHeaders, debouncedSearch, filters.category, filters.color, filters.minCapacity, filters.maxCapacity, filters.status, filters.sortBy, filters.sortOrder, pagination.current_page, pagination.per_page]);
@@ -256,50 +378,42 @@ export function useProducts(): UseProductsReturn {
         capacitiesRes.json(),
       ]);
 
-      if (categoriesData.success) {
-        const cats = Array.isArray(categoriesData.data?.items)
-          ? categoriesData.data.items
-          : [];
-        setCategories(cats);
-      }
-      if (colorsData.success) {
-        const cols = Array.isArray(colorsData.data?.items)
-          ? colorsData.data.items
-          : [];
-        setColors(cols);
-      }
-      if (capacitiesData.success) {
-        const caps = Array.isArray(capacitiesData.data?.items)
-          ? capacitiesData.data.items
-          : [];
-        setCapacities(caps);
-      }
+      dispatchList({
+        type: "LOAD_FILTER_OPTIONS_SUCCESS",
+        categories:
+          categoriesData.success && Array.isArray(categoriesData.data?.items)
+            ? categoriesData.data.items
+            : [],
+        colors:
+          colorsData.success && Array.isArray(colorsData.data?.items)
+            ? colorsData.data.items
+            : [],
+        capacities:
+          capacitiesData.success && Array.isArray(capacitiesData.data?.items)
+            ? capacitiesData.data.items
+            : [],
+      });
     } catch {
-      setCategories([]);
-      setColors([]);
-      setCapacities([]);
+      dispatchList({ type: "LOAD_FILTER_OPTIONS_ERROR" });
     }
   }, [getAuthHeaders]);
 
   const handleFilterChange = useCallback((field: keyof ProductFilters, value: string) => {
-    setFilters((prev) => {
-      const next = { ...prev, [field]: value };
-      // Sync to URL so filters survive page refresh and can be shared
-      const params = new URLSearchParams();
-      if (next.search) params.set("search", next.search);
-      if (next.category) params.set("category", next.category);
-      if (next.color) params.set("color", next.color);
-      if (next.minCapacity) params.set("minCapacity", next.minCapacity);
-      if (next.maxCapacity) params.set("maxCapacity", next.maxCapacity);
-      if (next.status && next.status !== "all") params.set("status", next.status);
-      if (next.sortBy && next.sortBy !== "createdAt") params.set("sortBy", next.sortBy);
-      if (next.sortOrder && next.sortOrder !== "desc") params.set("sortOrder", next.sortOrder);
-      const qs = params.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-      return next;
-    });
-    setPagination((prev) => ({ ...prev, current_page: 1 }));
-  }, [router, pathname]);
+    const next = { ...filters, [field]: value };
+    // Sync to URL so filters survive page refresh and can be shared
+    const params = new URLSearchParams();
+    if (next.search) params.set("search", next.search);
+    if (next.category) params.set("category", next.category);
+    if (next.color) params.set("color", next.color);
+    if (next.minCapacity) params.set("minCapacity", next.minCapacity);
+    if (next.maxCapacity) params.set("maxCapacity", next.maxCapacity);
+    if (next.status && next.status !== "all") params.set("status", next.status);
+    if (next.sortBy && next.sortBy !== "createdAt") params.set("sortBy", next.sortBy);
+    if (next.sortOrder && next.sortOrder !== "desc") params.set("sortOrder", next.sortOrder);
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    dispatchList({ type: "SET_FILTER", field, value });
+  }, [filters, router, pathname]);
 
   const handleBulkAction = useCallback(async (
     action: "activate" | "deactivate" | "delete"
@@ -310,7 +424,7 @@ export function useProducts(): UseProductsReturn {
     }
 
     try {
-      setLoading(true);
+      dispatchList({ type: "SET_LOADING", loading: true });
       const promises = selectedProducts.map(async (productId) => {
         if (action === "delete") {
           return apiService.adminDeleteProduct(productId);
@@ -355,7 +469,7 @@ export function useProducts(): UseProductsReturn {
         } sản phẩm`
       );
     } finally {
-      setLoading(false);
+      dispatchList({ type: "SET_LOADING", loading: false });
     }
   }, [selectedProducts, products, loadProducts]);
 
@@ -452,7 +566,7 @@ export function useProducts(): UseProductsReturn {
     } finally {
       setActionLoading(null);
     }
-  }, [actionLoading, products, loadProducts]);
+  }, [actionLoading, products, loadProducts, setProducts]);
 
   const handleCreateProduct = useCallback(() => {
     setEditingProduct(null);
@@ -513,9 +627,10 @@ export function useProducts(): UseProductsReturn {
 
   // Cleanup pending request
   useEffect(() => {
+    const currentController = productsRequestControllerRef.current;
     return () => {
-      if (productsRequestControllerRef.current) {
-        productsRequestControllerRef.current.abort();
+      if (currentController) {
+        currentController.abort();
       }
     };
   }, []);

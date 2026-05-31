@@ -100,17 +100,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const catData = await catRes.json();
 
     if (catData.success && Array.isArray(catData.data?.items)) {
-      categoryPages = catData.data.items
-        .filter((cat: { isActive: boolean; slug: string }) => cat.isActive)
-        .flatMap((cat: { slug: string; updatedAt?: string; createdAt: string }) =>
-          locales.map((locale) => ({
-            url: getLocalizedUrl(`/category/${cat.slug}`, locale),
-            lastModified: new Date(cat.updatedAt || cat.createdAt),
-            changeFrequency: "weekly" as const,
-            priority: 0.85,
-            alternates: getAlternates(`/category/${cat.slug}`),
-          }))
-        );
+      categoryPages = (
+        catData.data.items as Array<{
+          isActive: boolean;
+          slug: string;
+          updatedAt?: string;
+          createdAt: string;
+        }>
+      ).reduce<MetadataRoute.Sitemap>(
+        (
+          pages,
+          cat
+        ) => {
+          if (!cat.isActive) return pages;
+          for (const locale of locales) {
+            pages.push({
+              url: getLocalizedUrl(`/category/${cat.slug}`, locale),
+              lastModified: new Date(cat.updatedAt || cat.createdAt),
+              changeFrequency: "weekly" as const,
+              priority: 0.85,
+              alternates: getAlternates(`/category/${cat.slug}`),
+            });
+          }
+          return pages;
+        },
+        []
+      );
     }
   } catch {
     // Fallback to empty array if API fails

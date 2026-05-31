@@ -13,6 +13,21 @@ interface TopConversionProductsProps {
   loading?: boolean;
 }
 
+const formatDate = (dateString?: string) => {
+  if (!dateString) return "Chưa có";
+  return new Date(dateString).toLocaleDateString("vi-VN");
+};
+
+const formatPercentage = (num: number) => {
+  return `${num.toFixed(1)}%`;
+};
+
+const getConversionColor = (rate: number) => {
+  if (rate >= 50) return "text-green-400";
+  if (rate >= 25) return "text-yellow-400";
+  return "text-red-400";
+};
+
 export function TopConversionProducts({
   page,
   totalPages,
@@ -21,21 +36,6 @@ export function TopConversionProducts({
   loading,
 }: TopConversionProductsProps) {
   const itemsPerPage = 10;
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "Chưa có";
-    return new Date(dateString).toLocaleDateString("vi-VN");
-  };
-
-  const formatPercentage = (num: number) => {
-    return `${num.toFixed(1)}%`;
-  };
-
-  const getConversionColor = (rate: number) => {
-    if (rate >= 50) return "text-green-400";
-    if (rate >= 25) return "text-yellow-400";
-    return "text-red-400";
-  };
 
   if (loading) {
     return (
@@ -85,8 +85,8 @@ export function TopConversionProducts({
             target="_blank"
             className="flex items-center justify-between p-4 bg-gray-800/50 border border-gray-700 rounded-lg hover:bg-gray-800 hover:border-gray-600 transition-all cursor-pointer"
           >
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center justify-center w-8 h-8 bg-gray-700 text-white rounded-full text-sm font-medium">
+            <div className="flex items-center gap-x-4">
+              <div className="flex items-center justify-center size-8 bg-gray-700 text-white rounded-full text-sm font-medium">
                 #{(page - 1) * itemsPerPage + index + 1}
               </div>
 
@@ -106,20 +106,20 @@ export function TopConversionProducts({
                   product.conversionRate
                 )}`}
               >
-                <TrendingUp className="w-4 h-4" />
+                <TrendingUp className="size-4" />
                 <span className="text-lg font-bold">
                   {formatPercentage(product.conversionRate)}
                 </span>
               </div>
 
-              <div className="flex items-center space-x-4 text-xs text-gray-400">
-                <div className="flex items-center space-x-1">
-                  <MousePointer className="w-3 h-3" />
+              <div className="flex items-center gap-x-4 text-xs text-gray-400">
+                <div className="flex items-center gap-x-1">
+                  <MousePointer className="size-3" />
                   <span>{product.clickCount}</span>
                 </div>
 
-                <div className="flex items-center space-x-1">
-                  <ShoppingCart className="w-3 h-3" />
+                <div className="flex items-center gap-x-1">
+                  <ShoppingCart className="size-3" />
                   <span>{product.addToCartCount}</span>
                 </div>
               </div>

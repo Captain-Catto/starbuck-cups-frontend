@@ -10,6 +10,7 @@ import {
   Calendar,
   MapPin,
   CircleDollarSign,
+  AlertCircle,
 } from "lucide-react";
 import { useOrders } from "@/hooks/admin/useOrders";
 import { Pagination } from "@/components/ui/Pagination";
@@ -33,12 +34,8 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   cancelled: { label: "Đã hủy", color: "bg-gray-800 text-white" },
 };
 
-const formatCurrency = (amount: string) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(Number(amount));
-};
+const viCurrencyFormatter = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
+const formatCurrency = (amount: string) => viCurrencyFormatter.format(Number(amount));
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString("vi-VN", {
@@ -130,7 +127,13 @@ const OrderRow = memo(
   function OrderRow({ order }: OrderRowProps) {
     const router = useRouter();
     return (
-      <tr className="hover:bg-gray-700 cursor-pointer" onClick={() => router.push(`/admin/orders/${order.id}`)}>
+      <tr
+        role="button"
+        tabIndex={0}
+        className="hover:bg-gray-700 cursor-pointer"
+        onClick={() => router.push(`/admin/orders/${order.id}`)}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && router.push(`/admin/orders/${order.id}`)}
+      >
         <td className="px-6 py-4 whitespace-nowrap">
           <div>
             <div className="text-sm font-medium text-white">{order.orderNumber}</div>
@@ -194,7 +197,7 @@ const OrderRow = memo(
             onClick={(e) => e.stopPropagation()}
             className="inline-flex items-center gap-1 px-3 py-2 text-sm text-white hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="size-4" />
             Chi tiết
           </Link>
         </td>
@@ -205,7 +208,7 @@ const OrderRow = memo(
 );
 
 export function OrderList(props: OrderListProps) {
-  const { orders, pagination, loading, setPage } = useOrders(props);
+  const { orders, pagination, loading, error, setPage } = useOrders(props);
 
   const hasFilter = useMemo(() => {
     return Boolean(
@@ -231,11 +234,23 @@ export function OrderList(props: OrderListProps) {
     return <LoadingSkeleton />;
   }
 
+  if (error) {
+    return (
+      <div className="bg-gray-800 rounded-lg border border-red-700 p-8">
+        <div className="text-center">
+          <AlertCircle className="size-12 text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-white mb-2">Lỗi tải đơn hàng</h3>
+          <p className="text-gray-300">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!orders || !Array.isArray(orders) || orders.length === 0) {
     return (
       <div className="bg-gray-800 rounded-lg border border-gray-700 p-8">
         <div className="text-center">
-          <Package className="w-12 h-12 text-white mx-auto mb-4" />
+          <Package className="size-12 text-white mx-auto mb-4" />
           <h3 className="text-lg font-medium text-white mb-2">Không có đơn hàng nào</h3>
           <p className="text-gray-300">
             {hasFilter
@@ -255,31 +270,31 @@ export function OrderList(props: OrderListProps) {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 <div className="flex items-center gap-2">
-                  <Package className="w-4 h-4" />
+                  <Package className="size-4" />
                   Đơn hàng
                 </div>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 <div className="flex items-center gap-2">
-                  <User className="w-4 h-4" />
+                  <User className="size-4" />
                   Khách hàng
                 </div>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
+                  <MapPin className="size-4" />
                   Địa chỉ giao hàng
                 </div>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 <div className="flex items-center gap-2">
-                  <CircleDollarSign className="w-4 h-4" />
+                  <CircleDollarSign className="size-4" />
                   Tổng tiền
                 </div>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
+                  <Calendar className="size-4" />
                   Ngày tạo
                 </div>
               </th>

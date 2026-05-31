@@ -1,7 +1,14 @@
-"use client";
+﻿"use client";
 
-import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
-import { useSearchParams } from "next/navigation";
+
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useReducer,
+  useSyncExternalStore,
+} from "react";
 import { usePathname, useRouter } from "@/i18n/routing";
 import type { Category, Color, Capacity, CapacityRange } from "@/types";
 
@@ -59,6 +66,138 @@ interface UseProductsOptions {
   initialCategories?: Category[];
   initialColors?: Color[];
   initialCapacities?: Capacity[];
+  searchParams?: SearchParamReader;
+}
+
+interface ProductFilterState {
+  searchQuery: string;
+  debouncedSearchQuery: string;
+  selectedCategory: string;
+  selectedColor: string;
+  capacityRange: CapacityRange;
+  showFilters: boolean;
+  sortBy: string;
+  currentPage: number;
+}
+
+type ProductFilterAction =
+  | { type: "SYNC_FROM_URL"; payload: ProductFilterState }
+  | { type: "CLEAR_FILTERS" }
+  | { type: "SET_SEARCH_QUERY"; payload: React.SetStateAction<string> }
+  | { type: "SET_DEBOUNCED_SEARCH_QUERY"; payload: string }
+  | { type: "SET_SELECTED_CATEGORY"; payload: React.SetStateAction<string> }
+  | { type: "SET_SELECTED_COLOR"; payload: React.SetStateAction<string> }
+  | {
+      type: "SET_CAPACITY_RANGE";
+      payload: React.SetStateAction<CapacityRange>;
+    }
+  | { type: "SET_SHOW_FILTERS"; payload: React.SetStateAction<boolean> }
+  | { type: "SET_SORT_BY"; payload: React.SetStateAction<string> }
+  | { type: "SET_CURRENT_PAGE"; payload: React.SetStateAction<number> };
+
+type SearchParamReader = {
+  get(name: string): string | null;
+};
+
+const DEFAULT_SEARCH_PARAMS: SearchParamReader = {
+  get: () => null,
+};
+
+const DEFAULT_FILTER_STATE: ProductFilterState = {
+  searchQuery: "",
+  debouncedSearchQuery: "",
+  selectedCategory: "",
+  selectedColor: "",
+  capacityRange: { min: 0, max: 9999 },
+  showFilters: false,
+  sortBy: "featured",
+  currentPage: 1,
+};
+
+function resolveStateValue<T>(value: React.SetStateAction<T>, current: T): T {
+  return typeof value === "function"
+    ? (value as (previous: T) => T)(current)
+    : value;
+}
+
+function getFilterStateFromSearchParams(
+  searchParams: SearchParamReader
+): ProductFilterState {
+  const search = searchParams.get("search") || "";
+
+  return {
+    searchQuery: search,
+    debouncedSearchQuery: search,
+    selectedCategory: searchParams.get("category") || "",
+    selectedColor: searchParams.get("color") || "",
+    capacityRange: {
+      min: parseInt(searchParams.get("minCapacity") || "0"),
+      max: parseInt(searchParams.get("maxCapacity") || "9999"),
+    },
+    showFilters: false,
+    sortBy: searchParams.get("sort") || "featured",
+    currentPage: parseInt(searchParams.get("page") || "1"),
+  };
+}
+
+function productFilterReducer(
+  state: ProductFilterState,
+  action: ProductFilterAction
+): ProductFilterState {
+  switch (action.type) {
+    case "SYNC_FROM_URL":
+      return {
+        ...action.payload,
+        showFilters: state.showFilters,
+      };
+    case "CLEAR_FILTERS":
+      return {
+        ...DEFAULT_FILTER_STATE,
+        showFilters: state.showFilters,
+      };
+    case "SET_SEARCH_QUERY":
+      return {
+        ...state,
+        searchQuery: resolveStateValue(action.payload, state.searchQuery),
+      };
+    case "SET_DEBOUNCED_SEARCH_QUERY":
+      return { ...state, debouncedSearchQuery: action.payload };
+    case "SET_SELECTED_CATEGORY":
+      return {
+        ...state,
+        selectedCategory: resolveStateValue(
+          action.payload,
+          state.selectedCategory
+        ),
+      };
+    case "SET_SELECTED_COLOR":
+      return {
+        ...state,
+        selectedColor: resolveStateValue(action.payload, state.selectedColor),
+      };
+    case "SET_CAPACITY_RANGE":
+      return {
+        ...state,
+        capacityRange: resolveStateValue(action.payload, state.capacityRange),
+      };
+    case "SET_SHOW_FILTERS":
+      return {
+        ...state,
+        showFilters: resolveStateValue(action.payload, state.showFilters),
+      };
+    case "SET_SORT_BY":
+      return {
+        ...state,
+        sortBy: resolveStateValue(action.payload, state.sortBy),
+      };
+    case "SET_CURRENT_PAGE":
+      return {
+        ...state,
+        currentPage: resolveStateValue(action.payload, state.currentPage),
+      };
+    default:
+      return state;
+  }
 }
 
 export function useProducts(options: UseProductsOptions = {}): UseProductsReturn {
@@ -66,34 +205,27 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
     initialCategories = [],
     initialColors = [],
     initialCapacities = [],
+    searchParams = DEFAULT_SEARCH_PARAMS,
   } = options;
 
-  const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
-  // Local state
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get("search") || ""
+  const [filterState, filterDispatch] = useReducer(
+    productFilterReducer,
+    searchParams,
+    getFilterStateFromSearchParams
   );
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(
-    searchParams.get("search") || ""
-  );
-  const [selectedCategory, setSelectedCategory] = useState(
-    searchParams.get("category") || ""
-  );
-  const [selectedColor, setSelectedColor] = useState(
-    searchParams.get("color") || ""
-  );
-  const [capacityRange, setCapacityRange] = useState<CapacityRange>({
-    min: parseInt(searchParams.get("minCapacity") || "0"),
-    max: parseInt(searchParams.get("maxCapacity") || "9999"),
-  });
-  const [showFilters, setShowFilters] = useState(false);
-  const [sortBy, setSortBy] = useState(searchParams.get("sort") || "featured");
-  const [currentPage, setCurrentPage] = useState(
-    parseInt(searchParams.get("page") || "1")
-  );
+  const {
+    searchQuery,
+    debouncedSearchQuery,
+    selectedCategory,
+    selectedColor,
+    capacityRange,
+    showFilters,
+    sortBy,
+    currentPage,
+  } = filterState;
   const isHydrated = useSyncExternalStore(() => () => {}, () => true, () => false);
 
   // Filter options data — initialized from SSR props to avoid client-side waterfall fetch
@@ -111,6 +243,49 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const searchDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const setSearchQuery = useCallback(
+    (value: React.SetStateAction<string>) => {
+      filterDispatch({ type: "SET_SEARCH_QUERY", payload: value });
+    },
+    []
+  );
+
+  const setSelectedCategory = useCallback(
+    (value: React.SetStateAction<string>) => {
+      filterDispatch({ type: "SET_SELECTED_CATEGORY", payload: value });
+    },
+    []
+  );
+
+  const setSelectedColor = useCallback(
+    (value: React.SetStateAction<string>) => {
+      filterDispatch({ type: "SET_SELECTED_COLOR", payload: value });
+    },
+    []
+  );
+
+  const setCapacityRange = useCallback(
+    (value: React.SetStateAction<CapacityRange>) => {
+      filterDispatch({ type: "SET_CAPACITY_RANGE", payload: value });
+    },
+    []
+  );
+
+  const setShowFilters = useCallback(
+    (value: React.SetStateAction<boolean>) => {
+      filterDispatch({ type: "SET_SHOW_FILTERS", payload: value });
+    },
+    []
+  );
+
+  const setSortBy = useCallback((value: React.SetStateAction<string>) => {
+    filterDispatch({ type: "SET_SORT_BY", payload: value });
+  }, []);
+
+  const setCurrentPage = useCallback((value: React.SetStateAction<number>) => {
+    filterDispatch({ type: "SET_CURRENT_PAGE", payload: value });
+  }, []);
+
   // Debounce search query for API calls (500ms delay)
   useEffect(() => {
     if (searchDebounceTimerRef.current) {
@@ -118,12 +293,16 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
     }
 
     searchDebounceTimerRef.current = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
+      filterDispatch({
+        type: "SET_DEBOUNCED_SEARCH_QUERY",
+        payload: searchQuery,
+      });
     }, 500);
 
     return () => {
-      if (searchDebounceTimerRef.current) {
-        clearTimeout(searchDebounceTimerRef.current);
+      const timer = searchDebounceTimerRef.current;
+      if (timer) {
+        clearTimeout(timer);
       }
     };
   }, [searchQuery]);
@@ -132,29 +311,10 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
   useEffect(() => {
     if (!isHydrated) return; // Wait for hydration
 
-    const search = searchParams.get("search") || "";
-    const category = searchParams.get("category") || "";
-    const color = searchParams.get("color") || "";
-    const minCapacity = parseInt(searchParams.get("minCapacity") || "0");
-    const maxCapacity = parseInt(searchParams.get("maxCapacity") || "9999");
-    const sort = searchParams.get("sort") || "featured";
-    const page = parseInt(searchParams.get("page") || "1");
-
-    // Update state to match URL params
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSearchQuery(search);
-    setDebouncedSearchQuery(search);
-    setSelectedCategory(category);
-    setSelectedColor(color);
-    //chỉ update khi capacity range thay đổi, nếu ko sẽ trigger render
-    setCapacityRange((prev) => {
-      if (prev.min !== minCapacity || prev.max !== maxCapacity) {
-        return { min: minCapacity, max: maxCapacity };
-      }
-      return prev;
+    filterDispatch({
+      type: "SYNC_FROM_URL",
+      payload: getFilterStateFromSearchParams(searchParams),
     });
-    setSortBy(sort);
-    setCurrentPage(page);
   }, [searchParams, isHydrated]);
 
   // Update URL with current filter state
@@ -238,20 +398,16 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
 
   // Cleanup debounce timer on unmount
   useEffect(() => {
+    const currentTimer = debounceTimerRef.current;
     return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
+      if (currentTimer) {
+        clearTimeout(currentTimer);
       }
     };
   }, []);
 
   const clearFilters = () => {
-    setSearchQuery("");
-    setSelectedCategory("");
-    setSelectedColor("");
-    setCapacityRange({ min: 0, max: 9999 });
-    setSortBy("featured");
-    setCurrentPage(1);
+    filterDispatch({ type: "CLEAR_FILTERS" });
     router.replace(pathname, { scroll: false });
   };
 

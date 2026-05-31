@@ -46,6 +46,7 @@ export async function PUT(
     const url = new URL(getApiUrl(`promotional-banners/admin/${id}`));
 
     const response = await fetch(url.toString(), {
+      cache: "no-store",
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -73,6 +74,7 @@ export async function DELETE(
     const url = new URL(getApiUrl(`promotional-banners/admin/${id}`));
 
     const response = await fetch(url.toString(), {
+      cache: "no-store",
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

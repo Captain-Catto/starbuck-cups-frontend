@@ -67,7 +67,7 @@ export default function CustomerDetailPage({
             href="/admin/customers"
             className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-300" />
+            <ArrowLeft className="size-5 text-gray-300" />
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-white">
@@ -80,11 +80,11 @@ export default function CustomerDetailPage({
         </div>
 
         <div className="flex items-center gap-3">
-          <button
+          <button type="button"
             onClick={() => setShowDeleteConfirm(true)}
             className="flex items-center gap-2 px-4 py-2 text-red-400 bg-gray-800 border border-gray-600 rounded-lg hover:bg-gray-700 hover:text-red-300"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="size-4" />
             Xóa
           </button>
         </div>
@@ -95,7 +95,7 @@ export default function CustomerDetailPage({
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-zinc-950 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold mb-2 text-white">
               Xác nhận xóa khách hàng
@@ -106,20 +106,20 @@ export default function CustomerDetailPage({
               đơn hàng. Hành động này không thể hoàn tác.
             </p>
             <div className="flex gap-3 justify-end">
-              <button
+              <button type="button"
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={deleteLoading}
                 className="px-4 py-2 text-gray-300 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
                 Hủy
               </button>
-              <button
+              <button type="button"
                 onClick={handleDeleteCustomer}
                 disabled={deleteLoading}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {deleteLoading && (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full size-4 border-b-2 border-white"></div>
                 )}
                 Xóa khách hàng
               </button>

@@ -30,6 +30,7 @@ export async function GET(
   try {
     const { id } = await params;
     const response = await fetch(getApiUrl(`admin/categories/${id}`), {
+      cache: "no-store",
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -65,6 +66,7 @@ export async function PUT(
     }
 
     const response = await fetch(getApiUrl(`admin/categories/${id}`), {
+      cache: "no-store",
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -96,6 +98,7 @@ export async function DELETE(
   try {
     const { id } = await params;
     const response = await fetch(getApiUrl(`admin/categories/${id}`), {
+      cache: "no-store",
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

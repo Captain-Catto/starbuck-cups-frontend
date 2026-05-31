@@ -46,7 +46,7 @@ export function HeroImageCard({
         {...listeners}
         className="bg-gray-700 hover:bg-gray-600 px-4 py-2 cursor-grab active:cursor-grabbing flex items-center gap-2 transition-colors duration-200"
       >
-        <GripVertical className="w-4 h-4 text-gray-400" />
+        <GripVertical className="size-4 text-gray-400" />
         <span className="text-sm text-gray-300">Kéo để sắp xếp</span>
       </div>
 
@@ -87,28 +87,28 @@ export function HeroImageCard({
 
         {/* Actions */}
         <div className="flex gap-2">
-          <button
+          <button type="button"
             onClick={() => window.open(image.imageUrl, "_blank")}
             className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-sm text-white hover:bg-gray-700 rounded-lg transition-colors"
             title="Xem ảnh gốc"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="size-4" />
             <span className="hidden sm:inline">Xem</span>
           </button>
-          <button
+          <button type="button"
             onClick={() => onEdit(image)}
             className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-sm text-white hover:bg-gray-700 rounded-lg transition-colors"
             title="Chỉnh sửa"
           >
-            <Edit className="w-4 h-4" />
+            <Edit className="size-4" />
             <span className="hidden sm:inline">Sửa</span>
           </button>
-          <button
+          <button type="button"
             onClick={() => onDelete(image)}
             className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-sm text-red-400 hover:bg-red-900/20 rounded-lg transition-colors"
             title="Xóa"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="size-4" />
             <span className="hidden sm:inline">Xóa</span>
           </button>
         </div>

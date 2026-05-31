@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const backendUrl = `${getApiUrl("capacities/public")}${query ? `?${query}` : ""}`;
 
     const response = await fetch(backendUrl, {
+      cache: "no-store",
       method: "GET",
       headers: {
         "Content-Type": "application/json",

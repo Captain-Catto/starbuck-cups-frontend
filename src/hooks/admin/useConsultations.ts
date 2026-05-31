@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useReducer } from "react";
 import { useAppSelector } from "@/store";
 import type { Consultation, ConsultationStatus, PaginationMeta } from "@/types";
 import { toast } from "sonner";
@@ -11,6 +11,76 @@ interface ConsultationFilters {
   dateFrom: string;
   dateTo: string;
   search: string;
+}
+
+const DEFAULT_PAGINATION: PaginationMeta = {
+  current_page: 1,
+  has_next: false,
+  has_prev: false,
+  per_page: 10,
+  total_items: 0,
+  total_pages: 0,
+};
+
+interface ConsultationsDataState {
+  consultations: Consultation[];
+  loading: boolean;
+  pagination: PaginationMeta;
+}
+
+type ConsultationsDataAction =
+  | { type: "FETCH_START" }
+  | {
+      type: "FETCH_SUCCESS";
+      consultations: Consultation[];
+      pagination?: PaginationMeta;
+    }
+  | { type: "FETCH_ERROR" }
+  | { type: "SET_PAGINATION"; payload: React.SetStateAction<PaginationMeta> }
+  | { type: "REMOVE_CONSULTATION"; payload: string };
+
+const initialConsultationsDataState: ConsultationsDataState = {
+  consultations: [],
+  loading: true,
+  pagination: DEFAULT_PAGINATION,
+};
+
+function resolveStateValue<T>(value: React.SetStateAction<T>, current: T): T {
+  return typeof value === "function"
+    ? (value as (previous: T) => T)(current)
+    : value;
+}
+
+function consultationsDataReducer(
+  state: ConsultationsDataState,
+  action: ConsultationsDataAction
+): ConsultationsDataState {
+  switch (action.type) {
+    case "FETCH_START":
+      return { ...state, loading: true };
+    case "FETCH_SUCCESS":
+      return {
+        consultations: action.consultations,
+        loading: false,
+        pagination: action.pagination || state.pagination,
+      };
+    case "FETCH_ERROR":
+      return { ...state, loading: false };
+    case "SET_PAGINATION":
+      return {
+        ...state,
+        pagination: resolveStateValue(action.payload, state.pagination),
+      };
+    case "REMOVE_CONSULTATION":
+      return {
+        ...state,
+        consultations: state.consultations.filter(
+          (consultation) => consultation.id !== action.payload
+        ),
+      };
+    default:
+      return state;
+  }
 }
 
 export interface UseConsultationsReturn {
@@ -47,8 +117,10 @@ export interface UseConsultationsReturn {
 export function useConsultations(): UseConsultationsReturn {
   const apiBaseUrl = getApiUrl("");
   const { token } = useAppSelector((state) => state.auth);
-  const [consultations, setConsultations] = useState<Consultation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [{ consultations, loading, pagination }, dispatchData] = useReducer(
+    consultationsDataReducer,
+    initialConsultationsDataState
+  );
   const [selectedConsultation, setSelectedConsultation] =
     useState<Consultation | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -67,14 +139,12 @@ export function useConsultations(): UseConsultationsReturn {
     search: "",
   });
 
-  const [pagination, setPagination] = useState<PaginationMeta>({
-    current_page: 1,
-    has_next: false,
-    has_prev: false,
-    per_page: 10,
-    total_items: 0,
-    total_pages: 0,
-  });
+  const setPagination = useCallback(
+    (value: React.SetStateAction<PaginationMeta>) => {
+      dispatchData({ type: "SET_PAGINATION", payload: value });
+    },
+    []
+  );
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
@@ -82,7 +152,7 @@ export function useConsultations(): UseConsultationsReturn {
 
   const fetchConsultations = useCallback(async () => {
     try {
-      setLoading(true);
+      dispatchData({ type: "FETCH_START" });
       const params = new URLSearchParams({
         page: (pagination.current_page || 1).toString(),
         limit: (pagination.per_page || 10).toString(),
@@ -101,18 +171,18 @@ export function useConsultations(): UseConsultationsReturn {
       const data = await response.json();
 
       if (data.success) {
-        setConsultations(data.data?.items || []);
-        if (data.data?.pagination) {
-          setPagination(data.data.pagination);
-        }
+        dispatchData({
+          type: "FETCH_SUCCESS",
+          consultations: data.data?.items || [],
+          pagination: data.data?.pagination,
+        });
       } else {
 
         toast.error(data.message || "Không thể tải danh sách tư vấn");
       }
     } catch {
       toast.error("Có lỗi xảy ra khi tải danh sách tư vấn");
-    } finally {
-      setLoading(false);
+      dispatchData({ type: "FETCH_ERROR" });
     }
   }, [apiBaseUrl, filters, pagination.current_page, pagination.per_page, getAuthHeaders]);
 
@@ -180,7 +250,7 @@ export function useConsultations(): UseConsultationsReturn {
   ) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
     setPagination((prev) => ({ ...prev, current_page: 1 }));
-  }, []);
+  }, [setPagination]);
 
   const handleDeleteConsultation = useCallback((consultationId: string) => {
     setConsultationToDelete(consultationId);
@@ -208,9 +278,10 @@ export function useConsultations(): UseConsultationsReturn {
 
       if (data.success) {
         toast.success("Xóa consultation thành công");
-        setConsultations((prev) =>
-          prev.filter((c) => c.id !== consultationToDelete)
-        );
+        dispatchData({
+          type: "REMOVE_CONSULTATION",
+          payload: consultationToDelete,
+        });
         setIsDeleteModalOpen(false);
         setConsultationToDelete(null);
       } else {

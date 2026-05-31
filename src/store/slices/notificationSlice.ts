@@ -48,10 +48,7 @@ const notificationSlice = createSlice({
 
     // Update unread count from server
     updateUnreadCount: (state, action: PayloadAction<number>) => {
-
-
-      state.unreadCount = action.payload;
-
+      state.unreadCount = Math.max(0, action.payload);
     },
 
     // Mark notification as read

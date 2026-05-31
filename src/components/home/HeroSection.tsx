@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import { Link } from "@/i18n/routing";
@@ -33,6 +33,29 @@ interface PromotionalBannerData {
   buttonText: string;
   buttonLink: string;
 }
+
+const EMPTY_HERO_IMAGES: HeroImageData[] = [];
+
+const DEFAULT_HERO_IMAGES: HeroImageData[] = [
+  {
+    id: "default-1",
+    title: "Starbucks Collection Card 2",
+    imageUrl:
+      "https://starbucks-shop.s3.ap-southeast-1.amazonaws.com/uploads/HASRON-+CARD-2.webp",
+    altText: "Starbucks Collection Card 2",
+    order: 0,
+    isActive: true,
+  },
+  {
+    id: "default-2",
+    title: "Starbucks Collection Card 1",
+    imageUrl:
+      "https://starbucks-shop.s3.ap-southeast-1.amazonaws.com/uploads/HASRON-+CARD-1.webp",
+    altText: "Starbucks Collection Card 1",
+    order: 1,
+    isActive: true,
+  },
+];
 
 interface HeroSectionProps {
   loading?: boolean;
@@ -69,7 +92,7 @@ const HeroSectionSkeleton = () => (
 
 const HeroSection: React.FC<HeroSectionProps> = ({
   loading = false,
-  heroImages = [],
+  heroImages = EMPTY_HERO_IMAGES,
   promotionalBanner = null,
 }) => {
   const t = useTranslations("homePage");
@@ -77,29 +100,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     return <HeroSectionSkeleton />;
   }
 
-  // Default hero images nếu không có data từ API
-  const defaultImages = [
-    {
-      id: "default-1",
-      title: "Starbucks Collection Card 2",
-      imageUrl:
-        "https://starbucks-shop.s3.ap-southeast-1.amazonaws.com/uploads/HASRON-+CARD-2.webp",
-      altText: "Starbucks Collection Card 2",
-      order: 0,
-      isActive: true,
-    },
-    {
-      id: "default-2",
-      title: "Starbucks Collection Card 1",
-      imageUrl:
-        "https://starbucks-shop.s3.ap-southeast-1.amazonaws.com/uploads/HASRON-+CARD-1.webp",
-      altText: "Starbucks Collection Card 1",
-      order: 1,
-      isActive: true,
-    },
-  ];
-
-  const imagesToShow = heroImages.length > 0 ? heroImages : defaultImages;
+  const imagesToShow = heroImages.length > 0 ? heroImages : DEFAULT_HERO_IMAGES;
   const activeImages = imagesToShow
     .filter((img) => img.isActive)
     .sort((a, b) => a.order - b.order);
@@ -140,6 +141,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
             <div
               className="text-gray-300 text-sm md:text-base lg:text-lg mb-6 md:mb-8 leading-relaxed"
+              // react-doctor-disable-next-line react-doctor/no-danger -- safely sanitized using DOMPurify
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(bannerData.description) }}
             />
             <Link
@@ -147,7 +149,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-medium hover:bg-zinc-100 hover:shadow-[0_0_24px_rgba(255,255,255,0.25)] active:scale-[0.97] transition-all duration-300 w-fit text-sm md:text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
             >
               {bannerData.buttonText}
-              <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
+              <ArrowRight className="size-4 md:size-5" />
             </Link>
           </div>
 

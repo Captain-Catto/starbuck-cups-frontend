@@ -5,7 +5,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 const HomePageSkeleton: React.FC = () => {
   return (
     <SkeletonTheme baseColor="#27272a" highlightColor="#3f3f46">
-      <div className="min-h-screen bg-black text-white pt-12">
+      <div className="min-h-screen bg-zinc-950 text-white pt-12">
         {/* Hero Section Skeleton */}
         <section className="py-8">
           <div className="container mx-auto px-6">

@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(
       getApiUrl(`analytics/top-conversion?limit=${limit}&page=${page}`),
       {
+      cache: "no-store",
         method: "GET",
         headers: {
           "Content-Type": "application/json",

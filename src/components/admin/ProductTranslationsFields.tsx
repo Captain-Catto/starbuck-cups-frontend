@@ -47,8 +47,8 @@ export function ProductTranslationsFields({
       <div className="flex border-b border-gray-200">
         {LOCALES.map((locale) => (
           <button
-            key={locale.code}
             type="button"
+            key={locale.code}
             onClick={() => setActiveLocale(locale.code)}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeLocale === locale.code
@@ -73,11 +73,11 @@ export function ProductTranslationsFields({
         >
           {/* Tên sản phẩm */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="producttranslationsfields-text">
               {locale.requiredName && <span className="text-red-500">* </span>}
               Tên sản phẩm ({locale.label})
             </label>
-            <input
+            <input aria-label="text"
               type="text"
               value={translations[locale.code].name}
               onChange={(e) => onChange(locale.code, "name", e.target.value)}
@@ -88,7 +88,7 @@ export function ProductTranslationsFields({
                   : locale.code === "en"
                   ? "Tên sản phẩm tiếng Anh"
                   : "Tên sản phẩm tiếng Trung"
-              }
+              } id="producttranslationsfields-text"
             />
           </div>
 
@@ -116,32 +116,32 @@ export function ProductTranslationsFields({
           {/* Meta Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-1" htmlFor="producttranslationsfields-ti-u-seo">
                 Tiêu đề SEO
               </label>
-              <input
+              <input aria-label="Tiêu đề SEO"
                 type="text"
                 value={translations[locale.code].metaTitle}
                 onChange={(e) =>
                   onChange(locale.code, "metaTitle", e.target.value)
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="Tiêu đề SEO"
+                placeholder="Tiêu đề SEO" id="producttranslationsfields-ti-u-seo"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-1" htmlFor="producttranslationsfields-m-t-seo">
                 Mô tả SEO
               </label>
-              <input
+              <input aria-label="Mô tả SEO"
                 type="text"
                 value={translations[locale.code].metaDescription}
                 onChange={(e) =>
                   onChange(locale.code, "metaDescription", e.target.value)
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="Mô tả SEO"
+                placeholder="Mô tả SEO" id="producttranslationsfields-m-t-seo"
               />
             </div>
           </div>

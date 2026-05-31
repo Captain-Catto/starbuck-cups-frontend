@@ -11,6 +11,16 @@ interface FeaturedToggleProps {
   size?: "sm" | "md";
 }
 
+const FEATURED_TOGGLE_SIZE_CLASSES: Record<string, string> = {
+  sm: "text-sm",
+  md: "text-base",
+};
+
+const FEATURED_TOGGLE_ICON_SIZES: Record<string, string> = {
+  sm: "size-4",
+  md: "size-5",
+};
+
 export function FeaturedToggle({
   value,
   onChange,
@@ -18,15 +28,6 @@ export function FeaturedToggle({
   className = "",
   size = "md",
 }: FeaturedToggleProps) {
-  const sizeClasses = {
-    sm: "text-sm",
-    md: "text-base",
-  };
-
-  const iconSizes = {
-    sm: "w-4 h-4",
-    md: "w-5 h-5",
-  };
 
   return (
     <label
@@ -36,17 +37,17 @@ export function FeaturedToggle({
       ${className}
     `}
     >
-      <input
+      <input aria-label="checkbox"
         type="checkbox"
         checked={value}
         onChange={(e) => !disabled && onChange(e.target.checked)}
         disabled={disabled}
-        className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:focus:ring-blue-600"
+        className="size-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:focus:ring-blue-600"
       />
       <div className="flex items-center gap-2">
-        <Sparkles className={`text-blue-500 fill-current ${iconSizes[size]}`} />
+        <Sparkles className={`text-blue-500 fill-current ${FEATURED_TOGGLE_ICON_SIZES[size]}`} />
         <span
-          className={`font-medium text-gray-900 dark:text-white ${sizeClasses[size]}`}
+          className={`font-medium text-gray-900 dark:text-white ${FEATURED_TOGGLE_SIZE_CLASSES[size]}`}
         >
           Đánh dấu là sản phẩm nổi bật
         </span>

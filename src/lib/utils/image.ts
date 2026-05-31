@@ -71,6 +71,6 @@ export const getSecondProductImage = (
   productImages?: ProductImage[]
 ): ProductImage | null => {
   if (!productImages || productImages.length < 2) return null;
-  const sortedImages = [...productImages].sort((a, b) => a.order - b.order);
+  const sortedImages = productImages.toSorted((a, b) => a.order - b.order);
   return sortedImages[1];
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   DndContext,
   closestCorners,
@@ -34,9 +34,16 @@ export function HeroImageGrid({
   onReorder,
   formatDate,
 }: HeroImageGridProps) {
-  const [localHeroImages, setLocalHeroImages] = useState(heroImages);
+  const [optimisticHeroImages, setOptimisticHeroImages] = useState<
+    HeroImage[] | null
+  >(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [lastUpdateTime, setLastUpdateTime] = useState<number>(0);
+
+  const displayedImages =
+    optimisticHeroImages &&
+    haveSameImageSet(optimisticHeroImages, heroImages)
+      ? optimisticHeroImages
+      : heroImages;
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -46,16 +53,8 @@ export function HeroImageGrid({
   );
 
   const activeImage = activeId
-    ? localHeroImages.find((img) => img.id === activeId)
+    ? displayedImages.find((img) => img.id === activeId)
     : null;
-
-  // Sync local state with props, but only when not dragging
-  useEffect(() => {
-    if (!activeId && Date.now() - lastUpdateTime > 500) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLocalHeroImages(heroImages);
-    }
-  }, [heroImages, activeId, lastUpdateTime]);
 
   // Handle drag start
   const handleDragStart = (event: DragStartEvent) => {
@@ -71,19 +70,18 @@ export function HeroImageGrid({
       return;
     }
 
-    const oldIndex = localHeroImages.findIndex((item) => item.id === active.id);
-    const newIndex = localHeroImages.findIndex((item) => item.id === over.id);
+    const oldIndex = displayedImages.findIndex((item) => item.id === active.id);
+    const newIndex = displayedImages.findIndex((item) => item.id === over.id);
 
     // Update local state immediately for better UX
-    const reorderedItems = arrayMove(localHeroImages, oldIndex, newIndex).map(
+    const reorderedItems = arrayMove(displayedImages, oldIndex, newIndex).map(
       (item, index) => ({
         ...item,
         order: index + 1,
       })
     );
 
-    setLocalHeroImages(reorderedItems);
-    setLastUpdateTime(Date.now()); // Block sync for 500ms
+    setOptimisticHeroImages(reorderedItems);
 
     // Update order values and call API
     const imageOrders = reorderedItems.map((item) => ({
@@ -95,7 +93,7 @@ export function HeroImageGrid({
 
     if (!success) {
       // Revert local changes if API call failed
-      setLocalHeroImages(heroImages);
+      setOptimisticHeroImages(null);
     }
   };
 
@@ -108,11 +106,11 @@ export function HeroImageGrid({
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={localHeroImages.map((img) => img.id)}
+          items={displayedImages.map((img) => img.id)}
           strategy={rectSortingStrategy}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {localHeroImages.map((image) => (
+            {displayedImages.map((image) => (
               <HeroImageCard
                 key={`${image.id}-${image.order}`}
                 image={image}
@@ -137,4 +135,13 @@ export function HeroImageGrid({
       </DndContext>
     </div>
   );
+}
+
+function haveSameImageSet(left: HeroImage[], right: HeroImage[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  const rightIds = new Set(right.map((image) => image.id));
+  return left.every((image) => rightIds.has(image.id));
 }

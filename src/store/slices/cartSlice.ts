@@ -1,4 +1,4 @@
-﻿import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { CartItem, Product } from "@/types";
 
@@ -11,22 +11,23 @@ interface CartState {
   };
 }
 
-// Helper functions for localStorage
+const CART_STORAGE_KEY = "starbucks-cart:v1";
+const LEGACY_CART_STORAGE_KEY = "starbucks-cart";
+
 const loadCartFromStorage = (): CartItem[] => {
   if (typeof window === "undefined") return [];
   try {
-    const saved = localStorage.getItem("starbucks-cart");
+    const saved =
+      localStorage.getItem(CART_STORAGE_KEY) ||
+      localStorage.getItem(LEGACY_CART_STORAGE_KEY);
+    if (saved && !localStorage.getItem(CART_STORAGE_KEY)) {
+      localStorage.setItem(CART_STORAGE_KEY, saved);
+      localStorage.removeItem(LEGACY_CART_STORAGE_KEY);
+    }
     return saved ? JSON.parse(saved) : [];
   } catch {
     return [];
   }
-};
-
-const saveCartToStorage = (items: CartItem[]) => {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem("starbucks-cart", JSON.stringify(items));
-  } catch {}
 };
 
 const initialState: CartState = {
@@ -39,47 +40,31 @@ const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    addToCart: (
-      state,
-      action: PayloadAction<{ product: Product }>
-    ) => {
+    addToCart: (state, action: PayloadAction<{ product: Product }>) => {
       const { product } = action.payload;
-
       const existingItem = state.items.find(
         (item) => item.product.id === product.id
       );
-
       if (existingItem) {
         state.lastAction = { type: "already_exists", productName: product.name };
         return;
       }
-
       state.items.push({ product });
       state.lastAction = { type: "added", productName: product.name };
-
-      saveCartToStorage(state.items);
     },
 
-    removeFromCart: (
-      state,
-      action: PayloadAction<{ productId: string }>
-    ) => {
-      const { productId } = action.payload;
-      state.items = state.items.filter((item) => item.product.id !== productId);
-      saveCartToStorage(state.items);
+    removeFromCart: (state, action: PayloadAction<{ productId: string }>) => {
+      state.items = state.items.filter(
+        (item) => item.product.id !== action.payload.productId
+      );
     },
 
     clearCart: (state) => {
       state.items = [];
-      saveCartToStorage(state.items);
     },
 
-    // Clear localStorage completely (for migration)
     clearLocalStorage: (state) => {
       state.items = [];
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("starbucks-cart");
-      }
     },
 
     toggleCart: (state) => {

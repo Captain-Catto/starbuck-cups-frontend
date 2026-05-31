@@ -1,6 +1,6 @@
 export default function OrdersLoading() {
   return (
-    <div className="min-h-screen bg-black p-6 animate-pulse">
+    <div className="min-h-screen bg-zinc-950 p-6 animate-pulse">
       {/* Header */}
       <div className="h-8 w-40 bg-gray-800 rounded mb-6" />
 

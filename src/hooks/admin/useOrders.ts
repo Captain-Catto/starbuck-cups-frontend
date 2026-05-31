@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+﻿import { useState, useCallback, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
+import { useReducer } from "react";
 import type { RootState } from "@/store";
 
 export interface Order {
@@ -62,23 +63,92 @@ export interface UseOrdersReturn {
   setPage: (page: number) => void;
 }
 
-export function useOrders(filters: OrderFilters): UseOrdersReturn {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [pagination, setPagination] = useState<OrderPagination>({
-    current_page: 1,
-    per_page: 20,
-    total_pages: 1,
-    total_items: 0,
-    has_next: false,
-    has_prev: false,
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+interface OrdersState {
+  orders: Order[];
+  pagination: OrderPagination;
+  loading: boolean;
+  error: string | null;
+  filterKey: string;
+}
 
+type OrdersAction =
+  | { type: "FETCH_START"; filterKey: string }
+  | { type: "FETCH_SUCCESS"; orders: Order[]; pagination?: OrderPagination }
+  | { type: "FETCH_ERROR"; error: string }
+  | { type: "CLEAR_ERROR" }
+  | { type: "SET_PAGE"; page: number };
+
+const initialPagination: OrderPagination = {
+  current_page: 1,
+  per_page: 20,
+  total_pages: 1,
+  total_items: 0,
+  has_next: false,
+  has_prev: false,
+};
+
+function ordersReducer(state: OrdersState, action: OrdersAction): OrdersState {
+  switch (action.type) {
+    case "FETCH_START":
+      return {
+        ...state,
+        loading: true,
+        error: null,
+        filterKey: action.filterKey,
+        pagination:
+          action.filterKey === state.filterKey
+            ? state.pagination
+            : { ...state.pagination, current_page: 1 },
+      };
+    case "FETCH_SUCCESS":
+      return {
+        ...state,
+        orders: action.orders,
+        pagination: action.pagination ?? state.pagination,
+        loading: false,
+      };
+    case "FETCH_ERROR":
+      return { ...state, loading: false, error: action.error };
+    case "CLEAR_ERROR":
+      return { ...state, error: null };
+    case "SET_PAGE":
+      return {
+        ...state,
+        pagination: { ...state.pagination, current_page: action.page },
+      };
+    default:
+      return state;
+  }
+}
+
+export function useOrders(filters: OrderFilters): UseOrdersReturn {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(
     filters.searchTerm
   );
+  const filterKey = [
+    debouncedSearchTerm,
+    filters.statusFilter,
+    filters.typeFilter,
+    filters.dateFrom ?? "",
+    filters.dateTo ?? "",
+    filters.priceRange ?? "",
+    filters.freeShipping ?? "",
+  ].join("|");
+
+  const [state, dispatch] = useReducer(ordersReducer, {
+    orders: [],
+    pagination: initialPagination,
+    loading: false,
+    error: null,
+    filterKey,
+  });
+  const { orders, pagination, loading, error } = state;
+
   const requestControllerRef = useRef<AbortController | null>(null);
+  const hasFilterChanged = filterKey !== state.filterKey;
+  const queryPagination = hasFilterChanged
+    ? { ...pagination, current_page: 1 }
+    : pagination;
 
   // Get auth token from Redux store
   const token = useSelector((state: RootState) => state.auth.token);
@@ -91,21 +161,6 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
 
     return () => clearTimeout(timer);
   }, [filters.searchTerm]);
-
-  // Reset to first page when filters change
-  useEffect(() => {
-    setPagination((prev) =>
-      prev.current_page === 1 ? prev : { ...prev, current_page: 1 }
-    );
-  }, [
-    debouncedSearchTerm,
-    filters.statusFilter,
-    filters.typeFilter,
-    filters.dateFrom,
-    filters.dateTo,
-    filters.priceRange,
-    filters.freeShipping,
-  ]);
 
   // Build query parameters from filters
   const buildQueryParams = useCallback(
@@ -140,8 +195,8 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
       }
 
       // Add pagination parameters
-      params.set("page", (page || pagination.current_page).toString());
-      params.set("limit", (limit || pagination.per_page).toString());
+      params.set("page", (page || queryPagination.current_page).toString());
+      params.set("limit", (limit || queryPagination.per_page).toString());
 
       return params.toString();
     },
@@ -153,8 +208,8 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
       filters.dateTo,
       filters.priceRange,
       filters.freeShipping,
-      pagination.current_page,
-      pagination.per_page,
+      queryPagination.current_page,
+      queryPagination.per_page,
     ]
   );
 
@@ -167,8 +222,7 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
     const controller = new AbortController();
     requestControllerRef.current = controller;
 
-    setLoading(true);
-    setError(null);
+    dispatch({ type: "FETCH_START", filterKey });
 
     try {
       const authHeaders: Record<string, string> = token
@@ -185,35 +239,37 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
       const data = await response.json();
 
       if (data.success) {
-        setOrders(data.data?.items || []);
-
-        if (data.data?.pagination) {
-          setPagination(data.data.pagination);
-        }
+        dispatch({
+          type: "FETCH_SUCCESS",
+          orders: data.data?.items || [],
+          pagination: data.data?.pagination,
+        });
       } else {
-        setError(data.message || "Không thể tải danh sách đơn hàng");
+        dispatch({
+          type: "FETCH_ERROR",
+          error: data.message || "Không thể tải danh sách đơn hàng",
+        });
       }
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
         return;
       }
 
-      setError("Lỗi kết nối. Vui lòng thử lại.");
-    } finally {
-      if (!controller.signal.aborted) {
-        setLoading(false);
-      }
+      dispatch({
+        type: "FETCH_ERROR",
+        error: "Lỗi kết nối. Vui lòng thử lại.",
+      });
     }
-  }, [token, buildQueryParams]);
+  }, [token, buildQueryParams, filterKey]);
 
   // Clear error
   const clearError = useCallback(() => {
-    setError(null);
+    dispatch({ type: "CLEAR_ERROR" });
   }, []);
 
   // Set page
   const setPage = useCallback((page: number) => {
-    setPagination((prev) => ({ ...prev, current_page: page }));
+    dispatch({ type: "SET_PAGE", page });
   }, []);
 
   // Fetch orders when filters or pagination changes
@@ -223,16 +279,17 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
 
   // Cleanup pending request on unmount
   useEffect(() => {
+    const controller = requestControllerRef.current;
     return () => {
-      if (requestControllerRef.current) {
-        requestControllerRef.current.abort();
+      if (controller) {
+        controller.abort();
       }
     };
   }, []);
 
   return {
     orders,
-    pagination,
+    pagination: queryPagination,
     loading,
     error,
     fetchOrders,

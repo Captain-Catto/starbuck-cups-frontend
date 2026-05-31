@@ -94,6 +94,7 @@ export interface Product {
 }
 
 export interface OrderItem {
+  key?: string;
   productId: string;
   product?: Product;
   quantity: number;

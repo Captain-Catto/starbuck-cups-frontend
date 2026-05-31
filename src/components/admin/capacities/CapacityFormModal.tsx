@@ -37,17 +37,17 @@ export function CapacityFormModal({
   if (!showModal) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-zinc-950 bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-gray-800 rounded-lg max-w-md w-full">
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
           <h3 className="text-lg font-semibold text-white">
             {editingCapacity ? "Chỉnh sửa dung tích" : "Thêm dung tích mới"}
           </h3>
-          <button
+          <button type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-300 cursor-pointer"
           >
-            <X className="w-6 h-6" />
+            <X className="size-6" />
           </button>
         </div>
 
@@ -55,10 +55,10 @@ export function CapacityFormModal({
           <div className="space-y-4">
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="capacityformmodal-vd-size-l-size-xl">
                 Tên dung tích *
               </label>
-              <input
+              <input aria-label="Vd: Size L, Size XL..."
                 type="text"
                 value={formData.name}
                 onChange={(e) =>
@@ -67,7 +67,7 @@ export function CapacityFormModal({
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-gray-700 text-white ${
                   formErrors.name ? "border-red-500" : "border-gray-600"
                 }`}
-                placeholder="Vd: Size L, Size XL..."
+                placeholder="Vd: Size L, Size XL..." id="capacityformmodal-vd-size-l-size-xl"
               />
               {formErrors.name && (
                 <p className="text-red-400 text-sm mt-1">
@@ -78,10 +78,10 @@ export function CapacityFormModal({
 
             {/* Volume */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="capacityformmodal-473">
                 Dung tích (ml) *
               </label>
-              <input
+              <input aria-label="473"
                 type="number"
                 value={formData.volumeMl}
                 onChange={(e) =>
@@ -95,7 +95,7 @@ export function CapacityFormModal({
                 }`}
                 placeholder="473"
                 min="1"
-                max="10000"
+                max="10000" id="capacityformmodal-473"
               />
               {formErrors.volumeMl && (
                 <p className="text-red-400 text-sm mt-1">
@@ -106,7 +106,7 @@ export function CapacityFormModal({
 
             {/* Active Status */}
             <div className="flex items-center">
-              <input
+              <input aria-label="is Active"
                 type="checkbox"
                 id="isActive"
                 checked={formData.isActive}
@@ -138,7 +138,7 @@ export function CapacityFormModal({
               className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2 transition-colors cursor-pointer"
             >
               {actionLoading === "submit" && (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full size-4 border-b-2 border-white"></div>
               )}
               {editingCapacity ? "Cập nhật" : "Tạo mới"}
             </button>

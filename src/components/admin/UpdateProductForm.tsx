@@ -1,14 +1,11 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { X, Upload, ImageIcon } from "lucide-react";
+import { X } from "lucide-react";
 import type { Category, Color, Capacity } from "@/types";
 import { useUpdateProduct } from "@/hooks/business/useUpdateProduct";
 import { uploadAPI } from "@/lib/api/upload";
-import ImageReorder from "./ImageReorder";
-import { VipToggle } from "./VipRadio";
-import { FeaturedToggle } from "./FeaturedToggle";
-import { ProductTranslationsFields } from "./ProductTranslationsFields";
+import { ProductFormFields } from "./ProductFormFields";
 
 interface UpdateProductFormProps {
   productId: string;
@@ -43,7 +40,7 @@ export function UpdateProductForm({
     onSuccess,
   });
 
-  // Image upload handler - similar to ProductModal
+  // Image upload handler
   const handleImageSelect = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
@@ -68,7 +65,7 @@ export function UpdateProductForm({
     [formData.images, updateField]
   );
 
-  // Image reorder handler - similar to ProductModal
+  // Image reorder handler
   const handleImageReorder = useCallback(
     (newImageUrls: string[]) => {
       updateField("images", newImageUrls);
@@ -94,7 +91,6 @@ export function UpdateProductForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     await submitForm();
   };
 
@@ -118,10 +114,11 @@ export function UpdateProductForm({
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold">Chỉnh sửa sản phẩm</h2>
         <button
+          type="button"
           onClick={onCancel}
           className="text-gray-400 hover:text-gray-600 cursor-pointer"
         >
-          <X className="w-6 h-6" />
+          <X className="size-6" />
         </button>
       </div>
 
@@ -131,258 +128,27 @@ export function UpdateProductForm({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Đa ngôn ngữ: Tên, Mô tả, SEO */}
-        <ProductTranslationsFields
-          translations={formData.translations}
-          onChange={updateTranslation}
+      <form onSubmit={handleSubmit}>
+        <ProductFormFields
+          formData={formData}
+          errors={errors}
+          categories={categories}
+          colors={colors}
+          capacities={capacities}
+          updateField={updateField}
+          updateTranslation={updateTranslation}
+          toggleArrayField={toggleArrayField}
+          images={formData.images || []}
+          isUploading={isUploading}
+          handleImageSelect={handleImageSelect}
+          handleImageReorder={handleImageReorder}
+          handleImageUrlRemove={handleImageUrlRemove}
+          handleImageUrlAdd={handleImageUrlAdd}
+          showActiveToggle={true}
         />
 
-        {/* Variants Toggle */}
-        <div>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={formData.hasVariants}
-              onChange={(e) => updateField("hasVariants", e.target.checked)}
-              className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-            />
-            <span className="text-sm font-medium text-gray-700">
-              Sản phẩm này có phân loại Màu Sắc & Dung Tích
-            </span>
-          </label>
-        </div>
-
-        {/* Category, Color, Capacity Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Danh mục <span className="text-red-500">*</span>
-            </label>
-            <div
-              className={`space-y-2 max-h-32 overflow-y-auto border rounded-md p-2 ${
-                errors.categoryIds ? "border-red-500" : "border-gray-300"
-              }`}
-            >
-              {Array.isArray(categories) &&
-                categories.map((category) => (
-                  <label key={category.id} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={
-                        formData.categoryIds?.includes(category.id) || false
-                      }
-                      onChange={() =>
-                        toggleArrayField("categoryIds", category.id)
-                      }
-                      className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                    />
-                    <span className="text-sm">{category.name}</span>
-                  </label>
-                ))}
-            </div>
-            {errors.categoryIds && (
-              <p className="mt-1 text-sm text-red-600">{errors.categoryIds}</p>
-            )}
-          </div>
-
-          {formData.hasVariants && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Màu sắc <span className="text-red-500">*</span>
-                </label>
-                <div
-                  className={`space-y-2 max-h-32 overflow-y-auto border rounded-md p-2 ${
-                    errors.colorIds ? "border-red-500" : "border-gray-300"
-                  }`}
-                >
-                  {Array.isArray(colors) &&
-                    colors.map((color) => (
-                      <label key={color.id} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.colorIds?.includes(color.id) || false}
-                          onChange={() => toggleArrayField("colorIds", color.id)}
-                          className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                        />
-                        <span className="text-sm flex items-center gap-2">
-                          <div
-                            className="w-4 h-4 rounded border border-gray-300"
-                            style={{ backgroundColor: color.hexCode }}
-                          ></div>
-                          {color.name}
-                        </span>
-                      </label>
-                    ))}
-                </div>
-                {errors.colorIds && (
-                  <p className="mt-1 text-sm text-red-600">{errors.colorIds}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Dung tích <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.capacityId}
-                  onChange={(e) => updateField("capacityId", e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                    errors.capacityId ? "border-red-500" : "border-gray-300"
-                  }`}
-                  required
-                >
-                  <option value="">Chọn dung tích</option>
-                  {Array.isArray(capacities) &&
-                    capacities.map((capacity) => (
-                      <option key={capacity.id} value={capacity.id}>
-                        {capacity.name} ({capacity.volumeMl}ml)
-                      </option>
-                    ))}
-                </select>
-                {errors.capacityId && (
-                  <p className="mt-1 text-sm text-red-600">{errors.capacityId}</p>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Stock and Product URL Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Số lượng tồn kho
-            </label>
-            <input
-              type="number"
-              min="0"
-              value={formData.stockQuantity}
-              onChange={(e) =>
-                updateField("stockQuantity", parseInt(e.target.value) || 0)
-              }
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                errors.stockQuantity ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="0"
-            />
-            {errors.stockQuantity && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.stockQuantity}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              URL sản phẩm
-            </label>
-            <input
-              type="url"
-              value={formData.productUrl}
-              onChange={(e) => updateField("productUrl", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                errors.productUrl ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="https://example.com/product"
-            />
-            {errors.productUrl && (
-              <p className="mt-1 text-sm text-red-600">{errors.productUrl}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Status */}
-        <div className="space-y-4">
-          <div>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={formData.isActive}
-                onChange={(e) => updateField("isActive", e.target.checked)}
-                className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-              />
-              <span className="text-sm font-medium text-gray-700">
-                Sản phẩm đang hoạt động
-              </span>
-            </label>
-          </div>
-
-          {/* VIP Status */}
-          <VipToggle
-            value={formData.isVip || false}
-            onChange={(isVip) => updateField("isVip", isVip)}
-            disabled={loading}
-          />
-
-          {/* Featured Status */}
-          <FeaturedToggle
-            value={formData.isFeatured || false}
-            onChange={(isFeatured) => updateField("isFeatured", isFeatured)}
-            disabled={loading}
-          />
-        </div>
-
-        {/* Images */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Hình ảnh sản phẩm
-          </label>
-
-          {/* Image Reorder Component */}
-          {formData.images.length > 0 && (
-            <div className="mb-4">
-              <ImageReorder
-                images={formData.images}
-                onReorder={handleImageReorder}
-                onRemove={handleImageUrlRemove}
-                className="bg-gray-50 p-3 rounded-md border"
-              />
-            </div>
-          )}
-
-          {/* Upload Controls */}
-          <div className="flex gap-2">
-            <label
-              className={`flex items-center gap-2 px-3 py-2 text-sm border border-dashed border-gray-300 rounded hover:border-green-500 hover:text-green-600 cursor-pointer ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              <Upload className="w-4 h-4" />
-              {isUploading ? "Đang tải lên..." : "Chọn hình ảnh"}
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImageSelect}
-                className="hidden"
-                disabled={isUploading}
-              />
-            </label>
-            <button
-              type="button"
-              onClick={handleImageUrlAdd}
-              className="flex items-center gap-2 px-3 py-2 text-sm border border-dashed border-gray-300 rounded hover:border-green-500 hover:text-green-600 cursor-pointer"
-              disabled={isUploading}
-            >
-              <ImageIcon className="w-4 h-4" />
-              Thêm URL hình ảnh
-            </button>
-          </div>
-
-          <p className="text-xs text-gray-500 mt-2">
-            Chọn nhiều hình ảnh và kéo thả để sắp xếp thứ tự hiển thị
-          </p>
-
-          {/* Error message for images */}
-          {errors.images && (
-            <p className="text-red-500 text-sm mt-1">{errors.images}</p>
-          )}
-        </div>
-
         {/* Submit Buttons */}
-        <div className="flex justify-end gap-3 pt-4 border-t">
+        <div className="flex justify-end gap-3 pt-4 border-t mt-6">
           <button
             type="button"
             onClick={onCancel}

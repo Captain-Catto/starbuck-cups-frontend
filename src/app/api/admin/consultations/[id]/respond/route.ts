@@ -17,6 +17,7 @@ export async function POST(
     }
 
     const response = await fetch(getApiUrl(`admin/consultations/${id}/respond`), {
+      cache: "no-store",
       method: "POST",
       headers: {
         "Content-Type": "application/json",

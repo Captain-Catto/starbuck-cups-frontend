@@ -8,6 +8,7 @@ export async function POST(request: NextRequest) {
 
     // Proxy request to backend
     const response = await fetch(getApiUrl("auth/admin/login"), {
+      cache: "no-store",
       method: "POST",
       headers: {
         "Content-Type": "application/json",

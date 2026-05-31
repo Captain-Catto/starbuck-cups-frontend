@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+﻿import { memo, useMemo } from "react";
 import {
   Edit,
   Trash2,
@@ -64,51 +64,12 @@ interface ProductsTableProps {
 
 const LoadingSkeleton = memo(function LoadingSkeleton() {
   return (
-    <>
-      {[...Array(10)].map((_, index) => (
-        <tr key={index} className="animate-pulse">
-          <td className="px-6 py-4">
-            <div className="w-4 h-4 bg-gray-700 rounded"></div>
-          </td>
-          <td className="px-6 py-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gray-700 rounded-lg"></div>
-              <div className="space-y-2">
-                <div className="h-4 bg-gray-700 rounded w-32"></div>
-                <div className="h-3 bg-gray-700 rounded w-24"></div>
-                <div className="h-3 bg-gray-700 rounded w-20"></div>
-              </div>
-            </div>
-          </td>
-          <td className="px-6 py-4">
-            <div className="h-4 bg-gray-700 rounded w-20"></div>
-          </td>
-          <td className="px-6 py-4">
-            <div className="space-y-2">
-              <div className="h-3 bg-gray-700 rounded w-16"></div>
-              <div className="h-3 bg-gray-700 rounded w-14"></div>
-              <div className="h-3 bg-gray-700 rounded w-18"></div>
-            </div>
-          </td>
-          <td className="px-6 py-4">
-            <div className="flex items-center gap-2">
-              <div className="h-4 bg-gray-700 rounded w-8"></div>
-              <div className="w-4 h-4 bg-gray-700 rounded"></div>
-            </div>
-          </td>
-          <td className="px-6 py-4 w-36">
-            <div className="h-6 bg-gray-700 rounded-full w-28 mx-auto"></div>
-          </td>
-          <td className="px-6 py-4 text-right">
-            <div className="flex items-center justify-end gap-2">
-              <div className="w-8 h-8 bg-gray-700 rounded"></div>
-              <div className="w-8 h-8 bg-gray-700 rounded"></div>
-              <div className="w-8 h-8 bg-gray-700 rounded"></div>
-            </div>
-          </td>
-        </tr>
-      ))}
-    </>
+    <tr>
+      <td colSpan={7} className="px-6 py-12 text-center text-gray-300">
+        <Loader2 className="size-6 animate-spin mx-auto mb-3" aria-hidden="true" />
+        Đang tải sản phẩm…
+      </td>
+    </tr>
   );
 });
 
@@ -146,7 +107,7 @@ const ProductRow = memo(
     return (
       <tr className="hover:bg-gray-700">
         <td className="px-6 py-4">
-          <input
+          <input aria-label={`Select ${product.name}`}
             type="checkbox"
             checked={isSelected}
             onChange={(e) => onSelectProduct(product.id, e.target.checked)}
@@ -155,14 +116,14 @@ const ProductRow = memo(
         </td>
         <td className="px-6 py-4">
           <div className="flex items-center">
-            <div className="flex-shrink-0 h-12 w-12 relative">
+            <div className="flex-shrink-0 size-12 relative">
               {firstImage ? (
                 <OptimizedImage
                   src={firstImage.url}
                   alt={product.name}
                   width={48}
                   height={48}
-                  className="h-12 w-12 rounded-lg object-cover"
+                  className="size-12 rounded-lg object-cover"
                   onError={(e) => {
                     const target = e.currentTarget;
                     target.style.display = "none";
@@ -172,12 +133,12 @@ const ProductRow = memo(
                 />
               ) : null}
               <div
-                className="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center"
+                className="size-12 rounded-lg bg-gray-200 flex items-center justify-center"
                 style={{
                   display: firstImage ? "none" : "flex",
                 }}
               >
-                <ImageIcon className="w-6 h-6 text-gray-400" />
+                <ImageIcon className="size-6 text-gray-400" />
               </div>
               <div className="absolute -top-1 -left-1 z-10 pointer-events-none">
                 <ConditionalFeaturedBadge product={product} size="xs" />
@@ -187,7 +148,7 @@ const ProductRow = memo(
               </div>
             </div>
             <div className="ml-4">
-              <button
+              <button type="button"
                 onClick={() => onEditProduct(product)}
                 className="text-sm font-medium text-white hover:text-green-400 hover:underline transition-colors text-left cursor-pointer"
               >
@@ -201,29 +162,29 @@ const ProductRow = memo(
           <div className="space-y-1">
             {product.productCategories?.map((pc: ProductCategory) => (
               <button
-                key={pc.category.id}
                 type="button"
+                key={pc.category.id}
                 onClick={() => onCategoryClick?.(pc.category.slug)}
                 className="block text-xs text-left hover:text-blue-400 hover:underline transition-colors cursor-pointer"
                 title={`Lọc theo: ${pc.category.name}`}
               >
                 {pc.category.name}
               </button>
-            )) || <span className="text-gray-400 text-xs">—</span>}
+            )) || <span className="text-gray-400 text-xs">-</span>}
           </div>
         </td>
         <td className="px-6 py-4 text-sm text-white">
           <div className="space-y-1">
             {product.productColors?.map((pc: ProductColor) => (
               <button
-                key={pc.color.id}
                 type="button"
+                key={pc.color.id}
                 onClick={() => onColorClick?.(pc.color.slug)}
                 className="flex items-center gap-2 text-left hover:text-blue-400 hover:underline transition-colors cursor-pointer"
                 title={`Lọc theo: ${pc.color.name}`}
               >
                 <div
-                  className="w-3 h-3 rounded-full border flex-shrink-0"
+                  className="size-3 rounded-full border flex-shrink-0"
                   style={{ backgroundColor: pc.color.hexCode }}
                 />
                 <span className="text-xs">{pc.color.name}</span>
@@ -259,40 +220,40 @@ const ProductRow = memo(
         </td>
         <td className="px-6 py-4 text-right text-sm font-medium">
           <div className="flex items-center justify-end gap-2">
-            <button
+            <button type="button"
               onClick={() => onEditProduct(product)}
               className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer"
-              title="Chỉnh sửa"
+              aria-label="Chỉnh sửa"
             >
-              <Edit className="w-4 h-4" />
+              <Edit className="size-4" />
             </button>
-            <button
+            <button type="button"
               onClick={() => {
                 const targetAction = product.isActive ? "deactivate" : "activate";
                 onProductAction(product.id, targetAction);
               }}
               disabled={rowActionLoading}
               className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              title={product.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
+              aria-label={product.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
             >
               {rowActionLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
               ) : product.isActive ? (
-                <EyeOff className="w-4 h-4" />
+                <EyeOff className="size-4" />
               ) : (
-                <Eye className="w-4 h-4" />
+                <Eye className="size-4" />
               )}
             </button>
-            <button
+            <button type="button"
               onClick={() => onProductAction(product.id, "delete")}
               disabled={rowActionLoading}
               className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Xóa"
+              aria-label="Xóa"
             >
               {rowActionLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
               ) : (
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="size-4" />
               )}
             </button>
           </div>
@@ -348,7 +309,7 @@ export function ProductsTable({
           <thead className="bg-gray-700">
             <tr>
               <th className="px-6 py-3 text-left">
-                <input
+                <input aria-label="Select all products"
                   type="checkbox"
                   checked={isAllSelected}
                   ref={(el) => {
@@ -384,7 +345,7 @@ export function ProductsTable({
             ) : products.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-12 text-center">
-                  <Package className="w-12 h-12 text-white mx-auto mb-4" />
+                  <Package className="size-12 text-white mx-auto mb-4" />
                   <p className="text-gray-300">Không có sản phẩm nào</p>
                 </td>
               </tr>

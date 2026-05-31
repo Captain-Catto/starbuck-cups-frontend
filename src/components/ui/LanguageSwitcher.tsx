@@ -45,7 +45,7 @@ export function LanguageSwitcher() {
     <>
       {/* Desktop: Dropdown */}
       <div className="hidden md:block relative" ref={dropdownRef}>
-        <button
+        <button type="button"
           onClick={() => setIsOpen(!isOpen)}
           aria-expanded={isOpen}
           aria-haspopup="listbox"
@@ -60,14 +60,14 @@ export function LanguageSwitcher() {
           />
           <span>{localeNames[locale]}</span>
           <ChevronDown
-            className={`w-3.5 h-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`}
+            className={`size-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`}
           />
         </button>
 
         {isOpen && (
           <div className="absolute right-0 top-full mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg py-1 min-w-[120px] z-50">
             {locales.map((loc) => (
-              <button
+              <button type="button"
                 key={loc}
                 onClick={() => handleLocaleChange(loc)}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors cursor-pointer ${
@@ -95,7 +95,7 @@ export function LanguageSwitcher() {
         {locales.map((loc, index) => (
           <span key={loc} className="flex items-center">
             {index > 0 && <span aria-hidden="true" className="text-zinc-600 mx-1">|</span>}
-            <button
+            <button type="button"
               onClick={() => handleLocaleChange(loc)}
               className={`text-xs font-medium px-1.5 py-0.5 rounded transition-colors cursor-pointer ${
                 locale === loc

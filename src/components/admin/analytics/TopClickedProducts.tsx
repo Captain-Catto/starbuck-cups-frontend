@@ -13,6 +13,15 @@ interface TopClickedProductsProps {
   loading?: boolean;
 }
 
+const formatDate = (dateString?: string) => {
+  if (!dateString) return "Chưa có";
+  return new Date(dateString).toLocaleDateString("vi-VN");
+};
+
+const formatPercentage = (num: number) => {
+  return `${num.toFixed(1)}%`;
+};
+
 export function TopClickedProducts({
   page,
   totalPages,
@@ -21,15 +30,6 @@ export function TopClickedProducts({
   loading,
 }: TopClickedProductsProps) {
   const itemsPerPage = 10;
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "Chưa có";
-    return new Date(dateString).toLocaleDateString("vi-VN");
-  };
-
-  const formatPercentage = (num: number) => {
-    return `${num.toFixed(1)}%`;
-  };
 
   if (loading) {
     return (
@@ -79,8 +79,8 @@ export function TopClickedProducts({
             target="_blank"
             className="flex items-center justify-between p-4 bg-gray-800/50 border border-gray-700 rounded-lg hover:bg-gray-800 hover:border-gray-600 transition-all cursor-pointer"
           >
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center justify-center w-8 h-8 bg-gray-700 text-white rounded-full text-sm font-medium">
+            <div className="flex items-center gap-x-4">
+              <div className="flex items-center justify-center size-8 bg-gray-700 text-white rounded-full text-sm font-medium">
                 #{(page - 1) * itemsPerPage + index + 1}
               </div>
 
@@ -95,16 +95,16 @@ export function TopClickedProducts({
             </div>
 
             <div className="text-right space-y-1">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-1 text-blue-400">
-                  <MousePointer className="w-4 h-4" />
+              <div className="flex items-center gap-x-4">
+                <div className="flex items-center gap-x-1 text-blue-400">
+                  <MousePointer className="size-4" />
                   <span className="text-sm font-medium">
                     {product.clickCount}
                   </span>
                 </div>
 
-                <div className="flex items-center space-x-1 text-green-400">
-                  <ShoppingCart className="w-4 h-4" />
+                <div className="flex items-center gap-x-1 text-green-400">
+                  <ShoppingCart className="size-4" />
                   <span className="text-sm font-medium">
                     {product.addToCartCount}
                   </span>

@@ -31,7 +31,7 @@ export function OrderTotals({
         <div className="flex justify-between">
           <span className="text-gray-300">Tạm tính:</span>
           {isEditing && order.orderType === "CUSTOM" ? (
-            <input
+            <input aria-label="Nhập giá tùy chỉnh"
               type="number"
               value={editData.totalAmount || 0}
               onChange={(e) =>
@@ -54,7 +54,7 @@ export function OrderTotals({
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-400">Gốc:</span>
-                <input
+                <input aria-label="number"
                   type="number"
                   value={editData.originalShippingCost}
                   onChange={(e) => onUpdateEditData("originalShippingCost", e.target.value)}
@@ -63,7 +63,7 @@ export function OrderTotals({
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-400">Giảm:</span>
-                <input
+                <input aria-label="number"
                   type="number"
                   value={editData.shippingDiscount}
                   onChange={(e) => onUpdateEditData("shippingDiscount", e.target.value)}
@@ -72,7 +72,7 @@ export function OrderTotals({
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-400">Thực:</span>
-                <input
+                <input aria-label="number"
                   type="number"
                   value={editData.shippingCost}
                   onChange={(e) => onUpdateEditData("shippingCost", e.target.value)}

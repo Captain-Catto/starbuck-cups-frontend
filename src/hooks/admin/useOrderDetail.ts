@@ -1,7 +1,8 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { invalidateOrderDependentCaches } from "@/lib/adminCacheInvalidation";
+
 export interface OrderDetailData {
   id: string;
   orderNumber: string;
@@ -51,11 +52,64 @@ export interface UseOrderDetailReturn {
   clearError: () => void;
 }
 
+interface OrderDetailState {
+  order: OrderDetailData | null;
+  loading: boolean;
+  updating: boolean;
+  error: string | null;
+}
+
+type OrderDetailAction =
+  | { type: "FETCH_START" }
+  | { type: "FETCH_SUCCESS"; payload: OrderDetailData }
+  | { type: "FETCH_ERROR"; payload: string }
+  | { type: "UPDATE_START" }
+  | { type: "UPDATE_SUCCESS"; status: string }
+  | { type: "UPDATE_ERROR"; payload: string }
+  | { type: "UPDATE_FINISH" }
+  | { type: "CLEAR_ERROR" };
+
+const initialOrderDetailState: OrderDetailState = {
+  order: null,
+  loading: true,
+  updating: false,
+  error: null,
+};
+
+function orderDetailReducer(
+  state: OrderDetailState,
+  action: OrderDetailAction
+): OrderDetailState {
+  switch (action.type) {
+    case "FETCH_START":
+      return { ...state, loading: true, error: null };
+    case "FETCH_SUCCESS":
+      return { ...state, order: action.payload, loading: false, error: null };
+    case "FETCH_ERROR":
+      return { ...state, loading: false, error: action.payload };
+    case "UPDATE_START":
+      return { ...state, updating: true, error: null };
+    case "UPDATE_SUCCESS":
+      return {
+        ...state,
+        order: state.order ? { ...state.order, status: action.status } : null,
+      };
+    case "UPDATE_ERROR":
+      return { ...state, error: action.payload };
+    case "UPDATE_FINISH":
+      return { ...state, updating: false };
+    case "CLEAR_ERROR":
+      return { ...state, error: null };
+    default:
+      return state;
+  }
+}
+
 export function useOrderDetail(orderId: string): UseOrderDetailReturn {
-  const [order, setOrder] = useState<OrderDetailData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [{ order, loading, updating, error }, dispatch] = useReducer(
+    orderDetailReducer,
+    initialOrderDetailState
+  );
 
   const fetchControllerRef = useRef<AbortController | null>(null);
   const token = useSelector((state: RootState) => state.auth.token);
@@ -69,8 +123,7 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
     const controller = new AbortController();
     fetchControllerRef.current = controller;
 
-    setLoading(true);
-    setError(null);
+    dispatch({ type: "FETCH_START" });
     try {
       const response = await fetch(`/api/admin/orders/${orderId}`, {
         headers: {
@@ -83,33 +136,32 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
       const data = await response.json();
 
       if (data.success) {
-        setOrder(data.data);
+        dispatch({ type: "FETCH_SUCCESS", payload: data.data });
       } else {
-        setError(data.message || "Không thể tải thông tin đơn hàng");
+        dispatch({
+          type: "FETCH_ERROR",
+          payload: data.message || "Không thể tải thông tin đơn hàng",
+        });
       }
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") return;
-      setError("Lỗi kết nối. Vui lòng thử lại.");
-    } finally {
-      if (!controller.signal.aborted) setLoading(false);
+      dispatch({
+        type: "FETCH_ERROR",
+        payload: "Lỗi kết nối. Vui lòng thử lại.",
+      });
     }
   }, [orderId, token]);
 
-  // Update order status
   const updateStatus = useCallback(
     async (newStatus: string): Promise<boolean> => {
       if (!orderId || !token || !order) return false;
 
-      setUpdating(true);
-      setError(null);
+      dispatch({ type: "UPDATE_START" });
       try {
-        const authHeaders: Record<string, string> = {
-          Authorization: `Bearer ${token}`,
-        };
         const response = await fetch(`/api/admin/orders/${orderId}/status`, {
           method: "PATCH",
           headers: {
-            ...authHeaders,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ status: newStatus }),
@@ -119,38 +171,44 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
 
         if (data.success) {
           invalidateOrderDependentCaches();
-          setOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
-          // Refresh order data to get latest info
+          dispatch({ type: "UPDATE_SUCCESS", status: newStatus });
           await fetchOrder();
           return true;
-        } else {
-          setError(data.message || "Không thể cập nhật trạng thái đơn hàng");
-          return false;
         }
+
+        dispatch({
+          type: "UPDATE_ERROR",
+          payload: data.message || "Không thể cập nhật trạng thái đơn hàng",
+        });
+        return false;
       } catch {
-        setError("Lỗi kết nối. Vui lòng thử lại.");
+        dispatch({
+          type: "UPDATE_ERROR",
+          payload: "Lỗi kết nối. Vui lòng thử lại.",
+        });
         return false;
       } finally {
-        setUpdating(false);
+        dispatch({ type: "UPDATE_FINISH" });
       }
     },
     [orderId, token, order, fetchOrder]
   );
 
-  // Clear error
   const clearError = useCallback(() => {
-    setError(null);
+    dispatch({ type: "CLEAR_ERROR" });
   }, []);
 
   useEffect(() => {
+    // react-doctor-disable-next-line react-doctor/no-event-handler -- initialization fetch triggered by auth token and order ID availability
     if (orderId && token) {
       fetchOrder();
     }
   }, [orderId, token, fetchOrder]);
 
   useEffect(() => {
+    const controller = fetchControllerRef.current;
     return () => {
-      fetchControllerRef.current?.abort();
+      controller?.abort();
     };
   }, []);
 
@@ -164,4 +222,3 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
     clearError,
   };
 }
-

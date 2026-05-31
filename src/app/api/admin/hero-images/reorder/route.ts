@@ -7,6 +7,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const response = await fetch(getApiUrl("admin/hero-images/reorder"), {
+      cache: "no-store",
       method: "POST",
       headers: {
         "Content-Type": "application/json",

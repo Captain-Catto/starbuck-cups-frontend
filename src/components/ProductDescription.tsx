@@ -49,12 +49,13 @@ export default function ProductDescription({
       {/* Content */}
       <div className="p-6">
         <div className="prose max-w-none prose-invert">
-          <div
-            className="prose-sm text-zinc-300"
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(product.description || ""),
-            }}
-          />
+        <div
+          className="prose-sm text-zinc-300"
+          // react-doctor-disable-next-line react-doctor/no-danger -- safely sanitized using isomorphic-dompurify
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(product.description || ""),
+          }}
+        />
         </div>
       </div>
     </div>

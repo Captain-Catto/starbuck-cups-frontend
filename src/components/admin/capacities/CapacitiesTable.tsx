@@ -38,7 +38,13 @@ const CapacityRow = memo(function CapacityRow({
 }: CapacityRowProps) {
   const isLoading = actionLoading === capacity.id;
   return (
-    <tr className="hover:bg-gray-700 cursor-pointer" onClick={() => onEdit(capacity)}>
+    <tr
+      role="button"
+      tabIndex={0}
+      className="hover:bg-gray-700 cursor-pointer"
+      onClick={() => onEdit(capacity)}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onEdit(capacity)}
+    >
       <td className="px-6 py-4 whitespace-nowrap">
         <div>
           <div className="text-sm font-medium text-white">{capacity.name}</div>
@@ -71,35 +77,35 @@ const CapacityRow = memo(function CapacityRow({
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
         <div className="flex items-center justify-end gap-2">
-          <button
+          <button type="button"
             onClick={(e) => { e.stopPropagation(); onEdit(capacity); }}
             disabled={isLoading}
             className="text-white hover:bg-gray-600 p-1 rounded transition-colors cursor-pointer disabled:opacity-50"
             title="Chỉnh sửa"
           >
-            <Edit2 className="w-4 h-4" />
+            <Edit2 className="size-4" />
           </button>
-          <button
+          <button type="button"
             onClick={(e) => { e.stopPropagation(); onToggleStatus(capacity); }}
             disabled={isLoading}
             className="text-white hover:bg-gray-600 p-1 rounded transition-colors cursor-pointer disabled:opacity-50"
             title={capacity.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
           >
             {isLoading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+              <div className="animate-spin rounded-full size-4 border-b-2 border-white" />
             ) : capacity.isActive ? (
-              <EyeOff className="w-4 h-4" />
+              <EyeOff className="size-4" />
             ) : (
-              <Eye className="w-4 h-4" />
+              <Eye className="size-4" />
             )}
           </button>
-          <button
+          <button type="button"
             onClick={(e) => { e.stopPropagation(); onDelete(capacity); }}
             disabled={isLoading}
             className="text-white hover:bg-gray-600 p-1 rounded transition-colors cursor-pointer disabled:opacity-50"
             title="Xóa"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="size-4" />
           </button>
         </div>
       </td>
@@ -148,14 +154,14 @@ export function CapacitiesTable({
             {loading ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400 mx-auto" />
-                  <p className="text-gray-500 mt-2">Đang tải...</p>
+                  <div className="animate-spin rounded-full size-8 border-b-2 border-gray-400 mx-auto" />
+                  <p className="text-gray-500 mt-2">Đang tải…</p>
                 </td>
               </tr>
             ) : capacities.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center">
-                  <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <Package className="size-12 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-500">
                     {searchQuery ? "Không tìm thấy dung tích nào" : "Chưa có dung tích nào"}
                   </p>

@@ -1,8 +1,18 @@
-﻿import { useState, useEffect, useCallback, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import type { Category } from "@/types";
-import type { RootState } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store";
+import {
+  fetchCategoriesThunk,
+  toggleCategoryStatusThunk,
+  deleteCategoryThunk,
+  setSearchQuery,
+  setStatusFilter,
+  setCurrentPage,
+  setCategoriesDirectly,
+  type CategoryPagination,
+  type CategoryStatusFilter,
+} from "@/store/slices/categoriesSlice";
 
 interface CategoryWithCount extends Category {
   _count?: {
@@ -31,17 +41,9 @@ interface ConfirmModal {
 export interface UseCategoriesReturn {
   // Data
   categories: CategoryWithCount[];
-  filteredCategories: CategoryWithCount[];
 
   // Pagination
-  pagination: {
-    current_page: number;
-    has_next: boolean;
-    has_prev: boolean;
-    per_page: number;
-    total_items: number;
-    total_pages: number;
-  } | null;
+  pagination: CategoryPagination | null;
 
   // State
   loading: boolean;
@@ -78,23 +80,17 @@ export interface UseCategoriesReturn {
 }
 
 export function useCategories(): UseCategoriesReturn {
-  const [categories, setCategories] = useState<CategoryWithCount[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "inactive"
-  >("all");
+  const dispatch = useAppDispatch();
+  const {
+    items: categories,
+    pagination,
+    loading,
+    searchQuery,
+    statusFilter,
+    currentPage,
+  } = useAppSelector((state) => state.categories);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState<{
-    current_page: number;
-    has_next: boolean;
-    has_prev: boolean;
-    per_page: number;
-    total_items: number;
-    total_pages: number;
-  } | null>(null);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -114,17 +110,9 @@ export function useCategories(): UseCategoriesReturn {
     action: "toggle",
   });
 
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const token = useAppSelector((state) => state.auth.token);
 
-  const fetchControllerRef = useRef<AbortController | null>(null);
-  const token = useSelector((state: RootState) => state.auth.token);
-
-  const getAuthHeaders = useCallback((): Record<string, string> => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [token]);
-
-  // Debounce searchQuery → debouncedSearchQuery (300ms)
   useEffect(() => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     searchDebounceRef.current = setTimeout(() => {
@@ -135,62 +123,26 @@ export function useCategories(): UseCategoriesReturn {
     };
   }, [searchQuery]);
 
-  // Reset to page 1 when search or filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearchQuery, statusFilter]);
+  const updateSearchQuery = useCallback((query: string) => {
+    dispatch(setSearchQuery(query));
+  }, [dispatch]);
+
+  const updateStatusFilter = useCallback(
+    (filter: "all" | "active" | "inactive") => {
+      dispatch(setStatusFilter(filter));
+    },
+    [dispatch]
+  );
 
   const fetchCategories = useCallback(async () => {
-    if (fetchControllerRef.current) {
-      fetchControllerRef.current.abort();
-    }
-    const controller = new AbortController();
-    fetchControllerRef.current = controller;
-
-    try {
-      setLoading(true);
-
-      const params = new URLSearchParams({ page: String(currentPage), size: "20" });
-      if (debouncedSearchQuery) params.set("search", debouncedSearchQuery);
-      if (statusFilter === "active") params.set("isActive", "true");
-      else if (statusFilter === "inactive") params.set("isActive", "false");
-
-      const response = await fetch(
-        `/api/admin/categories?${params}`,
-        {
-          headers: getAuthHeaders(),
-          signal: controller.signal,
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.success && data.data) {
-        const categoriesList = data.data.items || [];
-
-        const paginationInfo = data.data.pagination;
-        if (paginationInfo) {
-          setPagination({
-            current_page: paginationInfo.current_page,
-            has_next: paginationInfo.has_next,
-            has_prev: paginationInfo.has_prev,
-            per_page: paginationInfo.per_page,
-            total_items: paginationInfo.total_items,
-            total_pages: paginationInfo.total_pages,
-          });
-        }
-
-        setCategories(categoriesList);
-      } else {
-        toast.error(data.message || "Không thể tải danh sách danh mục");
-      }
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") return;
-      toast.error("Có lỗi xảy ra khi tải danh mục");
-    } finally {
-      if (!controller.signal.aborted) setLoading(false);
-    }
-  }, [getAuthHeaders, currentPage, debouncedSearchQuery, statusFilter]);
+    dispatch(
+      fetchCategoriesThunk({
+        page: currentPage,
+        search: debouncedSearchQuery || undefined,
+        statusFilter: statusFilter || undefined,
+      })
+    );
+  }, [dispatch, currentPage, debouncedSearchQuery, statusFilter]);
 
   const validateForm = (): boolean => {
     const errors: CategoryFormErrors = {};
@@ -208,6 +160,10 @@ export function useCategories(): UseCategoriesReturn {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
+
+  const getAuthHeaders = useCallback((): Record<string, string> => {
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -263,7 +219,6 @@ export function useCategories(): UseCategoriesReturn {
   };
 
   const handleDelete = async (category: CategoryWithCount) => {
-    // Luôn hiển thị confirmation modal
     setConfirmModal({
       show: true,
       category,
@@ -274,30 +229,19 @@ export function useCategories(): UseCategoriesReturn {
   const performDelete = async (category: CategoryWithCount) => {
     setActionLoading(`delete-${category.id}`);
     try {
-      const response = await fetch(`/api/admin/categories/${category.id}`, {
-        method: "DELETE",
-        headers: getAuthHeaders(),
-      });
+      const resultAction = await dispatch(
+        deleteCategoryThunk(category.id)
+      );
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (deleteCategoryThunk.fulfilled.match(resultAction)) {
         toast.success("Xóa danh mục thành công");
         fetchCategories();
       } else {
-        // Xử lý lỗi 409 đặc biệt
-        if (response.status === 409) {
-          toast.error(
-            `Không thể xóa danh mục: ${
-              data.error?.message ||
-              data.message ||
-              "Danh mục đang được sử dụng"
-            }`
-          );
+        const errorPayload = resultAction.payload as string;
+        if (errorPayload && errorPayload.includes("409")) {
+          toast.error("Không thể xóa danh mục: Danh mục đang được sử dụng");
         } else {
-          toast.error(
-            data.error?.message || data.message || "Có lỗi xảy ra khi xóa"
-          );
+          toast.error(errorPayload || "Có lỗi xảy ra khi xóa");
         }
       }
     } catch {
@@ -308,7 +252,6 @@ export function useCategories(): UseCategoriesReturn {
   };
 
   const handleToggleStatus = async (category: CategoryWithCount) => {
-    // Nếu tắt danh mục đang có products sử dụng, hiển thị modal xác nhận
     const productCount = category._count?.products || 0;
     if (category.isActive && productCount > 0) {
       setConfirmModal({
@@ -319,30 +262,27 @@ export function useCategories(): UseCategoriesReturn {
       return;
     }
 
-    // Nếu không có products hoặc đang kích hoạt, thực hiện ngay
     await performToggleStatus(category);
   };
 
   const performToggleStatus = async (category: CategoryWithCount) => {
     setActionLoading(`toggle-${category.id}`);
 
+    // Store original state for potential rollback
+    const originalCategories = [...categories];
+
     // Optimistic update
-    setCategories((prev) =>
-      prev.map((c) => c.id === category.id ? { ...c, isActive: !c.isActive } : c)
+    const optimisticCategories = categories.map((c: typeof category) =>
+      c.id === category.id ? { ...c, isActive: !c.isActive } : c
     );
+    dispatch(setCategoriesDirectly(optimisticCategories));
 
     try {
-      const response = await fetch(
-        `/api/admin/categories/${category.id}/toggle-status`,
-        {
-          method: "PATCH",
-          headers: getAuthHeaders(),
-        }
+      const resultAction = await dispatch(
+        toggleCategoryStatusThunk(category)
       );
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (toggleCategoryStatusThunk.fulfilled.match(resultAction)) {
         const statusText = !category.isActive ? "kích hoạt" : "tắt";
         const productCount = category._count?.products || 0;
         const productInfo =
@@ -353,17 +293,14 @@ export function useCategories(): UseCategoriesReturn {
           `Đã ${statusText} danh mục "${category.name}"${productInfo}`
         );
       } else {
-        // Rollback — chỉ revert item này, giữ nguyên thay đổi khác
-        setCategories((prev) =>
-          prev.map((c) => c.id === category.id ? { ...c, isActive: category.isActive } : c)
-        );
-        toast.error(data.message || "Có lỗi xảy ra");
+        // Rollback
+        dispatch(setCategoriesDirectly(originalCategories));
+        const errorPayload = resultAction.payload as string;
+        toast.error(errorPayload || "Có lỗi xảy ra");
       }
     } catch {
       // Rollback on network error
-      setCategories((prev) =>
-        prev.map((c) => c.id === category.id ? { ...c, isActive: category.isActive } : c)
-      );
+      dispatch(setCategoriesDirectly(originalCategories));
       toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
     } finally {
       setActionLoading(null);
@@ -386,50 +323,31 @@ export function useCategories(): UseCategoriesReturn {
     setShowModal(true);
   };
 
-  // Pagination handler
-  const onPageChange = useCallback((page: number) => {
-    setCurrentPage(page);
-  }, []);
-
-  // Server already applies search and status filtering; expose as-is.
-  const filteredCategories = categories;
+  const onPageChange = useCallback(
+    (page: number) => {
+      dispatch(setCurrentPage(page));
+    },
+    [dispatch]
+  );
 
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
 
-  useEffect(() => {
-    return () => {
-      fetchControllerRef.current?.abort();
-    };
-  }, []);
-
   return {
-    // Data
     categories,
-    filteredCategories,
-
-    // Pagination
     pagination,
-
-    // State
     loading,
     searchQuery,
     statusFilter,
-
-    // Modal state
     showModal,
     editingCategory,
     formData,
     formErrors,
     actionLoading,
-
-    // Confirmation modal state
     confirmModal,
-
-    // Actions
-    setSearchQuery,
-    setStatusFilter,
+    setSearchQuery: updateSearchQuery,
+    setStatusFilter: updateStatusFilter,
     fetchCategories,
     handleEdit,
     handleDelete,
@@ -441,8 +359,6 @@ export function useCategories(): UseCategoriesReturn {
     setConfirmModal,
     performToggleStatus,
     performDelete,
-
-    // Pagination actions
     onPageChange,
   };
 }

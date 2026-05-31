@@ -12,7 +12,7 @@ import { Pagination } from "@/components/ui/Pagination";
 export default function CategoriesManagement() {
   const {
     // Data
-    filteredCategories,
+    categories,
 
     // Pagination
     pagination,
@@ -56,11 +56,11 @@ export default function CategoriesManagement() {
         title="Quản lý danh mục"
         description="Quản lý các danh mục sản phẩm"
         action={
-          <button
+          <button type="button"
             onClick={handleAddCategory}
             className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="size-4" />
             Thêm danh mục
           </button>
         }
@@ -77,7 +77,7 @@ export default function CategoriesManagement() {
 
       {/* Categories Table */}
       <CategoriesTable
-        categories={filteredCategories}
+        categories={categories}
         loading={loading}
         actionLoading={actionLoading}
         searchQuery={searchQuery}
@@ -97,7 +97,7 @@ export default function CategoriesManagement() {
         </div>
       ) : (
         <div className="text-center text-gray-400">
-          {loading ? "Đang tải..." : ""}
+          {loading ? "Đang tải…" : ""}
         </div>
       )}
 

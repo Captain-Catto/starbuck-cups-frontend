@@ -27,20 +27,20 @@ export function WelcomeSection({
           {error && <p className="text-red-300 text-sm mt-2">{error}</p>}
         </div>
         <div className="hidden md:flex items-center gap-3">
-          <button
+          <button type="button"
             onClick={onRefresh}
             disabled={loading}
             className="p-3 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl transition-colors disabled:opacity-50 border border-gray-600 cursor-pointer"
             title="Làm mới dữ liệu"
           >
             <RefreshCw
-              className={`w-5 h-5 text-gray-300 ${
+              className={`size-5 text-gray-300 ${
                 loading ? "animate-spin" : ""
               }`}
             />
           </button>
-          <div className="w-20 h-20 bg-gray-700/50 rounded-2xl flex items-center justify-center border border-gray-600">
-            <LayoutDashboard className="w-10 h-10 text-gray-300" />
+          <div className="size-20 bg-gray-700/50 rounded-2xl flex items-center justify-center border border-gray-600">
+            <LayoutDashboard className="size-10 text-gray-300" />
           </div>
         </div>
       </div>

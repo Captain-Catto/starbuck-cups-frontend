@@ -139,9 +139,10 @@ export function useRequireAuth(redirectUrl: string = "/admin/login") {
 
   useEffect(() => {
     if (auth.needsAuthentication) {
-      
+      // react-doctor-disable-next-line react-doctor/no-event-handler -- auth-state redirect, synchronized with external auth store
       window.location.href = redirectUrl;
     }
+  // react-doctor-disable-next-line react-doctor/no-event-handler -- navigation side effect synchronized with auth state, not triggered by a user event
   }, [auth.needsAuthentication, redirectUrl]);
 
   return auth;
@@ -152,13 +153,14 @@ export function useRequireAuth(redirectUrl: string = "/admin/login") {
  * Includes role checking for admin privileges
  */
 export function useAdminAuth(redirectUrl: string = "/admin/login") {
+  // react-doctor-disable-next-line react-doctor/no-event-handler -- auth-state redirect inside useRequireAuth, synchronized with external auth store
   const auth = useRequireAuth(redirectUrl);
 
   const hasAdminRole = auth.user && ["SUPER_ADMIN", "ADMIN", "STAFF"].includes(auth.user.role);
 
   useEffect(() => {
     if (auth.isReady && auth.isAuthenticated && !hasAdminRole) {
-      
+
       window.location.href = redirectUrl;
     }
   }, [auth.isReady, auth.isAuthenticated, hasAdminRole, redirectUrl]);

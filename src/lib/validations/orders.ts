@@ -101,8 +101,8 @@ export const orderFilterSchema = z.object({
   orderType: z.enum(['custom', 'product']).optional(),
   customerId: z.string().optional(),
   dateRange: z.object({
-    from: z.string().datetime(),
-    to: z.string().datetime(),
+    from: z.iso.datetime(),
+    to: z.iso.datetime(),
   }).refine((data) => {
     return new Date(data.from) <= new Date(data.to);
   }, {

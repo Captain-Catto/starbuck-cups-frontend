@@ -68,7 +68,7 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
       <div className="space-y-6">
         <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
           <div className="text-center py-8">
-            <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <Package className="size-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-white mb-2">Không tìm thấy đơn hàng</h3>
             <p className="text-gray-300">Đơn hàng không tồn tại hoặc đã bị xóa.</p>
           </div>

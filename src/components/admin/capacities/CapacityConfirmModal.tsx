@@ -43,7 +43,7 @@ export function CapacityConfirmModal({
     >
       <div className="flex items-center gap-3 mb-4 p-3 bg-gray-700 rounded-lg">
         <div className="p-2 bg-blue-600 rounded-lg">
-          <Package className="w-6 h-6 text-white" />
+          <Package className="size-6 text-white" />
         </div>
         <div>
           <div className="font-medium text-white">{capacity.name}</div>

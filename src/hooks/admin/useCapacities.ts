@@ -1,8 +1,16 @@
-﻿import { useState, useEffect, useCallback, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import type { Capacity, PaginationMeta } from "@/types";
-import type { RootState } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store";
+import {
+  fetchCapacitiesThunk,
+  toggleCapacityStatusThunk,
+  deleteCapacityThunk,
+  setSearchQuery,
+  setStatusFilter,
+  setCurrentPage,
+  setCapacitiesDirectly,
+} from "@/store/slices/capacitiesSlice";
 
 interface CapacityWithCount extends Capacity {
   _count?: {
@@ -31,7 +39,6 @@ interface ConfirmModal {
 export interface UseCapacitiesReturn {
   // Data
   capacities: CapacityWithCount[];
-  filteredCapacities: CapacityWithCount[];
 
   // Pagination
   pagination: PaginationMeta | null;
@@ -77,16 +84,17 @@ export interface UseCapacitiesReturn {
 }
 
 export function useCapacities(): UseCapacitiesReturn {
-  const [capacities, setCapacities] = useState<CapacityWithCount[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "inactive"
-  >("all");
+  const dispatch = useAppDispatch();
+  const {
+    items: capacities,
+    pagination,
+    loading,
+    searchQuery,
+    statusFilter,
+    currentPage,
+  } = useAppSelector((state) => state.capacities);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -111,17 +119,13 @@ export function useCapacities(): UseCapacitiesReturn {
     action: "toggle",
   });
 
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const fetchControllerRef = useRef<AbortController | null>(null);
-  const token = useSelector((state: RootState) => state.auth.token);
+  const token = useAppSelector((state) => state.auth.token);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, [token]);
 
-  // Debounce searchQuery → debouncedSearchQuery (300ms)
   useEffect(() => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     searchDebounceRef.current = setTimeout(() => {
@@ -132,62 +136,26 @@ export function useCapacities(): UseCapacitiesReturn {
     };
   }, [searchQuery]);
 
-  // Reset to page 1 when search or filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearchQuery, statusFilter]);
+  const updateSearchQuery = useCallback((query: string) => {
+    dispatch(setSearchQuery(query));
+  }, [dispatch]);
+
+  const updateStatusFilter = useCallback(
+    (filter: "all" | "active" | "inactive") => {
+      dispatch(setStatusFilter(filter));
+    },
+    [dispatch]
+  );
 
   const fetchCapacities = useCallback(async () => {
-    if (fetchControllerRef.current) {
-      fetchControllerRef.current.abort();
-    }
-    const controller = new AbortController();
-    fetchControllerRef.current = controller;
-
-    try {
-      setLoading(true);
-
-      const params = new URLSearchParams({ page: String(currentPage), size: "20" });
-      if (debouncedSearchQuery) params.set("search", debouncedSearchQuery);
-      if (statusFilter === "active") params.set("isActive", "true");
-      else if (statusFilter === "inactive") params.set("isActive", "false");
-
-      const response = await fetch(
-        `/api/admin/capacities?${params}`,
-        {
-          headers: getAuthHeaders(),
-          signal: controller.signal,
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.success && data.data) {
-        const capacitiesList = data.data.items || [];
-
-        const paginationInfo = data.data.pagination;
-        if (paginationInfo) {
-          setPagination({
-            current_page: paginationInfo.current_page,
-            has_next: paginationInfo.has_next,
-            has_prev: paginationInfo.has_prev,
-            per_page: paginationInfo.per_page,
-            total_items: paginationInfo.total_items,
-            total_pages: paginationInfo.total_pages,
-          });
-        }
-
-        setCapacities(capacitiesList);
-      } else {
-        toast.error(data.message || "Không thể tải danh sách dung tích");
-      }
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") return;
-      toast.error("Có lỗi xảy ra khi tải dung tích");
-    } finally {
-      if (!controller.signal.aborted) setLoading(false);
-    }
-  }, [getAuthHeaders, currentPage, debouncedSearchQuery, statusFilter]);
+    dispatch(
+      fetchCapacitiesThunk({
+        page: currentPage,
+        search: debouncedSearchQuery || undefined,
+        statusFilter: statusFilter || undefined,
+      })
+    );
+  }, [dispatch, currentPage, debouncedSearchQuery, statusFilter]);
 
   const validateForm = (): boolean => {
     const errors: CapacityFormErrors = {};
@@ -272,21 +240,19 @@ export function useCapacities(): UseCapacitiesReturn {
 
     try {
       setActionLoading(deleteId);
-      const response = await fetch(`/api/admin/capacities/${deleteId}`, {
-        method: "DELETE",
-        headers: getAuthHeaders(),
-      });
+      const resultAction = await dispatch(
+        deleteCapacityThunk(deleteId)
+      );
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (deleteCapacityThunk.fulfilled.match(resultAction)) {
         toast.success("Xóa dung tích thành công");
         fetchCapacities();
         setShowDeleteModal(false);
         setDeleteId(null);
         setDeleteName("");
       } else {
-        toast.error(data.message || "Có lỗi xảy ra khi xóa");
+        const errorPayload = resultAction.payload as string;
+        toast.error(errorPayload || "Có lỗi xảy ra khi xóa");
       }
     } catch {
       toast.error("Có lỗi xảy ra khi xóa dung tích");
@@ -320,38 +286,33 @@ export function useCapacities(): UseCapacitiesReturn {
   const performToggleStatus = async (capacity: CapacityWithCount) => {
     setActionLoading(capacity.id);
 
+    // Store original state for potential rollback
+    const originalCapacities = [...capacities];
+
     // Optimistic update
-    setCapacities((prev) =>
-      prev.map((c) => c.id === capacity.id ? { ...c, isActive: !c.isActive } : c)
+    const optimisticCapacities = capacities.map((c: typeof capacity) =>
+      c.id === capacity.id ? { ...c, isActive: !c.isActive } : c
     );
+    dispatch(setCapacitiesDirectly(optimisticCapacities));
 
     try {
-      const response = await fetch(
-        `/api/admin/capacities/${capacity.id}/toggle-status`,
-        {
-          method: "PATCH",
-          headers: getAuthHeaders(),
-        }
+      const resultAction = await dispatch(
+        toggleCapacityStatusThunk(capacity)
       );
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (toggleCapacityStatusThunk.fulfilled.match(resultAction)) {
         toast.success(
           `Đã ${!capacity.isActive ? "kích hoạt" : "tắt"} dung tích "${capacity.name}"`
         );
       } else {
-        // Rollback — chỉ revert item này, giữ nguyên thay đổi khác
-        setCapacities((prev) =>
-          prev.map((c) => c.id === capacity.id ? { ...c, isActive: capacity.isActive } : c)
-        );
-        toast.error(data.message || "Có lỗi xảy ra");
+        // Rollback
+        dispatch(setCapacitiesDirectly(originalCapacities));
+        const errorPayload = resultAction.payload as string;
+        toast.error(errorPayload || "Có lỗi xảy ra");
       }
     } catch {
       // Rollback on network error
-      setCapacities((prev) =>
-        prev.map((c) => c.id === capacity.id ? { ...c, isActive: capacity.isActive } : c)
-      );
+      dispatch(setCapacitiesDirectly(originalCapacities));
       toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
     } finally {
       setActionLoading(null);
@@ -376,27 +337,16 @@ export function useCapacities(): UseCapacitiesReturn {
 
   // Pagination handler
   const onPageChange = useCallback((page: number) => {
-    setCurrentPage(page);
-  }, []);
-
-  // Server already applies search and status filtering; expose as-is.
-  const filteredCapacities = capacities;
+    dispatch(setCurrentPage(page));
+  }, [dispatch]);
 
   useEffect(() => {
     fetchCapacities();
   }, [fetchCapacities]);
 
-  useEffect(() => {
-    return () => {
-      fetchControllerRef.current?.abort();
-    };
-  }, []);
-
   return {
     // Data
     capacities,
-    filteredCapacities,
-
     // Pagination
     pagination,
 
@@ -421,8 +371,8 @@ export function useCapacities(): UseCapacitiesReturn {
     confirmModal,
 
     // Actions
-    setSearchQuery,
-    setStatusFilter,
+    setSearchQuery: updateSearchQuery,
+    setStatusFilter: updateStatusFilter,
     fetchCapacities,
     handleEdit,
     handleDelete,

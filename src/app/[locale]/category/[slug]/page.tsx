@@ -1,10 +1,64 @@
 import { notFound } from "next/navigation";
-import { setRequestLocale } from "next-intl/server";
+import { Suspense } from "react";
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getApiUrl } from "@/lib/api-config";
 import { buildProductsQueryParams } from "@/lib/products-query";
 import CategoryPageClient from "@/components/pages/CategoryPageClient";
+import ProductsPageSkeleton from "@/components/ui/ProductsPageSkeleton";
 import { PRODUCTS_PAGE_LIMIT } from "@/utils/layoutCalculator";
+import { generateSEO, siteConfig } from "@/lib/seo";
 import type { Category, Color, Capacity, Product } from "@/types";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string; locale: string }>;
+}): Promise<Metadata> {
+  const { slug, locale } = await params;
+  const [t, tSeo, category] = await Promise.all([
+    getTranslations({ locale, namespace: "categoryPage" }),
+    getTranslations({ locale, namespace: "seo" }),
+    getCategory(slug),
+  ]);
+  const categoryName = category?.name || slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+
+  const descriptionFallback = t("metaDescriptionFallback", { name: categoryName });
+  const description = category?.description
+    ? category.description
+        .replace(/<[^>]*>/g, "")
+        .replace(/&nbsp;/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 160)
+    : descriptionFallback;
+
+  const keywords = [
+    categoryName,
+    `${categoryName} starbucks`,
+    `${categoryName} starbucks chính hãng`,
+    "starbucks",
+    "ly starbucks",
+    "cốc starbucks",
+    tSeo("siteKeywords"),
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  return generateSEO({
+    title: categoryName,
+    description,
+    keywords,
+    locale,
+    openGraph: {
+      title: `${categoryName} Starbucks | ${siteConfig.name}`,
+      description,
+      image: `${siteConfig.url}/logo.png`,
+      url: `/category/${slug}`,
+      type: "website",
+    },
+  });
+}
 
 interface ProductsApiResponse {
   success: boolean;
@@ -152,23 +206,25 @@ export default async function CategoryPage({
     : null;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-zinc-950 text-white">
       {/* SEO text — server-rendered for Google, visually hidden for users */}
       <div className="sr-only">
         <h1>{category.name}</h1>
         {cleanDescription && <p>{cleanDescription}</p>}
       </div>
 
-      <CategoryPageClient
-        categorySlug={slug}
-        categoryName={category.name}
-        initialProducts={products}
-        initialPaginationData={pagination}
-        initialQueryKey={queryKey}
-        initialCategories={categories}
-        initialColors={colors}
-        initialCapacities={capacities}
-      />
+      <Suspense fallback={<ProductsPageSkeleton />}>
+        <CategoryPageClient
+          categorySlug={slug}
+          categoryName={category.name}
+          initialProducts={products}
+          initialPaginationData={pagination}
+          initialQueryKey={queryKey}
+          initialCategories={categories}
+          initialColors={colors}
+          initialCapacities={capacities}
+        />
+      </Suspense>
     </div>
   );
 }

@@ -21,8 +21,8 @@ export function SearchFilter({
     <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 size-4" />
+          <input aria-label="text"
             type="text"
             placeholder={searchPlaceholder}
             value={searchQuery}
@@ -30,7 +30,7 @@ export function SearchFilter({
             className="w-full pl-10 pr-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-gray-700 text-white placeholder-gray-400"
           />
         </div>
-        <select
+        <select aria-label="Select option"
           value={statusFilter}
           onChange={(e) => onStatusFilterChange(e.target.value as StatusFilter)}
           className="px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-gray-700 text-white min-w-48"

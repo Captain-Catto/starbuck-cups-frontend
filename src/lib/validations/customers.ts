@@ -28,8 +28,7 @@ export const customerSchema = z.object({
   phone: z.string()
     .min(1, 'Số điện thoại là bắt buộc')
     .max(20, 'Số điện thoại không được quá 20 ký tự'),
-  email: z.string()
-    .email('Email không đúng định dạng')
+  email: z.email('Email không đúng định dạng')
     .max(255, 'Email không được quá 255 ký tự')
     .optional()
     .or(z.literal('')),
@@ -88,8 +87,8 @@ export const customerFilterSchema = z.object({
   status: z.enum(['active', 'inactive']).optional(),
   createdBy: z.string().optional(),
   dateRange: z.object({
-    from: z.string().datetime(),
-    to: z.string().datetime(),
+    from: z.iso.datetime(),
+    to: z.iso.datetime(),
   }).optional(),
 });
 

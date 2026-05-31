@@ -47,17 +47,17 @@ export function VipRadio({
           ${disabled ? "opacity-50 cursor-not-allowed" : ""}
         `}
         >
-          <input
+          <input aria-label="is Vip"
             type="radio"
             name="isVip"
             value="true"
             checked={value === true}
             onChange={() => !disabled && onChange(true)}
             disabled={disabled}
-            className="w-4 h-4 text-yellow-600 border-gray-300 focus:ring-yellow-500 dark:border-gray-600 dark:focus:ring-yellow-600"
+            className="size-4 text-yellow-600 border-gray-300 focus:ring-yellow-500 dark:border-gray-600 dark:focus:ring-yellow-600"
           />
           <div className="ml-3 flex items-center gap-2">
-            <Star className="w-5 h-5 text-yellow-500 fill-current" />
+            <Star className="size-5 text-yellow-500 fill-current" />
             <div>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 Sản phẩm VIP
@@ -81,14 +81,14 @@ export function VipRadio({
           ${disabled ? "opacity-50 cursor-not-allowed" : ""}
         `}
         >
-          <input
+          <input aria-label="is Vip"
             type="radio"
             name="isVip"
             value="false"
             checked={value === false}
             onChange={() => !disabled && onChange(false)}
             disabled={disabled}
-            className="w-4 h-4 text-gray-600 border-gray-300 focus:ring-gray-500 dark:border-gray-600 dark:focus:ring-gray-600"
+            className="size-4 text-gray-600 border-gray-300 focus:ring-gray-500 dark:border-gray-600 dark:focus:ring-gray-600"
           />
           <div className="ml-3">
             <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -113,6 +113,16 @@ interface VipToggleProps {
   size?: "sm" | "md";
 }
 
+const VIP_TOGGLE_SIZE_CLASSES: Record<string, string> = {
+  sm: "text-sm",
+  md: "text-base",
+};
+
+const VIP_TOGGLE_ICON_SIZES: Record<string, string> = {
+  sm: "size-4",
+  md: "size-5",
+};
+
 export function VipToggle({
   value,
   onChange,
@@ -120,15 +130,6 @@ export function VipToggle({
   className = "",
   size = "md",
 }: VipToggleProps) {
-  const sizeClasses = {
-    sm: "text-sm",
-    md: "text-base",
-  };
-
-  const iconSizes = {
-    sm: "w-4 h-4",
-    md: "w-5 h-5",
-  };
 
   return (
     <label
@@ -138,17 +139,17 @@ export function VipToggle({
       ${className}
     `}
     >
-      <input
+      <input aria-label="checkbox"
         type="checkbox"
         checked={value}
         onChange={(e) => !disabled && onChange(e.target.checked)}
         disabled={disabled}
-        className="w-5 h-5 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500 dark:border-gray-600 dark:focus:ring-yellow-600"
+        className="size-5 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500 dark:border-gray-600 dark:focus:ring-yellow-600"
       />
       <div className="flex items-center gap-2">
-        <Star className={`text-yellow-500 fill-current ${iconSizes[size]}`} />
+        <Star className={`text-yellow-500 fill-current ${VIP_TOGGLE_ICON_SIZES[size]}`} />
         <span
-          className={`font-medium text-gray-900 dark:text-white ${sizeClasses[size]}`}
+          className={`font-medium text-gray-900 dark:text-white ${VIP_TOGGLE_SIZE_CLASSES[size]}`}
         >
           Đánh dấu là sản phẩm VIP
         </span>

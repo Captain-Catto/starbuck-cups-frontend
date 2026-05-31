@@ -13,6 +13,7 @@ export async function GET(
     searchParams.forEach((value, key) => url.searchParams.append(key, value));
 
     const response = await fetch(url.toString(), {
+      cache: "no-store",
       method: "GET",
       headers: {
         ...getAdminForwardHeaders(request),

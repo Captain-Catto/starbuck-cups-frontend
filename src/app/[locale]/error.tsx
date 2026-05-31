@@ -22,8 +22,8 @@ export default function Error({
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="text-center max-w-md">
-        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <AlertTriangle className="w-10 h-10 text-red-600" />
+        <div className="size-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <AlertTriangle className="size-10 text-red-600" />
         </div>
 
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{t("title")}</h1>
@@ -31,11 +31,11 @@ export default function Error({
         <p className="text-gray-600 mb-8">{t("description")}</p>
 
         <div className="space-y-3">
-          <button
+          <button type="button"
             onClick={reset}
             className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="size-4" />
             {t("retry")}
           </button>
 
@@ -43,7 +43,7 @@ export default function Error({
             href="/"
             className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <Home className="w-4 h-4" />
+            <Home className="size-4" />
             {tCommon("backToHome")}
           </Link>
         </div>

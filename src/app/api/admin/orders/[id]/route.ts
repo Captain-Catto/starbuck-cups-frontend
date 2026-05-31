@@ -10,6 +10,7 @@ export async function GET(
     const { id } = await params;
 
     const response = await fetch(getApiUrl(`admin/orders/${id}`), {
+      cache: "no-store",
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -36,6 +37,7 @@ export async function PUT(
     const body = await request.json();
 
     const response = await fetch(getApiUrl(`admin/orders/${id}`), {
+      cache: "no-store",
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

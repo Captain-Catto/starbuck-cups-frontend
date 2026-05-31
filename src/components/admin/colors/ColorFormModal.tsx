@@ -1,4 +1,4 @@
-import { X, Check } from "lucide-react";
+﻿import { X, Check } from "lucide-react";
 import type { Color } from "@/types";
 
 interface ColorFormData {
@@ -39,8 +39,10 @@ export function ColorFormModal({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-full items-center justify-center p-4">
-        <div
-          className="fixed inset-0 bg-black bg-opacity-25"
+        <button
+          type="button"
+          aria-label="Đóng modal"
+          className="fixed inset-0 bg-zinc-950 bg-opacity-25"
           onClick={onClose}
         />
 
@@ -49,21 +51,21 @@ export function ColorFormModal({
             <h3 className="text-lg font-semibold text-white">
               {editingColor ? "Cập nhật màu sắc" : "Thêm màu mới"}
             </h3>
-            <button
+            <button type="button"
               onClick={onClose}
               className="p-2 hover:bg-gray-700 rounded-lg transition-colors text-white cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <X className="size-5" />
             </button>
           </div>
 
           <form onSubmit={onSubmit} className="space-y-4">
             {/* Color Name */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="block text-sm font-medium text-white mb-2" htmlFor="colorformmodal-nh-p-t-n-m-u">
                 Tên màu *
               </label>
-              <input
+              <input aria-label="Nhập tên màu..."
                 type="text"
                 value={formData.name}
                 onChange={(e) =>
@@ -72,7 +74,7 @@ export function ColorFormModal({
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-gray-700 text-white placeholder-gray-400 ${
                   formErrors.name ? "border-red-500" : "border-gray-600"
                 }`}
-                placeholder="Nhập tên màu..."
+                placeholder="Nhập tên màu..." id="colorformmodal-nh-p-t-n-m-u"
               />
               {formErrors.name && (
                 <p className="mt-1 text-sm text-red-400">{formErrors.name}</p>
@@ -81,11 +83,11 @@ export function ColorFormModal({
 
             {/* Color Code */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="block text-sm font-medium text-white mb-2" htmlFor="colorformmodal-color">
                 Mã màu *
               </label>
               <div className="flex gap-3">
-                <input
+                <input aria-label="color"
                   type="color"
                   value={
                     formData.hexCode.length === 7 ? formData.hexCode : "#000000"
@@ -100,9 +102,9 @@ export function ColorFormModal({
                       });
                     }
                   }}
-                  className="w-12 h-10 border border-gray-600 rounded cursor-pointer"
+                  className="w-12 h-10 border border-gray-600 rounded cursor-pointer" id="colorformmodal-color"
                 />
-                <input
+                <input aria-label="#000000"
                   type="text"
                   value={formData.hexCode}
                   onChange={(e) => {
@@ -147,14 +149,14 @@ export function ColorFormModal({
 
             {/* Status */}
             <div className="flex items-center">
-              <input
+              <input aria-label="is Active"
                 type="checkbox"
                 id="isActive"
                 checked={formData.isActive}
                 onChange={(e) =>
                   onFormDataChange({ ...formData, isActive: e.target.checked })
                 }
-                className="w-4 h-4 text-gray-300 border-gray-600 rounded focus:ring-gray-500"
+                className="size-4 text-gray-300 border-gray-600 rounded focus:ring-gray-500"
               />
               <label htmlFor="isActive" className="ml-2 text-sm text-white">
                 Hiển thị màu này
@@ -177,12 +179,12 @@ export function ColorFormModal({
               >
                 {actionLoading === "save" ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Đang lưu...
+                    <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Đang lưu…
                   </>
                 ) : (
                   <>
-                    <Check className="w-4 h-4" />
+                    <Check className="size-4" />
                     {editingColor ? "Cập nhật" : "Tạo màu"}
                   </>
                 )}

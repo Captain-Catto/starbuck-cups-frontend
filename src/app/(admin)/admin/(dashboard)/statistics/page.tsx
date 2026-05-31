@@ -19,9 +19,9 @@ const OverviewCards = dynamic(
   {
     loading: () => (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, index) => (
+        {["a", "b", "c", "d"].map((id) => (
           <div
-            key={index}
+            key={id}
             className="h-28 bg-gray-800 rounded-lg border border-gray-700 animate-pulse"
           />
         ))}
@@ -163,8 +163,8 @@ export default function StatisticsPage() {
       />
 
       {/* Period Selector */}
-      <div className="flex space-x-2">
-        <button
+      <div className="flex gap-x-2">
+        <button type="button"
           onClick={() => handlePeriodChange("week")}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             period === "week"
@@ -174,7 +174,7 @@ export default function StatisticsPage() {
         >
           Tuần
         </button>
-        <button
+        <button type="button"
           onClick={() => handlePeriodChange("month")}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             period === "month"
@@ -184,7 +184,7 @@ export default function StatisticsPage() {
         >
           Tháng
         </button>
-        <button
+        <button type="button"
           onClick={() => handlePeriodChange("year")}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             period === "year"
@@ -257,7 +257,7 @@ export default function StatisticsPage() {
             </>
           ) : (
             <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 text-gray-300">
-              Đang chuẩn bị dữ liệu analytics...
+              Đang chuẩn bị dữ liệu analytics…
             </div>
           )}
         </div>

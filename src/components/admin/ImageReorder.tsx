@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   DndContext,
   closestCenter,
@@ -63,7 +63,7 @@ function SortableImageItem({ image, onRemove }: SortableImageItemProps) {
         {...listeners}
         className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
       >
-        <GripVertical className="w-4 h-4" />
+        <GripVertical className="size-4" />
       </div>
 
       <OptimizedImage
@@ -71,7 +71,7 @@ function SortableImageItem({ image, onRemove }: SortableImageItemProps) {
         alt={`Product image ${image.order + 1}`}
         width={48}
         height={48}
-        className="w-12 h-12 object-cover rounded border"
+        className="size-12 object-cover rounded border"
         onError={(e) => {
           e.currentTarget.style.display = 'none';
         }}
@@ -90,7 +90,7 @@ function SortableImageItem({ image, onRemove }: SortableImageItemProps) {
         onClick={() => onRemove(image.id)}
         className="text-red-500 hover:text-red-700 transition-colors"
       >
-        <X className="w-4 h-4" />
+        <X className="size-4" />
       </button>
     </div>
   );
@@ -110,12 +110,13 @@ export default function ImageReorder({
   className = ""
 }: ImageReorderProps) {
   // Convert string array to ImageItem array
-  const [imageItems, setImageItems] = useState<ImageItem[]>(() =>
+  const imageItems = useMemo(() =>
     images.map((url, index) => ({
       id: `${index}-${url}`,
       url,
       order: index,
-    }))
+    })),
+    [images]
   );
 
   const sensors = useSensors(
@@ -125,43 +126,18 @@ export default function ImageReorder({
     })
   );
 
-  // Update imageItems when images prop changes
-  useEffect(() => {
-    const newItems = images.map((url, index) => ({
-      id: `${index}-${url}`,
-      url,
-      order: index,
-    }));
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setImageItems(newItems);
-  }, [images]);
-
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
 
     if (active.id !== over?.id) {
-      setImageItems((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over?.id);
+      const oldIndex = imageItems.findIndex((item) => item.id === active.id);
+      const newIndex = imageItems.findIndex((item) => item.id === over?.id);
 
-        const newItems = arrayMove(items, oldIndex, newIndex);
-
-        // Update order field
-        const updatedItems = newItems.map((item, index) => ({
-          ...item,
-          order: index,
-        }));
-
-        // Use setTimeout to avoid setState during render
-        setTimeout(() => {
-          const newUrls = updatedItems.map(item => item.url);
-          onReorder(newUrls);
-        }, 0);
-
-        return updatedItems;
-      });
+      const newItems = arrayMove(imageItems, oldIndex, newIndex);
+      const newUrls = newItems.map(item => item.url);
+      onReorder(newUrls);
     }
-  }, [onReorder]);
+  }, [imageItems, onReorder]);
 
   const handleRemove = useCallback((id: string) => {
     const index = imageItems.findIndex(item => item.id === id);

@@ -105,7 +105,7 @@ export function UploadModal({ onClose, onSuccess }: UploadModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-zinc-950 bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           {/* Header */}
@@ -118,7 +118,7 @@ export function UploadModal({ onClose, onSuccess }: UploadModalProps) {
               onClick={onClose}
               className="text-gray-400 hover:text-white transition-colors cursor-pointer"
             >
-              <X className="w-6 h-6" />
+              <X className="size-6" />
             </button>
           </div>
 
@@ -126,7 +126,7 @@ export function UploadModal({ onClose, onSuccess }: UploadModalProps) {
           <div className="p-6 space-y-6">
             {/* File Upload */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="block text-sm font-medium text-white mb-2" htmlFor="uploadmodal-file">
                 Chọn ảnh *
               </label>
               <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center relative">
@@ -154,18 +154,18 @@ export function UploadModal({ onClose, onSuccess }: UploadModalProps) {
                   </div>
                 ) : (
                   <div>
-                    <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <ImageIcon className="size-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-300 mb-2">
                       Kéo thả ảnh vào đây hoặc click để chọn
                     </p>
                     <p className="text-gray-500 text-sm">
                       PNG, JPG, WEBP (tối đa 5MB)
                     </p>
-                    <input
+                    <input aria-label="file"
                       type="file"
                       accept="image/*"
                       onChange={handleFileSelect}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      className="absolute inset-0 size-full opacity-0 cursor-pointer" id="uploadmodal-file"
                     />
                   </div>
                 )}
@@ -174,10 +174,10 @@ export function UploadModal({ onClose, onSuccess }: UploadModalProps) {
 
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="block text-sm font-medium text-white mb-2" htmlFor="uploadmodal-nh-p-ti-u-cho-hero-image">
                 Tiêu đề *
               </label>
-              <input
+              <input aria-label="Nhập tiêu đề cho hero image"
                 type="text"
                 value={formData.title}
                 onChange={(e) =>
@@ -185,16 +185,16 @@ export function UploadModal({ onClose, onSuccess }: UploadModalProps) {
                 }
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Nhập tiêu đề cho hero image"
-                required
+                required id="uploadmodal-nh-p-ti-u-cho-hero-image"
               />
             </div>
 
             {/* Alt Text */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="block text-sm font-medium text-white mb-2" htmlFor="uploadmodal-m-t-ng-n-g-n-v-nh-cho-seo-v-accessib">
                 Alt Text *
               </label>
-              <input
+              <input aria-label="Mô tả ngắn gọn về ảnh (cho SEO và accessibility)"
                 type="text"
                 value={formData.altText}
                 onChange={(e) =>
@@ -202,20 +202,20 @@ export function UploadModal({ onClose, onSuccess }: UploadModalProps) {
                 }
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Mô tả ngắn gọn về ảnh (cho SEO và accessibility)"
-                required
+                required id="uploadmodal-m-t-ng-n-g-n-v-nh-cho-seo-v-accessib"
               />
             </div>
 
             {/* Status */}
             <div className="flex items-center">
-              <input
+              <input aria-label="is Active"
                 type="checkbox"
                 id="isActive"
                 checked={formData.isActive}
                 onChange={(e) =>
                   setFormData({ ...formData, isActive: e.target.checked })
                 }
-                className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                className="size-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
               />
               <label htmlFor="isActive" className="ml-2 text-sm text-white">
                 Hiển thị ngay trên trang chủ
@@ -239,12 +239,12 @@ export function UploadModal({ onClose, onSuccess }: UploadModalProps) {
             >
               {uploading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Đang upload...
+                  <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Đang upload…
                 </>
               ) : (
                 <>
-                  <Upload className="w-4 h-4" />
+                  <Upload className="size-4" />
                   Thêm Hero Image
                 </>
               )}

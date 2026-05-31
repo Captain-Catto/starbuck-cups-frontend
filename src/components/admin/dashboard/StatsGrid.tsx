@@ -15,28 +15,29 @@ interface StatsGridProps {
   loading: boolean;
 }
 
+const viNumberFormatter = new Intl.NumberFormat("vi-VN");
+
+const formatNumber = (num: number | undefined | null) => {
+  return viNumberFormatter.format(num || 0);
+};
+
 export function StatsGrid({
   dashboardStats,
   revenueData,
   pendingConsultations,
   loading,
 }: StatsGridProps) {
-  // Format number with Vietnamese locale
-  const formatNumber = (num: number | undefined | null) => {
-    return new Intl.NumberFormat("vi-VN").format(num || 0);
-  };
-
   // Generate stats array from real data
   const stats = [
     {
       title: "Tổng đơn hàng",
-      value: dashboardStats ? formatNumber(dashboardStats.totalOrders) : "...",
+      value: dashboardStats ? formatNumber(dashboardStats.totalOrders) : "…",
       change:
         revenueData && typeof revenueData.growth === "number"
           ? `${revenueData.growth > 0 ? "+" : ""}${revenueData.growth.toFixed(
               1
             )}%`
-          : "...",
+          : "…",
       trend:
         revenueData && typeof revenueData.growth === "number"
           ? revenueData.growth >= 0
@@ -50,7 +51,7 @@ export function StatsGrid({
       title: "Khách hàng",
       value: dashboardStats
         ? formatNumber(dashboardStats.totalCustomers)
-        : "...",
+        : "…",
       change: "+8%",
       trend: "up",
       icon: Users,
@@ -60,7 +61,7 @@ export function StatsGrid({
       title: "Sản phẩm",
       value: dashboardStats
         ? formatNumber(dashboardStats.totalProducts)
-        : "...",
+        : "…",
       change: "+3%",
       trend: "up",
       icon: Package,
@@ -79,15 +80,15 @@ export function StatsGrid({
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, index) => (
+        {["a", "b", "c", "d"].map((id) => (
           <div
-            key={index}
+            key={id}
             className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 animate-pulse"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gray-700 rounded-lg"></div>
+              <div className="size-12 bg-gray-700 rounded-lg"></div>
               <div className="flex items-center gap-1">
-                <div className="w-4 h-4 bg-gray-700 rounded"></div>
+                <div className="size-4 bg-gray-700 rounded"></div>
                 <div className="w-8 h-4 bg-gray-700 rounded"></div>
               </div>
             </div>
@@ -107,14 +108,14 @@ export function StatsGrid({
         const Icon = stat.icon;
         return (
           <div
-            key={index}
+            key={stat.title}
             className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 hover:border-gray-600 transition-all"
           >
             <div className="flex items-center justify-between mb-4">
               <div
-                className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center shadow-lg`}
+                className={`size-12 ${stat.color} rounded-lg flex items-center justify-center shadow-lg`}
               >
-                <Icon className="w-6 h-6 text-white" />
+                <Icon className="size-6 text-white" />
               </div>
               <div
                 className={`flex items-center gap-1 text-sm font-medium ${
@@ -122,9 +123,9 @@ export function StatsGrid({
                 }`}
               >
                 {stat.trend === "up" ? (
-                  <TrendingUp className="w-4 h-4" />
+                  <TrendingUp className="size-4" />
                 ) : (
-                  <TrendingDown className="w-4 h-4" />
+                  <TrendingDown className="size-4" />
                 )}
                 {stat.change}
               </div>

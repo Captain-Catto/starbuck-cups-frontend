@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useMemo, ImgHTMLAttributes } from 'react';
 import { convertDriveUrl } from '@/utils/googleDriveHelper';
 
@@ -80,7 +82,7 @@ export default function OptimizedImage({
 
   if (fill) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
+      // react-doctor-disable-next-line react-doctor/nextjs-no-img-element -- custom /api/image optimization pipeline; next/image is not applicable here
       <img
         src={imageSrc}
         srcSet={srcSet}
@@ -106,7 +108,7 @@ export default function OptimizedImage({
   }
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
+    // react-doctor-disable-next-line react-doctor/nextjs-no-img-element -- custom /api/image optimization pipeline; next/image is not applicable here
     <img
       src={imageSrc}
       srcSet={srcSet}
@@ -149,7 +151,7 @@ function getOptimizedUrl(src: string, width?: number, quality?: number): string 
 /**
  * Preload critical images
  */
-export function preloadImage(src: string, width?: number) {
+function preloadImage(src: string, width?: number) {
   if (typeof window === 'undefined') return;
 
   const normalizedSrc = normalizeSource(src);

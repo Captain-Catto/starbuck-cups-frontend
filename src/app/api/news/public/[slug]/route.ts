@@ -11,6 +11,7 @@ export async function GET(
     const url = `${getApiUrl(`news/public/${slug}`)}${queryString ? `?${queryString}` : ""}`;
 
     const response = await fetch(url, {
+      cache: "no-store",
       headers: { "Content-Type": "application/json" },
     });
 

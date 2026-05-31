@@ -34,12 +34,12 @@ export function ConfirmModal({
         <div className="p-6">
           <div className="flex items-center gap-3 mb-4">
             <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              className={`size-10 rounded-full flex items-center justify-center ${
                 action === "delete" ? "bg-red-100" : "bg-yellow-100"
               }`}
             >
               <AlertTriangle
-                className={`w-5 h-5 ${
+                className={`size-5 ${
                   action === "delete" ? "text-red-600" : "text-yellow-600"
                 }`}
               />
@@ -53,14 +53,14 @@ export function ConfirmModal({
           <div className="mb-6">{children}</div>
 
           <div className="flex gap-3">
-            <button
+            <button type="button"
               onClick={onCancel}
               className="flex-1 px-4 py-2 border border-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
             >
               {cancelLabel}
             </button>
             {showConfirmButton && (
-              <button
+              <button type="button"
                 onClick={onConfirm}
                 className={`flex-1 px-4 py-2 text-white rounded-lg transition-colors cursor-pointer ${
                   action === "delete"

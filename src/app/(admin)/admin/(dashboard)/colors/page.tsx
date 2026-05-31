@@ -49,11 +49,11 @@ export default function ColorsManagement() {
         title="Quản lý màu sắc"
         description="Quản lý các màu sắc cho sản phẩm"
         action={
-          <button
+          <button type="button"
             onClick={handleAddColor}
             className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="size-4" />
             Thêm màu mới
           </button>
         }

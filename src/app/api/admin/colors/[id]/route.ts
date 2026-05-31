@@ -41,6 +41,7 @@ export async function PUT(
     }
 
     const response = await fetch(getApiUrl(`admin/colors/${id}`), {
+      cache: "no-store",
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -69,6 +70,7 @@ export async function DELETE(
     const { id } = await params;
 
     const response = await fetch(getApiUrl(`admin/colors/${id}`), {
+      cache: "no-store",
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

@@ -1,12 +1,36 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import ProductsPageClient from "@/components/pages/ProductsPageClient";
 import { getApiUrl } from "@/lib/api-config";
 import { buildProductsQueryParams } from "@/lib/products-query";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { generateBreadcrumbStructuredData } from "@/lib/seo";
+import { generateBreadcrumbStructuredData, generateSEO } from "@/lib/seo";
 import { PRODUCTS_PAGE_LIMIT } from "@/utils/layoutCalculator";
 import ProductsPageSkeleton from "@/components/ui/ProductsPageSkeleton";
 import type { Category, Color, Capacity, Product } from "@/types";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "seo" });
+
+  return generateSEO({
+    title: t("productsPageTitle"),
+    description: t("productsPageDescription"),
+    keywords: t("siteKeywords"),
+    locale,
+    openGraph: {
+      title: `${t("productsPageTitle")} | ${t("siteTitle")}`,
+      description: t("productsPageDescription"),
+      image: "/logo.png",
+      url: "/products",
+      type: "website",
+    },
+  });
+}
 
 export const revalidate = 3600;
 export const dynamic = "force-static";
@@ -161,10 +185,9 @@ export default async function ProductsPage({
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      <script type="application/ld+json">
+        {JSON.stringify(breadcrumbJsonLd)}
+      </script>
       {/* SEO intro — server-rendered for Google, visually hidden for users */}
       <div className="sr-only">
         <h1>{t("productsIntroTitle")}</h1>

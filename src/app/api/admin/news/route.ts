@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     request.nextUrl.searchParams.forEach((v, k) => url.searchParams.append(k, v));
 
     const response = await fetch(url.toString(), {
+      cache: "no-store",
       headers: { "Content-Type": "application/json", ...getAdminForwardHeaders(request) },
     });
 
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response = await fetch(getApiUrl("news/admin"), {
+      cache: "no-store",
       method: "POST",
       headers: { "Content-Type": "application/json", ...getAdminForwardHeaders(request) },
       body: JSON.stringify(body),

@@ -9,6 +9,18 @@ import { useAdminCustomers } from "@/hooks/admin/useCustomers";
 import { CustomerConfirmModal } from "./CustomerConfirmModal";
 import { timeAgo } from "@/lib/utils/dateUtils";
 
+const formatDate = (dateString: string) =>
+  new Date(dateString).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+const viCurrencyFormatter = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
+const formatCurrency = (amount: number) => viCurrencyFormatter.format(amount);
+
 interface CustomerListProps {
   searchTerm: string;
   vipStatus?: string;
@@ -40,7 +52,7 @@ export function CustomerList({
   // Sort API results client-side since backend always returns createdAt DESC
   const sortedCustomers = useMemo(() => {
     if (!customers.length) return customers;
-    return [...customers].sort((a, b) => {
+    return customers.toSorted((a, b) => {
       let aValue: string | number | Date;
       let bValue: string | number | Date;
 
@@ -75,20 +87,7 @@ export function CustomerList({
     });
   }, [customers, sortBy, sortOrder]);
 
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
 
   if (loading) {
     return (
@@ -126,9 +125,9 @@ export function CustomerList({
                     <div className="h-3 bg-gray-700 rounded w-16"></div>
                   </div>
                   <div className="flex justify-end gap-2 ml-auto">
-                    <div className="w-8 h-8 bg-gray-700 rounded"></div>
-                    <div className="w-8 h-8 bg-gray-700 rounded"></div>
-                    <div className="w-8 h-8 bg-gray-700 rounded"></div>
+                    <div className="size-8 bg-gray-700 rounded"></div>
+                    <div className="size-8 bg-gray-700 rounded"></div>
+                    <div className="size-8 bg-gray-700 rounded"></div>
                   </div>
                 </div>
               ))}
@@ -170,7 +169,14 @@ export function CustomerList({
           </thead>
           <tbody className="bg-gray-800 divide-y divide-gray-700">
             {sortedCustomers.map((customer) => (
-              <tr key={customer.id} className="hover:bg-gray-700 cursor-pointer" onClick={() => router.push(`/admin/customers/${customer.id}`)}>
+              <tr
+                key={customer.id}
+                role="button"
+                tabIndex={0}
+                className="hover:bg-gray-700 cursor-pointer"
+                onClick={() => router.push(`/admin/customers/${customer.id}`)}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && router.push(`/admin/customers/${customer.id}`)}
+              >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="max-w-48">
                     <div className="flex items-center gap-2">
@@ -252,7 +258,7 @@ export function CustomerList({
                       title="Xem chi tiết"
                       aria-label="Xem chi tiết khách hàng"
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="size-4" />
                     </Link>
                     <Link
                       href={`/admin/customers/${customer.id}?edit=true`}
@@ -261,9 +267,9 @@ export function CustomerList({
                       title="Chỉnh sửa"
                       aria-label="Chỉnh sửa khách hàng"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="size-4" />
                     </Link>
-                    <button
+                    <button type="button"
                       onClick={(e) => { e.stopPropagation(); handleDelete(customer); }}
                       disabled={actionLoading === `delete-${customer.id}`}
                       className="text-white hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer"
@@ -271,9 +277,9 @@ export function CustomerList({
                       aria-label="Xóa khách hàng"
                     >
                       {actionLoading === `delete-${customer.id}` ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                        <div className="animate-spin rounded-full size-4 border-b-2 border-current"></div>
                       ) : (
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="size-4" />
                       )}
                     </button>
                   </div>

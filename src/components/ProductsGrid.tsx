@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useState, useEffect, useRef } from "react";
 import ProductCard from "@/components/ProductCard";
 import { useAppDispatch } from "@/store";
@@ -34,6 +35,8 @@ interface ProductsGridProps {
   initialQueryKey?: string;
 }
 
+const EMPTY_PRODUCTS: Product[] = [];
+
 export default function ProductsGrid({
   searchQuery,
   selectedCategory,
@@ -42,7 +45,7 @@ export default function ProductsGrid({
   sortBy,
   currentPage,
   onPageChange,
-  initialProducts = [],
+  initialProducts = EMPTY_PRODUCTS,
   initialPaginationData = null,
   initialQueryKey,
 }: ProductsGridProps) {
@@ -58,8 +61,12 @@ export default function ProductsGrid({
   const didSkipInitialFetch = useRef(false);
   // Track the params of the last *completed* fetch to avoid redundant requests
   const lastFetchedParams = useRef<string | null>(null);
+  // Stable ref so onPageChange never needs to be in the effect dep array
+  const onPageChangeRef = useRef(onPageChange);
+  onPageChangeRef.current = onPageChange;
   const dispatch = useAppDispatch();
 
+  // react-doctor-disable-next-line react-doctor/no-fetch-in-effect -- fetching filtered products via client-side AJAX is standard behavior here
   useEffect(() => {
     // Each render of this effect gets its own AbortController.
     // When the effect re-runs (deps changed) or the component unmounts,
@@ -73,7 +80,10 @@ export default function ProductsGrid({
         searchQuery,
         selectedCategory,
         selectedColor,
-        capacityRange,
+        capacityRange: {
+          min: capacityRange.min,
+          max: capacityRange.max,
+        },
         sortBy,
         currentPage,
         limit: productsLimit,
@@ -132,7 +142,7 @@ export default function ProductsGrid({
 
           // Auto-reset to page 1 if current page exceeds total pages
           if (currentPage > totalPages) {
-            onPageChange(1);
+            onPageChangeRef.current(1);
           }
         } else {
           lastFetchedParams.current = currentParams;
@@ -163,7 +173,6 @@ export default function ProductsGrid({
     return () => {
       controller.abort();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     searchQuery,
     selectedCategory,
@@ -211,9 +220,9 @@ export default function ProductsGrid({
     return (
       <div className="space-y-6">
         <div className={getResponsiveGridClasses("products")}>
-          {[...Array(skeletonCount)].map((_, index) => (
+          {Array.from({ length: skeletonCount }, (_, i) => i).map((i) => (
             <div
-              key={index}
+              key={i}
               className="animate-pulse bg-zinc-800 border border-zinc-700 rounded-lg overflow-hidden"
             >
               <div className="aspect-square bg-zinc-700"></div>

@@ -5,29 +5,29 @@ interface FeaturedBadgeProps {
   className?: string;
 }
 
+const FEATURED_BADGE_SIZES: Record<string, string> = {
+  xs: "px-1.5 py-0 text-[10px]",
+  sm: "px-2 py-0.5 text-xs",
+  md: "px-2.5 py-1 text-sm",
+  lg: "px-3 py-1.5 text-base",
+};
+
 export function FeaturedBadge({
   size = "md",
   className = "",
 }: FeaturedBadgeProps) {
-  const sizes = {
-    xs: "px-1.5 py-0 text-[10px]",
-    sm: "px-2 py-0.5 text-xs",
-    md: "px-2.5 py-1 text-sm",
-    lg: "px-3 py-1.5 text-base",
-  };
-
   return (
     <div className={`inline-block featured-shimmer ${className}`}>
       <span
-        className={`${sizes[size]} font-bold text-black bg-white rounded-sm uppercase tracking-wide`}
+        className={`${FEATURED_BADGE_SIZES[size]} font-bold text-black bg-white rounded-sm uppercase tracking-wide`}
       >
         HOT
       </span>
 
-      <style jsx>{`
+      <style>{`
         .featured-shimmer {
           position: relative;
-          overflow: hidden !important;
+          overflow: hidden;
           isolation: isolate;
         }
 

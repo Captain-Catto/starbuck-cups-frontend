@@ -7,15 +7,16 @@ interface AnalyticsOverviewProps {
   data: AnalyticsSummary;
 }
 
+const viNumberFormatter = new Intl.NumberFormat("vi-VN");
+const formatNumber = (num: number) => viNumberFormatter.format(num);
+
+const formatPercentage = (num: number) => {
+  return `${num.toFixed(1)}%`;
+};
+
+
+
 export function AnalyticsOverview({ data }: AnalyticsOverviewProps) {
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat("vi-VN").format(num);
-  };
-
-  const formatPercentage = (num: number) => {
-    return `${num.toFixed(1)}%`;
-  };
-
   const cards = [
     {
       title: "Tổng lượt click",
@@ -53,9 +54,9 @@ export function AnalyticsOverview({ data }: AnalyticsOverviewProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {cards.map((card, index) => (
+      {cards.map((card) => (
         <div
-          key={index}
+          key={card.title}
           className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 hover:border-gray-600 transition-all"
         >
           <div>

@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(
       `${getApiUrl("admin/orders")}${queryString ? `?${queryString}` : ""}`,
       {
+      cache: "no-store",
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -33,6 +34,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const response = await fetch(getApiUrl("admin/orders"), {
+      cache: "no-store",
       method: "POST",
       headers: {
         "Content-Type": "application/json",

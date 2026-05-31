@@ -14,19 +14,18 @@ export function OrderTypeSelectionStep({ formData, setFormData }: StepProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div
-          onClick={() =>
-            setFormData((prev) => ({ ...prev, orderType: "product" }))
-          }
-          className={`p-6 border-2 rounded-lg cursor-pointer transition-colors ${
+        <button
+          type="button"
+          onClick={() => setFormData((prev) => ({ ...prev, orderType: "product" }))}
+          className={`w-full text-left p-6 border-2 rounded-lg cursor-pointer transition-colors ${
             formData.orderType === "product"
               ? "border-gray-200 bg-gray-900/20"
               : "border-gray-600 hover:border-gray-500 hover:bg-gray-800"
           }`}
         >
           <div className="text-center">
-            <div className="w-12 h-12 bg-blue-900/50 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Package className="w-6 h-6 text-blue-400" />
+            <div className="size-12 bg-blue-900/50 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Package className="size-6 text-blue-400" />
             </div>
             <h4 className="text-lg font-semibold text-white mb-2">
               Đơn sản phẩm
@@ -36,21 +35,20 @@ export function OrderTypeSelectionStep({ formData, setFormData }: StepProps) {
               phẩm, số lượng và màu sắc.
             </p>
           </div>
-        </div>
+        </button>
 
-        <div
-          onClick={() =>
-            setFormData((prev) => ({ ...prev, orderType: "custom" }))
-          }
-          className={`p-6 border-2 rounded-lg cursor-pointer transition-colors ${
+        <button
+          type="button"
+          onClick={() => setFormData((prev) => ({ ...prev, orderType: "custom" }))}
+          className={`w-full text-left p-6 border-2 rounded-lg cursor-pointer transition-colors ${
             formData.orderType === "custom"
               ? "border-gray-200 bg-gray-900/20"
               : "border-gray-600 hover:border-gray-500 hover:bg-gray-800"
           }`}
         >
           <div className="text-center">
-            <div className="w-12 h-12 bg-purple-900/50 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Package className="w-6 h-6 text-purple-400" />
+            <div className="size-12 bg-purple-900/50 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Package className="size-6 text-purple-400" />
             </div>
             <h4 className="text-lg font-semibold text-white mb-2">
               Đơn tùy chỉnh
@@ -60,7 +58,7 @@ export function OrderTypeSelectionStep({ formData, setFormData }: StepProps) {
               có trong catalog.
             </p>
           </div>
-        </div>
+        </button>
       </div>
     </div>
   );

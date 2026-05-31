@@ -16,15 +16,15 @@ export function NotificationHeader({
   return (
     <div className="flex items-center justify-between mb-8">
       <div className="flex items-center gap-4">
-        <button
+        <button type="button"
           onClick={onBack}
           className="p-2 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
         >
-          <ArrowLeft className="w-5 h-5 text-white" />
+          <ArrowLeft className="size-5 text-white" />
         </button>
         <div>
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <Bell className="w-8 h-8 text-white" />
+            <Bell className="size-8 text-white" />
             Thông báo
           </h1>
           <p className="text-white mt-2">
@@ -35,19 +35,19 @@ export function NotificationHeader({
 
       <div className="flex items-center gap-3">
         {hasUnread && (
-          <button
+          <button type="button"
             onClick={onMarkAllAsRead}
             className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 cursor-pointer"
           >
-            <CheckCircle2 className="w-4 h-4 text-white" />
+            <CheckCircle2 className="size-4 text-white" />
             Đánh dấu tất cả đã đọc
           </button>
         )}
-        <button
+        <button type="button"
           onClick={onClearAll}
           className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2 cursor-pointer"
         >
-          <Trash2 className="w-4 h-4 text-white" />
+          <Trash2 className="size-4 text-white" />
           Xóa tất cả
         </button>
       </div>

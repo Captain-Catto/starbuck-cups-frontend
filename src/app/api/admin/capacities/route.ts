@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
     });
 
     const response = await fetch(url.toString(), {
+      cache: "no-store",
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -66,6 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response = await fetch(getApiUrl("admin/capacities"), {
+      cache: "no-store",
       method: "POST",
       headers: {
         "Content-Type": "application/json",

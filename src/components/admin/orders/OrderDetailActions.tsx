@@ -21,33 +21,20 @@ interface QuickAction {
   icon: typeof CheckCircle;
 }
 
-export function OrderDetailActions({
-  orderStatus,
-  updating,
-  onUpdateStatus,
-}: OrderDetailActionsProps) {
-  // Get color classes for each action type
-  const getColorClasses = (color: QuickAction["color"]) => {
-    switch (color) {
-      case "green":
-        return "bg-green-600 hover:bg-green-700 text-white";
-      case "red":
-        return "bg-red-600 hover:bg-red-700 text-white";
-      case "blue":
-        return "bg-blue-600 hover:bg-blue-700 text-white";
-      case "orange":
-        return "bg-orange-600 hover:bg-orange-700 text-white";
-      case "yellow":
-        return "bg-yellow-600 hover:bg-yellow-700 text-white";
-      default:
-        return "bg-gray-600 hover:bg-gray-700 text-white";
-    }
-  };
+function getColorClasses(color: QuickAction["color"]) {
+  switch (color) {
+    case "green": return "bg-green-600 hover:bg-green-700 text-white";
+    case "red": return "bg-red-600 hover:bg-red-700 text-white";
+    case "blue": return "bg-blue-600 hover:bg-blue-700 text-white";
+    case "orange": return "bg-orange-600 hover:bg-orange-700 text-white";
+    case "yellow": return "bg-yellow-600 hover:bg-yellow-700 text-white";
+    default: return "bg-gray-600 hover:bg-gray-700 text-white";
+  }
+}
 
-  // Get available actions based on current status
-  const getAvailableActions = (): QuickAction[] => {
-    const status = orderStatus.toUpperCase();
-    const actions: QuickAction[] = [];
+function getAvailableActions(orderStatus: string): QuickAction[] {
+  const status = orderStatus.toUpperCase();
+  const actions: QuickAction[] = [];
 
     switch (status) {
       case "PENDING":
@@ -108,13 +95,16 @@ export function OrderDetailActions({
         break;
     }
 
-    return actions;
-  };
+  return actions;
+}
 
-  // Handle action click
+export function OrderDetailActions({
+  orderStatus,
+  updating,
+  onUpdateStatus,
+}: OrderDetailActionsProps) {
   const handleActionClick = async (action: QuickAction) => {
     const success = await onUpdateStatus(action.status);
-
     if (success) {
       toast.success(`Đã cập nhật trạng thái đơn hàng thành "${action.label}"`);
     } else {
@@ -122,7 +112,7 @@ export function OrderDetailActions({
     }
   };
 
-  const availableActions = getAvailableActions();
+  const availableActions = getAvailableActions(orderStatus);
 
   if (availableActions.length === 0) {
     return null;
@@ -131,7 +121,7 @@ export function OrderDetailActions({
   return (
     <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
       <div className="flex items-center gap-3 mb-4">
-        <AlertCircle className="w-5 h-5 text-blue-400" />
+        <AlertCircle className="size-5 text-blue-400" />
         <h3 className="text-lg font-medium text-white">Hành động nhanh</h3>
       </div>
 
@@ -139,7 +129,7 @@ export function OrderDetailActions({
         {availableActions.map((action) => {
           const Icon = action.icon;
           return (
-            <button
+            <button type="button"
               key={action.status}
               onClick={() => handleActionClick(action)}
               disabled={updating}
@@ -149,8 +139,8 @@ export function OrderDetailActions({
                 ${getColorClasses(action.color)}
               `}
             >
-              <Icon className="w-4 h-4 flex-shrink-0" />
-              {updating ? "Đang cập nhật..." : action.label}
+              <Icon className="size-4 flex-shrink-0" />
+              {updating ? "Đang cập nhật…" : action.label}
             </button>
           );
         })}
@@ -158,9 +148,9 @@ export function OrderDetailActions({
 
       {updating && (
         <div className="flex items-center gap-2 mt-4 p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
-          <Clock className="w-4 h-4 text-blue-400 animate-spin" />
+          <Clock className="size-4 text-blue-400 animate-spin" />
           <span className="text-sm text-blue-300">
-            Đang cập nhật trạng thái đơn hàng...
+            Đang cập nhật trạng thái đơn hàng…
           </span>
         </div>
       )}

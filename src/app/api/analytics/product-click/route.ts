@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
 
     // Forward to backend analytics service
     const response = await fetch(getApiUrl("analytics/product-click"), {
+      cache: "no-store",
       method: "POST",
       headers: {
         "Content-Type": "application/json",

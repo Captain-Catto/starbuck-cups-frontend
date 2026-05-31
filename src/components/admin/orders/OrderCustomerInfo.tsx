@@ -27,7 +27,7 @@ export function OrderCustomerInfo({
         {/* Customer */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <User className="w-5 h-5 text-gray-400" />
+            <User className="size-5 text-gray-400" />
             <h3 className="font-medium text-white">Thông tin khách hàng</h3>
           </div>
           <div className="space-y-1">
@@ -48,33 +48,33 @@ export function OrderCustomerInfo({
         {/* Delivery address */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-gray-400" />
+            <MapPin className="size-5 text-gray-400" />
             <h3 className="font-medium text-white">Địa chỉ giao hàng</h3>
           </div>
           {isEditing ? (
             <div className="space-y-2">
-              <input
+              <input aria-label="Địa chỉ"
                 type="text"
                 placeholder="Địa chỉ"
                 value={editData.deliveryAddress?.addressLine || ""}
                 onChange={(e) => onUpdateAddress("addressLine", e.target.value)}
                 className={inputClass}
               />
-              <input
+              <input aria-label="Quận/Huyện"
                 type="text"
                 placeholder="Quận/Huyện"
                 value={editData.deliveryAddress?.district || ""}
                 onChange={(e) => onUpdateAddress("district", e.target.value)}
                 className={inputClass}
               />
-              <input
+              <input aria-label="Thành phố"
                 type="text"
                 placeholder="Thành phố"
                 value={editData.deliveryAddress?.city || ""}
                 onChange={(e) => onUpdateAddress("city", e.target.value)}
                 className={inputClass}
               />
-              <input
+              <input aria-label="Mã bưu điện"
                 type="text"
                 placeholder="Mã bưu điện"
                 value={editData.deliveryAddress?.postalCode || ""}
@@ -104,7 +104,7 @@ export function OrderCustomerInfo({
         {/* Timeline */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-gray-400" />
+            <Calendar className="size-5 text-gray-400" />
             <h3 className="font-medium text-white">Thời gian</h3>
           </div>
           <div className="space-y-1">
@@ -129,11 +129,11 @@ export function OrderCustomerInfo({
       {(order.notes || isEditing) && (
         <div className="mt-6 pt-6 border-t border-gray-700">
           <div className="flex items-center gap-2 mb-2">
-            <FileText className="w-5 h-5 text-gray-400" />
+            <FileText className="size-5 text-gray-400" />
             <h3 className="font-medium text-white">Ghi chú</h3>
           </div>
           {isEditing ? (
-            <textarea
+            <textarea aria-label="Nhập ghi chú..."
               placeholder="Nhập ghi chú..."
               value={editData.notes || ""}
               onChange={(e) => onUpdateEditData("notes", e.target.value)}

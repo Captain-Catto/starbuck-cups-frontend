@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { generateSEO } from "@/lib/seo";
 import HomePageComponent from "@/components/pages/HomePage";
-import { Category } from "@/types";
+import { Category, Product } from "@/types";
 import { getApiUrl } from "@/lib/api-config";
 
 export const revalidate = 3600;
@@ -31,6 +31,7 @@ interface HomePageProps {
   categories: Category[];
   heroImages: HeroImageData[];
   promotionalBanner: PromotionalBannerData | null;
+  products: Product[];
 }
 
 export async function generateMetadata({
@@ -56,7 +57,7 @@ export async function generateMetadata({
   });
 }
 
-async function getHomePageData(): Promise<HomePageProps> {
+async function getHomePageData(locale: string): Promise<HomePageProps> {
   try {
     const categoriesResponse = await fetch(getApiUrl("categories/public/"), {
       next: { revalidate: 300 },
@@ -109,16 +110,39 @@ async function getHomePageData(): Promise<HomePageProps> {
       }
     } catch {}
 
+    let products: Product[] = [];
+    try {
+      const productsResponse = await fetch(
+        getApiUrl(
+          `products?sortBy=createdAt&sortOrder=desc&limit=12&locale=${locale}`
+        ),
+        {
+          next: { revalidate: 300 },
+          cache: "force-cache",
+        }
+      );
+
+      if (productsResponse.ok) {
+        const productsData = await productsResponse.json();
+
+        if (productsData.success && productsData.data?.items) {
+          products = productsData.data.items;
+        }
+      }
+    } catch {}
+
     return {
       categories,
       heroImages,
       promotionalBanner,
+      products,
     };
   } catch {
     return {
       categories: [],
       heroImages: [],
       promotionalBanner: null,
+      products: [],
     };
   }
 }
@@ -131,12 +155,13 @@ export default async function HomePage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const homePageData = await getHomePageData();
+  const homePageData = await getHomePageData(locale);
 
   return (
     <HomePageComponent
-      heroImages={homePageData.heroImages || []}
+      heroImages={homePageData.heroImages}
       promotionalBanner={homePageData.promotionalBanner}
+      products={homePageData.products}
     />
   );
 }

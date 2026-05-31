@@ -1,6 +1,6 @@
 export default function SettingsLoading() {
   return (
-    <div className="min-h-screen bg-black p-6 animate-pulse">
+    <div className="min-h-screen bg-zinc-950 p-6 animate-pulse">
       <div className="h-8 w-48 bg-gray-800 rounded mb-6" />
       <div className="space-y-4">
         {Array.from({ length: 4 }).map((_, i) => (

@@ -20,12 +20,12 @@ export function CapacityDeleteModal({
   if (!showModal) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-zinc-950 bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-gray-800 rounded-lg max-w-md w-full">
         <div className="p-6">
           <div className="flex items-center justify-center mb-4">
-            <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
-              <Trash2 className="w-6 h-6 text-white" />
+            <div className="size-12 bg-gray-700 rounded-full flex items-center justify-center">
+              <Trash2 className="size-6 text-white" />
             </div>
           </div>
 
@@ -54,13 +54,13 @@ export function CapacityDeleteModal({
             >
               Hủy
             </button>
-            <button
+            <button type="button"
               onClick={onConfirm}
               disabled={actionLoading === deleteId}
               className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 flex items-center gap-2 transition-colors cursor-pointer"
             >
               {actionLoading === deleteId && (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full size-4 border-b-2 border-white"></div>
               )}
               Xóa
             </button>

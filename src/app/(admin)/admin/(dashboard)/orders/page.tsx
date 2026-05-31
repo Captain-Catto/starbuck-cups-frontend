@@ -23,9 +23,9 @@ const OrderStatsCards = dynamic(
   {
     loading: () => (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, index) => (
+        {["a", "b", "c", "d"].map((id) => (
           <div
-            key={index}
+            key={id}
             className="h-28 bg-gray-800 rounded-lg border border-gray-700 animate-pulse"
           />
         ))}
@@ -88,15 +88,15 @@ export default function OrdersPage() {
         description="Theo dõi và xử lý đơn hàng từ khách hàng"
         action={
           <div className="flex gap-3">
-            <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
-              <Download className="w-4 h-4" />
+            <button type="button" className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
+              <Download className="size-4" />
               Xuất Excel
             </button>
             <Link
               href="/admin/orders/new"
               className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="size-4" />
               Tạo đơn hàng
             </Link>
           </div>

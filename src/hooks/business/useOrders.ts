@@ -1,6 +1,7 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback } from "react";
+
+import { useReducer, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { RootState } from "@/store";
@@ -79,24 +80,99 @@ export interface UseOrdersReturn {
   updateOrderStatus: (orderId: string, status: Order["status"]) => Promise<void>;
 }
 
+interface OrdersState {
+  orders: Order[];
+  pagination: OrderPagination;
+  filters: OrderFilters;
+  loading: boolean;
+  error: string | null;
+}
+
+type OrdersAction =
+  | { type: "FETCH_START" }
+  | {
+      type: "FETCH_SUCCESS";
+      orders: Order[];
+      pagination?: Partial<OrderPagination>;
+    }
+  | { type: "FETCH_ERROR"; error: string }
+  | { type: "SET_PAGE"; page: number }
+  | { type: "SET_LIMIT"; limit: number }
+  | { type: "SET_FILTERS"; filters: Partial<OrderFilters> }
+  | { type: "CLEAR_FILTERS" }
+  | { type: "UPDATE_STATUS"; orderId: string; status: Order["status"] };
+
+function ordersReducer(state: OrdersState, action: OrdersAction): OrdersState {
+  switch (action.type) {
+    case "FETCH_START":
+      return { ...state, loading: true, error: null };
+    case "FETCH_SUCCESS":
+      return {
+        ...state,
+        orders: action.orders,
+        pagination: action.pagination
+          ? { ...state.pagination, ...action.pagination }
+          : state.pagination,
+        loading: false,
+      };
+    case "FETCH_ERROR":
+      return { ...state, loading: false, error: action.error };
+    case "SET_PAGE":
+      return {
+        ...state,
+        pagination: { ...state.pagination, page: action.page },
+      };
+    case "SET_LIMIT":
+      return {
+        ...state,
+        pagination: { ...state.pagination, limit: action.limit, page: 1 },
+      };
+    case "SET_FILTERS":
+      return {
+        ...state,
+        filters: { ...state.filters, ...action.filters },
+        pagination: { ...state.pagination, page: 1 },
+      };
+    case "CLEAR_FILTERS":
+      return {
+        ...state,
+        filters: {},
+        pagination: { ...state.pagination, page: 1 },
+      };
+    case "UPDATE_STATUS":
+      return {
+        ...state,
+        orders: state.orders.map((order) =>
+          order.id === action.orderId ? { ...order, status: action.status } : order
+        ),
+      };
+    default:
+      return state;
+  }
+}
+
 export function useOrders(options: UseOrdersOptions = {}): UseOrdersReturn {
   const {
     initialPage = 1,
     initialLimit = 10,
     initialFilters = {},
     autoFetch = true,
+  // react-doctor-disable-next-line react-doctor/no-event-handler -- initialization fetch re-runs on pagination/filter change, not a user event
   } = options;
 
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState<OrderPagination>({
-    page: initialPage,
-    limit: initialLimit,
-    total: 0,
-    totalPages: 0,
+  const [state, dispatch] = useReducer(ordersReducer, {
+    orders: [],
+    pagination: {
+      page: initialPage,
+      limit: initialLimit,
+      total: 0,
+      totalPages: 0,
+    },
+    filters: initialFilters,
+    loading: true,
+    error: null,
   });
-  const [filters, setFiltersState] = useState<OrderFilters>(initialFilters);
+  const { orders, pagination, filters, loading, error } = state;
 
   const token = useSelector((state: RootState) => state.auth.token);
 
@@ -106,8 +182,7 @@ export function useOrders(options: UseOrdersOptions = {}): UseOrdersReturn {
 
   const fetchOrders = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
+      dispatch({ type: "FETCH_START" });
 
       const params = new URLSearchParams({
         page: pagination.page.toString(),
@@ -129,44 +204,42 @@ export function useOrders(options: UseOrdersOptions = {}): UseOrdersReturn {
       const data = await response.json();
 
       if (data.success) {
-        setOrders(data.data.items || []);
-        if (data.data?.pagination) {
-          setPagination(prev => ({
-            ...prev,
+        dispatch({
+          type: "FETCH_SUCCESS",
+          orders: data.data.items || [],
+          pagination: data.data?.pagination
+            ? {
             total: data.data.pagination.total_items || 0,
             totalPages: data.data.pagination.total_pages || 0,
-          }));
-        }
+              }
+            : undefined,
+        });
       } else {
         const errorMsg = data.message || "Không thể tải danh sách đơn hàng";
-        setError(errorMsg);
+        dispatch({ type: "FETCH_ERROR", error: errorMsg });
         toast.error(errorMsg);
       }
     } catch {
       const errorMsg = "Có lỗi xảy ra khi tải danh sách đơn hàng";
-      setError(errorMsg);
+      dispatch({ type: "FETCH_ERROR", error: errorMsg });
       toast.error(errorMsg);
-    } finally {
-      setLoading(false);
     }
   }, [pagination.page, pagination.limit, filters, getAuthHeaders]);
 
   const setPage = useCallback((page: number) => {
-    setPagination(prev => ({ ...prev, page }));
+    dispatch({ type: "SET_PAGE", page });
   }, []);
 
   const setLimit = useCallback((limit: number) => {
-    setPagination(prev => ({ ...prev, limit, page: 1 }));
+    dispatch({ type: "SET_LIMIT", limit });
   }, []);
 
   const setFilters = useCallback((newFilters: Partial<OrderFilters>) => {
-    setFiltersState(prev => ({ ...prev, ...newFilters }));
-    setPagination(prev => ({ ...prev, page: 1 }));
+    dispatch({ type: "SET_FILTERS", filters: newFilters });
   }, []);
 
   const clearFilters = useCallback(() => {
-    setFiltersState({});
-    setPagination(prev => ({ ...prev, page: 1 }));
+    dispatch({ type: "CLEAR_FILTERS" });
   }, []);
 
   const refetch = useCallback(() => {
@@ -191,11 +264,7 @@ export function useOrders(options: UseOrdersOptions = {}): UseOrdersReturn {
       const data = await response.json();
 
       if (data.success) {
-        setOrders(prevOrders =>
-          prevOrders.map(order =>
-            order.id === orderId ? { ...order, status } : order
-          )
-        );
+        dispatch({ type: "UPDATE_STATUS", orderId, status });
         toast.success("Cập nhật trạng thái đơn hàng thành công");
       } else {
         throw new Error(data.message || "Không thể cập nhật trạng thái đơn hàng");
@@ -209,6 +278,7 @@ export function useOrders(options: UseOrdersOptions = {}): UseOrdersReturn {
 
   useEffect(() => {
     if (autoFetch) {
+      // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent -- initialization fetch, data flows down via hook return value
       fetchOrders();
     }
   }, [pagination.page, pagination.limit, filters, autoFetch, fetchOrders]);

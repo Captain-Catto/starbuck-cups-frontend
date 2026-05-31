@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useReducer } from "react";
 import { useAppSelector } from "@/store";
 
 export interface PendingConsultationsResponse {
@@ -13,22 +13,58 @@ export interface PendingConsultationsResponse {
   };
 }
 
+interface PendingConsultationsState {
+  pendingCount: number;
+  loading: boolean;
+  error: string | null;
+}
+
+type PendingConsultationsAction =
+  | { type: "FETCH_START" }
+  | { type: "FETCH_SUCCESS"; payload: number }
+  | { type: "FETCH_ERROR"; payload: string }
+  | { type: "NO_TOKEN" };
+
+const initialPendingConsultationsState: PendingConsultationsState = {
+  pendingCount: 0,
+  loading: true,
+  error: null,
+};
+
+function pendingConsultationsReducer(
+  state: PendingConsultationsState,
+  action: PendingConsultationsAction
+): PendingConsultationsState {
+  switch (action.type) {
+    case "FETCH_START":
+      return { ...state, loading: true, error: null };
+    case "FETCH_SUCCESS":
+      return { pendingCount: action.payload, loading: false, error: null };
+    case "FETCH_ERROR":
+      return { ...state, loading: false, error: action.payload };
+    case "NO_TOKEN":
+      return { ...state, loading: false };
+    default:
+      return state;
+  }
+}
+
 export function usePendingConsultations() {
-  const [pendingCount, setPendingCount] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [{ pendingCount, loading, error }, dispatch] = useReducer(
+    pendingConsultationsReducer,
+    initialPendingConsultationsState
+  );
 
   const token = useAppSelector((state) => state.auth.token);
 
   const fetchPendingCount = useCallback(async () => {
     if (!token) {
-      setLoading(false);
+      dispatch({ type: "NO_TOKEN" });
       return;
     }
 
     try {
-      setLoading(true);
-      setError(null);
+      dispatch({ type: "FETCH_START" });
 
       const response = await fetch("/api/admin/consultations/pending/count", {
         method: "GET",
@@ -49,17 +85,17 @@ export function usePendingConsultations() {
       if (data.success) {
         const count =
           typeof data.data === "number" ? data.data : data.data.count;
-        setPendingCount(count);
+        dispatch({ type: "FETCH_SUCCESS", payload: count });
       } else {
         throw new Error(
           data.error?.message || "Failed to fetch pending consultations count"
         );
       }
     } catch (err) {
-      
-      setError(err instanceof Error ? err.message : "Unknown error occurred");
-    } finally {
-      setLoading(false);
+      dispatch({
+        type: "FETCH_ERROR",
+        payload: err instanceof Error ? err.message : "Unknown error occurred",
+      });
     }
   }, [token]);
 

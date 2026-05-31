@@ -10,12 +10,8 @@ interface RevenueTrendProps {
   period: string;
 }
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-};
+const viCurrencyFormatter = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
+const formatCurrency = (amount: number) => viCurrencyFormatter.format(amount);
 
 export function RevenueTrend({ data, period }: RevenueTrendProps) {
   return (
@@ -25,9 +21,9 @@ export function RevenueTrend({ data, period }: RevenueTrendProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {data.map((item, index) => (
+          {data.map((item) => (
             <div
-              key={index}
+              key={item.period}
               className="flex items-center justify-between p-3 border border-gray-700 rounded bg-gray-800/50"
             >
               <span className="font-medium text-white">

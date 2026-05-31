@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Script from "next/script";
 import { useTranslations } from "next-intl";
@@ -62,7 +62,8 @@ export function StructuredData() {
     <Script
       id="structured-data"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-    />
+    >
+      {JSON.stringify(structuredData)}
+    </Script>
   );
 }

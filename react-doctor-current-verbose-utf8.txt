@@ -1,0 +1,237 @@
+﻿[1mreact-doctor[22m [2mv0.2.14[22m
+
+[90m  [39m
+
+  [33m⚠[39m [33mreact-doctor/no-derived-state                            [39m [90m×24[39m
+[90m      Avoid storing derived state. Compute "loading" directly during render, optionally with `useMemo` if it's expensive.[39m
+[90m      → Compute derived state inline during render (or with useMemo if expensive) instead of mirroring it into useState via a useEffect. See https://react.dev/learn/you-might-not-need-an-effect#updating-state-based-on-props-or-state[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-derived-state.md[39m
+[90m      src/hooks/admin/useAddressManager.ts:77[39m
+[90m      src/components/admin/customers/OrderHistory.tsx:177[39m
+[90m      src/components/admin/customers/CustomerDetail.tsx:101[39m
+[90m      src/hooks/admin/useOrders.ts:223[39m
+[90m      src/hooks/admin/useLowStock.ts:116[39m
+[90m      src/hooks/admin/useCustomers.ts:136[39m
+[90m      src/hooks/admin/useConsultations.ts:120[39m
+[90m      src/hooks/admin/useNotifications.ts:96[39m
+[90m      src/hooks/admin/useCategories.ts:398[39m
+[90m      src/hooks/admin/useOrderDetailEdit.ts:187[39m
+[90m      src/components/admin/hero-images/HeroImageGrid.tsx:52[39m
+[90m      src/hooks/admin/useOrderDetail.ts:147[39m
+[90m      src/hooks/admin/useCapacities.ts:386[39m
+[90m      src/hooks/admin/usePendingConsultations.ts:67[39m
+[90m      src/hooks/business/useOrders.ts:213[39m
+[90m      src/hooks/admin/useProductAnalytics.ts:62[39m
+[90m      src/hooks/admin/useProductAnalytics.ts:151[39m
+[90m      src/hooks/admin/useProductAnalytics.ts:252[39m
+[90m      src/hooks/business/useProducts.ts:333[39m
+[90m      src/hooks/useStatistics.tsx:184[39m
+[90m      src/hooks/admin/useProducts.ts:507[39m
+[90m      src/hooks/admin/useProducts.ts:512[39m
+[90m      src/hooks/business/useUpdateProduct.ts:250[39m
+[90m      src/hooks/business/useCustomers.ts:156[39m
+
+  [33m⚠[39m [33mreact-doctor/no-event-handler                            [39m [90m×10[39m
+[90m      Avoid using props and effects as an event handler. Instead, move the handler to the parent component.[39m
+[90m      → Move the side effect into the event handler that triggers it, instead of guarding on its state inside a useEffect. See https://react.dev/learn/you-might-not-need-an-effect#sharing-logic-between-event-handlers[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-event-handler.md[39m
+[90m      src/hooks/admin/useAddressManager.ts:76[39m
+[90m      src/components/admin/customers/OrderHistory.tsx:176[39m
+[90m      src/hooks/admin/useLowStock.ts:35[39m
+[90m      src/hooks/admin/useOrderDetail.ts:146[39m
+[90m      src/hooks/business/useOrders.ts:89[39m
+[90m      src/hooks/business/useProducts.ts:93[39m
+[90m      src/hooks/useStandardAuth.ts:143[39m
+[90m      src/hooks/useStandardAuth.ts:155[39m
+[90m      src/hooks/business/useUpdateProduct.ts:148[39m
+[90m      src/hooks/business/useCustomers.ts:66[39m
+
+  [33m⚠[39m [33mreact-doctor/no-fetch-in-effect                          [39m [90m×7[39m
+[90m      fetch() inside useEffect — use a data fetching library (react-query, SWR) or server component[39m
+[90m      → Use `useQuery()` from @tanstack/react-query, `useSWR()`, or fetch in a Server Component instead[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-fetch-in-effect.md[39m
+[90m      src/components/ProductGrid.tsx:24[39m
+[90m      src/components/ProductsGrid.tsx:66[39m
+[90m      src/components/HomeProductGrid.tsx:81[39m
+[90m      src/components/SearchAutocomplete.tsx:72[39m
+[90m      src/components/SearchAutocomplete.tsx:117[39m
+[90m      src/hooks/admin/useOrderDetailEdit.ts:148[39m
+[90m      src/hooks/admin/useCustomerSearch.ts:21[39m
+
+  [33m⚠[39m [33mreact-doctor/prefer-useReducer                           [39m [90m×6[39m
+[90m      Component "AdminNewsPage" has 5 useState calls — consider useReducer for related state[39m
+[90m      → Group related state: `const [state, dispatch] = useReducer(reducer, { field1, field2, ... })`[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/prefer-useReducer.md[39m
+[90m      src/app/(admin)/admin/(dashboard)/news/page.tsx:23[39m
+[90m      src/app/(admin)/admin/(dashboard)/customers/page.tsx:9[39m
+[90m      src/components/admin/customers/PhoneManager.tsx:406[39m
+[90m      src/components/SearchAutocomplete.tsx:32[39m
+[90m      src/components/ui/ToolbarPlugin.tsx:24[39m
+[90m      src/components/admin/news/NewsForm.tsx:342[39m
+
+  [33m⚠[39m [33mreact-doctor/nextjs-missing-metadata                     [39m [90m×4[39m
+[90m      Page without metadata or generateMetadata export — hurts SEO[39m
+[90m      → Add `export const metadata = { title: '...', description: '...' }` or `export async function generateMetadata()`[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/nextjs-missing-metadata.md[39m
+[90m      src/app/[locale]/products/page.tsx:1[39m
+[90m      src/app/[locale]/category/[slug]/page.tsx:1[39m
+[90m      src/app/[locale]/products/[slug]/page.tsx:1[39m
+[90m      src/app/[locale]/cart/page.tsx:1[39m
+
+  [33m⚠[39m [33mreact-doctor/no-cascading-set-state                      [39m [90m×4[39m
+[90m      3 setState calls in a single useEffect — consider using useReducer or deriving state[39m
+[90m      → Combine into useReducer: `const [state, dispatch] = useReducer(reducer, initialState)`[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-cascading-set-state.md[39m
+[90m      src/hooks/useImageZoom.ts:235[39m
+[90m      src/components/SearchAutocomplete.tsx:72[39m
+[90m      src/components/providers/SettingsSocketProvider.tsx:29[39m
+[90m      src/hooks/useProducts.ts:134[39m
+
+  [33m⚠[39m [33mreact-doctor/no-derived-state-effect                     [39m [90m×4[39m
+[90m      Derived state in useEffect — compute during render instead[39m
+[90m      → For derived state, compute inline: `const x = fn(dep)`. For state resets on prop change, use a key prop: `<Component key={prop} />`. See https://react.dev/learn/you-might-not-need-an-effect[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-derived-state-effect.md[39m
+[90m      src/app/(admin)/admin/(dashboard)/settings/page.tsx:87[39m
+[90m      src/hooks/admin/useCategories.ts:139[39m
+[90m      src/components/admin/hero-images/HeroImageGrid.tsx:51[39m
+[90m      src/hooks/admin/useCapacities.ts:136[39m
+
+  [33m⚠[39m [33mreact-doctor/no-danger                                   [39m [90m×4[39m
+[90m      Do not use `dangerouslySetInnerHTML` — it injects raw HTML and is a common XSS vector.[39m
+[90m      → Render trusted content as React children rather than injecting raw HTML.[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-danger.md[39m
+[90m      src/components/ProductClient.tsx:177[39m
+[90m      src/components/ProductInfo.tsx:256[39m
+[90m      src/components/ProductDescription.tsx:54[39m
+[90m      src/components/home/HeroSection.tsx:144[39m
+
+  [33m⚠[39m [33mreact-doctor/nextjs-no-img-element                       [39m [90m×2[39m
+[90m      Use next/image instead of <img> — provides automatic optimization, lazy loading, and responsive srcset[39m
+[90m      → `import Image from 'next/image'` — provides automatic WebP/AVIF, lazy loading, and responsive srcset[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/nextjs-no-img-element.md[39m
+[90m      src/components/OptimizedImage.tsx:84[39m
+[90m      src/components/OptimizedImage.tsx:110[39m
+
+  [33m⚠[39m [33mreact-doctor/no-pass-data-to-parent                      [39m [90m×2[39m
+[90m      Avoid passing data to parents in an effect. Instead, return the data from the hook.[39m
+[90m      → Fetch the data in the parent and pass it to the child as a prop (or return it from the hook), instead of pushing it back up via a prop callback inside a useEffect. See https://react.dev/learn/you-might-not-need-an-effect#passing-data-to-the-parent[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-pass-data-to-parent.md[39m
+[90m      src/hooks/admin/useLowStock.ts:116[39m
+[90m      src/hooks/business/useUpdateProduct.ts:250[39m
+
+  [33m⚠[39m [33mreact-doctor/no-chain-state-updates                      [39m [90m×2[39m
+[90m      Avoid chaining state changes. When possible, update all relevant state simultaneously.[39m
+[90m      → Update all related state simultaneously inside the event handler that originally fires, instead of reacting to one state update in a useEffect that writes another state. See https://react.dev/learn/you-might-not-need-an-effect#chains-of-computations[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-chain-state-updates.md[39m
+[90m      src/hooks/admin/useCategories.ts:140[39m
+[90m      src/hooks/admin/useCapacities.ts:137[39m
+
+  [33m⚠[39m [33mreact-doctor/exhaustive-deps                             [39m [90m×2[39m
+[90m      React Hook `useEffect` is missing dependency `checkAndRefreshToken` — list it in the dependency array, or call the hook unconditionally.[39m
+[90m      → Don't blindly add missing dependencies. Read the hook callback first.
+      
+      Bad:
+      useEffect(() => {
+        setCount(count + 1);
+      }, [count]);
+      
+      Better:
+      useEffect(() => {
+        setCount((currentCount) => currentCount + 1);
+      }, []);
+      
+      If the missing value is recreated every render, move it inside the hook or stabilize it before adding it to deps.[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/exhaustive-deps.md[39m
+[90m      src/hooks/useAuthRefresh.ts:135[39m
+[90m      src/hooks/useSocket.ts:241[39m
+
+  [33m⚠[39m [33mreact-doctor/nextjs-no-use-search-params-without-suspense[39m [90m×2[39m
+[90m      useSearchParams() requires a <Suspense> boundary — without one, the entire page bails out to client-side rendering[39m
+[90m      → Wrap the component using useSearchParams: `<Suspense fallback={<Skeleton />}><SearchComponent /></Suspense>`[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/nextjs-no-use-search-params-without-suspense.md[39m
+[90m      src/hooks/useProducts.ts:72[39m
+[90m      src/hooks/admin/useProducts.ts:96[39m
+
+  [33m⚠[39m [33mreact-doctor/nextjs-no-client-side-redirect[39m
+[90m      router.push() in useEffect — use redirect() from next/navigation or handle navigation in an event handler[39m
+[90m      → Avoid redirects inside useEffect. Use an event handler, middleware, or server-side redirect (App Router: redirect() from next/navigation; Pages Router: getServerSideProps redirect)[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/nextjs-no-client-side-redirect.md[39m
+[90m      src/app/(admin)/admin/login/page.tsx:32[39m
+
+  [33m⚠[39m [33mreact-doctor/server-hoist-static-io[39m
+[90m      fs.readFile() in GET route handler reads the same static asset every request — hoist to module scope so the read happens once at module load[39m
+[90m      → Hoist the read to module scope: `const FONT_DATA = await fetch(new URL('./fonts/Inter.ttf', import.meta.url)).then(r => r.arrayBuffer())` runs once at module load[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/server-hoist-static-io.md[39m
+[90m      src/app/api/image/route.ts:103[39m
+
+  [33m⚠[39m [33mreact-doctor/no-many-boolean-props[39m
+[90m      Component "ProductCard" takes 4 boolean-like props (showAddToCart, showSecondaryImage, showBadges…) — consider compound components or explicit variants instead of stacking flags[39m
+[90m      → Split into compound components or named variants: `<Button.Primary />`, `<DialogConfirm />` instead of stacking `isPrimary`, `isConfirm` flags[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-many-boolean-props.md[39m
+[90m      src/components/ProductCard.tsx:35[39m
+
+  [33m⚠[39m [33mreact-doctor/no-initialize-state[39m
+[90m      Avoid initializing state in an effect. Instead, initialize "visible"'s `useState()` with "el". For SSR hydration, prefer `useSyncExternalStore()`.[39m
+[90m      → Pass the initial value directly to useState() instead of setting it from a mount-only useEffect. For SSR hydration, prefer useSyncExternalStore().[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-initialize-state.md[39m
+[90m      src/components/HomeProductGrid.tsx:42[39m
+
+  [33m⚠[39m [33mreact-doctor/no-effect-event-handler[39m
+[90m      useEffect simulating an event handler — move logic to an actual event handler instead[39m
+[90m      → Move the conditional logic into onClick, onChange, or onSubmit handlers directly[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-effect-event-handler.md[39m
+[90m      src/components/SearchAutocomplete.tsx:117[39m
+
+  [33m⚠[39m [33mreact-doctor/no-pass-live-state-to-parent[39m
+[90m      Avoid passing live state to parents in an effect. Instead, return the state from the hook.[39m
+[90m      → Lift the state to the parent (or return it from the hook) instead of pushing it back up via a prop callback inside a useEffect. See https://react.dev/learn/you-might-not-need-an-effect#notifying-parent-components-about-state-changes[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-pass-live-state-to-parent.md[39m
+[90m      src/hooks/admin/useLowStock.ts:116[39m
+
+  [33m⚠[39m [33mreact-doctor/prefer-html-dialog[39m
+[90m      Use the native `<dialog>` element instead of `role="dialog"` on a generic container — `<dialog>` ships built-in focus trap, `Escape` dismissal, the top-layer backdrop, and the right accessibility tree without you having to wire any of it up.[39m
+[90m      → Replace the wrapper with `<dialog>` and open it with `dialog.showModal()`. For the trigger, prefer `<button commandfor="id" command="show-modal">` (Chrome 135+) or fall back to a `useRef`-driven `dialogRef.current?.showModal()`.[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/prefer-html-dialog.md[39m
+[90m      src/components/ui/ImageModal.tsx:95[39m
+
+  [33m⚠[39m [33mreact-doctor/prefer-tag-over-role[39m
+[90m      Prefer the semantic `<dialog>` element over `role="dialog"` on a generic tag.[39m
+[90m      → Replace `role` with the semantic HTML element when one exists.[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/prefer-tag-over-role.md[39m
+[90m      src/components/ui/ImageModal.tsx:95[39m
+
+  [33m⚠[39m [33mreact-doctor/no-giant-component[39m
+[90m      Component "ToolbarPlugin" is 347 lines — consider breaking it into smaller focused components[39m
+[90m      → Extract logical sections into focused components: `<UserHeader />`, `<UserActions />`, etc.[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-giant-component.md[39m
+[90m      src/components/ui/ToolbarPlugin.tsx:24[39m
+
+  [33m⚠[39m [33mreact-doctor/no-mirror-prop-effect[39m
+[90m      useState "localHeroImages" is mirrored from prop "heroImages" via this effect — delete both the useState and the effect, and read the prop directly in render[39m
+[90m      → Delete both the `useState` and the `useEffect` and read the prop directly during render. Mirroring a prop into local state forces a stale first render before the effect re-syncs[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-mirror-prop-effect.md[39m
+[90m      src/components/admin/hero-images/HeroImageGrid.tsx:51[39m
+
+  [33m⚠[39m [33mreact-doctor/no-derived-useState[39m
+[90m      useState initialized from prop "heroImages" — if this value should stay in sync with the prop, derive it during render instead[39m
+[90m      → Remove useState and compute the value inline: `const value = transform(propName)`[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/react-doctor/no-derived-useState.md[39m
+[90m      src/components/admin/hero-images/HeroImageGrid.tsx:37[39m
+
+  [33m⚠[39m [33mdeslop/unused-dependency[39m
+[90m      Unused dependency: `jsonwebtoken`[39m
+[90m      → Remove the dependency from package.json if it is genuinely unused.[39m
+[90m      Fetch & follow the canonical fix recipe before fixing: https://www.react.doctor/prompts/rules/deslop/unused-dependency.md[39m
+[90m      package.json[39m
+
+  [32m┌─────┐[39m  [32m81[39m [2m/ 100[22m [32mGreat[39m [2m·[22m [2mstarbucks-nextjs[22m
+  [32m│ ◠ ◠ │[39m  [32m█████████████████████████████████████████[39m[2m░░░░░░░░░[22m
+  [32m│  ▽  │[39m  React Doctor [2m(https://react.doctor)[22m
+  [32m└─────┘[39m
+
+  [33m85 issues[39m
+[90m  Full diagnostics written to C:\Users\LENOVO~1\AppData\Local\Temp\react-doctor-10278967-3cf6-47f4-a2d3-94805c55f08f[39m
+
+  [1m→ Share:[22m [36mhttps://www.react.doctor/share?p=starbucks-nextjs&s=81&w=85&f=52[39m
+
+

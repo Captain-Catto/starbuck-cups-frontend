@@ -1,4 +1,5 @@
-"use client";
+﻿"use client";
+
 
 import { useEffect, useRef } from "react";
 
@@ -29,16 +30,12 @@ export default function SnowEffect({
   snowSettings,
 }: SnowEffectProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const requestRef = useRef<number>(0);
   const snowflakesRef = useRef<Snowflake[]>([]);
 
-  // Default settings if not provided
-  const settings = {
-    speed: snowSettings?.speed ?? 1.0,
-    density: snowSettings?.density ?? 1.0,
-    size: snowSettings?.size ?? 1.0,
-    windStrength: snowSettings?.windStrength ?? 0.2,
-  };
+  const speed = snowSettings?.speed ?? 1.0;
+  const density = snowSettings?.density ?? 1.0;
+  const size = snowSettings?.size ?? 1.0;
+  const windStrength = snowSettings?.windStrength ?? 0.2;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -46,6 +43,7 @@ export default function SnowEffect({
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    let requestId = 0;
 
     // Set canvas size to match window
     const handleResize = () => {
@@ -63,7 +61,7 @@ export default function SnowEffect({
       if (intensity === "high") count = 200;
 
       // Apply density multiplier
-      count = Math.floor(count * settings.density);
+      count = Math.floor(count * density);
 
       const snowflakes: Snowflake[] = [];
       for (let i = 0; i < count; i++) {
@@ -79,9 +77,9 @@ export default function SnowEffect({
       return {
         x: Math.random() * width,
         y: Math.random() * height,
-        radius: baseSize * settings.size,
-        speed: baseSpeed * settings.speed,
-        wind: (Math.random() - 0.5) * settings.windStrength,
+        radius: baseSize * size,
+        speed: baseSpeed * speed,
+        wind: (Math.random() - 0.5) * windStrength,
         oscillationSpeed: 0.02 + Math.random() * 0.02,
         oscillationOffset: Math.random() * Math.PI * 2,
       };
@@ -119,18 +117,18 @@ export default function SnowEffect({
       });
 
       ctx.fill();
-      requestRef.current = requestAnimationFrame(animate);
+      requestId = requestAnimationFrame(animate);
     };
 
     animate();
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
+      if (requestId) {
+        cancelAnimationFrame(requestId);
       }
     };
-  }, [intensity, settings.speed, settings.density, settings.size, settings.windStrength]);
+  }, [intensity, speed, density, size, windStrength]);
 
   return (
     <canvas

@@ -16,6 +16,7 @@ export async function PUT(
     }
 
     const response = await fetch(getApiUrl(`admin/products/${id}/upload`), {
+      cache: "no-store",
       method: "PUT",
       headers: {
         // Don't set Content-Type — let fetch set it with boundary for FormData

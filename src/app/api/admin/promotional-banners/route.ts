@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     const url = new URL(getApiUrl("promotional-banners/admin"));
 
     const response = await fetch(url.toString(), {
+      cache: "no-store",
       method: "POST",
       headers: {
         "Content-Type": "application/json",

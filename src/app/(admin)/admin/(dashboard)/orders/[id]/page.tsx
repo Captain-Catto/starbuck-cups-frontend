@@ -61,7 +61,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
             href="/admin/orders"
             className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-300" />
+            <ArrowLeft className="size-5 text-gray-300" />
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-white">
@@ -74,12 +74,12 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
+          <button type="button"
             onClick={() => setIsEditing(!isEditing)}
             className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50"
             disabled={loading || updating}
           >
-            <Edit className="w-4 h-4" />
+            <Edit className="size-4" />
             {isEditing ? "Hủy chỉnh sửa" : "Chỉnh sửa"}
           </button>
         </div>

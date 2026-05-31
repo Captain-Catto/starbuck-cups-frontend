@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { loginAdmin, clearError } from "@/store/slices/authSlice";
 import { useStandardAuth } from "@/hooks/useStandardAuth";
@@ -26,12 +26,9 @@ export default function AdminLoginPage() {
     dispatch(clearError());
   }, [dispatch]);
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isReady && isAuthenticated) {
-      router.push("/admin/dashboard");
-    }
-  }, [isReady, isAuthenticated, router]);
+  if (isReady && isAuthenticated) {
+    redirect("/admin/dashboard");
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +42,7 @@ export default function AdminLoginPage() {
     // No toast needed — the inline error box is the right UX for form validation.
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const updateCredentialField = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -53,12 +50,12 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4">
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         {/* Logo & Header */}
         <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-gray-800 rounded-2xl flex items-center justify-center mb-4 border border-gray-700">
-            <Lock className="w-8 h-8 text-white" />
+          <div className="mx-auto size-16 bg-gray-800 rounded-2xl flex items-center justify-center mb-4 border border-gray-700">
+            <Lock className="size-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Admin Panel</h1>
           <p className="text-white">
@@ -72,7 +69,7 @@ export default function AdminLoginPage() {
             {/* Error Message */}
             {error && (
               <div className="flex items-center gap-3 p-4 bg-gray-700 border border-gray-600 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-white flex-shrink-0" />
+                <AlertCircle className="size-5 text-white flex-shrink-0" />
                 <p className="text-sm text-white">{error}</p>
               </div>
             )}
@@ -87,15 +84,15 @@ export default function AdminLoginPage() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-white" />
+                  <Mail className="size-5 text-white" />
                 </div>
-                <input
+                <input aria-label="admin@example.com"
                   id="email"
                   name="email"
                   type="email"
                   required
                   value={formData.email}
-                  onChange={handleChange}
+                  onChange={updateCredentialField}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-600 bg-gray-700 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
                   placeholder="admin@example.com"
                 />
@@ -112,15 +109,15 @@ export default function AdminLoginPage() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-white" />
+                  <Lock className="size-5 text-white" />
                 </div>
-                <input
+                <input aria-label="••••••••"
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
                   value={formData.password}
-                  onChange={handleChange}
+                  onChange={updateCredentialField}
                   className="block w-full pl-10 pr-12 py-3 border border-gray-600 bg-gray-700 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors"
                   placeholder="••••••••"
                 />
@@ -130,9 +127,9 @@ export default function AdminLoginPage() {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-white hover:text-gray-300" />
+                    <EyeOff className="size-5 text-white hover:text-gray-300" />
                   ) : (
-                    <Eye className="h-5 w-5 text-white hover:text-gray-300" />
+                    <Eye className="size-5 text-white hover:text-gray-300" />
                   )}
                 </button>
               </div>
@@ -141,12 +138,12 @@ export default function AdminLoginPage() {
             {/* Remember Me */}
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <input
+                <input aria-label="remember"
                   id="remember"
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
-                  className="h-4 w-4 text-white focus:ring-gray-500 border-gray-600 bg-gray-700 rounded"
+                  className="size-4 text-white focus:ring-gray-500 border-gray-600 bg-gray-700 rounded"
                 />
                 <label
                   htmlFor="remember"
@@ -171,8 +168,8 @@ export default function AdminLoginPage() {
             >
               {loading ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Đang đăng nhập...
+                  <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Đang đăng nhập…
                 </div>
               ) : (
                 "Đăng nhập"

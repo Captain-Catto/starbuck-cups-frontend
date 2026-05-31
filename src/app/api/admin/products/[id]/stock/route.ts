@@ -19,6 +19,7 @@ export async function PATCH(
     }
 
     const response = await fetch(getApiUrl(`admin/products/${id}/stock`), {
+      cache: "no-store",
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

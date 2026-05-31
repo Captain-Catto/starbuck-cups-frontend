@@ -335,8 +335,9 @@ export function useColors(): UseColorsReturn {
   }, [fetchColors]);
 
   useEffect(() => {
+    const controller = fetchControllerRef.current;
     return () => {
-      fetchControllerRef.current?.abort();
+      controller?.abort();
     };
   }, []);
 

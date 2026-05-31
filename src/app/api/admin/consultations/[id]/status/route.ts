@@ -17,6 +17,7 @@ export async function PUT(
     }
 
     const response = await fetch(getApiUrl(`admin/consultations/${id}/status`), {
+      cache: "no-store",
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

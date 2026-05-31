@@ -5,6 +5,7 @@ import { getAdminForwardHeaders, handleAdminBackendResponse } from "@/lib/admin-
 export async function GET(request: NextRequest) {
   try {
     const response = await fetch(getApiUrl("consultations/pending/count"), {
+      cache: "no-store",
       method: "GET",
       headers: {
         "Content-Type": "application/json",

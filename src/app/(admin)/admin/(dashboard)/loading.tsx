@@ -1,6 +1,6 @@
 export default function AdminDashboardLoading() {
   return (
-    <div className="min-h-screen bg-black p-6 animate-pulse">
+    <div className="min-h-screen bg-zinc-950 p-6 animate-pulse">
       {/* Header skeleton */}
       <div className="h-8 w-48 bg-gray-800 rounded mb-6" />
 

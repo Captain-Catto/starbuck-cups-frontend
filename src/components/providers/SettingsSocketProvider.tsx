@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, use, useEffect, useSyncExternalStore } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAppSelector } from "@/store";
 import { getBackendUrl } from "@/lib/api-config";
@@ -15,24 +15,47 @@ const SettingsSocketContext = createContext<SettingsSocketContextType>({
   isConnected: false,
 });
 
-export const useSettingsSocket = () => useContext(SettingsSocketContext);
+const initialSettingsSocketState: SettingsSocketContextType = {
+  socket: null,
+  isConnected: false,
+};
+
+let settingsSocketSnapshot = initialSettingsSocketState;
+const settingsSocketListeners = new Set<() => void>();
+
+const settingsSocketStore = {
+  getSnapshot: () => settingsSocketSnapshot,
+  getServerSnapshot: () => initialSettingsSocketState,
+  subscribe: (listener: () => void) => {
+    settingsSocketListeners.add(listener);
+    return () => {
+      settingsSocketListeners.delete(listener);
+    };
+  },
+  setSnapshot: (nextSnapshot: SettingsSocketContextType) => {
+    settingsSocketSnapshot = nextSnapshot;
+    settingsSocketListeners.forEach((listener) => listener());
+  },
+};
+
+export const useSettingsSocket = () => use(SettingsSocketContext);
 
 export function SettingsSocketProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const contextValue = useSyncExternalStore(
+    settingsSocketStore.subscribe,
+    settingsSocketStore.getSnapshot,
+    settingsSocketStore.getServerSnapshot
+  );
   const token = useAppSelector((state) => state.auth.token);
 
   useEffect(() => {
     // Backend currently requires JWT for all Socket.IO connections.
     // Skip connection when no token to avoid repeated auth failures on public pages.
     if (!token) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSocket(null);
-      setIsConnected(false);
       return;
     }
 
@@ -51,27 +74,47 @@ export function SettingsSocketProvider({
       transports: ["polling", "websocket"],
     });
 
-    socketInstance.on("connect", () => {
-      setIsConnected(true);
-    });
+    const handleConnect = () => {
+      settingsSocketStore.setSnapshot({
+        socket: socketInstance,
+        isConnected: true,
+      });
+    };
 
-    socketInstance.on("disconnect", () => {
-      setIsConnected(false);
-    });
+    const handleDisconnect = () => {
+      settingsSocketStore.setSnapshot({
+        socket: socketInstance,
+        isConnected: false,
+      });
+    };
 
-    socketInstance.on("connect_error", () => {
-      setIsConnected(false);
-    });
+    const handleConnectError = () => {
+      settingsSocketStore.setSnapshot({
+        socket: socketInstance,
+        isConnected: false,
+      });
+    };
 
-    setSocket(socketInstance);
+    socketInstance.on("connect", handleConnect);
+    socketInstance.on("disconnect", handleDisconnect);
+    socketInstance.on("connect_error", handleConnectError);
+
+    settingsSocketStore.setSnapshot({
+      socket: socketInstance,
+      isConnected: false,
+    });
 
     return () => {
+      socketInstance.off("connect", handleConnect);
+      socketInstance.off("disconnect", handleDisconnect);
+      socketInstance.off("connect_error", handleConnectError);
       socketInstance.disconnect();
+      settingsSocketStore.setSnapshot(initialSettingsSocketState);
     };
   }, [token]);
 
   return (
-    <SettingsSocketContext.Provider value={{ socket, isConnected }}>
+    <SettingsSocketContext.Provider value={contextValue}>
       {children}
     </SettingsSocketContext.Provider>
   );

@@ -14,6 +14,7 @@ export async function PUT(
     const response = await fetch(
       getApiUrl(`admin/customers/${customerId}/addresses/${addressId}`),
       {
+      cache: "no-store",
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -44,6 +45,7 @@ export async function DELETE(
     const response = await fetch(
       getApiUrl(`admin/customers/${customerId}/addresses/${addressId}`),
       {
+      cache: "no-store",
         method: "DELETE",
         headers: {
           ...getAdminForwardHeaders(request),

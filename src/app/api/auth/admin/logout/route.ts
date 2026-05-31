@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
 
     // Call backend logout endpoint
     const response = await fetch(getApiUrl("auth/admin/logout"), {
+      cache: "no-store",
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback } from "react";
+import { Suspense, useCallback } from "react";
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
 import { useProducts } from "@/hooks/admin/useProducts";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageHeader } from "@/components/admin/PageHeader";
@@ -38,6 +39,15 @@ const ProductConfirmModal = dynamic(
 );
 
 export default function AdminProductsPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <AdminProductsContent />
+    </Suspense>
+  );
+}
+
+function AdminProductsContent() {
+  const searchParams = useSearchParams();
   const {
     // Data
     products,
@@ -76,7 +86,7 @@ export default function AdminProductsPage() {
     // Selection helpers
     isAllSelected,
     isIndeterminate,
-  } = useProducts();
+  } = useProducts(searchParams);
 
   const handleSelectAll = useCallback((checked: boolean) => {
     if (checked) {
@@ -100,11 +110,11 @@ export default function AdminProductsPage() {
         title="Quản lý sản phẩm"
         description="Quản lý danh sách sản phẩm, tồn kho và trạng thái"
         action={
-          <button
+          <button type="button"
             onClick={handleCreateProduct}
             className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="size-4" />
             Thêm sản phẩm
           </button>
         }

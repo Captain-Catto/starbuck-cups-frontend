@@ -25,6 +25,14 @@ export const useSocket = () => {
   const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
   const connectRef = useRef<(() => Promise<void>) | undefined>(undefined);
 
+  const clearReconnectTimeout = useCallback(() => {
+    const timeout = reconnectTimeout.current;
+    if (timeout) {
+      clearTimeout(timeout);
+      reconnectTimeout.current = null;
+    }
+  }, []);
+
   const loadInitialNotifications = useCallback(async () => {
     if (hasLoadedNotifications.current) {
 
@@ -55,6 +63,8 @@ export const useSocket = () => {
       await loadInitialNotifications();
 
       const socket = await socketManager.connect(token);
+      // Remove any listeners from a previous connect call before re-registering
+      socket.removeAllListeners();
       dispatch(setConnected(true));
 
       socketManager.joinAdminRoom();
@@ -210,16 +220,14 @@ export const useSocket = () => {
 
   const disconnect = useCallback(() => {
 
-    if (reconnectTimeout.current) {
-      clearTimeout(reconnectTimeout.current);
-    }
+    clearReconnectTimeout();
 
     socketManager.leaveAdminRoom();
     socketManager.disconnect();
     dispatch(setConnected(false));
     dispatch(setConnecting(false));
     hasInitialized.current = false;
-  }, [dispatch]);
+  }, [clearReconnectTimeout, dispatch]);
 
   const markAsRead = useCallback(
     async (notificationId: string) => {
@@ -245,11 +253,9 @@ export const useSocket = () => {
     }
 
     return () => {
-      if (reconnectTimeout.current) {
-        clearTimeout(reconnectTimeout.current);
-      }
+      clearReconnectTimeout();
     };
-  }, [token, connect]);
+  }, [token, connect, clearReconnectTimeout]);
 
   // Cleanup on token change (logout)
   useEffect(() => {

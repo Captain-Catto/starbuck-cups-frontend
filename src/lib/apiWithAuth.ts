@@ -17,6 +17,14 @@ class ApiWithAuth {
     };
   }
 
+  private async parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
+    if (!response.ok) {
+      const text = await response.text().catch(() => "");
+      throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+    }
+    return response.json();
+  }
+
   async getNotifications(params?: {
     page?: number;
     limit?: number;
@@ -28,7 +36,7 @@ class ApiWithAuth {
     if (params?.type) url.searchParams.set("type", params.type);
 
     const response = await fetch(url.toString(), { headers: this.authHeaders() });
-    return response.json();
+    return this.parseResponse(response);
   }
 
   async markNotificationAsRead(notificationId: string): Promise<ApiResponse<NotificationData>> {
@@ -36,7 +44,7 @@ class ApiWithAuth {
       getApiUrl(`admin/notifications/${notificationId}/read`),
       { method: "PUT", headers: this.authHeaders() }
     );
-    return response.json();
+    return this.parseResponse(response);
   }
 
   async getUnreadCount(): Promise<ApiResponse<{ unreadCount: number }>> {
@@ -44,7 +52,7 @@ class ApiWithAuth {
       getApiUrl("admin/notifications/unread/count"),
       { headers: this.authHeaders() }
     );
-    return response.json();
+    return this.parseResponse(response);
   }
 
   async markAllNotificationsAsRead(): Promise<ApiResponse<unknown>> {
@@ -52,7 +60,7 @@ class ApiWithAuth {
       getApiUrl("admin/notifications/mark-all-read"),
       { method: "PUT", headers: this.authHeaders() }
     );
-    return response.json();
+    return this.parseResponse(response);
   }
 }
 

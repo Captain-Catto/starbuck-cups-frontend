@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useReducer, useEffect, useCallback, useRef } from "react";
 import { useAppSelector } from "@/store";
 import { OrderHistory } from "./OrderHistory";
 import { PhoneManager } from "./PhoneManager";
@@ -43,82 +43,116 @@ interface Customer {
   };
 }
 
+interface CustomerState {
+  customer: Customer | null;
+  loading: boolean;
+  error: string | null;
+}
+
+type CustomerAction =
+  | { type: "RESET"; customerId: string }
+  | { type: "FETCH_START" }
+  | { type: "FETCH_SUCCESS"; payload: Customer }
+  | { type: "FETCH_ERROR"; payload: string }
+  | { type: "SET_LOADING"; payload: boolean };
+
+const initialCustomerState: CustomerState = {
+  customer: null,
+  loading: true,
+  error: null,
+};
+
+function customerReducer(state: CustomerState, action: CustomerAction): CustomerState {
+  switch (action.type) {
+    case "RESET":
+      return {
+        customer: null,
+        loading: true,
+        error: null,
+      };
+    case "FETCH_START":
+      return {
+        ...state,
+        loading: true,
+        error: null,
+      };
+    case "FETCH_SUCCESS":
+      return {
+        customer: action.payload,
+        loading: false,
+        error: null,
+      };
+    case "FETCH_ERROR":
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
+      };
+    case "SET_LOADING":
+      return {
+        ...state,
+        loading: action.payload,
+      };
+    default:
+      return state;
+  }
+}
+
 interface CustomerDetailProps {
   customerId: string;
 }
 
 export function CustomerDetail({ customerId }: CustomerDetailProps) {
-  const [customer, setCustomer] = useState<Customer | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [state, dispatch] = useReducer(customerReducer, initialCustomerState);
+  const { customer, loading, error } = state;
+
+  const prevCustomerIdRef = useRef(customerId);
+  if (customerId !== prevCustomerIdRef.current) {
+    prevCustomerIdRef.current = customerId;
+    dispatch({ type: "RESET", customerId });
+  }
 
   // Get auth state from Redux store
-  const { token, isAuthenticated, sessionChecked } = useAppSelector(
-    (state) => state.auth
-  );
+  const token = useAppSelector((state) => state.auth.token);
+  const sessionChecked = useAppSelector((state) => state.auth.sessionChecked);
 
-  // Debug auth state
-  useEffect(() => {
+  const fetchCustomer = useCallback(async () => {
+    if (!token) return;
+    try {
+      dispatch({ type: "FETCH_START" });
 
-  }, [token, isAuthenticated, sessionChecked]);
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
 
-  useEffect(() => {
-    // Only fetch when session has been checked and we have a token
-    if (!sessionChecked) {
+      const response = await fetch(`/api/admin/customers/${customerId}`, {
+        headers,
+      });
+      const data = await response.json();
 
-      return;
-    }
-
-    if (!token) {
-
-      setError("Authentication required");
-      setLoading(false);
-      return;
-    }
-
-    const fetchCustomer = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Debug: Check if token exists
-
-        // Include authorization header with Redux token
-        const headers: HeadersInit = {
-          "Content-Type": "application/json",
-        };
-
-        if (token) {
-          headers.Authorization = `Bearer ${token}`;
-
-        } else {
-
-        }
-
-        const response = await fetch(`/api/admin/customers/${customerId}`, {
-          headers,
-        });
-        const data = await response.json();
-
-
-        if (!response.ok || !data.success) {
-          throw new Error(data.message || "Failed to fetch customer");
-        }
-
-        setCustomer(data.data);
-      } catch (error) {
-
-        setError(
-          error instanceof Error ? error.message : "Failed to fetch customer"
-        );
-      } finally {
-        setLoading(false);
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to fetch customer");
       }
-    };
 
-    fetchCustomer();
-  }, [customerId, token, sessionChecked, refreshTrigger]);
+      dispatch({ type: "FETCH_SUCCESS", payload: data.data });
+    } catch (error) {
+      dispatch({
+        type: "FETCH_ERROR",
+        payload: error instanceof Error ? error.message : "Failed to fetch customer",
+      });
+    }
+  }, [customerId, token]);
+
+  useEffect(() => {
+    if (sessionChecked) {
+      if (token) {
+        fetchCustomer();
+      } else {
+        dispatch({ type: "SET_LOADING", payload: false });
+      }
+    }
+  }, [sessionChecked, token, fetchCustomer]);
 
   if (loading) {
     return (
@@ -146,6 +180,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
           </div>
           <div className="text-sm">{error}</div>
           <button
+            type="button"
             onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
           >
@@ -171,7 +206,7 @@ export function CustomerDetail({ customerId }: CustomerDetailProps) {
       {/* Customer Overview */}
       <CustomerInfoManager
         customer={customer}
-        onCustomerUpdate={() => setRefreshTrigger((prev) => prev + 1)}
+        onCustomerUpdate={fetchCustomer}
       />
 
       {/* Phone Numbers */}

@@ -15,12 +15,8 @@ interface TopCustomersListProps {
   customers: TopCustomer[];
 }
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-};
+const viCurrencyFormatter = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
+const formatCurrency = (amount: number) => viCurrencyFormatter.format(amount);
 
 export function TopCustomersList({ customers }: TopCustomersListProps) {
   return (
@@ -37,8 +33,8 @@ export function TopCustomersList({ customers }: TopCustomersListProps) {
               key={customer.id}
               className="flex items-center justify-between p-3 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
             >
-              <div className="flex items-center space-x-3 flex-1">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-sm font-medium text-gray-900">
+              <div className="flex items-center gap-x-3 flex-1">
+                <div className="flex size-8 items-center justify-center rounded-full bg-green-100 text-sm font-medium text-green-900">
                   {index + 1}
                 </div>
                 <div className="flex-1">
@@ -48,20 +44,20 @@ export function TopCustomersList({ customers }: TopCustomersListProps) {
                   >
                     {customer.name}
                   </Link>
-                  <div className="flex items-center space-x-3 mt-1">
-                    <div className="flex items-center space-x-1 text-sm text-gray-400">
-                      <Phone className="h-3 w-3" />
+                  <div className="flex items-center gap-x-3 mt-1">
+                    <div className="flex items-center gap-x-1 text-sm text-gray-400">
+                      <Phone className="size-3" />
                       <span>{customer.phone}</span>
                     </div>
                     {customer.messengerId && (
-                      <div className="flex items-center space-x-1 text-sm text-blue-400">
-                        <MessageCircle className="h-3 w-3" />
+                      <div className="flex items-center gap-x-1 text-sm text-blue-400">
+                        <MessageCircle className="size-3" />
                         <span>Messenger</span>
                       </div>
                     )}
                     {customer.zaloId && (
-                      <div className="flex items-center space-x-1 text-sm text-blue-500">
-                        <MessageCircle className="h-3 w-3" />
+                      <div className="flex items-center gap-x-1 text-sm text-blue-500">
+                        <MessageCircle className="size-3" />
                         <span>Zalo</span>
                       </div>
                     )}

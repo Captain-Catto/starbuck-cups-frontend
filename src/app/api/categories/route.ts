@@ -6,6 +6,7 @@ export async function GET() {
     const backendUrl = getApiUrl("categories/public");
 
     const response = await fetch(backendUrl, {
+      cache: "no-store",
       method: "GET",
       headers: {
         "Content-Type": "application/json",

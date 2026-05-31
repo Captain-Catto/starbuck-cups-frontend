@@ -47,11 +47,11 @@ export default function SwiperCarousel({ images }: SwiperCarouselProps) {
     const fallbackImage = images[0];
 
     if (!fallbackImage) {
-      return <div className="h-full w-full bg-zinc-900" />;
+      return <div className="size-full bg-zinc-900" />;
     }
 
     return (
-      <div className="relative h-full w-full">
+      <div className="relative size-full">
         <OptimizedImage
           src={fallbackImage.imageUrl}
           alt={fallbackImage.altText}
@@ -85,7 +85,7 @@ export default function SwiperCarousel({ images }: SwiperCarouselProps) {
     >
       {images.map((image, index) => (
         <SwiperSlide key={image.id}>
-          <div className="relative h-full w-full">
+          <div className="relative size-full">
             <OptimizedImage
               src={image.imageUrl}
               alt={image.altText}

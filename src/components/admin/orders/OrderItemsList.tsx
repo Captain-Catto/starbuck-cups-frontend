@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Minus, Plus, X, Package, Trash2 } from "lucide-react";
 import OptimizedImage from "@/components/OptimizedImage";
 import { getProductSnapshotImageUrl } from "@/lib/utils/image";
@@ -16,7 +17,7 @@ interface OrderItemsListProps {
   formatCurrency: (amount: string | number) => string;
 }
 
-export function OrderItemsList({
+export const OrderItemsList = memo(function OrderItemsList({
   order,
   isEditing,
   editData,
@@ -29,7 +30,7 @@ export function OrderItemsList({
     return (
       <div className="bg-gray-700 rounded-lg p-4">
         <div className="flex items-center gap-2 mb-2">
-          <Package className="w-5 h-5 text-gray-300" />
+          <Package className="size-5 text-gray-300" />
           <h4 className="font-medium text-white">Đơn hàng tùy chỉnh</h4>
         </div>
         <p className="text-gray-300">{order.customDescription || "Không có mô tả"}</p>
@@ -85,30 +86,30 @@ export function OrderItemsList({
                 <div className="text-right">
                   {isEditing ? (
                     <div className="flex items-center gap-2">
-                      <button
+                      <button type="button"
                         onClick={() => onUpdateQuantity(editItemIndex, displayQty - 1)}
                         className="p-1 text-gray-400 hover:text-gray-700"
                       >
-                        <Minus className="w-4 h-4" />
+                        <Minus className="size-4" />
                       </button>
-                      <input
+                      <input aria-label="number"
                         type="number"
                         value={displayQty}
                         onChange={(e) => onUpdateQuantity(editItemIndex, parseInt(e.target.value) || 1)}
                         min="1"
                         className="w-16 px-2 py-1 border border-gray-600 bg-gray-700 text-white rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
-                      <button
+                      <button type="button"
                         onClick={() => onUpdateQuantity(editItemIndex, displayQty + 1)}
                         className="p-1 text-gray-400 hover:text-gray-700"
                       >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="size-4" />
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => onRemoveItem(editItemIndex)}
                         className="p-1 text-red-500 hover:text-red-700 ml-2"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="size-4" />
                       </button>
                     </div>
                   ) : (
@@ -126,22 +127,22 @@ export function OrderItemsList({
                 <div className="mt-3 pt-3 border-t border-gray-100">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                      <label className="block text-xs font-medium text-gray-700 mb-1" htmlFor="orderitemslist-number">
                         Giá sản phẩm (VND)
                       </label>
-                      <input
+                      <input aria-label="number"
                         type="number"
                         value={displayPrice}
                         onChange={(e) => onUpdatePrice(editItemIndex, parseFloat(e.target.value) || 0)}
                         className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                         min="0"
-                        step="1000"
+                        step="1000" id="orderitemslist-number"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                      <span className="block text-xs font-medium text-gray-700 mb-1">
                         Thành tiền
-                      </label>
+                      </span>
                       <div className="px-3 py-2 bg-gray-700 border border-gray-700 rounded text-sm font-medium text-white">
                         {formatCurrency(displayQty * displayPrice)}
                       </div>
@@ -162,71 +163,75 @@ export function OrderItemsList({
 
       {/* Newly added items (not in original order) */}
       {isEditing &&
-        editData.items
-          ?.filter((ei) => !order.items?.some((oi) => oi.productId === ei.productId))
-          .map((newItem, idx) => (
-            <div
-              key={`new-${newItem.productId}-${idx}`}
-              className="flex items-start gap-4 p-4 border border-gray-700 rounded-lg bg-gray-700"
-            >
-              <div className="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center">
-                <Package className="w-6 h-6 text-gray-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="text-lg font-medium text-white">
-                      Sản phẩm mới (ID: {newItem.productId})
-                    </h4>
-                    <p className="text-sm text-green-600 font-medium">Mới thêm vào đơn hàng</p>
+        editData.items?.reduce<React.ReactNode[]>((acc, newItem, idx) => {
+          const isNew = !order.items?.some((oi) => oi.productId === newItem.productId);
+          if (isNew) {
+            acc.push(
+              <div
+                key={`new-${newItem.productId}`}
+                className="flex items-start gap-4 p-4 border border-gray-700 rounded-lg bg-gray-700"
+              >
+                <div className="size-16 bg-gray-600 rounded-lg flex items-center justify-center">
+                  <Package className="size-6 text-gray-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="text-lg font-medium text-white">
+                        Sản phẩm mới (ID: {newItem.productId})
+                      </h4>
+                      <p className="text-sm text-green-600 font-medium">Mới thêm vào đơn hàng</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-300">Số lượng:</span>
+                      <input aria-label="number"
+                        type="number"
+                        min="1"
+                        value={newItem.quantity}
+                        onChange={(e) => {
+                          const idx = editData.items?.findIndex(
+                            (item) => item.productId === newItem.productId
+                          ) ?? -1;
+                          if (idx >= 0) onUpdateQuantity(idx, parseInt(e.target.value) || 1);
+                        }}
+                        className="w-20 px-2 py-1 text-sm border border-gray-600 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="text-sm text-gray-300">Đơn giá</p>
+                        <p className="text-lg font-semibold text-white">
+                          {formatCurrency(newItem.unitPrice || 0)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-300">Tổng</p>
+                        <p className="text-lg font-semibold text-white">
+                          {formatCurrency((newItem.quantity || 1) * (newItem.unitPrice || 0))}
+                        </p>
+                      </div>
+                      <button type="button"
+                        onClick={() => {
+                          const idx = editData.items?.findIndex(
+                            (item) => item.productId === newItem.productId
+                          ) ?? -1;
+                          if (idx >= 0) onRemoveItem(idx);
+                        }}
+                        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full"
+                        title="Xóa sản phẩm"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="mt-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-300">Số lượng:</span>
-                    <input
-                      type="number"
-                      min="1"
-                      value={newItem.quantity}
-                      onChange={(e) => {
-                        const idx = editData.items?.findIndex(
-                          (item) => item.productId === newItem.productId
-                        ) ?? -1;
-                        if (idx >= 0) onUpdateQuantity(idx, parseInt(e.target.value) || 1);
-                      }}
-                      className="w-20 px-2 py-1 text-sm border border-gray-600 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="text-sm text-gray-300">Đơn giá</p>
-                      <p className="text-lg font-semibold text-white">
-                        {formatCurrency(newItem.unitPrice || 0)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-300">Tổng</p>
-                      <p className="text-lg font-semibold text-white">
-                        {formatCurrency((newItem.quantity || 1) * (newItem.unitPrice || 0))}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        const idx = editData.items?.findIndex(
-                          (item) => item.productId === newItem.productId
-                        ) ?? -1;
-                        if (idx >= 0) onRemoveItem(idx);
-                      }}
-                      className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full"
-                      title="Xóa sản phẩm"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
               </div>
-            </div>
-          ))}
+            );
+          }
+          return acc;
+        }, [])}
     </div>
   );
-}
+});

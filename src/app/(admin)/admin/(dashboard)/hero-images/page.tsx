@@ -15,6 +15,18 @@ import { PageHeader } from "@/components/admin/PageHeader";
 // Add export for Next.js to recognize this as a page
 export const dynamic = "force-dynamic";
 
+// Format date helper
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+
 export default function HeroImagesPage() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -47,16 +59,7 @@ export default function HeroImagesPage() {
     }
   };
 
-  // Format date helper
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+
 
   if (loading) {
     return <LoadingState />;
@@ -68,11 +71,11 @@ export default function HeroImagesPage() {
         title="Quản lý Hero Images"
         description="Quản lý ảnh hiển thị trên hero section của trang chủ"
         action={
-          <button
+          <button type="button"
             onClick={() => setShowUploadModal(true)}
             className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="size-4" />
             Thêm Hero Image
           </button>
         }
@@ -142,7 +145,7 @@ export default function HeroImagesPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-zinc-950 bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-gray-800 rounded-lg max-w-md w-full">
             <div className="p-6">
               <h3 className="text-lg font-medium text-white mb-4">
@@ -153,7 +156,7 @@ export default function HeroImagesPage() {
                 &quot;? Thao tác này không thể hoàn tác.
               </p>
               <div className="flex gap-3 justify-end">
-                <button
+                <button type="button"
                   onClick={() => {
                     setShowDeleteModal(false);
                     setSelectedImage(null);
@@ -162,7 +165,7 @@ export default function HeroImagesPage() {
                 >
                   Hủy
                 </button>
-                <button
+                <button type="button"
                   onClick={handleDeleteConfirm}
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >

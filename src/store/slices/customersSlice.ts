@@ -77,10 +77,6 @@ export interface CustomersState {
   deleting: boolean;
   error: string | null;
   
-  // Modal/Form state
-  isCreateModalOpen: boolean;
-  isEditModalOpen: boolean;
-  editingCustomerId: string | null;
 }
 
 const initialState: CustomersState = {
@@ -95,9 +91,6 @@ const initialState: CustomersState = {
   saving: false,
   deleting: false,
   error: null,
-  isCreateModalOpen: false,
-  isEditModalOpen: false,
-  editingCustomerId: null,
 };
 
 // Async thunks
@@ -289,22 +282,6 @@ const customersSlice = createSlice({
       state.currentPage = action.payload;
     },
     
-    // Modal/Form actions
-    openCreateModal: (state) => {
-      state.isCreateModalOpen = true;
-    },
-    closeCreateModal: (state) => {
-      state.isCreateModalOpen = false;
-    },
-    openEditModal: (state, action: PayloadAction<string>) => {
-      state.isEditModalOpen = true;
-      state.editingCustomerId = action.payload;
-    },
-    closeEditModal: (state) => {
-      state.isEditModalOpen = false;
-      state.editingCustomerId = null;
-    },
-    
     // Selection actions
     selectCustomer: (state, action: PayloadAction<Customer>) => {
       state.selectedCustomer = action.payload;
@@ -363,7 +340,6 @@ const customersSlice = createSlice({
         state.saving = false;
         state.customers.unshift(action.payload);
         state.totalCount += 1;
-        state.isCreateModalOpen = false;
       })
       .addCase(createCustomer.rejected, (state, action) => {
         state.saving = false;
@@ -385,8 +361,6 @@ const customersSlice = createSlice({
         if (state.selectedCustomer?.id === action.payload.id) {
           state.selectedCustomer = action.payload;
         }
-        state.isEditModalOpen = false;
-        state.editingCustomerId = null;
       })
       .addCase(updateCustomer.rejected, (state, action) => {
         state.saving = false;
@@ -418,10 +392,6 @@ export const {
   setFilters,
   clearFilters,
   setCurrentPage,
-  openCreateModal,
-  closeCreateModal,
-  openEditModal,
-  closeEditModal,
   selectCustomer,
   clearSelectedCustomer,
   clearError,

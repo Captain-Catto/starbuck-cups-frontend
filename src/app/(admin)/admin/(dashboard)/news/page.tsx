@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useReducer, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -14,13 +14,55 @@ import type { News } from "@/types";
 
 export const dynamic = "force-dynamic";
 
+const getTitle = (news: News) =>
+  news.translations?.find((t) => t.locale === "vi")?.title ||
+  news.translations?.[0]?.title ||
+  "(Chưa có tiêu đề)";
+
+interface NewsState {
+  newsList: News[];
+  loading: boolean;
+  error: string | null;
+  deletingId: string | null;
+  togglingId: string | null;
+}
+
+type NewsAction =
+  | { type: "FETCH_START" }
+  | { type: "FETCH_SUCCESS"; payload: News[] }
+  | { type: "FETCH_ERROR"; payload: string }
+  | { type: "SET_DELETING_ID"; payload: string | null }
+  | { type: "SET_TOGGLING_ID"; payload: string | null };
+
+const initialNewsState: NewsState = {
+  newsList: [],
+  loading: true,
+  error: null,
+  deletingId: null,
+  togglingId: null,
+};
+
+function newsReducer(state: NewsState, action: NewsAction): NewsState {
+  switch (action.type) {
+    case "FETCH_START":
+      return { ...state, loading: true, error: null };
+    case "FETCH_SUCCESS":
+      return { ...state, loading: false, newsList: action.payload };
+    case "FETCH_ERROR":
+      return { ...state, loading: false, error: action.payload };
+    case "SET_DELETING_ID":
+      return { ...state, deletingId: action.payload };
+    case "SET_TOGGLING_ID":
+      return { ...state, togglingId: action.payload };
+    default:
+      return state;
+  }
+}
+
 export default function AdminNewsPage() {
   const router = useRouter();
-  const [newsList, setNewsList] = useState<News[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [state, dispatch] = useReducer(newsReducer, initialNewsState);
+  const { newsList, loading, error, deletingId, togglingId } = state;
 
   const token = useSelector((state: RootState) => state.auth.token);
 
@@ -30,27 +72,25 @@ export default function AdminNewsPage() {
 
   const fetchNews = useCallback(async () => {
     try {
-      setError(null);
+      dispatch({ type: "FETCH_START" });
       const res = await fetch("/api/admin/news?limit=50", { headers: getAuthHeaders() });
       const data = await res.json();
       if (data.success) {
-        setNewsList(data.data?.items ?? []);
+        dispatch({ type: "FETCH_SUCCESS", payload: data.data?.items ?? [] });
       } else {
         throw new Error(data.message || "Không thể tải danh sách bài viết");
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Không thể tải danh sách bài viết";
-      setError(msg);
+      dispatch({ type: "FETCH_ERROR", payload: msg });
       toast.error(msg);
-    } finally {
-      setLoading(false);
     }
   }, [getAuthHeaders]);
 
   useEffect(() => { fetchNews(); }, [fetchNews]);
 
   const handleToggleStatus = async (news: News) => {
-    setTogglingId(news.id);
+    dispatch({ type: "SET_TOGGLING_ID", payload: news.id });
     try {
       const res = await fetch(`/api/admin/news/${news.id}/status`, { method: "PATCH", headers: getAuthHeaders() });
       const data = await res.json();
@@ -61,13 +101,13 @@ export default function AdminNewsPage() {
     } catch {
       toast.error("Không thể cập nhật trạng thái");
     } finally {
-      setTogglingId(null);
+      dispatch({ type: "SET_TOGGLING_ID", payload: null });
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Bạn có chắc muốn xóa bài viết này?")) return;
-    setDeletingId(id);
+    dispatch({ type: "SET_DELETING_ID", payload: id });
     try {
       const res = await fetch(`/api/admin/news/${id}`, { method: "DELETE", headers: getAuthHeaders() });
       const data = await res.json();
@@ -78,14 +118,11 @@ export default function AdminNewsPage() {
     } catch {
       toast.error("Không thể xóa bài viết");
     } finally {
-      setDeletingId(null);
+      dispatch({ type: "SET_DELETING_ID", payload: null });
     }
   };
 
-  const getTitle = (news: News) =>
-    news.translations?.find((t) => t.locale === "vi")?.title ||
-    news.translations?.[0]?.title ||
-    "(Chưa có tiêu đề)";
+
 
   if (loading) return <LoadingState />;
 
@@ -95,7 +132,7 @@ export default function AdminNewsPage() {
         <PageHeader title="Quản lý Bài viết" description="Tạo và quản lý nội dung tin tức, blog để tăng SEO" />
         <div className="bg-gray-800 rounded-xl border border-red-700 p-8 text-center">
           <p className="text-red-400 mb-4">{error}</p>
-          <button
+          <button type="button"
             onClick={fetchNews}
             className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
           >
@@ -112,11 +149,11 @@ export default function AdminNewsPage() {
         title="Quản lý Bài viết"
         description="Tạo và quản lý nội dung tin tức, blog để tăng SEO"
         action={
-          <button
+          <button type="button"
             onClick={() => router.push("/admin/news/new")}
             className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="size-4" />
             Thêm bài viết
           </button>
         }
@@ -124,7 +161,7 @@ export default function AdminNewsPage() {
 
       {newsList.length === 0 ? (
         <EmptyState
-          icon={<Newspaper className="w-8 h-8 text-gray-400" />}
+          icon={<Newspaper className="size-8 text-gray-400" />}
           title="Chưa có bài viết nào"
           description="Tạo bài viết đầu tiên để tăng khả năng SEO cho website"
           actionLabel="Tạo bài viết"
@@ -169,31 +206,31 @@ export default function AdminNewsPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
-                      <button
+                      <button type="button"
                         onClick={(e) => { e.stopPropagation(); handleToggleStatus(news); }}
                         disabled={togglingId === news.id}
                         title={news.status === "published" ? "Chuyển về nháp" : "Xuất bản"}
                         aria-label={news.status === "published" ? "Chuyển về nháp" : "Xuất bản"}
-                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50 cursor-pointer"
+                        className="p-1.5 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50 cursor-pointer"
                       >
-                        {news.status === "published" ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {news.status === "published" ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                       </button>
-                      <button
+                      <button type="button"
                         onClick={(e) => { e.stopPropagation(); router.push(`/admin/news/${news.id}`); }}
                         title="Chỉnh sửa"
                         aria-label="Chỉnh sửa bài viết"
-                        className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors cursor-pointer"
+                        className="p-1.5 text-green-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors cursor-pointer"
                       >
-                        <Pencil className="w-4 h-4" />
+                        <Pencil className="size-4" />
                       </button>
-                      <button
+                      <button type="button"
                         onClick={(e) => { e.stopPropagation(); handleDelete(news.id); }}
                         disabled={deletingId === news.id}
                         title="Xóa"
                         aria-label="Xóa bài viết"
-                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50 cursor-pointer"
+                        className="p-1.5 text-red-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50 cursor-pointer"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="size-4" />
                       </button>
                     </div>
                   </td>

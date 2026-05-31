@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
     const cookies = request.headers.get("cookie");
 
     const response = await fetch(getApiUrl("auth/admin/session"), {
+      cache: "no-store",
       method: "GET",
       headers: {
         "Content-Type": "application/json",

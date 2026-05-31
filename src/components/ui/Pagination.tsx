@@ -1,5 +1,5 @@
-"use client";
-import React, { useState, useEffect } from "react";
+﻿"use client";
+import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -31,18 +31,9 @@ export function Pagination({
 }: PaginationProps) {
   const t = useTranslations("pagination");
   const [isInputMode, setIsInputMode] = useState(false);
-  const [inputValue, setInputValue] = useState(data ? String(data.current_page) : "1");
+  const [inputValue, setInputValue] = useState("");
   const [desktopInputMode, setDesktopInputMode] = useState(false);
-  const [desktopInputValue, setDesktopInputValue] = useState(data ? String(data.current_page) : "1");
-
-  // Sync input values when page changes externally
-  useEffect(() => {
-    if (data) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setInputValue(String(data.current_page));
-      setDesktopInputValue(String(data.current_page));
-    }
-  }, [data]);
+  const [desktopInputValue, setDesktopInputValue] = useState("");
 
   // Handle case when data is undefined or null
   if (!data) {
@@ -131,22 +122,22 @@ export function Pagination({
       className={classNames("flex items-center justify-center", className)}
       aria-label={t("navigationAria")}
     >
-      <div className="flex items-center space-x-1">
+      <div className="flex items-center gap-x-1">
         {/* Previous Page */}
-        <button
+        <button type="button"
           onClick={() =>
             onPageChange && onPageChange(Math.max(1, currentPage - 1))
           }
           disabled={!has_prev}
           className={classNames(
-            "relative inline-flex items-center px-2 py-2 text-sm font-medium rounded-lg transition-colors",
+            "relative inline-flex items-center p-2 text-sm font-medium rounded-lg transition-colors",
             !has_prev
               ? "text-zinc-700 cursor-not-allowed bg-zinc-900 border border-zinc-800"
               : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:text-white cursor-pointer"
           )}
           aria-label={t("previousPage")}
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="size-4" />
         </button>
 
         {/* Mobile Version - Shows on < lg (1024px) */}
@@ -168,14 +159,13 @@ export function Pagination({
                 onKeyDown={handleInputKeyDown}
                 aria-label={t("page")}
                 className="w-12 px-2 py-1 text-sm text-center text-white bg-zinc-800 border border-zinc-600 rounded focus:outline-none focus:ring-2 focus:ring-zinc-500"
-                autoFocus
               />
               <span className="text-sm font-medium text-zinc-300 ml-2">
                 / {totalPages}
               </span>
             </form>
           ) : (
-            <button
+            <button type="button"
               onClick={handleMobilePageClick}
               className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
             >
@@ -187,11 +177,11 @@ export function Pagination({
         </div>
 
         {/* Desktop Version - Shows on >= lg (1024px) */}
-        <div className="hidden lg:flex space-x-1">
+        <div className="hidden lg:flex gap-x-1">
           {/* First page */}
           {desktopPages[0] > 1 && (
             <>
-              <button
+              <button type="button"
                 onClick={() => onPageChange && onPageChange(1)}
                 className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
               >
@@ -199,7 +189,7 @@ export function Pagination({
               </button>
               {desktopPages[0] > 2 && (
                 <span className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-500">
-                  ...
+                  …
                 </span>
               )}
             </>
@@ -207,7 +197,7 @@ export function Pagination({
 
           {/* Page numbers */}
           {desktopPages.map((page) => (
-            <button
+            <button type="button"
               key={page}
               onClick={() => onPageChange && onPageChange(page)}
               className={classNames(
@@ -247,25 +237,24 @@ export function Pagination({
                         onKeyDown={handleDesktopInputKeyDown}
                         aria-label={t("goTo")}
                         className="w-16 px-2 py-1 text-sm text-center text-white bg-zinc-800 border border-zinc-600 rounded focus:outline-none focus:ring-2 focus:ring-zinc-500"
-                        autoFocus
                         placeholder={`1-${totalPages}`}
                       />
                     </form>
                   ) : (
-                    <button
+                    <button type="button"
                       onClick={() => {
                         setDesktopInputMode(true);
                         setDesktopInputValue("");
                       }}
-                      className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-400 transition-colors cursor-pointer"
+                      className="relative inline-flex items-center p-2 text-sm font-medium text-zinc-500 hover:text-zinc-400 transition-colors cursor-pointer"
                       title={t("jumpToPageTitle", { total: totalPages })}
                     >
-                      ...
+                      …
                     </button>
                   )}
                 </>
               )}
-              <button
+              <button type="button"
                 onClick={() => onPageChange && onPageChange(totalPages)}
                 className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
               >
@@ -276,20 +265,20 @@ export function Pagination({
         </div>
 
         {/* Next Page */}
-        <button
+        <button type="button"
           onClick={() =>
             onPageChange && onPageChange(Math.min(totalPages, currentPage + 1))
           }
           disabled={!has_next}
           className={classNames(
-            "relative inline-flex items-center px-2 py-2 text-sm font-medium rounded-lg transition-colors",
+            "relative inline-flex items-center p-2 text-sm font-medium rounded-lg transition-colors",
             !has_next
               ? "text-zinc-700 cursor-not-allowed bg-zinc-900 border border-zinc-800"
               : "text-zinc-300 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:text-white cursor-pointer"
           )}
           aria-label={t("nextPage")}
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="size-4" />
         </button>
       </div>
     </nav>

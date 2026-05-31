@@ -18,13 +18,13 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
         const isLast = index === items.length - 1;
 
         return (
-          <div key={index} className="flex items-center gap-2 shrink-0">
+          <div key={item.href ?? item.label} className="flex items-center gap-2 shrink-0">
             {item.href ? (
               <Link
                 href={item.href}
                 className="flex items-center gap-1 text-zinc-400 hover:text-white transition-colors"
               >
-                {isFirst && <Home className="w-4 h-4" />}
+                {isFirst && <Home className="size-4" />}
                 {item.label}
               </Link>
             ) : (
@@ -32,11 +32,11 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
                 className="flex items-center gap-1 text-white font-medium"
                 aria-current="page"
               >
-                {isFirst && <Home className="w-4 h-4" />}
+                {isFirst && <Home className="size-4" />}
                 {item.label}
               </span>
             )}
-            {!isLast && <ChevronRight className="w-4 h-4 text-zinc-600 shrink-0" />}
+            {!isLast && <ChevronRight className="size-4 text-zinc-600 shrink-0" />}
           </div>
         );
       })}

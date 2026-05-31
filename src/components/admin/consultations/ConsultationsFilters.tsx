@@ -36,8 +36,8 @@ export function ConsultationsFilters({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-4" />
+          <input aria-label="Tìm kiếm theo tên khách hàng..."
             type="text"
             placeholder="Tìm kiếm theo tên khách hàng..."
             value={filters.search}
@@ -47,7 +47,7 @@ export function ConsultationsFilters({
         </div>
 
         {/* Status Filter */}
-        <select
+        <select aria-label="Select option"
           value={filters.status}
           onChange={(e) => onFilterChange("status", e.target.value)}
           className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
@@ -61,7 +61,7 @@ export function ConsultationsFilters({
         </select>
 
         {/* Date From */}
-        <input
+        <input aria-label="Từ ngày"
           type="date"
           value={filters.dateFrom}
           onChange={(e) => onFilterChange("dateFrom", e.target.value)}
@@ -70,7 +70,7 @@ export function ConsultationsFilters({
         />
 
         {/* Date To */}
-        <input
+        <input aria-label="Đến ngày"
           type="date"
           value={filters.dateTo}
           onChange={(e) => onFilterChange("dateTo", e.target.value)}

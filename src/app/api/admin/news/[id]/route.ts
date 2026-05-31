@@ -16,6 +16,7 @@ export async function GET(
   try {
     const { id } = await params;
     const response = await fetch(getApiUrl(`news/admin/${id}`), {
+      cache: "no-store",
       headers: { "Content-Type": "application/json", ...getAdminForwardHeaders(request) },
     });
     const data = await handleAdminBackendResponse(response);
@@ -39,6 +40,7 @@ export async function PUT(
     }
 
     const response = await fetch(getApiUrl(`news/admin/${id}`), {
+      cache: "no-store",
       method: "PUT",
       headers: { "Content-Type": "application/json", ...getAdminForwardHeaders(request) },
       body: JSON.stringify(body),
@@ -57,6 +59,7 @@ export async function DELETE(
   try {
     const { id } = await params;
     const response = await fetch(getApiUrl(`news/admin/${id}`), {
+      cache: "no-store",
       method: "DELETE",
       headers: { "Content-Type": "application/json", ...getAdminForwardHeaders(request) },
     });

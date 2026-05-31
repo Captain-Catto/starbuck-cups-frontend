@@ -13,7 +13,7 @@ export default function NewCustomerPage() {
           href="/admin/customers"
           className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-300" />
+          <ArrowLeft className="size-5 text-gray-300" />
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-white">Thêm khách hàng mới</h1>

@@ -31,9 +31,9 @@ export function OrderStatsCards({
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, index) => (
+        {["a", "b", "c", "d"].map((id) => (
           <div
-            key={index}
+            key={id}
             className="bg-gray-800 rounded-lg border border-gray-700 p-6 animate-pulse"
           >
             <div className="flex items-center justify-between">
@@ -42,7 +42,7 @@ export function OrderStatsCards({
                 <div className="h-8 bg-gray-700 rounded w-1/2"></div>
               </div>
               <div className="flex items-center gap-1">
-                <div className="h-4 bg-gray-700 rounded w-4"></div>
+                <div className="size-4 bg-gray-700 rounded"></div>
                 <div className="h-4 bg-gray-700 rounded w-12"></div>
               </div>
             </div>
@@ -54,9 +54,9 @@ export function OrderStatsCards({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {displayStats.map((stat, index) => (
+      {displayStats.map((stat) => (
         <div
-          key={index}
+          key={stat.label}
           className="bg-gray-800 rounded-lg border border-gray-700 p-6 hover:bg-gray-750 transition-colors"
         >
           <div className="flex items-center justify-between">
@@ -70,7 +70,7 @@ export function OrderStatsCards({
               }`}
             >
               <TrendingUp
-                className={`w-4 h-4 ${
+                className={`size-4 ${
                   stat.trend === "down" ? "rotate-180" : ""
                 }`}
               />

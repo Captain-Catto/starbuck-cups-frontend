@@ -4,13 +4,19 @@ import { apiService } from "@/lib/api";
 import type { AuthState } from "@/types";
 import { getUserFromToken } from "@/lib/jwt";
 
+const ADMIN_TOKEN_STORAGE_KEY = "admin_token";
+
+function getStoredAdminToken() {
+  return localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY);
+}
+
 // Create initial state with client-side check
 const getInitialState = (): AuthState => {
   if (typeof window !== "undefined") {
     return {
       isAuthenticated: false,
       user: null,
-      token: localStorage.getItem("admin_token"),
+      token: getStoredAdminToken(),
       refreshToken: null, // Refresh token chỉ ở cookie, không localStorage
       loading: false,
       error: null,
@@ -41,7 +47,7 @@ export const checkAuthStatus = createAsyncThunk(
         throw new Error("Not on client side");
       }
 
-      const token = localStorage.getItem("admin_token");
+      const token = getStoredAdminToken();
 
       if (token) {
         // Có token, verify với backend
@@ -54,7 +60,7 @@ export const checkAuthStatus = createAsyncThunk(
 
         // Lưu token mới vào localStorage
         if (sessionResponse.data.token) {
-          localStorage.setItem("admin_token", sessionResponse.data.token);
+          localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, sessionResponse.data.token);
         }
 
         return sessionResponse.data;
@@ -62,7 +68,7 @@ export const checkAuthStatus = createAsyncThunk(
     } catch (error: unknown) {
       // Clear invalid tokens
       if (typeof window !== "undefined") {
-        localStorage.removeItem("admin_token");
+        localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
       }
 
       if (error instanceof Error) {
@@ -88,7 +94,7 @@ export const refreshAuthToken = createAsyncThunk(
     } catch (error: unknown) {
       // Clear invalid tokens
       if (typeof window !== "undefined") {
-        localStorage.removeItem("admin_token");
+        localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
       }
 
       if (error instanceof Error) {
@@ -184,7 +190,7 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       // Refresh token chỉ được manage bởi cookie, không lưu trong state
       if (typeof window !== "undefined") {
-        localStorage.setItem("admin_token", action.payload.token);
+        localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, action.payload.token);
       }
     },
   },
@@ -209,7 +215,7 @@ const authSlice = createSlice({
           state.token = payload.token;
           // Update localStorage with new token
           if (typeof window !== "undefined") {
-            localStorage.setItem("admin_token", payload.token);
+            localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, payload.token);
           }
         }
 
@@ -234,7 +240,7 @@ const authSlice = createSlice({
         state.refreshToken = null;
         state.sessionChecked = true;
         if (typeof window !== "undefined") {
-          localStorage.removeItem("admin_token");
+          localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
         }
       })
       // Token refresh
@@ -242,7 +248,7 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         // Refresh token chỉ ở cookie
         if (typeof window !== "undefined") {
-          localStorage.setItem("admin_token", action.payload.token);
+          localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, action.payload.token);
         }
       })
       .addCase(refreshAuthToken.rejected, (state) => {
@@ -251,7 +257,7 @@ const authSlice = createSlice({
         state.token = null;
         state.refreshToken = null;
         if (typeof window !== "undefined") {
-          localStorage.removeItem("admin_token");
+          localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
         }
       })
       // Regular login
@@ -273,7 +279,7 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.refreshToken = action.payload.refreshToken;
         if (typeof window !== "undefined") {
-          localStorage.setItem("admin_token", action.payload.token);
+          localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, action.payload.token);
           // Refresh token chỉ ở cookie
         }
       })
@@ -300,7 +306,7 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.refreshToken = action.payload.refreshToken;
         if (typeof window !== "undefined") {
-          localStorage.setItem("admin_token", action.payload.token);
+          localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, action.payload.token);
           // Refresh token chỉ ở cookie
         }
       })
@@ -315,7 +321,7 @@ const authSlice = createSlice({
         state.token = null;
         state.refreshToken = null;
         if (typeof window !== "undefined") {
-          localStorage.removeItem("admin_token");
+          localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
         }
       });
   },

@@ -25,7 +25,7 @@ export function filterRegularProducts(products: Product[]): Product[] {
  * Sort products with VIP products first
  */
 export function sortWithVipFirst(products: Product[]): Product[] {
-  return [...products].sort((a, b) => {
+  return products.toSorted((a, b) => {
     // VIP products come first
     if (isVipProduct(a) && !isVipProduct(b)) return -1;
     if (!isVipProduct(a) && isVipProduct(b)) return 1;

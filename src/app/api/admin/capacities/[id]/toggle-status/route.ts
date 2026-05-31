@@ -11,6 +11,7 @@ export async function PATCH(
     const response = await fetch(
       getApiUrl(`admin/capacities/${id}/toggle-status`),
       {
+      cache: "no-store",
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

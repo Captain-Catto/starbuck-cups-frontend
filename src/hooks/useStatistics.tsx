@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useReducer, useEffect, useCallback } from "react";
 import { useAppSelector } from "@/store";
 import { getApiUrl } from "@/lib/api-config";
 
@@ -91,6 +91,46 @@ const STATISTICS_CACHE_TTL_MS = 60_000;
 const statisticsCache = new Map<string, StatisticsCacheEntry>();
 const statisticsInFlight = new Map<string, Promise<StatisticsData>>();
 
+interface StatisticsState {
+  data: StatisticsData | null;
+  loading: boolean;
+  error: string | null;
+}
+
+type StatisticsAction =
+  | { type: "SET_CACHED_DATA"; payload: StatisticsData }
+  | { type: "FETCH_START"; loading: boolean }
+  | { type: "FETCH_SUCCESS"; payload: StatisticsData }
+  | { type: "FETCH_ERROR"; payload: string | null };
+
+const initialStatisticsState: StatisticsState = {
+  data: null,
+  loading: true,
+  error: null,
+};
+
+function statisticsReducer(
+  state: StatisticsState,
+  action: StatisticsAction
+): StatisticsState {
+  switch (action.type) {
+    case "SET_CACHED_DATA":
+      return { ...state, data: action.payload };
+    case "FETCH_START":
+      return { ...state, loading: action.loading, error: null };
+    case "FETCH_SUCCESS":
+      return { data: action.payload, loading: false, error: null };
+    case "FETCH_ERROR":
+      return {
+        ...state,
+        loading: false,
+        error: action.payload ?? state.error,
+      };
+    default:
+      return state;
+  }
+}
+
 export function invalidateStatisticsCache() {
   statisticsCache.clear();
   statisticsInFlight.clear();
@@ -98,9 +138,10 @@ export function invalidateStatisticsCache() {
 
 export const useStatistics = (period: "week" | "month" | "year" = "month") => {
   const statisticsUrl = getApiUrl("admin/dashboard/statistics");
-  const [data, setData] = useState<StatisticsData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [{ data, loading, error }, dispatch] = useReducer(
+    statisticsReducer,
+    initialStatisticsState
+  );
 
   // Get token from Redux store
   const { token } = useAppSelector((state) => state.auth);
@@ -117,7 +158,7 @@ export const useStatistics = (period: "week" | "month" | "year" = "month") => {
       const hasCachedData = Boolean(cached);
 
       if (hasCachedData) {
-        setData(cached!.data);
+        dispatch({ type: "SET_CACHED_DATA", payload: cached!.data });
       }
 
       if (
@@ -125,14 +166,15 @@ export const useStatistics = (period: "week" | "month" | "year" = "month") => {
         cached &&
         Date.now() - cached.fetchedAt < STATISTICS_CACHE_TTL_MS
       ) {
-        setData(cached.data);
-        setLoading(false);
+        dispatch({ type: "FETCH_SUCCESS", payload: cached.data });
         return;
       }
 
       try {
-        setLoading(forceRefresh || !hasCachedData);
-        setError(null);
+        dispatch({
+          type: "FETCH_START",
+          loading: forceRefresh || !hasCachedData,
+        });
 
         if (!token) {
           throw new Error("No authentication token found");
@@ -166,14 +208,18 @@ export const useStatistics = (period: "week" | "month" | "year" = "month") => {
         }
 
         const freshData = await statisticsInFlight.get(cacheKey)!;
-        setData(freshData);
+        dispatch({ type: "FETCH_SUCCESS", payload: freshData });
       } catch (err) {
         // Keep stale data visible when background revalidation fails
-        if (!hasCachedData || forceRefresh) {
-          setError(err instanceof Error ? err.message : "An error occurred");
-        }
-      } finally {
-        setLoading(false);
+        dispatch({
+          type: "FETCH_ERROR",
+          payload:
+            !hasCachedData || forceRefresh
+              ? err instanceof Error
+                ? err.message
+                : "An error occurred"
+              : null,
+        });
       }
     },
     [getCacheKey, statisticsUrl, token]

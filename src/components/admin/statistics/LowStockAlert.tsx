@@ -17,15 +17,15 @@ export function LowStockAlert() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-white">
-            <AlertTriangle className="h-5 w-5 mr-2 text-gray-400" />
+            <AlertTriangle className="size-5 mr-2 text-gray-400" />
             Sản phẩm sắp hết hàng
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, index) => (
+            {["a", "b", "c", "d", "e", "f"].map((id) => (
               <div
-                key={index}
+                key={id}
                 className="p-4 border border-gray-700 rounded-lg bg-gray-800 animate-pulse"
               >
                 <div className="h-5 bg-gray-700 rounded mb-2 w-3/4"></div>
@@ -44,7 +44,7 @@ export function LowStockAlert() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-white">
-            <AlertTriangle className="h-5 w-5 mr-2 text-gray-400" />
+            <AlertTriangle className="size-5 mr-2 text-gray-400" />
             Sản phẩm sắp hết hàng
           </CardTitle>
         </CardHeader>
@@ -60,7 +60,7 @@ export function LowStockAlert() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-white">
-            <AlertTriangle className="h-5 w-5 mr-2 text-gray-400" />
+            <AlertTriangle className="size-5 mr-2 text-gray-400" />
             Sản phẩm sắp hết hàng
           </CardTitle>
         </CardHeader>
@@ -77,7 +77,7 @@ export function LowStockAlert() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center text-white">
-          <AlertTriangle className="h-5 w-5 mr-2 text-gray-400" />
+          <AlertTriangle className="size-5 mr-2 text-gray-400" />
           Sản phẩm sắp hết hàng ({pagination?.total_items || 0})
         </CardTitle>
       </CardHeader>

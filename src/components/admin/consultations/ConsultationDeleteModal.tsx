@@ -16,11 +16,11 @@ export function ConsultationDeleteModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-zinc-950 bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-gray-800 rounded-lg max-w-md w-full p-6 border border-gray-700">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-red-900 rounded-full flex items-center justify-center">
-            <Trash2 className="w-5 h-5 text-red-400" />
+          <div className="size-10 bg-red-900 rounded-full flex items-center justify-center">
+            <Trash2 className="size-5 text-red-400" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-white">Xác nhận xóa</h3>
@@ -36,22 +36,22 @@ export function ConsultationDeleteModal({
         </p>
 
         <div className="flex justify-end gap-3">
-          <button
+          <button type="button"
             onClick={onCancel}
             disabled={actionLoading === "delete"}
             className="px-4 py-2 text-gray-300 border border-gray-600 rounded-lg hover:bg-gray-700 disabled:opacity-50 cursor-pointer"
           >
             Hủy
           </button>
-          <button
+          <button type="button"
             onClick={onConfirm}
             disabled={actionLoading === "delete"}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
           >
             {actionLoading === "delete" && (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full size-4 border-b-2 border-white"></div>
             )}
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="size-4" />
             Xóa
           </button>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useAppDispatch, useAppSelector } from "@/store";
+import { selectCartItems, selectCartOpen } from "@/store/selectors";
 import { removeFromCart, clearCart, closeCart } from "@/store/slices/cartSlice";
 import { X, ShoppingBag, FileText } from "lucide-react";
 import type { CartItem } from "@/types";
@@ -18,7 +19,8 @@ interface CartProps {
 export function Cart({ className = "" }: CartProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { items, isOpen } = useAppSelector((state) => state.cart);
+  const items = useAppSelector(selectCartItems);
+  const isOpen = useAppSelector(selectCartOpen);
   const t = useTranslations("cart");
 
   const totalItems = items.length;
@@ -49,7 +51,9 @@ export function Cart({ className = "" }: CartProps) {
   return (
     <>
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        aria-label="Close cart"
         className={`fixed inset-0 z-40 bg-black/60 transition-opacity duration-300 ${
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
@@ -58,7 +62,7 @@ export function Cart({ className = "" }: CartProps) {
 
       {/* Cart Panel — always mounted so slide transition works */}
       <div
-        className={`fixed right-0 top-0 h-full w-full max-w-md z-50 bg-zinc-900 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed right-0 top-0 size-full max-w-md z-50 bg-zinc-900 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? "translate-x-0" : "translate-x-full"
         } ${className}`}
       >
@@ -67,19 +71,19 @@ export function Cart({ className = "" }: CartProps) {
           <h2 className="text-lg font-semibold text-white">
             {t("title", { count: totalItems })}
           </h2>
-          <button
+          <button type="button"
             onClick={() => dispatch(closeCart())}
             className="p-2 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5 text-zinc-400" />
+            <X className="size-5 text-zinc-400" />
           </button>
         </div>
 
         {/* Clear Cart Button - Moved to top */}
         {items.length > 0 && (
-          <button
+          <button type="button"
             onClick={handleClearCart}
-            className="w-full text-sm text-zinc-400 hover:text-red-400 transition-colors py-2 px-3 hover:bg-red-900/20 rounded-lg cursor-pointer"
+            className="w-full text-sm text-red-400/70 hover:text-red-400 transition-colors py-2 px-3 hover:bg-red-900/20 rounded-lg cursor-pointer"
           >
             {t("clearAll")}
           </button>
@@ -90,8 +94,8 @@ export function Cart({ className = "" }: CartProps) {
           {items.length === 0 ? (
             // Empty Cart
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
-                <ShoppingBag className="w-8 h-8 text-zinc-400" />
+              <div className="size-16 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
+                <ShoppingBag className="size-8 text-zinc-400" />
               </div>
               <h3 className="text-lg font-medium text-white mb-2">
                 {t("emptyTitle")}
@@ -103,11 +107,11 @@ export function Cart({ className = "" }: CartProps) {
           ) : (
             <>
               {/* Cart Items */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {items.map((item, index) => {
+              <div className="flex-1 overflow-y-auto p-4 gap-y-4">
+                {items.map((item) => {
                   return (
                     <CartItemCard
-                      key={`${item.product.id}-${index}`}
+                      key={item.product.id}
                       item={item}
                       onRemove={() => handleRemoveItem(item.product.id)}
                     />
@@ -118,11 +122,11 @@ export function Cart({ className = "" }: CartProps) {
               {/* Footer Actions - Fixed at bottom */}
               <div className="border-t border-zinc-800 bg-zinc-900 p-4 space-y-3">
                 {/* Consultation Order Button */}
-                <button
+                <button type="button"
                   onClick={handleCreateConsultationOrder}
                   className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-zinc-100 text-black font-medium rounded-lg transition-colors cursor-pointer"
                 >
-                  <FileText className="w-5 h-5" />
+                  <FileText className="size-5" />
                   {t("createOrder")}
                 </button>
 
@@ -153,7 +157,7 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
       {/* Product Image */}
       <Link
         href={`/products/${product.slug}`}
-        className="w-16 h-16 bg-zinc-700 rounded-lg overflow-hidden flex-shrink-0 hover:opacity-80 transition-opacity"
+        className="size-16 bg-zinc-700 rounded-lg overflow-hidden flex-shrink-0 hover:opacity-80 transition-opacity"
       >
         {getFirstProductImageUrl(product.productImages) ? (
           <OptimizedImage
@@ -161,10 +165,10 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
             alt={product.name}
             width={64}
             height={64}
-            className="w-full h-full object-cover"
+            className="size-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="size-full flex items-center justify-center">
             <span className="text-2xl font-light text-white/30">
               {product.name.charAt(0)}
             </span>
@@ -186,11 +190,11 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
         <div className="flex items-center gap-2 mb-2">
           {product.productColors && product.productColors.length > 0 ? (
             <div className="flex items-center gap-1">
-              <div className="flex -space-x-1">
+              <div className="flex -gap-x-1">
                 {product.productColors.slice(0, 3).map((pc) => (
                   <div
                     key={pc.color.id}
-                    className="w-3 h-3 rounded-full border border-zinc-600"
+                    className="size-3 rounded-full border border-zinc-600"
                     style={{
                       backgroundColor: pc.color.hexCode || "#ffffff",
                     }}
@@ -198,7 +202,7 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
                   />
                 ))}
                 {product.productColors.length > 3 && (
-                  <div className="w-3 h-3 rounded-full border border-zinc-600 bg-zinc-700 flex items-center justify-center">
+                  <div className="size-3 rounded-full border border-zinc-600 bg-zinc-700 flex items-center justify-center">
                     <span className="text-[8px] text-zinc-300">
                       +{product.productColors.length - 3}
                     </span>
@@ -220,11 +224,11 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
       </div>
 
       {/* Remove Button */}
-      <button
+      <button type="button"
         onClick={onRemove}
         className="p-1 hover:bg-zinc-700 rounded transition-colors self-start cursor-pointer"
       >
-        <X className="w-4 h-4 text-zinc-400" />
+        <X className="size-4 text-zinc-400" />
       </button>
     </div>
   );

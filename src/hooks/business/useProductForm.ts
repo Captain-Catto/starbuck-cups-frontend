@@ -48,6 +48,15 @@ const toOptionalValue = (value: string): string | undefined => {
   return trimmed ? trimmed : undefined;
 };
 
+const isValidUrl = (url: string): boolean => {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const buildTranslationsPayload = (
   translations: ProductTranslationsInput,
   fallbackName: string,
@@ -287,14 +296,7 @@ export function useProductForm(
     [errors]
   );
 
-  const isValidUrl = (url: string): boolean => {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  };
+
 
   const validateFormData = useCallback((data: ProductFormData): boolean => {
     const newErrors: ValidationErrors = {};

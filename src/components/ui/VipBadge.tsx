@@ -8,32 +8,32 @@ interface VipBadgeProps {
   className?: string;
 }
 
-export function VipBadge({ size = "md", className = "" }: VipBadgeProps) {
-  const imageSizes = {
-    xs: { width: 20, height: 20 },
-    sm: { width: 32, height: 32 },
-    md: { width: 44, height: 44 },
-    lg: { width: 56, height: 56 },
-  };
+const VIP_BADGE_IMAGE_SIZES: Record<string, { width: number; height: number }> = {
+  xs: { width: 20, height: 20 },
+  sm: { width: 32, height: 32 },
+  md: { width: 44, height: 44 },
+  lg: { width: 56, height: 56 },
+};
 
+export function VipBadge({ size = "md", className = "" }: VipBadgeProps) {
   return (
     <div className={`inline-block vip-shimmer ${className}`}>
       <Image
         src="/images/vip-logo.webp"
         alt="VIP"
-        width={imageSizes[size].width}
-        height={imageSizes[size].height}
+        width={VIP_BADGE_IMAGE_SIZES[size].width}
+        height={VIP_BADGE_IMAGE_SIZES[size].height}
         className="object-contain vip-pulse"
       />
 
-      <style jsx>{`
+      <style>{`
         .vip-pulse {
           animation: vip-pulse 1.5s infinite;
         }
 
         .vip-shimmer {
           position: relative;
-          overflow: hidden !important;
+          overflow: hidden;
           isolation: isolate;
         }
 
@@ -92,16 +92,8 @@ export function VipBadge({ size = "md", className = "" }: VipBadgeProps) {
   );
 }
 
-// Animated version for special occasions
-export function VipBadgeAnimated({
-  size = "md",
-  className = "",
-}: VipBadgeProps) {
-  return <VipBadge size={size} className={className} />;
-}
-
 // Utils function to check if product is VIP
-export function isVipProduct(product: { isVip?: boolean }): boolean {
+function isVipProduct(product: { isVip?: boolean }): boolean {
   return Boolean(product.isVip);
 }
 

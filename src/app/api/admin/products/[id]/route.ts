@@ -22,6 +22,7 @@ export async function GET(
     });
 
     const response = await fetch(url.toString(), {
+      cache: "no-store",
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -53,6 +54,7 @@ export async function PUT(
     }
 
     const response = await fetch(getApiUrl(`admin/products/${id}`), {
+      cache: "no-store",
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -79,6 +81,7 @@ export async function DELETE(
     const { id } = await params;
 
     const response = await fetch(getApiUrl(`admin/products/${id}`), {
+      cache: "no-store",
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

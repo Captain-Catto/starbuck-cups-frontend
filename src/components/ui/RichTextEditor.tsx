@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 // Dynamic imports for better performance
@@ -116,10 +116,12 @@ function ValuePlugin({
       }
 
       // Reset flag after update
-      setTimeout(() => {
+      const resetExternalUpdateTimer = setTimeout(() => {
         isUpdatingFromExternalRef.current = false;
 
       }, 100);
+
+      return () => clearTimeout(resetExternalUpdateTimer);
     } else {
 
     }
@@ -161,6 +163,16 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   placeholder = "Nhập mô tả sản phẩm...",
   height = 400,
 }) => {
+  const contentEditable = useMemo(
+    () => (
+      <ContentEditable
+        className="editor-input"
+        aria-placeholder={placeholder}
+        placeholder={<div className="editor-placeholder">{placeholder}</div>}
+      />
+    ),
+    [placeholder]
+  );
 
 
   const initialConfig = {
@@ -243,15 +255,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           <ToolbarPlugin />
           <div className="editor-inner" style={{ height: `${height - 60}px` }}>
             <RichTextPlugin
-              contentEditable={
-                <ContentEditable
-                  className="editor-input"
-                  aria-placeholder={placeholder}
-                  placeholder={
-                    <div className="editor-placeholder">{placeholder}</div>
-                  }
-                />
-              }
+              contentEditable={contentEditable}
               ErrorBoundary={LexicalErrorBoundary}
             />
             <HistoryPlugin />

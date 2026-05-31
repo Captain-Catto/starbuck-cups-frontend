@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useReducer } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { RootState } from "@/store";
@@ -52,6 +52,45 @@ interface ConfirmModal {
   action: "delete";
 }
 
+interface CustomersState {
+  customers: CustomerAdmin[];
+  loading: boolean;
+  actionLoading: string | null;
+}
+
+type CustomersAction =
+  | { type: "FETCH_START" }
+  | { type: "FETCH_SUCCESS"; payload: CustomerAdmin[] }
+  | { type: "FETCH_ERROR" }
+  | { type: "ACTION_START"; payload: string }
+  | { type: "ACTION_FINISH" };
+
+const initialCustomersState: CustomersState = {
+  customers: [],
+  loading: true,
+  actionLoading: null,
+};
+
+function customersReducer(
+  state: CustomersState,
+  action: CustomersAction
+): CustomersState {
+  switch (action.type) {
+    case "FETCH_START":
+      return { ...state, loading: true };
+    case "FETCH_SUCCESS":
+      return { ...state, customers: action.payload, loading: false };
+    case "FETCH_ERROR":
+      return { ...state, loading: false };
+    case "ACTION_START":
+      return { ...state, actionLoading: action.payload };
+    case "ACTION_FINISH":
+      return { ...state, actionLoading: null };
+    default:
+      return state;
+  }
+}
+
 export function useAdminCustomers(
   search = "",
   vipStatus = "all",
@@ -60,9 +99,10 @@ export function useAdminCustomers(
 ) {
   const token = useSelector((state: RootState) => state.auth.token);
 
-  const [customers, setCustomers] = useState<CustomerAdmin[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [{ customers, loading, actionLoading }, dispatchState] = useReducer(
+    customersReducer,
+    initialCustomersState
+  );
   const [confirmModal, setConfirmModal] = useState<ConfirmModal>({
     show: false,
     customer: null,
@@ -78,7 +118,7 @@ export function useAdminCustomers(
 
   const fetchCustomers = useCallback(async () => {
     try {
-      setLoading(true);
+      dispatchState({ type: "FETCH_START" });
       const params = new URLSearchParams({ page: "1", limit: "50" });
       if (search) params.set("search", search);
       if (vipStatus !== "all") params.set("vipStatus", vipStatus);
@@ -93,14 +133,16 @@ export function useAdminCustomers(
 
       const data = await response.json();
       if (data.success) {
-        setCustomers(data.data.items || []);
+        dispatchState({
+          type: "FETCH_SUCCESS",
+          payload: data.data.items || [],
+        });
       } else {
         throw new Error(data.message || "Failed to fetch customers");
       }
     } catch {
       toast.error("Lỗi khi tải danh sách khách hàng");
-    } finally {
-      setLoading(false);
+      dispatchState({ type: "FETCH_ERROR" });
     }
   }, [getAuthHeaders, search, vipStatus, dateFrom, dateTo]);
 
@@ -109,7 +151,7 @@ export function useAdminCustomers(
   };
 
   const performDelete = async (customer: CustomerAdmin) => {
-    setActionLoading(`delete-${customer.id}`);
+    dispatchState({ type: "ACTION_START", payload: `delete-${customer.id}` });
     try {
       const response = await fetch(`/api/admin/customers/${customer.id}`, {
         method: "DELETE",
@@ -128,7 +170,7 @@ export function useAdminCustomers(
     } catch {
       toast.error("Lỗi khi xóa khách hàng");
     } finally {
-      setActionLoading(null);
+      dispatchState({ type: "ACTION_FINISH" });
     }
   };
 

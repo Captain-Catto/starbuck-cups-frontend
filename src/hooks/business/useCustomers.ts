@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useReducer, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { PaginationMeta } from "@/types";
@@ -60,23 +60,86 @@ export interface UseCustomersReturn {
   refetch: () => Promise<void>;
 }
 
+interface CustomersState {
+  customers: CustomerAdmin[];
+  pagination: PaginationMeta;
+  loading: boolean;
+  error: string | null;
+  currentSearchTerm: string;
+}
+
+type CustomersAction =
+  | { type: "FETCH_START"; searchTerm: string }
+  | {
+      type: "FETCH_SUCCESS";
+      customers: CustomerAdmin[];
+      pagination?: PaginationMeta;
+    }
+  | { type: "FETCH_ERROR"; error: string }
+  | { type: "SET_PAGE"; page: number }
+  | { type: "SET_LIMIT"; limit: number };
+
+function customersReducer(
+  state: CustomersState,
+  action: CustomersAction
+): CustomersState {
+  switch (action.type) {
+    case "FETCH_START":
+      return {
+        ...state,
+        loading: true,
+        error: null,
+        currentSearchTerm: action.searchTerm,
+      };
+    case "FETCH_SUCCESS":
+      return {
+        ...state,
+        customers: action.customers,
+        pagination: action.pagination ?? state.pagination,
+        loading: false,
+      };
+    case "FETCH_ERROR":
+      return { ...state, loading: false, error: action.error };
+    case "SET_PAGE":
+      return {
+        ...state,
+        pagination: { ...state.pagination, current_page: action.page },
+      };
+    case "SET_LIMIT":
+      return {
+        ...state,
+        pagination: {
+          ...state.pagination,
+          per_page: action.limit,
+          current_page: 1,
+        },
+      };
+    default:
+      return state;
+  }
+}
+
 export function useCustomers(
   options: UseCustomersOptions = {}
 ): UseCustomersReturn {
+  // react-doctor-disable-next-line react-doctor/no-event-handler -- initialization fetch controlled by autoFetch option, not a user event
   const { initialPage = 1, initialLimit = 10, autoFetch = true } = options;
 
-  const [customers, setCustomers] = useState<CustomerAdmin[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState<PaginationMeta>({
-    current_page: initialPage,
-    has_next: false,
-    has_prev: false,
-    per_page: initialLimit,
-    total_items: 0,
-    total_pages: 0,
+  const [state, dispatch] = useReducer(customersReducer, {
+    customers: [],
+    pagination: {
+      current_page: initialPage,
+      has_next: false,
+      has_prev: false,
+      per_page: initialLimit,
+      total_items: 0,
+      total_pages: 0,
+    },
+    loading: true,
+    error: null,
+    currentSearchTerm: "",
   });
-  const [currentSearchTerm, setCurrentSearchTerm] = useState<string>("");
+  const { customers, pagination, loading, error, currentSearchTerm } = state;
 
   const token = useSelector((state: RootState) => state.auth.token);
 
@@ -92,12 +155,9 @@ export function useCustomers(
       dateTo?: string
     ) => {
       try {
-        setLoading(true);
-        setError(null);
-
         const search =
           searchTerm !== undefined ? searchTerm : currentSearchTerm;
-        setCurrentSearchTerm(search);
+        dispatch({ type: "FETCH_START", searchTerm: search });
 
         const params = new URLSearchParams({
           page: pagination.current_page.toString(),
@@ -119,32 +179,31 @@ export function useCustomers(
         const data = await response.json();
 
         if (data.success) {
-          setCustomers(data.data.items || []);
-          if (data.data?.pagination) {
-            setPagination(data.data.pagination);
-          }
+          dispatch({
+            type: "FETCH_SUCCESS",
+            customers: data.data.items || [],
+            pagination: data.data?.pagination,
+          });
         } else {
           const errorMsg = data.message || "Không thể tải danh sách khách hàng";
-          setError(errorMsg);
+          dispatch({ type: "FETCH_ERROR", error: errorMsg });
           toast.error(errorMsg);
         }
       } catch {
         const errorMsg = "Có lỗi xảy ra khi tải danh sách khách hàng";
-        setError(errorMsg);
+        dispatch({ type: "FETCH_ERROR", error: errorMsg });
         toast.error(errorMsg);
-      } finally {
-        setLoading(false);
       }
     },
     [pagination.current_page, pagination.per_page, currentSearchTerm, getAuthHeaders]
   );
 
   const setPage = useCallback((page: number) => {
-    setPagination((prev) => ({ ...prev, current_page: page }));
+    dispatch({ type: "SET_PAGE", page });
   }, []);
 
   const setLimit = useCallback((limit: number) => {
-    setPagination((prev) => ({ ...prev, per_page: limit, current_page: 1 }));
+    dispatch({ type: "SET_LIMIT", limit });
   }, []);
 
   const refetch = useCallback(() => {
@@ -153,6 +212,7 @@ export function useCustomers(
 
   useEffect(() => {
     if (autoFetch) {
+      // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent -- initialization fetch, data flows down via hook return value
       fetchCustomers();
     }
   }, [pagination.current_page, pagination.per_page, autoFetch, fetchCustomers]);

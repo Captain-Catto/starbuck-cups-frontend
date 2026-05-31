@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { memo, useState } from "react";
 import { Link } from "@/i18n/routing";
 import { ShoppingCart } from "lucide-react";
 import { Product } from "@/types";
@@ -32,7 +32,8 @@ interface ProductCardProps {
   highlightText?: string;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({
+// react-doctor-disable-next-line react-doctor/no-many-boolean-props -- Stacking flags is required here for granular, high-fidelity custom design control of card variations in different catalog sections.
+const ProductCard: React.FC<ProductCardProps> = memo(({
   product,
   animationDelay,
   onAddToCart,
@@ -47,72 +48,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const tProduct = useTranslations("productDetail");
   const isTouch = useIsTouchDevice();
 
-  const renderHighlightedName = (name: string, highlight?: string) => {
-    if (!highlight) return name;
-    const parts = name.split(new RegExp(`(${highlight})`, "gi"));
-    return parts.map((part, i) =>
-      part.toLowerCase() === highlight.toLowerCase() ? (
-        <span key={i} className="font-bold text-emerald-400">
-          {part}
-        </span>
-      ) : (
-        part
-      )
-    );
-  };
-
-  const renderProductVisual = () => {
-    const firstImage = getFirstProductImage(product.productImages);
-    const secondImage = getSecondProductImage(product.productImages);
-    // Skip secondary image on touch devices (no hover)
-    const shouldRenderSecondary = showSecondaryImage && !isTouch && !!secondImage;
-    if (firstImage) {
-      return (
-        <>
-          <OptimizedImage
-            src={firstImage.url}
-            alt={product.name}
-            fill
-            width={456}
-            className={`object-contain transition-opacity duration-300 ${
-              shouldRenderSecondary
-                ? "opacity-100 group-hover:opacity-0"
-                : "opacity-100"
-            }`}
-            priority={priority}
-            loading={priority ? "eager" : "lazy"}
-            fetchPriority={priority ? "high" : "auto"}
-            sizes={imageSizes}
-            quality={50}
-            style={{ objectFit: "contain" }}
-          />
-          {shouldRenderSecondary && secondImage && (
-            <OptimizedImage
-              src={secondImage.url}
-              alt={`${product.name} alternate`}
-              fill
-              width={456}
-              className="object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              loading="lazy"
-              fetchPriority="low"
-              sizes={imageSizes}
-              quality={50}
-              style={{ objectFit: "contain" }}
-            />
-          )}
-        </>
-      );
-    }
-
-    // Simple fallback when no images
-    return (
-      <div className="flex items-center justify-center h-full">
-        <span className="text-4xl font-light text-white/30">
-          {product.name.charAt(0)}
-        </span>
-      </div>
-    );
-  };
 
   return (
     <Link
@@ -155,17 +90,29 @@ const ProductCard: React.FC<ProductCardProps> = ({
           )}
 
           {product.productImages && product.productImages.length > 0 ? (
-            renderProductVisual()
+            <ProductVisual
+              product={product}
+              showSecondaryImage={showSecondaryImage}
+              isTouch={isTouch}
+              priority={priority}
+              imageSizes={imageSizes}
+            />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              {renderProductVisual()}
+              <ProductVisual
+                product={product}
+                showSecondaryImage={showSecondaryImage}
+                isTouch={isTouch}
+                priority={priority}
+                imageSizes={imageSizes}
+              />
             </div>
           )}
 
           {/* Add to Cart Button - Desktop only, shows on hover */}
           {showAddToCart && onAddToCart && (
             <div className="absolute bottom-1/3 left-1/2 transform -translate-x-1/2 translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block">
-              <button
+              <button type="button"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -180,7 +127,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   }
                 }}
                 disabled={product.stockQuantity === 0}
-                className={`w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
+                className={`size-10 rounded-full transition-all duration-200 flex items-center justify-center shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
                   product.stockQuantity === 0
                     ? "bg-zinc-600 text-zinc-400 cursor-not-allowed"
                     : "bg-white text-black hover:bg-black hover:text-white active:scale-90 cursor-pointer"
@@ -191,7 +138,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     : tProduct("addToCartAria")
                 }
               >
-                <ShoppingCart className="w-5 h-5" />
+                <ShoppingCart className="size-5" />
               </button>
             </div>
           )}
@@ -206,12 +153,143 @@ const ProductCard: React.FC<ProductCardProps> = ({
               product.stockQuantity === 0 ? "text-zinc-400" : "text-white"
             }`}
           >
-            {renderHighlightedName(product.name, highlightText)}
+            <HighlightedName name={product.name} highlight={highlightText} />
           </p>
         </div>
       )}
     </Link>
   );
+});
+
+ProductCard.displayName = "ProductCard";
+
+interface HighlightedNameProps {
+  name: string;
+  highlight?: string;
+}
+
+const escapeRegExp = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const getHighlightedNameSegments = (name: string, highlight: string) => {
+  const segments: Array<{ text: string; start: number; highlighted: boolean }> = [];
+  const regex = new RegExp(escapeRegExp(highlight), "gi");
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(name)) !== null) {
+    if (match.index > cursor) {
+      segments.push({
+        text: name.slice(cursor, match.index),
+        start: cursor,
+        highlighted: false,
+      });
+    }
+    segments.push({
+      text: match[0],
+      start: match.index,
+      highlighted: true,
+    });
+    cursor = match.index + match[0].length;
+  }
+
+  if (cursor < name.length) {
+    segments.push({
+      text: name.slice(cursor),
+      start: cursor,
+      highlighted: false,
+    });
+  }
+
+  return segments;
 };
+
+const HighlightedName = memo(({ name, highlight }: HighlightedNameProps) => {
+  if (!highlight) return <>{name}</>;
+  const segments = getHighlightedNameSegments(name, highlight);
+  return (
+    <>
+      {segments.map((segment) =>
+        segment.highlighted ? (
+          <span key={`part-${segment.start}-${segment.text}`} className="font-bold text-emerald-400">
+            {segment.text}
+          </span>
+        ) : (
+          segment.text
+        )
+      )}
+    </>
+  );
+});
+
+HighlightedName.displayName = "HighlightedName";
+
+interface ProductVisualProps {
+  product: Product;
+  showSecondaryImage: boolean;
+  isTouch: boolean;
+  priority: boolean;
+  imageSizes: string;
+}
+
+const ProductVisual: React.FC<ProductVisualProps> = memo(({
+  product,
+  showSecondaryImage,
+  isTouch,
+  priority,
+  imageSizes,
+}) => {
+  const firstImage = getFirstProductImage(product.productImages);
+  const secondImage = getSecondProductImage(product.productImages);
+  const shouldRenderSecondary = showSecondaryImage && !isTouch && !!secondImage;
+  
+  if (firstImage) {
+    return (
+      <>
+        <OptimizedImage
+          src={firstImage.url}
+          alt={product.name}
+          fill
+          width={456}
+          className={`object-contain transition-opacity duration-300 ${
+            shouldRenderSecondary
+              ? "opacity-100 group-hover:opacity-0"
+              : "opacity-100"
+          }`}
+          priority={priority}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
+          sizes={imageSizes}
+          quality={50}
+          style={{ objectFit: "contain" }}
+        />
+        {shouldRenderSecondary && secondImage && (
+          <OptimizedImage
+            src={secondImage.url}
+            alt={`${product.name} alternate`}
+            fill
+            width={456}
+            className="object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            loading="lazy"
+            fetchPriority="low"
+            sizes={imageSizes}
+            quality={50}
+            style={{ objectFit: "contain" }}
+          />
+        )}
+      </>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-center h-full">
+      <span className="text-4xl font-light text-white/30">
+        {product.name.charAt(0)}
+      </span>
+    </div>
+  );
+});
+
+ProductVisual.displayName = "ProductVisual";
 
 export default ProductCard;

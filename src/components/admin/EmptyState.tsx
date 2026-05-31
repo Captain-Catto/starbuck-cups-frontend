@@ -18,9 +18,9 @@ export function EmptyState({
   className = "",
 }: EmptyStateProps) {
   const defaultIcon = (
-    <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center bg-gray-700 rounded-lg">
+    <div className="size-12 mx-auto mb-4 flex items-center justify-center bg-gray-700 rounded-lg">
       <svg
-        className="w-6 h-6 text-white"
+        className="size-6 text-white"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -43,11 +43,11 @@ export function EmptyState({
         {icon || defaultIcon}
         <h3 className="text-lg font-medium text-white mb-2">{title}</h3>
         <p className="text-gray-300 mb-4">{description}</p>
-        <button
+        <button type="button"
           onClick={onAction}
           className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors mx-auto cursor-pointer"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="size-4" />
           {actionLabel}
         </button>
       </div>

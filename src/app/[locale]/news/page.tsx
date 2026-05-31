@@ -1,6 +1,7 @@
 import { getApiUrl } from "@/lib/api-config";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/routing";
+import Image from "next/image";
 import type { News } from "@/types";
 import type { Metadata } from "next";
 
@@ -49,7 +50,7 @@ export default async function NewsPage({
   const newsList = await getNewsList(locale);
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-zinc-950 text-white">
       <div className="container mx-auto px-4 pt-20 pb-12 md:px-6 lg:px-8 md:pt-24">
         <h1 className="text-3xl font-bold mb-2">Tin tức</h1>
         <p className="text-gray-400 mb-10">Cập nhật mới nhất về sản phẩm và bộ sưu tập Starbucks</p>
@@ -68,11 +69,12 @@ export default async function NewsPage({
                 >
                   {news.thumbnail ? (
                     <div className="aspect-video overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={news.thumbnail}
                         alt={t?.title ?? ""}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                   ) : (

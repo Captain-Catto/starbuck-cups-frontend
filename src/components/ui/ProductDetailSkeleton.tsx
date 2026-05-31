@@ -4,9 +4,9 @@ import "react-loading-skeleton/dist/skeleton.css";
 export default function ProductDetailSkeleton() {
   return (
     <SkeletonTheme baseColor="#18181b" highlightColor="#27272a">
-      <div className="min-h-screen bg-black text-white">
+      <div className="min-h-screen bg-zinc-950 text-white">
         {/* Header Skeleton */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-zinc-800">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-zinc-950 border-b border-zinc-800">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between h-13">
               <Skeleton width={120} height={32} />
@@ -19,7 +19,7 @@ export default function ProductDetailSkeleton() {
 
         {/* Breadcrumb Skeleton */}
         <div className="pt-12">
-          <div className="container mx-auto px-4 py-4">
+          <div className="container mx-auto p-4">
             <div className="flex items-center gap-2 text-sm">
               <Skeleton width={60} height={16} />
               <span className="text-zinc-600">/</span>

@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
-import { useEffect, useMemo, useRef } from "react";
+
+import { useEffect, useRef } from "react";
 
 interface RedEnvelopeSettings {
   fallSpeed: number;
@@ -52,20 +53,17 @@ export default function RedEnvelopeEffect({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const envelopesRef = useRef<RedEnvelope[]>([]);
   const sparklesRef = useRef<Sparkle[]>([]);
-  const animationFrameRef = useRef<number | undefined>(undefined);
 
-  const settings = useMemo(() => redEnvelopeSettings || {
-    fallSpeed: 0.3,
-    rotationSpeed: 1.0,
-    windStrength: 0.3,
-    sparkleFrequency: 0.02,
-    quantity: 25,
-    minSize: 0.8,
-    maxSize: 1.2,
-    flipSpeed: 1.0,
-    swaySpeed: 1.0,
-    hue: 0,
-  }, [redEnvelopeSettings]);
+  const fallSpeed = redEnvelopeSettings?.fallSpeed ?? 0.3;
+  const rotationSpeed = redEnvelopeSettings?.rotationSpeed ?? 1.0;
+  const windStrength = redEnvelopeSettings?.windStrength ?? 0.3;
+  const sparkleFrequency = redEnvelopeSettings?.sparkleFrequency ?? 0.02;
+  const quantity = redEnvelopeSettings?.quantity;
+  const minSize = redEnvelopeSettings?.minSize ?? 0.8;
+  const maxSize = redEnvelopeSettings?.maxSize ?? 1.2;
+  const flipSpeed = redEnvelopeSettings?.flipSpeed ?? 1.0;
+  const swaySpeed = redEnvelopeSettings?.swaySpeed ?? 1.0;
+  const hue = redEnvelopeSettings?.hue ?? 0;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -73,6 +71,7 @@ export default function RedEnvelopeEffect({
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    let animationFrameId = 0;
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
@@ -81,7 +80,7 @@ export default function RedEnvelopeEffect({
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    let targetCount = settings.quantity;
+    let targetCount = quantity;
     if (!targetCount) {
       targetCount = {
         low: 15,
@@ -91,24 +90,22 @@ export default function RedEnvelopeEffect({
     }
 
     const createEnvelope = (yStart: number = -100): RedEnvelope => {
-      const minScale = settings.minSize ?? 0.8;
-      const maxScale = settings.maxSize ?? 1.2;
-      const scale = minScale + Math.random() * (maxScale - minScale);
+      const scale = minSize + Math.random() * (maxSize - minSize);
 
       return {
         x: Math.random() * canvas.width,
         y: yStart,
         rotation: Math.random() * 360,
-        rotationSpeed: (Math.random() - 0.5) * 2 * settings.rotationSpeed,
+        rotationSpeed: (Math.random() - 0.5) * 2 * rotationSpeed,
         speed: Math.random() * 1.5 + 0.5,
-        wind: (Math.random() * 0.3 - 0.15) * settings.windStrength,
+        wind: (Math.random() * 0.3 - 0.15) * windStrength,
         size: 40 * scale,
         flip: Math.random() * 2 - 1,
-        flipSpeed: (Math.random() - 0.5) * 0.05 * (settings.flipSpeed ?? 1.0),
-        velocityY: (Math.random() * 0.8 + 0.2) * settings.fallSpeed,
-        hue: (settings.hue ?? 0) + Math.random() * 10,
+        flipSpeed: (Math.random() - 0.5) * 0.05 * flipSpeed,
+        velocityY: (Math.random() * 0.8 + 0.2) * fallSpeed,
+        hue: hue + Math.random() * 10,
         swayPhase: Math.random() * Math.PI * 2,
-        swaySpeed: (Math.random() * 1 + 0.5) * (settings.swaySpeed ?? 1.0),
+        swaySpeed: (Math.random() * 1 + 0.5) * swaySpeed,
       };
     };
 
@@ -128,10 +125,10 @@ export default function RedEnvelopeEffect({
 
       envelopesRef.current.forEach((env) => {
         const dir = Math.sign(env.rotationSpeed) || 1;
-        env.rotationSpeed = dir * (Math.random() * 0.5 + 0.5) * settings.rotationSpeed;
+        env.rotationSpeed = dir * (Math.random() * 0.5 + 0.5) * rotationSpeed;
         
         const windDir = Math.sign(env.wind) || (Math.random() > 0.5 ? 1 : -1);
-        env.wind = windDir * (Math.random() * 0.3) * settings.windStrength;
+        env.wind = windDir * (Math.random() * 0.3) * windStrength;
       });
     }
 
@@ -220,7 +217,7 @@ export default function RedEnvelopeEffect({
 
       ctx.restore();
 
-      if (Math.random() < settings.sparkleFrequency && sparklesRef.current.length < 100) {
+      if (Math.random() < sparkleFrequency && sparklesRef.current.length < 100) {
         sparklesRef.current.push({
           x: envelope.x + (Math.random() - 0.5) * width,
           y: envelope.y + (Math.random() - 0.5) * height,
@@ -261,7 +258,7 @@ export default function RedEnvelopeEffect({
         drawEnvelope(envelope);
 
         envelope.velocityY += 0.005;
-        const maxVelocity = 2.0 * settings.fallSpeed;
+        const maxVelocity = 2.0 * fallSpeed;
         envelope.velocityY = Math.min(envelope.velocityY, maxVelocity);
 
         envelope.y += envelope.velocityY;
@@ -293,18 +290,30 @@ export default function RedEnvelopeEffect({
         }
       });
 
-      animationFrameRef.current = requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animate);
     };
 
     animate();
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [intensity, settings]); // Simplified dependencies
+  }, [
+    intensity,
+    fallSpeed,
+    rotationSpeed,
+    windStrength,
+    sparkleFrequency,
+    quantity,
+    minSize,
+    maxSize,
+    flipSpeed,
+    swaySpeed,
+    hue,
+  ]);
 
   return (
     <canvas

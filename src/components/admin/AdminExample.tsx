@@ -5,11 +5,11 @@ export default function AdminExample() {
   const { isAuthenticated, isLoading } = useAdminAuth();
 
   if (isLoading) {
-    return <div>Đang kiểm tra phiên đăng nhập...</div>;
+    return <div>Đang kiểm tra phiên đăng nhập…</div>;
   }
 
   if (!isAuthenticated) {
-    return <div>Chuyển hướng đến trang đăng nhập...</div>;
+    return <div>Chuyển hướng đến trang đăng nhập…</div>;
   }
 
   return (

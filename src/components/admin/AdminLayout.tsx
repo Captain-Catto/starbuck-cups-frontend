@@ -49,6 +49,342 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
+function SidebarNavItem({
+  item,
+  pathname,
+  expandedItems,
+  isActivePath,
+  onToggleSubmenu,
+}: {
+  item: SidebarItem;
+  pathname: string;
+  expandedItems: string[];
+  isActivePath: (path: string) => boolean;
+  onToggleSubmenu: (path: string) => void;
+}) {
+  if (item.submenu) {
+    return (
+      <div>
+        <button
+          type="button"
+          onClick={() => onToggleSubmenu(item.path)}
+          className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+            isActivePath(item.path)
+              ? "bg-gray-700 text-white border-r-2 border-white"
+              : "text-white hover:bg-gray-700"
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <item.icon className="size-5 text-white" />
+            <span>{item.label}</span>
+            {item.badge && (
+              <span className="px-2 py-1 text-xs bg-gray-700 text-white rounded-full">
+                {item.badge}
+              </span>
+            )}
+          </div>
+        </button>
+        {expandedItems.includes(item.path) && (
+          <div className="ml-6 mt-1 space-y-1">
+            {item.submenu.map((subItem) => (
+              <Link
+                key={subItem.path}
+                href={subItem.path}
+                className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                  pathname === subItem.path
+                    ? "bg-gray-700 text-white"
+                    : "text-white hover:bg-gray-700"
+                }`}
+              >
+                {subItem.label}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={item.path}
+      className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+        isActivePath(item.path)
+          ? "bg-gray-700 text-white border-r-2 border-white"
+          : "text-white hover:bg-gray-700"
+      }`}
+    >
+      <item.icon className="size-5 text-white" />
+      <span>{item.label}</span>
+      {item.badge && (
+        <span className="ml-auto px-2 py-1 text-xs bg-gray-700 text-white rounded-full">
+          {item.badge}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+function AdminSidebar({
+  sidebarOpen,
+  sidebarItems,
+  pathname,
+  expandedItems,
+  isActivePath,
+  onClose,
+  onToggleSubmenu,
+}: {
+  sidebarOpen: boolean;
+  sidebarItems: SidebarItem[];
+  pathname: string;
+  expandedItems: string[];
+  isActivePath: (path: string) => boolean;
+  onClose: () => void;
+  onToggleSubmenu: (path: string) => void;
+}) {
+  return (
+    <div
+      className={`fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 border-r border-gray-700 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static ${
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      }`}
+    >
+      <div className="flex items-center justify-between h-16 px-6 border-b border-gray-700">
+        <div className="flex items-center gap-3">
+          <div className="size-8 bg-white rounded-lg flex items-center justify-center">
+            <Package className="size-5 text-black" />
+          </div>
+          <h1 className="text-xl font-bold text-white">Admin Panel</h1>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="lg:hidden p-1 rounded-md hover:bg-gray-700"
+        >
+          <X className="size-5 text-white" />
+        </button>
+      </div>
+
+      <nav className="mt-6 px-3">
+        <div className="space-y-1">
+          {sidebarItems.map((item) => (
+            <SidebarNavItem
+              key={item.path}
+              item={item}
+              pathname={pathname}
+              expandedItems={expandedItems}
+              isActivePath={isActivePath}
+              onToggleSubmenu={onToggleSubmenu}
+            />
+          ))}
+        </div>
+      </nav>
+    </div>
+  );
+}
+
+function ProfileDropdown({
+  user,
+  isOpen,
+  onToggle,
+  onClose,
+  onLogout,
+}: {
+  user: { name?: string | null; email?: string | null } | null | undefined;
+  isOpen: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+  onLogout: () => void;
+}) {
+  return (
+    <div className="relative profile-dropdown">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors"
+      >
+        <div className="size-8 bg-gray-700 rounded-full flex items-center justify-center">
+          <User className="size-4 text-white" />
+        </div>
+        <span className="hidden md:block text-sm font-medium text-white">
+          {user?.name || "Admin"}
+        </span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-1 w-48 bg-gray-800 rounded-lg border border-gray-700 z-50">
+          <div className="py-2">
+            <div className="px-4 py-2 border-b border-gray-700">
+              <p className="text-sm font-medium text-white">
+                {user?.name || "Admin"}
+              </p>
+              <p className="text-xs text-white">
+                {user?.email || "admin@example.com"}
+              </p>
+            </div>
+
+            <Link
+              href="/admin/profile"
+              onClick={onClose}
+              className="flex items-center gap-3 px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
+            >
+              <User className="size-4 text-white" />
+              Hồ sơ cá nhân
+            </Link>
+
+            <Link
+              href="/admin/settings"
+              onClick={onClose}
+              className="flex items-center gap-3 px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
+            >
+              <Settings className="size-4 text-white" />
+              Cài đặt
+            </Link>
+
+            <div className="border-t border-gray-700 mt-1 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onLogout();
+                }}
+                className="flex items-center gap-3 px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors w-full text-left"
+              >
+                <LogOut className="size-4 text-white" />
+                Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminTopHeader({
+  greeting,
+  user,
+  unreadCount,
+  isConnected,
+  notificationDropdownOpen,
+  profileDropdownOpen,
+  onOpenSidebar,
+  onToggleNotifications,
+  onCloseNotifications,
+  onToggleProfile,
+  onCloseProfile,
+  onLogout,
+}: {
+  greeting: string;
+  user: { name?: string | null; email?: string | null } | null | undefined;
+  unreadCount: number;
+  isConnected: boolean;
+  notificationDropdownOpen: boolean;
+  profileDropdownOpen: boolean;
+  onOpenSidebar: () => void;
+  onToggleNotifications: () => void;
+  onCloseNotifications: () => void;
+  onToggleProfile: () => void;
+  onCloseProfile: () => void;
+  onLogout: () => void;
+}) {
+  return (
+    <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={onOpenSidebar}
+            className="lg:hidden p-2 rounded-md hover:bg-gray-700"
+          >
+            <Menu className="size-5 text-white" />
+          </button>
+          <div>
+            <h2 className="text-lg font-semibold text-white">{greeting}</h2>
+            <p className="text-sm text-white">{user?.name || "Admin"}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="relative notification-dropdown">
+            <button
+              type="button"
+              onClick={onToggleNotifications}
+              className="relative p-2 rounded-lg hover:bg-gray-700 transition-colors"
+              title={`${unreadCount} thông báo chưa đọc${
+                isConnected ? " (Real-time)" : " (Offline)"
+              }`}
+            >
+              <Bell className="size-5 text-white" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 bg-white text-black text-xs rounded-full flex items-center justify-center px-1">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+              {!isConnected && (
+                <span className="absolute -bottom-1 -right-1 size-2 bg-gray-500 rounded-full"></span>
+              )}
+            </button>
+
+            <NotificationDropdown
+              isOpen={notificationDropdownOpen}
+              onClose={onCloseNotifications}
+              unreadCount={unreadCount}
+            />
+          </div>
+
+          <ProfileDropdown
+            user={user}
+            isOpen={profileDropdownOpen}
+            onToggle={onToggleProfile}
+            onClose={onCloseProfile}
+            onLogout={onLogout}
+          />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function AdminMainContent({
+  isAdminReady,
+  children,
+}: {
+  isAdminReady: boolean | null;
+  children: React.ReactNode;
+}) {
+  return (
+    <main className="flex-1 p-6 bg-zinc-950">
+      {isAdminReady ? (
+        children
+      ) : (
+        <div className="flex items-center justify-center h-[60vh]">
+          <div className="animate-spin rounded-full size-16 border-b-2 border-white" />
+        </div>
+      )}
+    </main>
+  );
+}
+
+function SidebarOverlay({
+  show,
+  onClose,
+}: {
+  show: boolean;
+  onClose: () => void;
+}) {
+  if (!show) {
+    return null;
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-40 bg-zinc-950 bg-opacity-75 lg:hidden"
+      onClick={onClose}
+      role="presentation"
+    />
+  );
+}
+
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
@@ -194,230 +530,40 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black flex">
-      {/* Sidebar */}
-      <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 border-r border-gray-700 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        {/* Sidebar Header */}
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-700">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-              <Package className="w-5 h-5 text-black" />
-            </div>
-            <h1 className="text-xl font-bold text-white">Admin Panel</h1>
-          </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1 rounded-md hover:bg-gray-700"
-          >
-            <X className="w-5 h-5 text-white" />
-          </button>
-        </div>
+    <div className="min-h-screen bg-zinc-950 flex">
+      <AdminSidebar
+        sidebarOpen={sidebarOpen}
+        sidebarItems={sidebarItems}
+        pathname={pathname}
+        expandedItems={expandedItems}
+        isActivePath={isActivePath}
+        onClose={() => setSidebarOpen(false)}
+        onToggleSubmenu={toggleSubmenu}
+      />
 
-        {/* Navigation */}
-        <nav className="mt-6 px-3">
-          <div className="space-y-1">
-            {sidebarItems.map((item) => (
-              <div key={item.path}>
-                {item.submenu ? (
-                  <div>
-                    <button
-                      onClick={() => toggleSubmenu(item.path)}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                        isActivePath(item.path)
-                          ? "bg-gray-700 text-white border-r-2 border-white"
-                          : "text-white hover:bg-gray-700"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <item.icon className="w-5 h-5 text-white" />
-                        <span>{item.label}</span>
-                        {item.badge && (
-                          <span className="px-2 py-1 text-xs bg-gray-700 text-white rounded-full">
-                            {item.badge}
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                    {expandedItems.includes(item.path) && (
-                      <div className="ml-6 mt-1 space-y-1">
-                        {item.submenu.map((subItem) => (
-                          <Link
-                            key={subItem.path}
-                            href={subItem.path}
-                            className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                              pathname === subItem.path
-                                ? "bg-gray-700 text-white"
-                                : "text-white hover:bg-gray-700"
-                            }`}
-                          >
-                            {subItem.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <Link
-                    href={item.path}
-                    className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      isActivePath(item.path)
-                        ? "bg-gray-700 text-white border-r-2 border-white"
-                        : "text-white hover:bg-gray-700"
-                    }`}
-                  >
-                    <item.icon className="w-5 h-5 text-white" />
-                    <span>{item.label}</span>
-                    {item.badge && (
-                      <span className="ml-auto px-2 py-1 text-xs bg-gray-700 text-white rounded-full">
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>
-        </nav>
-      </div>
-
-      {/* Main Content */}
       <div className="flex-1 flex flex-col lg:ml-0">
-        {/* Top Header */}
-        <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-md hover:bg-gray-700"
-              >
-                <Menu className="w-5 h-5 text-white" />
-              </button>
-              <div>
-                <h2 className="text-lg font-semibold text-white">
-                  {greeting}
-                </h2>
-                <p className="text-sm text-white">{user?.name || "Admin"}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {/* Notifications */}
-              <div className="relative notification-dropdown">
-                <button
-                  onClick={() =>
-                    setNotificationDropdownOpen(!notificationDropdownOpen)
-                  }
-                  className="relative p-2 rounded-lg hover:bg-gray-700 transition-colors"
-                  title={`${unreadCount} thông báo chưa đọc${
-                    isConnected ? " (Real-time)" : " (Offline)"
-                  }`}
-                >
-                  <Bell className="w-5 h-5 text-white" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-4 h-4 bg-white text-black text-xs rounded-full flex items-center justify-center px-1">
-                      {unreadCount > 99 ? "99+" : unreadCount}
-                    </span>
-                  )}
-                  {!isConnected && (
-                    <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-gray-500 rounded-full"></span>
-                  )}
-                </button>
-
-                <NotificationDropdown
-                  isOpen={notificationDropdownOpen}
-                  onClose={() => setNotificationDropdownOpen(false)}
-                  unreadCount={unreadCount}
-                />
-              </div>
-
-              {/* Profile Dropdown */}
-              <div className="relative profile-dropdown">
-                <button
-                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors"
-                >
-                  <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="hidden md:block text-sm font-medium text-white">
-                    {user?.name || "Admin"}
-                  </span>
-                </button>
-
-                {/* Dropdown Menu */}
-                {profileDropdownOpen && (
-                  <div className="absolute right-0 top-full mt-1 w-48 bg-gray-800 rounded-lg border border-gray-700 z-50">
-                    <div className="py-2">
-                      <div className="px-4 py-2 border-b border-gray-700">
-                        <p className="text-sm font-medium text-white">
-                          {user?.name || "Admin"}
-                        </p>
-                        <p className="text-xs text-white">
-                          {user?.email || "admin@example.com"}
-                        </p>
-                      </div>
-
-                      <Link
-                        href="/admin/profile"
-                        onClick={() => setProfileDropdownOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
-                      >
-                        <User className="w-4 h-4 text-white" />
-                        Hồ sơ cá nhân
-                      </Link>
-
-                      <Link
-                        href="/admin/settings"
-                        onClick={() => setProfileDropdownOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
-                      >
-                        <Settings className="w-4 h-4 text-white" />
-                        Cài đặt
-                      </Link>
-
-                      <div className="border-t border-gray-700 mt-1 pt-1">
-                        <button
-                          onClick={() => {
-                            setProfileDropdownOpen(false);
-                            handleLogout();
-                          }}
-                          className="flex items-center gap-3 px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors w-full text-left"
-                        >
-                          <LogOut className="w-4 h-4 text-white" />
-                          Đăng xuất
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Page Content - show loading spinner while auth is checking */}
-        <main className="flex-1 p-6 bg-black">
-          {isAdminReady ? (
-            children
-          ) : (
-            <div className="flex items-center justify-center h-[60vh]">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white" />
-            </div>
-          )}
-        </main>
+        <AdminTopHeader
+          greeting={greeting}
+          user={user}
+          unreadCount={unreadCount}
+          isConnected={isConnected}
+          notificationDropdownOpen={notificationDropdownOpen}
+          profileDropdownOpen={profileDropdownOpen}
+          onOpenSidebar={() => setSidebarOpen(true)}
+          onToggleNotifications={() =>
+            setNotificationDropdownOpen(!notificationDropdownOpen)
+          }
+          onCloseNotifications={() => setNotificationDropdownOpen(false)}
+          onToggleProfile={() => setProfileDropdownOpen(!profileDropdownOpen)}
+          onCloseProfile={() => setProfileDropdownOpen(false)}
+          onLogout={handleLogout}
+        />
+        <AdminMainContent isAdminReady={isAdminReady}>
+          {children}
+        </AdminMainContent>
       </div>
 
-      {/* Sidebar Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black bg-opacity-75 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <SidebarOverlay show={sidebarOpen} onClose={() => setSidebarOpen(false)} />
     </div>
   );
 }

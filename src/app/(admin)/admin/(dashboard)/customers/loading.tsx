@@ -1,6 +1,6 @@
 export default function CustomersLoading() {
   return (
-    <div className="min-h-screen bg-black p-6 animate-pulse">
+    <div className="min-h-screen bg-zinc-950 p-6 animate-pulse">
       <div className="h-8 w-40 bg-gray-800 rounded mb-6" />
       <div className="flex gap-3 mb-6">
         <div className="h-10 w-48 bg-gray-800 rounded" />

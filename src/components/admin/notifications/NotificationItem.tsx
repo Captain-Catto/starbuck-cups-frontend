@@ -53,16 +53,17 @@ export function NotificationItem({
   const typeLabel = LABEL_MAP[notification.type] ?? "Khác";
 
   return (
-    <div
+    <button
+      type="button"
       onClick={() => onClick(notification)}
-      className={`p-4 border border-gray-700 rounded-lg cursor-pointer transition-all hover:border-gray-600 hover:bg-gray-700/50 ${
+      className={`w-full p-4 border border-gray-700 rounded-lg cursor-pointer transition-all hover:border-gray-600 hover:bg-gray-700/50 text-left ${
         !notification.read ? "bg-gray-800 border-blue-500/30" : "bg-gray-900"
       }`}
     >
       <div className="flex gap-4">
         {/* Icon */}
         <div className={`flex-shrink-0 p-2 rounded-lg ${typeColor}`}>
-          <Icon className="w-5 h-5" />
+          <Icon className="size-5" />
         </div>
 
         {/* Nội dung */}
@@ -76,7 +77,7 @@ export function NotificationItem({
               {notification.title}
             </h4>
             {!notification.read && (
-              <div className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="flex-shrink-0 size-2 bg-blue-500 rounded-full"></div>
             )}
           </div>
 
@@ -110,6 +111,6 @@ export function NotificationItem({
           )}
         </div>
       </div>
-    </div>
+    </button>
   );
 }

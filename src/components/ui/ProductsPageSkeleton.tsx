@@ -6,7 +6,7 @@ import { getResponsiveGridClasses } from "@/utils/layoutCalculator";
 const ProductsPageSkeleton: React.FC = () => {
   return (
     <SkeletonTheme baseColor="#27272a" highlightColor="#3f3f46">
-      <div className="min-h-screen bg-black text-white">
+      <div className="min-h-screen bg-zinc-950 text-white">
         <div className="container mx-auto px-4 py-8 lg:px-8 pt-20">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar Filters Skeleton */}

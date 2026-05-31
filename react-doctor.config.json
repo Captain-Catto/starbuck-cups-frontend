@@ -1,0 +1,8 @@
+{
+  "ignore": {
+    "rules": [
+      "deslop/unused-file"
+    ]
+  },
+  "adoptExistingLintConfig": true
+}

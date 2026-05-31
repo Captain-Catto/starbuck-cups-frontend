@@ -14,6 +14,16 @@ import type { NotificationData } from "@/types/notification.types";
 import { TokenRefreshNotification } from "@/utils/tokenNotification";
 import { getApiUrl } from "@/lib/api-config";
 
+const ADMIN_TOKEN_STORAGE_KEY = "admin_token";
+
+function getStoredAdminToken(): string | null {
+  try {
+    return localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
 class ApiService {
   private api: AxiosInstance;
   private isRefreshing = false;
@@ -37,7 +47,7 @@ class ApiService {
       (config) => {
         // Check if we're running on client side
         if (typeof window !== "undefined") {
-          const token = localStorage.getItem("admin_token");
+          const token = getStoredAdminToken();
           if (token) {
             config.headers.Authorization = `Bearer ${token}`;
           }
@@ -90,7 +100,7 @@ class ApiService {
             // Nếu đang refresh, chờ kết quả
             if (this.isRefreshing) {
               await this.refreshPromise;
-              const newToken = localStorage.getItem("admin_token");
+              const newToken = getStoredAdminToken();
               if (newToken) {
                 originalRequest.headers.Authorization = `Bearer ${newToken}`;
                 return this.api(originalRequest);
@@ -114,7 +124,7 @@ class ApiService {
               "/admin/login"
             );
             // Refresh thất bại, clear token và redirect sẽ được handle bởi notification
-            localStorage.removeItem("admin_token");
+            localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
             // Refresh token sẽ expire tự động hoặc được clear bởi server
             return Promise.reject(refreshError);
           } finally {
@@ -125,7 +135,7 @@ class ApiService {
 
         // Nếu không phải lỗi 401 hoặc đã retry thất bại
         if (error.response?.status === 401 && typeof window !== "undefined") {
-          localStorage.removeItem("admin_token");
+          localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
           // Refresh token sẽ expire tự động hoặc được clear bởi server
           TokenRefreshNotification.showSessionExpiredWithRedirect(
             "/admin/login"
@@ -171,7 +181,7 @@ class ApiService {
       // Backend có thể lấy refresh token từ cookie hoặc body
       // Gửi empty body để dựa vào cookie (trình duyệt tự gửi HttpOnly cookie)
       const response = await axios.post(
-        "/api/auth/admin/refresh",
+        getApiUrl("auth/admin/refresh"),
         {}, // Empty body - backend sẽ lấy từ cookie
         {
           headers: { "Content-Type": "application/json" },
@@ -184,7 +194,7 @@ class ApiService {
         const newToken = response.data.data.token || response.data.data.accessToken;
         if (!newToken) throw new Error("No token in refresh response");
 
-        localStorage.setItem("admin_token", newToken);
+        localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, newToken);
         return { success: true, accessToken: newToken };
       } else {
         throw new Error("Invalid refresh response");
@@ -475,7 +485,7 @@ class ApiService {
   }
 
   async logout(): Promise<ApiResponse<null>> {
-    const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+    const token = typeof window !== "undefined" ? getStoredAdminToken() : null;
     const response = await axios.post("/api/auth/admin/logout", {}, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });

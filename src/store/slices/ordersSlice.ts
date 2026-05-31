@@ -128,12 +128,6 @@ export interface OrdersState {
   updatingStatus: boolean;
   error: string | null;
 
-  // Modal/Form state
-  isCreateModalOpen: boolean;
-  isEditModalOpen: boolean;
-  isStatusModalOpen: boolean;
-  editingOrderId: string | null;
-
   // Statistics
   stats: {
     total: number;
@@ -159,10 +153,6 @@ const initialState: OrdersState = {
   deleting: false,
   updatingStatus: false,
   error: null,
-  isCreateModalOpen: false,
-  isEditModalOpen: false,
-  isStatusModalOpen: false,
-  editingOrderId: null,
   stats: {
     total: 0,
     pending: 0,
@@ -414,30 +404,6 @@ const ordersSlice = createSlice({
       state.currentPage = action.payload;
     },
 
-    // Modal/Form actions
-    openCreateModal: (state) => {
-      state.isCreateModalOpen = true;
-    },
-    closeCreateModal: (state) => {
-      state.isCreateModalOpen = false;
-    },
-    openEditModal: (state, action: PayloadAction<string>) => {
-      state.isEditModalOpen = true;
-      state.editingOrderId = action.payload;
-    },
-    closeEditModal: (state) => {
-      state.isEditModalOpen = false;
-      state.editingOrderId = null;
-    },
-    openStatusModal: (state, action: PayloadAction<string>) => {
-      state.isStatusModalOpen = true;
-      state.editingOrderId = action.payload;
-    },
-    closeStatusModal: (state) => {
-      state.isStatusModalOpen = false;
-      state.editingOrderId = null;
-    },
-
     // Selection actions
     selectOrder: (state, action: PayloadAction<Order>) => {
       state.selectedOrder = action.payload;
@@ -499,7 +465,6 @@ const ordersSlice = createSlice({
         state.totalCount += 1;
         state.stats.total += 1;
         state.stats.pending += 1;
-        state.isCreateModalOpen = false;
       })
       .addCase(createOrder.rejected, (state, action) => {
         state.saving = false;
@@ -521,8 +486,6 @@ const ordersSlice = createSlice({
         if (state.selectedOrder?.id === action.payload.id) {
           state.selectedOrder = action.payload;
         }
-        state.isEditModalOpen = false;
-        state.editingOrderId = null;
       })
       .addCase(updateOrder.rejected, (state, action) => {
         state.saving = false;
@@ -544,7 +507,7 @@ const ordersSlice = createSlice({
         if (orderIndex !== -1) {
           const oldStatus = state.orders[orderIndex].status;
           state.orders[orderIndex].status = status;
-          state.orders[orderIndex].statusHistory.push(statusHistory);
+          state.orders[orderIndex].statusHistory = statusHistory;
           state.orders[orderIndex].updatedAt = new Date().toISOString();
 
           if (status === "confirmed" && !state.orders[orderIndex].confirmedAt) {
@@ -555,14 +518,16 @@ const ordersSlice = createSlice({
           }
 
           // Update stats
-          state.stats[oldStatus as keyof typeof state.stats] -= 1;
-          state.stats[status as keyof typeof state.stats] += 1;
+          const oldKey = oldStatus as keyof typeof state.stats;
+          const newKey = status as keyof typeof state.stats;
+          state.stats[oldKey] = Math.max(0, state.stats[oldKey] - 1);
+          state.stats[newKey] += 1;
         }
 
         // Update selected order
         if (state.selectedOrder?.id === orderId) {
           state.selectedOrder.status = status;
-          state.selectedOrder.statusHistory.push(statusHistory);
+          state.selectedOrder.statusHistory = statusHistory;
           state.selectedOrder.updatedAt = new Date().toISOString();
 
           if (status === "confirmed" && !state.selectedOrder.confirmedAt) {
@@ -573,8 +538,6 @@ const ordersSlice = createSlice({
           }
         }
 
-        state.isStatusModalOpen = false;
-        state.editingOrderId = null;
       })
       .addCase(updateOrderStatus.rejected, (state, action) => {
         state.updatingStatus = false;
@@ -591,10 +554,11 @@ const ordersSlice = createSlice({
         state.deleting = false;
         const deletedOrder = state.orders.find((o) => o.id === action.payload);
         state.orders = state.orders.filter((o) => o.id !== action.payload);
-        state.totalCount -= 1;
-        state.stats.total -= 1;
+        state.totalCount = Math.max(0, state.totalCount - 1);
+        state.stats.total = Math.max(0, state.stats.total - 1);
         if (deletedOrder) {
-          state.stats[deletedOrder.status as keyof typeof state.stats] -= 1;
+          const key = deletedOrder.status as keyof typeof state.stats;
+          state.stats[key] = Math.max(0, state.stats[key] - 1);
         }
         if (state.selectedOrder?.id === action.payload) {
           state.selectedOrder = null;
@@ -611,12 +575,6 @@ export const {
   setFilters,
   clearFilters,
   setCurrentPage,
-  openCreateModal,
-  closeCreateModal,
-  openEditModal,
-  closeEditModal,
-  openStatusModal,
-  closeStatusModal,
   selectOrder,
   clearSelectedOrder,
   clearError,

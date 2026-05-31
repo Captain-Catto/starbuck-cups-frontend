@@ -6,14 +6,16 @@ interface RevenueSummaryProps {
   loading: boolean;
 }
 
+const formatter = new Intl.NumberFormat("vi-VN", {
+  style: "currency",
+  currency: "VND",
+});
+
+const formatCurrency = (amount: number | undefined | null) => {
+  return formatter.format(amount || 0);
+};
+
 export function RevenueSummary({ revenueData, loading }: RevenueSummaryProps) {
-  // Format currency
-  const formatCurrency = (amount: number | undefined | null) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount || 0);
-  };
 
   return (
     <div className="bg-gray-800 rounded-xl shadow-lg border border-gray-700">
@@ -40,7 +42,7 @@ export function RevenueSummary({ revenueData, loading }: RevenueSummaryProps) {
               </div>
             </div>
             <div className="flex items-center justify-center gap-2 pt-2">
-              <div className="w-4 h-4 bg-gray-600 rounded animate-pulse"></div>
+              <div className="size-4 bg-gray-600 rounded animate-pulse"></div>
               <div className="h-4 bg-gray-600 rounded w-32 animate-pulse"></div>
             </div>
           </div>
@@ -69,9 +71,9 @@ export function RevenueSummary({ revenueData, loading }: RevenueSummaryProps) {
             <div className="flex items-center justify-center gap-2 pt-2">
               {typeof revenueData.growth === "number" &&
               revenueData.growth >= 0 ? (
-                <TrendingUp className="w-4 h-4 text-gray-300" />
+                <TrendingUp className="size-4 text-gray-300" />
               ) : (
-                <TrendingDown className="w-4 h-4 text-gray-400" />
+                <TrendingDown className="size-4 text-gray-400" />
               )}
               <span
                 className={`text-sm font-medium ${
@@ -91,7 +93,7 @@ export function RevenueSummary({ revenueData, loading }: RevenueSummaryProps) {
           </div>
         ) : (
           <div className="text-center py-8 text-gray-400">
-            <DollarSign className="w-12 h-12 mx-auto mb-2 text-gray-600" />
+            <DollarSign className="size-12 mx-auto mb-2 text-gray-600" />
             <p className="text-sm">Không thể tải dữ liệu doanh thu</p>
           </div>
         )}

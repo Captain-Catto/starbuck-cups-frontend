@@ -23,6 +23,15 @@ function getCacheDir(): string {
 
 const CACHE_DIR = getCacheDir();
 
+const FALLBACK_SVG = `
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#f3f4f6"/>
+  <rect width="100%" height="100%" fill="none" stroke="#e5e7eb" stroke-width="4"/>
+  <text x="50%" y="45%" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="bold" fill="#374151" text-anchor="middle">Starbucks Cup</text>
+  <text x="50%" y="55%" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#6b7280" text-anchor="middle">Image Unavailable (403/404)</text>
+</svg>
+`;
+
 // Ensure cache directory exists
 async function ensureCacheDir() {
   try {
@@ -49,7 +58,7 @@ function getCacheKey(
 
 // Fetch image from URL
 async function fetchImage(url: string): Promise<Buffer> {
-  const response = await fetch(url);
+  const response = await fetch(url, { cache: "no-store" });
   if (!response.ok) {
     throw new Error(`Failed to fetch image: ${response.statusText}`);
   }
@@ -91,6 +100,7 @@ export async function GET(request: NextRequest) {
     const cachePath = path.join(CACHE_DIR, cacheKey);
 
     try {
+      // react-doctor-disable-next-line react-doctor/server-hoist-static-io -- The path is computed dynamically based on the incoming request params, so this file read cannot be hoisted to module scope.
       const cachedImage = await fs.readFile(cachePath);
       const cachedBody = cachedImage as unknown as BodyInit;
       return new NextResponse(cachedBody, {
@@ -103,8 +113,16 @@ export async function GET(request: NextRequest) {
       // Cache miss, continue to optimization
     }
 
-    // Fetch original image
-    const imageBuffer = await fetchImage(url);
+    // Fetch original image with fallback protection
+    let imageBuffer: Buffer;
+    let isFallback = false;
+    try {
+      imageBuffer = await fetchImage(url);
+    } catch (fetchError) {
+      console.warn(`Failed to fetch original image (${url}), using fallback SVG placeholder:`, fetchError);
+      imageBuffer = Buffer.from(FALLBACK_SVG);
+      isFallback = true;
+    }
 
     // Process image with sharp
     let sharpInstance = sharp(imageBuffer);
@@ -151,8 +169,10 @@ export async function GET(request: NextRequest) {
 
     const optimizedImage = await sharpInstance.toBuffer();
 
-    // Save to cache
-    await fs.writeFile(cachePath, optimizedImage);
+    // Save to cache if not using the placeholder fallback
+    if (!isFallback) {
+      await fs.writeFile(cachePath, optimizedImage);
+    }
 
     // Return optimized image
     const optimizedBody = optimizedImage as unknown as BodyInit;
@@ -162,7 +182,8 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
-  } catch {
+  } catch (error) {
+    console.error("Failed to optimize image:", error);
     return NextResponse.json(
       { error: "Failed to optimize image" },
       { status: 500 }

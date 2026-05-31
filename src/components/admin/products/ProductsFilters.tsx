@@ -33,8 +33,8 @@ export function ProductsFilters({
         {/* Row 1: Search */}
         <div className="grid grid-cols-1 gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-4" />
+            <input aria-label="Tìm kiếm sản phẩm..."
               type="text"
               placeholder="Tìm kiếm sản phẩm..."
               value={filters.search}
@@ -47,7 +47,7 @@ export function ProductsFilters({
         {/* Row 2: Category, Color, Capacity Range */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Category Filter */}
-          <select
+          <select aria-label="Select option"
             value={filters.category}
             onChange={(e) => onFilterChange("category", e.target.value)}
             className="w-full px-3 py-2.5 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-gray-700 text-white"
@@ -62,7 +62,7 @@ export function ProductsFilters({
           </select>
 
           {/* Color Filter */}
-          <select
+          <select aria-label="Select option"
             value={filters.color}
             onChange={(e) => onFilterChange("color", e.target.value)}
             className="w-full px-3 py-2.5 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-gray-700 text-white"
@@ -78,7 +78,7 @@ export function ProductsFilters({
 
           {/* Min Capacity Input */}
           <div>
-            <input
+            <input aria-label="Min"
               type="number"
               placeholder="Min"
               value={filters.minCapacity}
@@ -90,7 +90,7 @@ export function ProductsFilters({
 
           {/* Max Capacity Input */}
           <div>
-            <input
+            <input aria-label="9999"
               type="number"
               placeholder="9999"
               value={filters.maxCapacity}
@@ -102,7 +102,7 @@ export function ProductsFilters({
 
           {/* Capacity Keyword Selector */}
           <div>
-            <select
+            <select aria-label="Select option"
               value=""
               onChange={(e) => {
                 if (e.target.value) {
@@ -126,7 +126,7 @@ export function ProductsFilters({
         {/* Row 3: Status, Sort */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Status Filter */}
-          <select
+          <select aria-label="Select option"
             value={filters.status}
             onChange={(e) =>
               onFilterChange(
@@ -143,7 +143,7 @@ export function ProductsFilters({
           </select>
 
           {/* Sort Filter */}
-          <select
+          <select aria-label="Select option"
             value={`${filters.sortBy}-${filters.sortOrder}`}
             onChange={(e) => {
               const [sortBy, sortOrder] = e.target.value.split("-");

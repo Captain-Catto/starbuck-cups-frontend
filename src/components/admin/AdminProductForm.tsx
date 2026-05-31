@@ -60,41 +60,41 @@ export default function AdminProductForm() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Product Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+          <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2" htmlFor="adminproductform-nh-p-t-n-s-n-ph-m">
             Tên sản phẩm *
           </label>
-          <input
+          <input aria-label="Nhập tên sản phẩm"
             type="text"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             placeholder="Nhập tên sản phẩm"
-            required
+            required id="adminproductform-nh-p-t-n-s-n-ph-m"
           />
         </div>
 
         {/* Product Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+          <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2" htmlFor="adminproductform-nh-p-m-t-s-n-ph-m">
             Mô tả sản phẩm
           </label>
-          <textarea
+          <textarea aria-label="Nhập mô tả sản phẩm"
             value={formData.description}
             onChange={(e) =>
               setFormData({ ...formData, description: e.target.value })
             }
             rows={4}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            placeholder="Nhập mô tả sản phẩm"
+            placeholder="Nhập mô tả sản phẩm" id="adminproductform-nh-p-m-t-s-n-ph-m"
           />
         </div>
 
         {/* Stock Quantity */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+          <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2" htmlFor="adminproductform-0">
             Số lượng trong kho *
           </label>
-          <input
+          <input aria-label="0"
             type="number"
             min="0"
             value={formData.stockQuantity}
@@ -106,23 +106,23 @@ export default function AdminProductForm() {
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             placeholder="0"
-            required
+            required id="adminproductform-0"
           />
         </div>
 
         {/* Product URL */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+          <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2" htmlFor="adminproductform-https-example-com-product">
             URL sản phẩm
           </label>
-          <input
+          <input aria-label="https://example.com/product"
             type="url"
             value={formData.productUrl}
             onChange={(e) =>
               setFormData({ ...formData, productUrl: e.target.value })
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            placeholder="https://example.com/product"
+            placeholder="https://example.com/product" id="adminproductform-https-example-com-product"
           />
         </div>
 
@@ -157,7 +157,7 @@ export default function AdminProductForm() {
               transition-colors duration-200
             `}
           >
-            {loading ? "Đang tạo..." : "Tạo sản phẩm"}
+            {loading ? "Đang tạo…" : "Tạo sản phẩm"}
           </button>
         </div>
       </form>

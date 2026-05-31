@@ -28,42 +28,42 @@ export function BannerCard({
           </span>
           {banner.isActive ? (
             <span className="px-2 py-1 bg-green-600 text-white text-xs rounded flex items-center gap-1">
-              <Eye className="w-3 h-3" />
+              <Eye className="size-3" />
               Active
             </span>
           ) : (
             <span className="px-2 py-1 bg-gray-600 text-gray-300 text-xs rounded flex items-center gap-1">
-              <EyeOff className="w-3 h-3" />
+              <EyeOff className="size-3" />
               Inactive
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => onToggleActive(banner)}
             className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
             title={banner.isActive ? "Deactivate" : "Activate"}
           >
             {banner.isActive ? (
-              <EyeOff className="w-4 h-4" />
+              <EyeOff className="size-4" />
             ) : (
-              <Eye className="w-4 h-4" />
+              <Eye className="size-4" />
             )}
           </button>
-          <button
+          <button type="button"
             onClick={() => onEdit(banner)}
             className="p-2 text-blue-400 hover:text-blue-300 hover:bg-gray-700 rounded transition-colors"
             title="Edit"
           >
-            <Edit className="w-4 h-4" />
+            <Edit className="size-4" />
           </button>
-          <button
+          <button type="button"
             onClick={() => onDelete(banner)}
             className="p-2 text-red-400 hover:text-red-300 hover:bg-gray-700 rounded transition-colors"
             title="Delete"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="size-4" />
           </button>
         </div>
       </div>
@@ -87,7 +87,7 @@ export function BannerCard({
         <div className="mb-3">
           <div className="inline-flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full text-sm font-medium">
             {banner.buttonText}
-            <LinkIcon className="w-3 h-3 cursor-pointer" />
+            <LinkIcon className="size-3 cursor-pointer" />
           </div>
           <p className="text-xs text-gray-400 mt-1">→ {banner.buttonLink}</p>
         </div>
@@ -96,7 +96,7 @@ export function BannerCard({
         <div className="space-y-1 text-xs text-gray-400">
           {(banner.validFrom || banner.validUntil) && (
             <div className="flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
+              <Calendar className="size-3" />
               <span>
                 {banner.validFrom && `Từ ${formatDate(banner.validFrom)}`}
                 {banner.validFrom && banner.validUntil && " - "}

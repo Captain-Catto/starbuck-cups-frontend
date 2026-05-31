@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import React from "react";
+import Script from "next/script";
 import { notFound } from "next/navigation";
 import "@/app/globals.css";
 import NextTopLoader from "nextjs-toploader";
@@ -80,6 +81,13 @@ export async function generateMetadata({
   };
 }
 
+const websiteData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: siteConfig.name,
+  url: siteConfig.url,
+};
+
 export default async function LocaleLayout({
   children,
   params,
@@ -95,17 +103,11 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
 
-  const messages = await getMessages();
-  const t = await getTranslations({ locale, namespace: "seo" });
+  const [messages, t] = await Promise.all([
+    getMessages(),
+    getTranslations({ locale, namespace: "seo" }),
+  ]);
   const organizationData = generateOrganizationStructuredData();
-
-  // WebSite schema — helps Google associate the official logo with this site
-  const websiteData = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: siteConfig.name,
-    url: siteConfig.url,
-  };
 
   // Store structured data — server-side so Googlebot sees it immediately
   const storeData = {
@@ -156,41 +158,37 @@ export default async function LocaleLayout({
 
         {hasGoogleAnalytics && (
           <>
-            <script
+            <Script
               async
+              strategy="afterInteractive"
               src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
             />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${gaMeasurementId}', {
-                    page_title: document.title,
-                    page_location: window.location.href,
-                    anonymize_ip: true,
-                    allow_google_signals: false,
-                    cookie_flags: 'SameSite=None;Secure'
-                  });
-                `,
-              }}
-            />
+            <Script id="google-analytics-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaMeasurementId}', {
+                  page_title: document.title,
+                  page_location: window.location.href,
+                  anonymize_ip: true,
+                  allow_google_signals: false,
+                  cookie_flags: 'SameSite=None;Secure'
+                });
+              `}
+            </Script>
           </>
         )}
 
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteData) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationData) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(storeData) }}
-        />
+        <script type="application/ld+json">
+          {JSON.stringify(websiteData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(organizationData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(storeData)}
+        </script>
       </head>
       <body className="antialiased font-sans">
         <NextTopLoader color="#ffffff" height={2} showSpinner={false} />

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useReducer, useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/store";
 import { toast } from "sonner";
@@ -20,6 +20,49 @@ import {
 interface NotificationFilters {
   filter: string; // "all" | "consultation" | "order" | "unread"
   searchQuery: string;
+}
+
+interface NotificationState {
+  loading: boolean;
+  filters: NotificationFilters;
+}
+
+type NotificationAction =
+  | { type: "LOAD_START" }
+  | { type: "LOAD_FINISH" }
+  | { type: "SET_FILTER"; payload: string }
+  | { type: "SET_SEARCH"; payload: string };
+
+const initialNotificationState: NotificationState = {
+  loading: true,
+  filters: {
+    filter: "all",
+    searchQuery: "",
+  },
+};
+
+function notificationReducer(
+  state: NotificationState,
+  action: NotificationAction
+): NotificationState {
+  switch (action.type) {
+    case "LOAD_START":
+      return { ...state, loading: true };
+    case "LOAD_FINISH":
+      return { ...state, loading: false };
+    case "SET_FILTER":
+      return {
+        ...state,
+        filters: { ...state.filters, filter: action.payload },
+      };
+    case "SET_SEARCH":
+      return {
+        ...state,
+        filters: { ...state.filters, searchQuery: action.payload },
+      };
+    default:
+      return state;
+  }
 }
 
 export interface UseNotificationsReturn {
@@ -44,6 +87,27 @@ export interface UseNotificationsReturn {
   formatTimestamp: (timestamp: string) => string;
 }
 
+function formatTimestamp(timestamp: string): string {
+  const now = new Date();
+  const notificationTime = new Date(timestamp);
+  const diffInSeconds = Math.floor(
+    (now.getTime() - notificationTime.getTime()) / 1000
+  );
+
+  if (diffInSeconds < 60) {
+    return "Vừa xong";
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} phút trước`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} giờ trước`;
+  } else {
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days} ngày trước`;
+  }
+}
+
 export function useNotifications(): UseNotificationsReturn {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -51,28 +115,31 @@ export function useNotifications(): UseNotificationsReturn {
     (state) => state.notifications
   );
 
-  const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<NotificationFilters>({
-    filter: "all",
-    searchQuery: "",
-  });
+  const [{ loading, filters }, dispatchState] = useReducer(
+    notificationReducer,
+    initialNotificationState
+  );
+
+  const isMountedRef = useRef(true);
 
   const loadNotifications = useCallback(async () => {
     try {
-      setLoading(true);
+      dispatchState({ type: "LOAD_START" });
       const response = await apiWithAuth.getNotifications({ limit: 100 });
-      if (response.success && response.data) {
+      if (isMountedRef.current && response.success && response.data) {
         dispatch(setNotifications(response.data));
       }
     } catch {
-      toast.error("Không thể tải thông báo");
+      if (isMountedRef.current) toast.error("Không thể tải thông báo");
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) dispatchState({ type: "LOAD_FINISH" });
     }
   }, [dispatch]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     loadNotifications();
+    return () => { isMountedRef.current = false; };
   }, [loadNotifications]);
 
   // Filter notifications based on current filters
@@ -103,11 +170,11 @@ export function useNotifications(): UseNotificationsReturn {
   }, [notifications, filters]);
 
   const handleFilterChange = useCallback((filter: string) => {
-    setFilters((prev) => ({ ...prev, filter }));
+    dispatchState({ type: "SET_FILTER", payload: filter });
   }, []);
 
   const handleSearchChange = useCallback((searchQuery: string) => {
-    setFilters((prev) => ({ ...prev, searchQuery }));
+    dispatchState({ type: "SET_SEARCH", payload: searchQuery });
   }, []);
 
   const handleNotificationClick = useCallback(async (notification: NotificationData) => {
@@ -147,27 +214,6 @@ export function useNotifications(): UseNotificationsReturn {
       toast.error("Không thể xóa thông báo");
     }
   }, [dispatch]);
-
-  const formatTimestamp = (timestamp: string): string => {
-    const now = new Date();
-    const notificationTime = new Date(timestamp);
-    const diffInSeconds = Math.floor(
-      (now.getTime() - notificationTime.getTime()) / 1000
-    );
-
-    if (diffInSeconds < 60) {
-      return "Vừa xong";
-    } else if (diffInSeconds < 3600) {
-      const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes} phút trước`;
-    } else if (diffInSeconds < 86400) {
-      const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours} giờ trước`;
-    } else {
-      const days = Math.floor(diffInSeconds / 86400);
-      return `${days} ngày trước`;
-    }
-  };
 
   return {
     // Data

@@ -1,6 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
 import { useProducts } from "@/hooks/useProducts";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
 import { ProductsFilters } from "@/components/products/ProductsFilters";
 import { ProductsToolbar } from "@/components/products/ProductsToolbar";
@@ -23,15 +25,29 @@ interface ProductsPageClientProps {
   initialCapacities?: Capacity[];
 }
 
-export default function ProductsPageClient({
-  initialProducts = [],
+const EMPTY_PRODUCTS: Product[] = [];
+const EMPTY_CATEGORIES: Category[] = [];
+const EMPTY_COLORS: Color[] = [];
+const EMPTY_CAPACITIES: Capacity[] = [];
+
+export default function ProductsPageClient(props: ProductsPageClientProps) {
+  return (
+    <Suspense fallback={null}>
+      <ProductsPageClientContent {...props} />
+    </Suspense>
+  );
+}
+
+function ProductsPageClientContent({
+  initialProducts = EMPTY_PRODUCTS,
   initialPaginationData = null,
   initialQueryKey,
-  initialCategories = [],
-  initialColors = [],
-  initialCapacities = [],
+  initialCategories = EMPTY_CATEGORIES,
+  initialColors = EMPTY_COLORS,
+  initialCapacities = EMPTY_CAPACITIES,
 }: ProductsPageClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     categories,
     colors,
@@ -55,7 +71,12 @@ export default function ProductsPageClient({
     updateURL,
     debouncedUpdateURL,
     clearFilters,
-  } = useProducts({ initialCategories, initialColors, initialCapacities });
+  } = useProducts({
+    initialCategories,
+    initialColors,
+    initialCapacities,
+    searchParams,
+  });
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
@@ -142,12 +163,12 @@ export default function ProductsPageClient({
   const useInitialServerData = !hasActiveFilters && currentPage === 1;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-zinc-950 text-white">
       <div className="container mx-auto px-4 pt-20 pb-4 md:px-6 lg:px-8 md:pt-24 md:pb-8">
         {showFilters && (
           <div
             aria-hidden="true"
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            className="fixed inset-0 bg-zinc-950 bg-opacity-50 z-40 lg:hidden"
             onClick={() => setShowFilters(false)}
           />
         )}

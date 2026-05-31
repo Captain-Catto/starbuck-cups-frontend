@@ -2,6 +2,7 @@ import { getApiUrl } from "@/lib/api-config";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Link } from "@/i18n/routing";
+import Image from "next/image";
 import type { News } from "@/types";
 import type { Metadata } from "next";
 
@@ -80,9 +81,11 @@ export default async function NewsDetailPage({
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json">
+        {JSON.stringify(jsonLd)}
+      </script>
 
-      <div className="min-h-screen bg-black text-white">
+      <div className="min-h-screen bg-zinc-950 text-white">
         <div className="container mx-auto max-w-3xl px-4 pt-20 pb-12 md:px-6 md:pt-24">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm text-gray-500 mb-8">
@@ -96,8 +99,7 @@ export default async function NewsDetailPage({
           {/* Thumbnail */}
           {news.thumbnail && (
             <div className="aspect-video rounded-xl overflow-hidden mb-8">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={news.thumbnail} alt={t?.title ?? ""} className="w-full h-full object-cover" />
+              <Image src={news.thumbnail} alt={t?.title ?? ""} fill sizes="(max-width: 768px) 100vw, 768px" className="object-cover" />
             </div>
           )}
 

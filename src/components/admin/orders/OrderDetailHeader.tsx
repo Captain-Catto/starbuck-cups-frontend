@@ -37,12 +37,12 @@ export function OrderDetailHeader({
     <>
       {isEditing && (
         <div className="flex justify-end mb-4">
-          <button
+          <button type="button"
             onClick={onSave}
             disabled={saving}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
           >
-            <Save className="w-4 h-4" />
+            <Save className="size-4" />
             {saving ? "Đang lưu..." : "Lưu thay đổi"}
           </button>
         </div>

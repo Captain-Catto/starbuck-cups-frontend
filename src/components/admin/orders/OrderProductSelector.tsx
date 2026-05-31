@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction } from "react";
+import { memo, type Dispatch, type SetStateAction } from "react";
 import { Plus } from "lucide-react";
 import OptimizedImage from "@/components/OptimizedImage";
 import { getFirstProductImageUrl } from "@/lib/utils/image";
@@ -22,7 +22,7 @@ interface OrderProductSelectorProps {
   formatCurrency: (amount: string | number) => string;
 }
 
-export function OrderProductSelector({
+export const OrderProductSelector = memo(function OrderProductSelector({
   show,
   loading,
   filteredProducts,
@@ -40,11 +40,11 @@ export function OrderProductSelector({
 }: OrderProductSelectorProps) {
   return (
     <div className="mt-4">
-      <button
+      <button type="button"
         onClick={onToggle}
         className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
       >
-        <Plus className="w-4 h-4" />
+        <Plus className="size-4" />
         Thêm sản phẩm
       </button>
 
@@ -53,7 +53,7 @@ export function OrderProductSelector({
           <h4 className="font-medium text-white mb-3">Tìm kiếm sản phẩm để thêm:</h4>
 
           <div className="mb-4">
-            <input
+            <input aria-label="Nhập tên sản phẩm để tìm kiếm..."
               type="text"
               placeholder="Nhập tên sản phẩm để tìm kiếm..."
               value={searchTerm}
@@ -64,8 +64,8 @@ export function OrderProductSelector({
 
           {loading ? (
             <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto" />
-              <p className="text-sm text-gray-300 mt-2">Đang tìm kiếm sản phẩm...</p>
+              <div className="animate-spin rounded-full size-6 border-b-2 border-blue-600 mx-auto" />
+              <p className="text-sm text-gray-300 mt-2">Đang tìm kiếm sản phẩm…</p>
             </div>
           ) : filteredProducts.length > 0 ? (
             <>
@@ -74,9 +74,10 @@ export function OrderProductSelector({
               </p>
               <div className="space-y-3 max-h-80 overflow-y-auto">
                 {filteredProducts.map((product) => (
-                  <div
+                  <button
+                    type="button"
                     key={product.id}
-                    className="p-3 bg-gray-800 border border-gray-700 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+                    className="w-full text-left p-3 bg-gray-800 border border-gray-700 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
                     onClick={() => onSelectProduct(product)}
                   >
                     <div className="flex items-center gap-3">
@@ -100,14 +101,13 @@ export function OrderProductSelector({
                           Còn: {product.stockQuantity} • Giá: {formatCurrency(product.unitPrice)}
                         </p>
                       </div>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onSelectProduct(product); }}
+                      <span
                         className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                       >
                         Chọn
-                      </button>
+                      </span>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </>
@@ -149,27 +149,27 @@ export function OrderProductSelector({
 
                   <div className="grid grid-cols-2 gap-3 mb-3">
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                      <label className="block text-xs font-medium text-gray-700 mb-1" htmlFor="orderproductselector-number">
                         Giá (VND) - Mặc định: {formatCurrency(selectedProduct.unitPrice)}
                       </label>
-                      <input
+                      <input aria-label="number"
                         type="number"
                         placeholder={`Mặc định: ${selectedProduct.unitPrice}`}
                         value={productPrices[selectedProduct.id] || ""}
                         onChange={(e) =>
                           onSetPrices((prev) => ({ ...prev, [selectedProduct.id]: e.target.value }))
                         }
-                        className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" id="orderproductselector-number"
                       />
                       <p className="text-xs text-gray-400 mt-1">
                         Để trống để sử dụng giá mặc định
                       </p>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                      <label className="block text-xs font-medium text-gray-700 mb-1" htmlFor="orderproductselector-number-2">
                         Số lượng
                       </label>
-                      <input
+                      <input aria-label="number"
                         type="number"
                         min="1"
                         value={productQuantities[selectedProduct.id] || 1}
@@ -179,13 +179,13 @@ export function OrderProductSelector({
                             [selectedProduct.id]: parseInt(e.target.value) || 1,
                           }))
                         }
-                        className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" id="orderproductselector-number-2"
                       />
                     </div>
                   </div>
 
                   <div className="flex gap-2">
-                    <button
+                    <button type="button"
                       onClick={() => {
                         const customPrice = productPrices[selectedProduct.id]
                           ? parseFloat(productPrices[selectedProduct.id])
@@ -202,7 +202,7 @@ export function OrderProductSelector({
                     >
                       Thêm vào đơn hàng
                     </button>
-                    <button
+                    <button type="button"
                       onClick={() => {
                         onSetPrices((prev) => {
                           const next = { ...prev };
@@ -229,4 +229,4 @@ export function OrderProductSelector({
       )}
     </div>
   );
-}
+});

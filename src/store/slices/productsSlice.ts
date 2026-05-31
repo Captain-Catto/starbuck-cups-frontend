@@ -136,155 +136,27 @@ export const fetchRelatedProducts = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const limit = params.limit || 8;
-
-      // First, try to find products matching ALL categories (if multiple categories)
-      let allCategoryProducts: Product[] = [];
-      if (params.categoryIds.length > 1) {
-        // Use the new backend API with categoryIds parameter for all-category matches
-        const searchParams = new URLSearchParams();
-        searchParams.append("categoryIds", params.categoryIds.join(","));
-        searchParams.append("limit", "100"); // Get more to filter for exact matches
-        searchParams.append("inStock", "true");
-        searchParams.append("sortBy", "createdAt");
-        searchParams.append("sortOrder", "desc"); // Newest first
-        if (params.locale) {
-          searchParams.append("locale", params.locale);
-        }
-        if (params.currentProductId) {
-          searchParams.append("excludeProductId", params.currentProductId);
-        }
-
-        const allCategoryResponse = await fetch(
-          `/api/products/public?${searchParams.toString()}`
-        );
-        const allCategoryData = await allCategoryResponse.json();
-
-        if (allCategoryData.success) {
-          const allProducts = allCategoryData.data?.items || [];
-
-          // Filter products that have ALL the required categories
-          allCategoryProducts = allProducts.filter((product: Product) => {
-            if (!product.productCategories) return false;
-            const productCategoryIds = product.productCategories.map(
-              (pc) => pc.category.id
-            );
-            return params.categoryIds.every((catId) =>
-              productCategoryIds.includes(catId)
-            );
-          });
-
-          // Current product already excluded by backend via excludeProductId parameter
-        }
-      }
-
-      // If we have enough products with all categories, use them
-      if (allCategoryProducts.length >= limit) {
-        // Sort by newest first before taking the limit
-        const sortedProducts = allCategoryProducts.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-
-        const normalizedProducts = sortedProducts
-          .slice(0, limit)
-          .map((product: Product) => ({
-            ...product,
-            images:
-              product.productImages?.map(
-                (img: { url: string; order: number }) => img.url
-              ) || [],
-          }));
-        return normalizedProducts as Product[];
-      }
-
-      // Otherwise, fetch products that match ANY category (fallback)
       const searchParams = new URLSearchParams();
       searchParams.append("categoryIds", params.categoryIds.join(","));
-      searchParams.append("limit", limit.toString());
+      searchParams.append("limit", (params.limit || 8).toString());
       searchParams.append("inStock", "true");
       searchParams.append("sortBy", "createdAt");
-      searchParams.append("sortOrder", "desc"); // Newest first
-      if (params.locale) {
-        searchParams.append("locale", params.locale);
-      }
-      if (params.currentProductId) {
-        searchParams.append("excludeProductId", params.currentProductId);
-      }
+      searchParams.append("sortOrder", "desc");
+      if (params.locale) searchParams.append("locale", params.locale);
+      if (params.currentProductId) searchParams.append("excludeProductId", params.currentProductId);
 
-      const response = await fetch(
-        `/api/products/public?${searchParams.toString()}`
-      );
+      const response = await fetch(`/api/products/public?${searchParams.toString()}`);
       const data = await response.json();
 
       if (!data.success) {
         return rejectWithValue("Failed to fetch related products");
       }
 
-      const products = data.data?.items || [];
-
-      // Current product already excluded by backend via excludeProductId parameter
-
-      // Combine products: prioritize all-category matches, then any-category matches
-      // Sort each group by creation date (newest first) before combining
-      const sortedAllCategoryProducts = allCategoryProducts.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-
-      const anyCategoryProducts = products.filter(
-        (p: Product) => !allCategoryProducts.some((ap) => ap.id === p.id)
-      );
-      const sortedAnyCategoryProducts = anyCategoryProducts.sort(
-        (a: Product, b: Product) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-
-      let finalProducts = [
-        ...sortedAllCategoryProducts,
-        ...sortedAnyCategoryProducts,
-      ].slice(0, limit);
-
-      // Fallback: if not enough related products, fetch latest products from any category
-      if (finalProducts.length < limit) {
-        const fallbackParams = new URLSearchParams();
-        fallbackParams.append("limit", limit.toString());
-        fallbackParams.append("inStock", "true");
-        fallbackParams.append("sortBy", "createdAt");
-        fallbackParams.append("sortOrder", "desc");
-        if (params.locale) {
-          fallbackParams.append("locale", params.locale);
-        }
-        if (params.currentProductId) {
-          fallbackParams.append("excludeProductId", params.currentProductId);
-        }
-
-        const fallbackResponse = await fetch(
-          `/api/products/public?${fallbackParams.toString()}`
-        );
-        const fallbackData = await fallbackResponse.json();
-
-        if (fallbackData.success) {
-          const fallbackProducts = (fallbackData.data?.items || []).filter(
-            (p: Product) => !finalProducts.some((fp) => fp.id === p.id)
-          );
-          finalProducts = [...finalProducts, ...fallbackProducts].slice(
-            0,
-            limit
-          );
-        }
-      }
-
-      // Normalize products data to handle image structure
-      const normalizedProducts = finalProducts.map((product: Product) => ({
+      const products: Product[] = data.data?.items || [];
+      return products.map((product) => ({
         ...product,
-        images:
-          product.productImages?.map(
-            (img: { url: string; order: number }) => img.url
-          ) || [],
+        images: product.productImages?.map((img: { url: string; order: number }) => img.url) || [],
       }));
-
-      return normalizedProducts as Product[];
     } catch {
       return rejectWithValue("Failed to fetch related products");
     }

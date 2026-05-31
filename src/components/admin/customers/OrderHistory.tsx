@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useReducer, useEffect, useCallback, useRef } from "react";
 import { useAppSelector } from "@/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, MapPin, Calendar, DollarSign } from "lucide-react";
@@ -69,12 +69,57 @@ interface OrderHistoryProps {
   itemsPerPage?: number;
 }
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
+interface OrderState {
+  data: OrderHistoryData | null;
+  loading: boolean;
+  error: string | null;
+}
+
+type OrderAction =
+  | { type: "RESET"; customerId: string }
+  | { type: "FETCH_START" }
+  | { type: "FETCH_SUCCESS"; payload: OrderHistoryData }
+  | { type: "FETCH_ERROR"; payload: string };
+
+const initialOrderState: OrderState = {
+  data: null,
+  loading: true,
+  error: null,
 };
+
+function orderReducer(state: OrderState, action: OrderAction): OrderState {
+  switch (action.type) {
+    case "RESET":
+      return {
+        data: null,
+        loading: true,
+        error: null,
+      };
+    case "FETCH_START":
+      return {
+        ...state,
+        loading: true,
+        error: null,
+      };
+    case "FETCH_SUCCESS":
+      return {
+        data: action.payload,
+        loading: false,
+        error: null,
+      };
+    case "FETCH_ERROR":
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
+      };
+    default:
+      return state;
+  }
+}
+
+const viCurrencyFormatter = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
+const formatCurrency = (amount: number) => viCurrencyFormatter.format(amount);
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString("vi-VN", {
@@ -126,10 +171,17 @@ export function OrderHistory({
   customerId,
   itemsPerPage = 5,
 }: OrderHistoryProps) {
-  const [data, setData] = useState<OrderHistoryData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [state, dispatch] = useReducer(orderReducer, initialOrderState);
+  const { data, loading, error } = state;
+
+  const currentPageRef = useRef(1);
+  const prevCustomerIdRef = useRef(customerId);
+
+  if (customerId !== prevCustomerIdRef.current) {
+    prevCustomerIdRef.current = customerId;
+    currentPageRef.current = 1;
+    dispatch({ type: "RESET", customerId });
+  }
 
   // Get token from Redux store
   const { token } = useAppSelector((state) => state.auth);
@@ -137,8 +189,7 @@ export function OrderHistory({
   const fetchOrders = useCallback(
     async (page: number) => {
       try {
-        setLoading(true);
-        setError(null);
+        dispatch({ type: "FETCH_START" });
 
         if (!token) {
           throw new Error("No authentication token found");
@@ -159,25 +210,28 @@ export function OrderHistory({
         }
 
         const result = await response.json();
-        setData(result.data);
+        dispatch({ type: "FETCH_SUCCESS", payload: result.data });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      } finally {
-        setLoading(false);
+        dispatch({
+          type: "FETCH_ERROR",
+          payload: err instanceof Error ? err.message : "An error occurred",
+        });
       }
     },
     [customerId, itemsPerPage, token]
   );
 
   useEffect(() => {
+    // react-doctor-disable-next-line react-doctor/no-event-handler -- initialization fetch triggered by auth token and customer ID availability
     if (token && customerId) {
-      fetchOrders(currentPage);
+      fetchOrders(1);
     }
-  }, [customerId, currentPage, token, itemsPerPage, fetchOrders]);
+  }, [customerId, token, fetchOrders]);
 
   const goToPage = (page: number) => {
     if (page >= 1 && data && page <= data.pagination.total_pages) {
-      setCurrentPage(page);
+      currentPageRef.current = page;
+      fetchOrders(page);
     }
   };
 
@@ -210,8 +264,8 @@ export function OrderHistory({
               Lỗi khi tải lịch sử đơn hàng
             </div>
             <div className="text-sm">{error}</div>
-            <button
-              onClick={() => fetchOrders(currentPage)}
+            <button type="button"
+              onClick={() => fetchOrders(currentPageRef.current)}
               className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
             >
               Thử lại
@@ -251,14 +305,14 @@ export function OrderHistory({
             >
               {/* Order Header */}
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <Package className="h-4 w-4 text-gray-400" />
+                <div className="flex items-center gap-x-2">
+                  <Package className="size-4 text-gray-400" />
                   <div>
                     <div className="font-medium text-white text-sm">
                       #{order.orderNumber || order.id.substring(0, 8)}
                     </div>
-                    <div className="text-xs text-gray-400 flex items-center space-x-1">
-                      <Calendar className="h-3 w-3" />
+                    <div className="text-xs text-gray-400 flex items-center gap-x-1">
+                      <Calendar className="size-3" />
                       <span>{formatDate(order.createdAt)}</span>
                     </div>
                   </div>
@@ -308,8 +362,8 @@ export function OrderHistory({
 
               {/* Delivery Address */}
               {order.deliveryAddress && (
-                <div className="flex items-start space-x-1 mb-2 text-xs text-gray-400">
-                  <MapPin className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                <div className="flex items-start gap-x-1 mb-2 text-xs text-gray-400">
+                  <MapPin className="size-3 mt-0.5 flex-shrink-0" />
                   <div className="truncate">
                     <div className="truncate">
                       {order.deliveryAddress.addressLine ||
@@ -332,8 +386,8 @@ export function OrderHistory({
 
               {/* Order Total */}
               <div className="flex items-center justify-between pt-2 border-t border-gray-600">
-                <div className="flex items-center space-x-1 text-xs text-gray-400">
-                  <DollarSign className="h-3 w-3" />
+                <div className="flex items-center gap-x-1 text-xs text-gray-400">
+                  <DollarSign className="size-3" />
                   <span>Tổng:</span>
                 </div>
                 <div className="font-bold text-green-400 text-sm">

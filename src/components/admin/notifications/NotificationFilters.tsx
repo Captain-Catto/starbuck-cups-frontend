@@ -8,6 +8,14 @@ interface NotificationFiltersProps {
   loading?: boolean;
 }
 
+const FILTER_OPTIONS = [
+  { value: "all", label: "Tất cả" },
+  { value: "unread", label: "Chưa đọc" },
+  { value: "read", label: "Đã đọc" },
+  { value: "order", label: "Đơn hàng" },
+  { value: "system", label: "Hệ thống" },
+];
+
 export function NotificationFilters({
   searchQuery,
   onSearchChange,
@@ -15,13 +23,6 @@ export function NotificationFilters({
   onFilterChange,
   loading = false,
 }: NotificationFiltersProps) {
-  const filterOptions = [
-    { value: "all", label: "Tất cả" },
-    { value: "unread", label: "Chưa đọc" },
-    { value: "read", label: "Đã đọc" },
-    { value: "order", label: "Đơn hàng" },
-    { value: "system", label: "Hệ thống" },
-  ];
 
   if (loading) {
     return (
@@ -43,8 +44,8 @@ export function NotificationFilters({
       <div className="flex flex-col md:flex-row gap-4">
         {/* Thanh tìm kiếm */}
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
+          <input aria-label="Tìm kiếm thông báo..."
             type="text"
             placeholder="Tìm kiếm thông báo..."
             value={searchQuery}
@@ -55,13 +56,13 @@ export function NotificationFilters({
 
         {/* Bộ lọc */}
         <div className="relative">
-          <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <select
+          <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
+          <select aria-label="Select option"
             value={selectedFilter}
             onChange={(e) => onFilterChange(e.target.value)}
             className="pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all appearance-none cursor-pointer min-w-[160px]"
           >
-            {filterOptions.map((option) => (
+            {FILTER_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>

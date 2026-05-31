@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 import {
   PromotionalBanner,
@@ -18,29 +18,9 @@ interface BannerFormModalProps {
   loading?: boolean;
 }
 
-export function BannerFormModal({
-  isOpen,
-  onClose,
-  onSubmit,
-  banner,
-  loading = false,
-}: BannerFormModalProps) {
-  const [formData, setFormData] = useState({
-    title: "",
-    highlightText: "",
-    highlightColor: "",
-    description: "",
-    buttonText: "",
-    buttonLink: "",
-    priority: 0,
-    validFrom: "",
-    validUntil: "",
-  });
-
-  useEffect(() => {
-    if (banner) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setFormData({
+const createInitialFormData = (banner?: PromotionalBanner | null) =>
+  banner
+    ? {
         title: banner.title || "",
         highlightText: banner.highlightText || "",
         highlightColor: banner.highlightColor || "",
@@ -50,10 +30,8 @@ export function BannerFormModal({
         priority: banner.priority || 0,
         validFrom: banner.validFrom ? banner.validFrom.split("T")[0] : "",
         validUntil: banner.validUntil ? banner.validUntil.split("T")[0] : "",
-      });
-    } else {
-      // Reset form for new banner
-      setFormData({
+      }
+    : {
         title: "",
         highlightText: "",
         highlightColor: "",
@@ -63,9 +41,38 @@ export function BannerFormModal({
         priority: 0,
         validFrom: "",
         validUntil: "",
-      });
-    }
-  }, [banner, isOpen]);
+      };
+
+export function BannerFormModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  banner,
+  loading = false,
+}: BannerFormModalProps) {
+  const formStateKey = `${isOpen ? "open" : "closed"}:${banner?.id ?? "new"}`;
+
+  if (!isOpen) return null;
+
+  return (
+    <BannerFormModalContent
+      key={formStateKey}
+      isOpen={isOpen}
+      onClose={onClose}
+      onSubmit={onSubmit}
+      banner={banner}
+      loading={loading}
+    />
+  );
+}
+
+function BannerFormModalContent({
+  onClose,
+  onSubmit,
+  banner,
+  loading = false,
+}: BannerFormModalProps) {
+  const [formData, setFormData] = useState(() => createInitialFormData(banner));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,30 +95,29 @@ export function BannerFormModal({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-zinc-950 bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
           <h2 className="text-xl font-semibold text-white">
             {banner ? "Chỉnh sửa Banner" : "Tạo Banner mới"}
           </h2>
           <button
+            type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-white transition-colors cursor-pointer"
           >
-            <X className="w-6 h-6" />
+            <X className="size-6" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="bannerformmodal-b-s-u-t-p">
               Tiêu đề chính *
             </label>
-            <input
+            <input aria-label="Bộ Sưu Tập"
               type="text"
               value={formData.title}
               onChange={(e) =>
@@ -119,41 +125,41 @@ export function BannerFormModal({
               }
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
               placeholder="Bộ Sưu Tập"
-              required
+              required id="bannerformmodal-b-s-u-t-p"
             />
           </div>
 
           {/* Highlight Text */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="bannerformmodal-ly-starbucks">
               Highlight Text
             </label>
-            <input
+            <input aria-label="Ly Starbucks"
               type="text"
               value={formData.highlightText}
               onChange={(e) =>
                 setFormData({ ...formData, highlightText: e.target.value })
               }
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-              placeholder="Ly Starbucks"
+              placeholder="Ly Starbucks" id="bannerformmodal-ly-starbucks"
             />
           </div>
 
           {/* Highlight Color */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="bannerformmodal-color">
               Màu Highlight Text
             </label>
             <div className="flex gap-3 items-center">
-              <input
+              <input aria-label="color"
                 type="color"
                 value={formData.highlightColor || "#10b981"}
                 onChange={(e) =>
                   setFormData({ ...formData, highlightColor: e.target.value })
                 }
-                className="w-16 h-10 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer"
+                className="w-16 h-10 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer" id="bannerformmodal-color"
               />
-              <input
+              <input aria-label="#10b981"
                 type="text"
                 value={formData.highlightColor || "#10b981"}
                 onChange={(e) =>
@@ -170,10 +176,10 @@ export function BannerFormModal({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="bannerformmodal-kh-m-ph-b-s-u-t-p-ly-starbucks-a">
               Mô tả *
             </label>
-            <textarea
+            <textarea aria-label="Khám phá bộ sưu tập ly Starbucks đa dạng với nhiều màu sắc và dung tích..."
               value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
@@ -181,17 +187,17 @@ export function BannerFormModal({
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
               placeholder="Khám phá bộ sưu tập ly Starbucks đa dạng với nhiều màu sắc và dung tích..."
               rows={3}
-              required
+              required id="bannerformmodal-kh-m-ph-b-s-u-t-p-ly-starbucks-a"
             />
           </div>
 
           {/* Button Text and Link */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="bannerformmodal-kh-m-ph-ngay">
                 Text Button *
               </label>
-              <input
+              <input aria-label="Khám Phá Ngay"
                 type="text"
                 value={formData.buttonText}
                 onChange={(e) =>
@@ -199,15 +205,15 @@ export function BannerFormModal({
                 }
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 placeholder="Khám Phá Ngay"
-                required
+                required id="bannerformmodal-kh-m-ph-ngay"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="bannerformmodal-products">
                 Link Button *
               </label>
-              <input
+              <input aria-label="/products"
                 type="text"
                 value={formData.buttonLink}
                 onChange={(e) =>
@@ -215,17 +221,17 @@ export function BannerFormModal({
                 }
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 placeholder="/products"
-                required
+                required id="bannerformmodal-products"
               />
             </div>
           </div>
 
           {/* Priority */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="bannerformmodal-number">
               Độ ưu tiên
             </label>
-            <input
+            <input aria-label="number"
               type="number"
               value={formData.priority}
               onChange={(e) =>
@@ -235,7 +241,7 @@ export function BannerFormModal({
                 })
               }
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-              min="0"
+              min="0" id="bannerformmodal-number"
             />
             <p className="text-xs text-gray-400 mt-1">
               Số càng cao càng ưu tiên hiển thị
@@ -245,30 +251,30 @@ export function BannerFormModal({
           {/* Valid Date Range */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="bannerformmodal-date">
                 Hiệu lực từ ngày
               </label>
-              <input
+              <input aria-label="date"
                 type="date"
                 value={formData.validFrom}
                 onChange={(e) =>
                   setFormData({ ...formData, validFrom: e.target.value })
                 }
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gray-500" id="bannerformmodal-date"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="bannerformmodal-date-2">
                 Hết hạn ngày
               </label>
-              <input
+              <input aria-label="date"
                 type="date"
                 value={formData.validUntil}
                 onChange={(e) =>
                   setFormData({ ...formData, validUntil: e.target.value })
                 }
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gray-500" id="bannerformmodal-date-2"
               />
             </div>
           </div>

@@ -18,6 +18,7 @@ export function useCustomerSearch() {
   const searchAbortRef = useRef<AbortController | null>(null);
 
   // Fetch latest 4 customers on component mount
+  // react-doctor-disable-next-line react-doctor/no-fetch-in-effect -- no react-query/SWR in this project; fetch-on-mount with token guard is the established pattern
   useEffect(() => {
     // Only fetch when session has been checked and we have a token
     if (!sessionChecked) {

@@ -3,6 +3,7 @@
 import React, { lazy, Suspense } from "react";
 import { useTranslations } from "next-intl";
 import { ProductGridSkeleton } from "@/components/ui/LoadingSkeleton";
+import { Product } from "@/types";
 
 // Hero Section không lazy load để tối ưu LCP
 import HeroSection from "@/components/home/HeroSection";
@@ -37,18 +38,23 @@ interface PromotionalBannerData {
 interface HomePageProps {
   heroImages?: HeroImageData[];
   promotionalBanner?: PromotionalBannerData | null;
+  products?: Product[];
   loading?: boolean;
 }
 
+const DEFAULT_HERO_IMAGES: HeroImageData[] = [];
+const DEFAULT_PRODUCTS: Product[] = [];
+
 const HomePage: React.FC<HomePageProps> = ({
-  heroImages = [],
+  heroImages = DEFAULT_HERO_IMAGES,
   promotionalBanner = null,
+  products = DEFAULT_PRODUCTS,
   loading = false,
 }) => {
   const t = useTranslations("homePage");
 
   return (
-    <div className="min-h-screen bg-black text-white pt-12">
+    <div className="min-h-screen bg-zinc-950 text-white pt-12">
       {/* Hero Section */}
       <HeroSection
         loading={loading}
@@ -71,7 +77,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
           {/* Products Grid */}
           <Suspense fallback={<ProductGridSkeleton />}>
-            <HomeProductGrid selectedCategory={null} />
+            <HomeProductGrid products={products} selectedCategory={null} />
           </Suspense>
         </div>
       </section>

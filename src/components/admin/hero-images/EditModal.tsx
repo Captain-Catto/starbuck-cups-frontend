@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import { X, Save, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -20,7 +20,7 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
     altText: image.altText,
     isActive: image.isActive,
   });
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const selectedFileRef = useRef<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
 
@@ -43,7 +43,7 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
       return;
     }
 
-    setSelectedFile(file);
+    selectedFileRef.current = file;
 
     // Create preview
     const reader = new FileReader();
@@ -76,8 +76,8 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
       const submitData = new FormData();
 
       // Add image file if selected
-      if (selectedFile) {
-        submitData.append("image", selectedFile);
+      if (selectedFileRef.current) {
+        submitData.append("image", selectedFileRef.current);
       }
 
       submitData.append("title", formData.title.trim());
@@ -107,7 +107,7 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-zinc-950 bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           {/* Header */}
@@ -120,7 +120,7 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
               onClick={onClose}
               className="text-gray-400 hover:text-white transition-colors cursor-pointer"
             >
-              <X className="w-6 h-6" />
+              <X className="size-6" />
             </button>
           </div>
 
@@ -128,9 +128,9 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
           <div className="p-6 space-y-6">
             {/* Current Image */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <span className="block text-sm font-medium text-white mb-2">
                 Ảnh hiện tại
-              </label>
+              </span>
               <div className="relative h-48 bg-gray-700 rounded-lg overflow-hidden">
                 <OptimizedImage
                   src={image.imageUrl}
@@ -144,7 +144,7 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
 
             {/* New Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="block text-sm font-medium text-white mb-2" htmlFor="editmodal-file">
                 Thay đổi ảnh (tùy chọn)
               </label>
               <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center relative">
@@ -162,7 +162,7 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
                     <button
                       type="button"
                       onClick={() => {
-                        setSelectedFile(null);
+                        selectedFileRef.current = null;
                         setPreview(null);
                       }}
                       className="text-sm text-gray-400 hover:text-white"
@@ -172,18 +172,18 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
                   </div>
                 ) : (
                   <div>
-                    <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <ImageIcon className="size-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-300 mb-2">
                       Kéo thả ảnh mới vào đây hoặc click để chọn
                     </p>
                     <p className="text-gray-500 text-sm">
                       PNG, JPG, WEBP (tối đa 5MB)
                     </p>
-                    <input
+                    <input aria-label="file"
                       type="file"
                       accept="image/*"
                       onChange={handleFileSelect}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      className="absolute inset-0 size-full opacity-0 cursor-pointer" id="editmodal-file"
                     />
                   </div>
                 )}
@@ -192,10 +192,10 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
 
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="block text-sm font-medium text-white mb-2" htmlFor="editmodal-nh-p-ti-u-cho-hero-image">
                 Tiêu đề *
               </label>
-              <input
+              <input aria-label="Nhập tiêu đề cho hero image"
                 type="text"
                 value={formData.title}
                 onChange={(e) =>
@@ -203,16 +203,16 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
                 }
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Nhập tiêu đề cho hero image"
-                required
+                required id="editmodal-nh-p-ti-u-cho-hero-image"
               />
             </div>
 
             {/* Alt Text */}
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="block text-sm font-medium text-white mb-2" htmlFor="editmodal-m-t-ng-n-g-n-v-nh-cho-seo-v-accessibil">
                 Alt Text *
               </label>
-              <input
+              <input aria-label="Mô tả ngắn gọn về ảnh (cho SEO và accessibility)"
                 type="text"
                 value={formData.altText}
                 onChange={(e) =>
@@ -220,20 +220,20 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
                 }
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Mô tả ngắn gọn về ảnh (cho SEO và accessibility)"
-                required
+                required id="editmodal-m-t-ng-n-g-n-v-nh-cho-seo-v-accessibil"
               />
             </div>
 
             {/* Status */}
             <div className="flex items-center">
-              <input
+              <input aria-label="is Active"
                 type="checkbox"
                 id="isActive"
                 checked={formData.isActive}
                 onChange={(e) =>
                   setFormData({ ...formData, isActive: e.target.checked })
                 }
-                className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                className="size-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
               />
               <label htmlFor="isActive" className="ml-2 text-sm text-white">
                 Hiển thị ngay trên trang chủ
@@ -286,12 +286,12 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
             >
               {updating ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Đang cập nhật...
+                  <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Đang cập nhật…
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4" />
+                  <Save className="size-4" />
                   Lưu thay đổi
                 </>
               )}

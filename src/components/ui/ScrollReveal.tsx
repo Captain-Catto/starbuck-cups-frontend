@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState, ReactNode } from "react";
+import { useCallback, useRef, useState, ReactNode } from "react";
 
 interface ScrollRevealProps {
   children: ReactNode;
@@ -10,6 +10,13 @@ interface ScrollRevealProps {
   threshold?: number;
 }
 
+const SCROLL_REVEAL_INITIAL: Record<string, string> = {
+  up: "translate-y-8 opacity-0",
+  left: "-translate-x-8 opacity-0",
+  right: "translate-x-8 opacity-0",
+  none: "opacity-0",
+};
+
 export function ScrollReveal({
   children,
   className = "",
@@ -17,37 +24,35 @@ export function ScrollReveal({
   direction = "up",
   threshold = 0.1,
 }: ScrollRevealProps) {
-  const ref = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold, rootMargin: "0px 0px -40px 0px" }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [threshold]);
+  const setRevealNode = useCallback(
+    (node: HTMLDivElement | null) => {
+      observerRef.current?.disconnect();
 
-  const initial: Record<typeof direction, string> = {
-    up: "translate-y-8 opacity-0",
-    left: "-translate-x-8 opacity-0",
-    right: "translate-x-8 opacity-0",
-    none: "opacity-0",
-  };
+      if (!node || visible) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setVisible(true);
+            observer.disconnect();
+          }
+        },
+        { threshold, rootMargin: "0px 0px -40px 0px" }
+      );
+      observer.observe(node);
+      observerRef.current = observer;
+    },
+    [threshold, visible]
+  );
 
   return (
     <div
-      ref={ref}
+      ref={setRevealNode}
       className={`transition-all duration-700 ease-out ${
-        visible ? "translate-x-0 translate-y-0 opacity-100" : initial[direction]
+        visible ? "translate-x-0 translate-y-0 opacity-100" : SCROLL_REVEAL_INITIAL[direction]
       } ${className}`}
       style={{ transitionDelay: `${delay}ms` }}
     >

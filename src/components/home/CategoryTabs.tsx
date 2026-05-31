@@ -25,9 +25,9 @@ const CategoryTabsSkeleton = () => (
 
       {/* Category tabs skeleton */}
       <div className="flex flex-wrap justify-center gap-3">
-        {SKELETON_WIDTHS.map((width, index) => (
+        {SKELETON_WIDTHS.map((width, i) => (
           <Skeleton
-            key={index}
+            key={`${width}-${i}`}
             height={48}
             width={width}
             className="rounded-full"
@@ -58,7 +58,7 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
     <div className="flex flex-col items-center mb-8">
       {/* Category Filter Tabs */}
       <div className="flex flex-wrap gap-3">
-        <button
+        <button type="button"
           onClick={() => onCategoryChange(null)}
           className={`px-6 py-3 rounded-full font-medium transition-colors ${
             selectedCategory === null
@@ -69,7 +69,7 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
           {t("allCategories")}
         </button>
         {categories.map((category) => (
-          <button
+          <button type="button"
             key={category.id}
             onClick={() => handleCategoryClick(category.slug)}
             className={`px-6 py-3 rounded-full font-medium transition-colors ${

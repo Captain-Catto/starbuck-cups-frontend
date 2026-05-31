@@ -1,6 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
 import { useProducts } from "@/hooks/useProducts";
+import { useSearchParams } from "next/navigation";
 import { useRouter, usePathname } from "@/i18n/routing";
 import { ProductsFilters } from "@/components/products/ProductsFilters";
 import { ProductsToolbar } from "@/components/products/ProductsToolbar";
@@ -25,18 +27,32 @@ interface CategoryPageClientProps {
   initialCapacities?: Capacity[];
 }
 
-export default function CategoryPageClient({
+const EMPTY_PRODUCTS: Product[] = [];
+const EMPTY_CATEGORIES: Category[] = [];
+const EMPTY_COLORS: Color[] = [];
+const EMPTY_CAPACITIES: Capacity[] = [];
+
+export default function CategoryPageClient(props: CategoryPageClientProps) {
+  return (
+    <Suspense fallback={null}>
+      <CategoryPageClientContent {...props} />
+    </Suspense>
+  );
+}
+
+function CategoryPageClientContent({
   categorySlug,
   categoryName,
-  initialProducts = [],
+  initialProducts = EMPTY_PRODUCTS,
   initialPaginationData = null,
   initialQueryKey,
-  initialCategories = [],
-  initialColors = [],
-  initialCapacities = [],
+  initialCategories = EMPTY_CATEGORIES,
+  initialColors = EMPTY_COLORS,
+  initialCapacities = EMPTY_CAPACITIES,
 }: CategoryPageClientProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const {
     categories,
@@ -58,7 +74,12 @@ export default function CategoryPageClient({
     updateURL,
     debouncedUpdateURL,
     clearFilters,
-  } = useProducts({ initialCategories, initialColors, initialCapacities });
+  } = useProducts({
+    initialCategories,
+    initialColors,
+    initialCapacities,
+    searchParams,
+  });
 
   // hasActiveFilters: không tính category vì nó luôn được set trên trang này
   const hasOtherActiveFilters =
@@ -153,7 +174,8 @@ export default function CategoryPageClient({
     <div className="container mx-auto px-4 pt-20 pb-4 md:px-6 lg:px-8 md:pt-24 md:pb-8">
       {showFilters && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          role="presentation"
+          className="fixed inset-0 bg-zinc-950 bg-opacity-50 z-40 lg:hidden"
           onClick={() => setShowFilters(false)}
         />
       )}

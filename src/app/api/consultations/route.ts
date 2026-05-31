@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
 
     // Forward to backend API
     const backendResponse = await fetch(getApiUrl("consultations"), {
+      cache: "no-store",
       method: "POST",
       headers: {
         "Content-Type": "application/json",

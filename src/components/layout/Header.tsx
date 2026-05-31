@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState, useSyncExternalStore } from "react";
 import { useAppDispatch, useAppSelector } from "@/store";
+import { selectCartCount } from "@/store/selectors";
 import { openCart } from "@/store/slices/cartSlice";
 import { Search, Menu as MenuIcon, X } from "lucide-react";
 import { trackCartAction, trackMobileMenu } from "@/lib/analytics";
@@ -30,12 +31,10 @@ export function Header({ className = "" }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { items: cartItems } = useAppSelector((state) => state.cart);
+  const totalCartItems = useAppSelector(selectCartCount);
   const isHydrated = useSyncExternalStore(() => () => {}, () => true, () => false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-
-  const totalCartItems = cartItems.length;
 
   const handleMenuClick = () => {
     setIsSidebarOpen(true);
@@ -62,34 +61,34 @@ export function Header({ className = "" }: HeaderProps) {
         suppressHydrationWarning
       >
         {/* Mobile Layout */}
-        <div className="md:hidden container mx-auto px-4 py-4 flex items-center justify-between">
-          <button
+        <div className="md:hidden container mx-auto p-4 flex items-center justify-between">
+          <button type="button"
             onClick={handleMenuClick}
-            className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors"
+            className="flex items-center justify-center size-10 text-white hover:text-zinc-300 transition-colors"
             aria-label={t("toggleMenu")}
           >
-            <MenuIcon className="w-5 h-5" />
+            <MenuIcon className="size-5" />
           </button>
 
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
               onClick={handleSearchClick}
-              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors cursor-pointer"
+              className="flex items-center justify-center size-10 text-white hover:text-zinc-300 transition-colors cursor-pointer"
               aria-label={t("searchProductsAria")}
             >
-              <Search className="w-5 h-5" />
+              <Search className="size-5" />
             </button>
 
-            <button
+            <button type="button"
               onClick={() => dispatch(openCart())}
-              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors relative cursor-pointer"
+              className="flex items-center justify-center size-10 text-white hover:text-zinc-300 transition-colors relative cursor-pointer"
               aria-label={t("shoppingCartAria")}
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="size-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
               </svg>
               {isHydrated && totalCartItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-white text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-white text-black text-xs font-bold size-5 rounded-full flex items-center justify-center">
                   {totalCartItems}
                 </span>
               )}
@@ -106,7 +105,7 @@ export function Header({ className = "" }: HeaderProps) {
                 alt={t("brandName")}
                 width={32}
                 height={32}
-                className="w-8 h-8 brightness-0 invert"
+                className="size-8 brightness-0 invert"
               />
             )}
             <span className="text-2xl font-semibold text-white">
@@ -137,27 +136,27 @@ export function Header({ className = "" }: HeaderProps) {
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
 
-            <button
+            <button type="button"
               onClick={handleSearchClick}
-              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors cursor-pointer"
+              className="flex items-center justify-center size-10 text-white hover:text-zinc-300 transition-colors cursor-pointer"
               aria-label={t("searchProductsAria")}
             >
-              <Search className="w-5 h-5" />
+              <Search className="size-5" />
             </button>
 
-            <button
+            <button type="button"
               onClick={() => {
                 dispatch(openCart());
                 trackCartAction("open");
               }}
-              className="flex items-center justify-center w-10 h-10 text-white hover:text-zinc-300 transition-colors relative cursor-pointer"
+              className="flex items-center justify-center size-10 text-white hover:text-zinc-300 transition-colors relative cursor-pointer"
               aria-label={t("shoppingCartAria")}
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="size-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
               </svg>
               {isHydrated && totalCartItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-white text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-white text-black text-xs font-bold size-5 rounded-full flex items-center justify-center">
                   {totalCartItems}
                 </span>
               )}
@@ -167,7 +166,9 @@ export function Header({ className = "" }: HeaderProps) {
       </header>
 
       {/* Sidebar Overlay */}
-      <div
+      <button
+        type="button"
+        aria-label="Close menu"
         className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 ${
           isSidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
@@ -192,19 +193,19 @@ export function Header({ className = "" }: HeaderProps) {
                   alt={t("brandName")}
                   width={32}
                   height={32}
-                  className="w-8 h-8 brightness-0 invert"
+                  className="size-8 brightness-0 invert"
                 />
               )}
               <div className="text-2xl font-bold text-white tracking-wider">
                 shoucangpu
               </div>
             </div>
-            <button
+            <button type="button"
               onClick={() => setIsSidebarOpen(false)}
               className="p-2 rounded-lg hover:bg-zinc-800 text-white transition-colors"
               aria-label={t("closeMenu")}
             >
-              <X className="w-5 h-5" />
+              <X className="size-5" />
             </button>
           </div>
 
@@ -241,7 +242,7 @@ export function Header({ className = "" }: HeaderProps) {
                     : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
                 }`}
               >
-                <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="size-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path d={icon} />
                 </svg>
                 {label}
@@ -254,7 +255,7 @@ export function Header({ className = "" }: HeaderProps) {
               {t("quickActions")}
             </h3>
             <div className="space-y-2">
-              <button
+              <button type="button"
                 onClick={() => {
                   setIsSidebarOpen(false);
                   handleSearchClick();
@@ -262,10 +263,10 @@ export function Header({ className = "" }: HeaderProps) {
                 className="w-full text-left py-3 px-4 text-lg rounded-lg transition-colors text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-3"
                 aria-label={t("searchProductsAria")}
               >
-                <Search className="w-5 h-5" />
+                <Search className="size-5" />
                 <span>{t("search")}</span>
               </button>
-              <button
+              <button type="button"
                 onClick={() => {
                   setIsSidebarOpen(false);
                   dispatch(openCart());
@@ -276,7 +277,7 @@ export function Header({ className = "" }: HeaderProps) {
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-3">
                     <svg
-                      className="w-5 h-5"
+                      className="size-5"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >

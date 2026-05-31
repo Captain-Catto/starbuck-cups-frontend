@@ -21,6 +21,7 @@ export async function GET(
     const response = await fetch(
       getApiUrl(`admin/customers/${customerId}/addresses`),
       {
+      cache: "no-store",
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -56,6 +57,7 @@ export async function POST(
     const response = await fetch(
       getApiUrl(`admin/customers/${customerId}/addresses`),
       {
+      cache: "no-store",
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useReducer } from "react";
 import { useAppSelector } from "@/store";
 import type { PaginationMeta } from "@/types";
 
@@ -29,30 +29,90 @@ interface UseLowStockReturn {
   refetch: () => Promise<void>;
 }
 
+interface LowStockState {
+  products: LowStockProduct[];
+  pagination: PaginationMeta | null;
+  currentPage: number;
+  loading: boolean;
+  error: string | null;
+}
+
+type LowStockAction =
+  | { type: "FETCH_START"; page: number }
+  | {
+      type: "FETCH_SUCCESS";
+      page: number;
+      products: LowStockProduct[];
+      pagination: PaginationMeta | null;
+    }
+  | { type: "FETCH_ERROR"; error: string }
+  | { type: "NO_TOKEN" };
+
+const initialLowStockState: LowStockState = {
+  products: [],
+  pagination: null,
+  currentPage: 1,
+  loading: false,
+  error: null,
+};
+
+function lowStockReducer(
+  state: LowStockState,
+  action: LowStockAction
+): LowStockState {
+  switch (action.type) {
+    case "FETCH_START":
+      return {
+        ...state,
+        currentPage: action.page,
+        loading: true,
+        error: null,
+      };
+    case "FETCH_SUCCESS":
+      return {
+        products: action.products,
+        pagination: action.pagination,
+        currentPage: action.page,
+        loading: false,
+        error: null,
+      };
+    case "FETCH_ERROR":
+      return {
+        ...state,
+        products: [],
+        pagination: null,
+        loading: false,
+        error: action.error,
+      };
+    case "NO_TOKEN":
+      return {
+        ...state,
+        loading: false,
+        error: "No authentication token found",
+      };
+    default:
+      return state;
+  }
+}
+
 export const useLowStock = (
   options: UseLowStockOptions = {}
 ): UseLowStockReturn => {
+  // react-doctor-disable-next-line react-doctor/no-event-handler -- initialization fetch controlled by autoFetch option, not a user event
   const { limit = 10, threshold = 10, autoFetch = true } = options;
+  const [state, dispatch] = useReducer(lowStockReducer, initialLowStockState);
 
-  const [products, setProducts] = useState<LowStockProduct[]>([]);
-  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Get token from Redux store
   const { token } = useAppSelector((state) => state.auth);
 
   const fetchLowStockProducts = useCallback(
     async (page: number = 1) => {
       if (!token) {
-        setError("No authentication token found");
+        dispatch({ type: "NO_TOKEN" });
         return;
       }
 
       try {
-        setLoading(true);
-        setError(null);
+        dispatch({ type: "FETCH_START", page });
 
         const params = new URLSearchParams({
           page: page.toString(),
@@ -79,21 +139,21 @@ export const useLowStock = (
         const result = await response.json();
 
         if (result.success && result.data) {
-          setProducts(result.data.items || []);
-          setPagination(result.data.pagination || null);
-        } else {
-          throw new Error(
-            result.message || "Failed to fetch low stock products"
-          );
+          dispatch({
+            type: "FETCH_SUCCESS",
+            page,
+            products: result.data.items || [],
+            pagination: result.data.pagination || null,
+          });
+          return;
         }
+
+        throw new Error(result.message || "Failed to fetch low stock products");
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "An error occurred";
-        setError(errorMessage);
-        setProducts([]);
-        setPagination(null);
-      } finally {
-        setLoading(false);
+        dispatch({
+          type: "FETCH_ERROR",
+          error: err instanceof Error ? err.message : "An error occurred",
+        });
       }
     },
     [token, limit, threshold]
@@ -101,28 +161,28 @@ export const useLowStock = (
 
   const handlePageChange = useCallback(
     (page: number) => {
-      setCurrentPage(page);
       fetchLowStockProducts(page);
     },
     [fetchLowStockProducts]
   );
 
   const refetch = useCallback(() => {
-    return fetchLowStockProducts(currentPage);
-  }, [fetchLowStockProducts, currentPage]);
+    return fetchLowStockProducts(state.currentPage);
+  }, [fetchLowStockProducts, state.currentPage]);
 
   useEffect(() => {
     if (autoFetch && token) {
-      fetchLowStockProducts(currentPage);
+      // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent -- initialization fetch, data flows down via hook return value
+      fetchLowStockProducts(1);
     }
-  }, [autoFetch, token, currentPage, fetchLowStockProducts]);
+  }, [autoFetch, token, fetchLowStockProducts]);
 
   return {
-    products,
-    pagination,
-    currentPage,
-    loading,
-    error,
+    products: state.products,
+    pagination: state.pagination,
+    currentPage: state.currentPage,
+    loading: state.loading,
+    error: state.error,
     handlePageChange,
     refetch,
   };

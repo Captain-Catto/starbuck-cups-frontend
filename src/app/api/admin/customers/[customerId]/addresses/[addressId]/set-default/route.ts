@@ -13,6 +13,7 @@ export async function PUT(
     const response = await fetch(
       getApiUrl(`admin/customers/${customerId}/addresses/${addressId}/set-default`),
       {
+      cache: "no-store",
         method: "PUT",
         headers: {
           ...getAdminForwardHeaders(request),

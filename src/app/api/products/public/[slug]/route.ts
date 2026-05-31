@@ -15,6 +15,7 @@ export async function GET(
     });
 
     const response = await fetch(url.toString(), {
+      cache: "no-store",
       method: "GET",
       headers: {
         "Content-Type": "application/json",

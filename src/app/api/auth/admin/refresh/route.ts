@@ -9,6 +9,7 @@ export async function POST(request: NextRequest) {
     const cookies = request.headers.get("cookie") || "";
 
     const response = await fetch(getApiUrl("auth/admin/refresh"), {
+      cache: "no-store",
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -42,7 +42,7 @@ export function ColorConfirmModal({
     >
       <div className="flex items-center gap-3 mb-4 p-3 bg-gray-700 rounded-lg">
         <div
-          className="w-8 h-8 rounded border-2 border-gray-600 flex-shrink-0"
+          className="size-8 rounded border-2 border-gray-600 flex-shrink-0"
           style={{ backgroundColor: color.hexCode }}
         />
         <div>

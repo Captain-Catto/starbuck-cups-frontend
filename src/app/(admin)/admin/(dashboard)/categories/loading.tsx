@@ -1,6 +1,6 @@
 export default function CategoriesLoading() {
   return (
-    <div className="min-h-screen bg-black p-6 animate-pulse">
+    <div className="min-h-screen bg-zinc-950 p-6 animate-pulse">
       <div className="flex justify-between items-center mb-6">
         <div className="h-8 w-40 bg-gray-800 rounded" />
         <div className="h-10 w-32 bg-gray-800 rounded" />

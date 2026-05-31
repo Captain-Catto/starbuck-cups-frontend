@@ -1,6 +1,6 @@
 export default function ConsultationsLoading() {
   return (
-    <div className="min-h-screen bg-black p-6 animate-pulse">
+    <div className="min-h-screen bg-zinc-950 p-6 animate-pulse">
       <div className="h-8 w-36 bg-gray-800 rounded mb-6" />
       <div className="flex gap-3 mb-6">
         {Array.from({ length: 3 }).map((_, i) => (

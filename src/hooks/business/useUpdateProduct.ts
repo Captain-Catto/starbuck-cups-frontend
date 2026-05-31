@@ -1,6 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import {
+  useEffect,
+  useCallback,
+  useReducer,
+  type SetStateAction,
+} from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { RootState } from "@/store";
@@ -133,32 +138,108 @@ export interface UseUpdateProductReturn {
   loadProductData: () => Promise<void>;
 }
 
+const initialFormData: UpdateProductFormData = {
+  name: "",
+  description: "",
+  categoryIds: [],
+  colorIds: [],
+  capacityId: "",
+  stockQuantity: 0,
+  images: [],
+  productUrl: "",
+  isActive: true,
+  isVip: false,
+  hasVariants: true,
+  isFeatured: false,
+  translations: createDefaultTranslations(),
+  newImages: [],
+  keepExistingImages: true,
+};
+
+interface UpdateProductState {
+  loading: boolean;
+  isSubmitting: boolean;
+  errors: ValidationErrors;
+  formData: UpdateProductFormData;
+}
+
+type UpdateProductAction =
+  | { type: "LOAD_START" }
+  | { type: "LOAD_SUCCESS"; formData: UpdateProductFormData }
+  | { type: "LOAD_ERROR" }
+  | { type: "SUBMIT_START" }
+  | { type: "SUBMIT_FINISH" }
+  | { type: "SET_ERRORS"; errors: ValidationErrors }
+  | {
+      type: "SET_FORM_DATA";
+      value: SetStateAction<UpdateProductFormData>;
+    }
+  | { type: "CLEAR_ERROR"; field: string };
+
+function resolveStateValue<T>(value: SetStateAction<T>, current: T): T {
+  return typeof value === "function"
+    ? (value as (previous: T) => T)(current)
+    : value;
+}
+
+function updateProductReducer(
+  state: UpdateProductState,
+  action: UpdateProductAction
+): UpdateProductState {
+  switch (action.type) {
+    case "LOAD_START":
+      return { ...state, loading: true };
+    case "LOAD_SUCCESS":
+      return { ...state, formData: action.formData, loading: false };
+    case "LOAD_ERROR":
+      return { ...state, loading: false };
+    case "SUBMIT_START":
+      return { ...state, isSubmitting: true };
+    case "SUBMIT_FINISH":
+      return { ...state, isSubmitting: false };
+    case "SET_ERRORS":
+      return { ...state, errors: action.errors };
+    case "SET_FORM_DATA":
+      return {
+        ...state,
+        formData: resolveStateValue(action.value, state.formData),
+      };
+    case "CLEAR_ERROR":
+      if (!state.errors[action.field]) return state;
+      return {
+        ...state,
+        errors: {
+          ...state.errors,
+          [action.field]: "",
+        },
+      };
+    default:
+      return state;
+  }
+}
+
+function isValidUrl(url: string): boolean {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function useUpdateProduct(
   options: UseUpdateProductOptions
 ): UseUpdateProductReturn {
+  // react-doctor-disable-next-line react-doctor/no-event-handler -- initialization fetch triggered by productId, not a user event
   const { productId, onSuccess, onError } = options;
 
-  const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<ValidationErrors>({});
-
-  const [formData, setFormData] = useState<UpdateProductFormData>({
-    name: "",
-    description: "",
-    categoryIds: [],
-    colorIds: [],
-    capacityId: "",
-    stockQuantity: 0,
-    images: [],
-    productUrl: "",
-    isActive: true,
-    isVip: false,
-    hasVariants: true,
-    isFeatured: false,
-    translations: createDefaultTranslations(),
-    newImages: [],
-    keepExistingImages: true,
+  const [state, dispatch] = useReducer(updateProductReducer, {
+    loading: true,
+    isSubmitting: false,
+    errors: {},
+    formData: initialFormData,
   });
+  const { loading, isSubmitting, errors, formData } = state;
 
   const token = useSelector((state: RootState) => state.auth.token);
 
@@ -168,7 +249,7 @@ export function useUpdateProduct(
 
   const loadProductData = useCallback(async () => {
     try {
-      setLoading(true);
+      dispatch({ type: "LOAD_START" });
 
       const response = await fetch(`/api/admin/products/${productId}`, {
         headers: {
@@ -223,7 +304,7 @@ export function useUpdateProduct(
         keepExistingImages: true,
       };
 
-      setFormData(mappedData);
+      dispatch({ type: "LOAD_SUCCESS", formData: mappedData });
     } catch (error) {
       const errorMsg =
         error instanceof Error
@@ -231,20 +312,22 @@ export function useUpdateProduct(
           : "Có lỗi xảy ra khi tải dữ liệu";
       toast.error(errorMsg);
       if (onError) onError(errorMsg);
-    } finally {
-      setLoading(false);
+      dispatch({ type: "LOAD_ERROR" });
     }
   }, [productId, onError, getAuthHeaders]);
 
   useEffect(() => {
     if (productId) {
+      // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent -- initialization fetch, data flows down via hook return value
       loadProductData();
     }
   }, [productId, loadProductData]);
 
   const updateField = useCallback(
     (field: keyof UpdateProductFormData, value: unknown) => {
-      setFormData((prev) => {
+      dispatch({
+        type: "SET_FORM_DATA",
+        value: (prev) => {
         const next = {
           ...prev,
           [field]: value,
@@ -271,21 +354,19 @@ export function useUpdateProduct(
         }
 
         return next;
+        },
       });
 
-      if (errors[field]) {
-        setErrors((prev) => ({
-          ...prev,
-          [field]: "",
-        }));
-      }
+      dispatch({ type: "CLEAR_ERROR", field });
     },
-    [errors]
+    []
   );
 
   const updateTranslation = useCallback(
     (locale: ProductLocale, field: TranslationField, value: string) => {
-      setFormData((prev) => {
+      dispatch({
+        type: "SET_FORM_DATA",
+        value: (prev) => {
         const nextTranslations: ProductTranslationsInput = {
           ...prev.translations,
           [locale]: {
@@ -307,21 +388,19 @@ export function useUpdateProduct(
         }
 
         return nextData;
+        },
       });
 
-      if (errors[field]) {
-        setErrors((prev) => ({
-          ...prev,
-          [field]: "",
-        }));
-      }
+      dispatch({ type: "CLEAR_ERROR", field });
     },
-    [errors]
+    []
   );
 
   const toggleArrayField = useCallback(
     (field: "categoryIds" | "colorIds", value: string) => {
-      setFormData((prev) => {
+      dispatch({
+        type: "SET_FORM_DATA",
+        value: (prev) => {
         const currentArray = prev[field] || [];
         const newArray = currentArray.includes(value)
           ? currentArray.filter((item) => item !== value)
@@ -330,26 +409,13 @@ export function useUpdateProduct(
           ...prev,
           [field]: newArray,
         };
+        },
       });
 
-      if (errors[field]) {
-        setErrors((prev) => ({
-          ...prev,
-          [field]: "",
-        }));
-      }
+      dispatch({ type: "CLEAR_ERROR", field });
     },
-    [errors]
+    []
   );
-
-  const isValidUrl = (url: string): boolean => {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  };
 
   const validateForm = useCallback((): boolean => {
     const newErrors: ValidationErrors = {};
@@ -385,7 +451,7 @@ export function useUpdateProduct(
       }
     });
 
-    setErrors(newErrors);
+    dispatch({ type: "SET_ERRORS", errors: newErrors });
     return Object.keys(newErrors).length === 0;
   }, [formData]);
 
@@ -396,7 +462,7 @@ export function useUpdateProduct(
     }
 
     try {
-      setIsSubmitting(true);
+      dispatch({ type: "SUBMIT_START" });
 
       const canonicalName = formData.translations.vi.name.trim() || formData.name.trim();
       const canonicalDescription =
@@ -493,7 +559,7 @@ export function useUpdateProduct(
       toast.error(errorMsg);
       if (onError) onError(errorMsg);
     } finally {
-      setIsSubmitting(false);
+      dispatch({ type: "SUBMIT_FINISH" });
     }
   }, [formData, productId, validateForm, onSuccess, onError, getAuthHeaders]);
 

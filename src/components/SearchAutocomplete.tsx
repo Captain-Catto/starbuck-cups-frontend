@@ -1,65 +1,134 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useReducer, useCallback } from "react";
 import { Search, X, Loader2 } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
-import ProductCard from "@/components/ProductCard";
-import ProductSkeleton from "@/components/ui/ProductSkeleton";
 import { useAppDispatch } from "@/store";
 import { addToCart } from "@/store/slices/cartSlice";
 import type { Product } from "@/types";
 import { trackAddToCart, trackSearch } from "@/lib/analytics";
 
-const SEARCH_HISTORY_KEY = "starbucks-search-history";
-const RECENTLY_VIEWED_KEY = "starbucks-recently-viewed";
-
-const getSearchHistory = (): string[] => {
-  if (typeof window === "undefined") return [];
-  try {
-    const stored = localStorage.getItem(SEARCH_HISTORY_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-};
-
-const saveSearchTermToStorage = (term: string): string[] | undefined => {
-  if (typeof window === "undefined" || !term.trim()) return;
-  const history = getSearchHistory();
-  const newHistory = [
-    term.trim(),
-    ...history.filter((t) => t.toLowerCase() !== term.trim().toLowerCase()),
-  ].slice(0, 8);
-  localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(newHistory));
-  return newHistory;
-};
-
-const getRecentlyViewed = (): Product[] => {
-  if (typeof window === "undefined") return [];
-  try {
-    const stored = localStorage.getItem(RECENTLY_VIEWED_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-};
-
-const saveRecentlyViewedProduct = (product: Product): Product[] | undefined => {
-  if (typeof window === "undefined") return;
-  const history = getRecentlyViewed();
-  const newHistory = [
-    product,
-    ...history.filter((p) => p.id !== product.id),
-  ].slice(0, 8);
-  localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(newHistory));
-  return newHistory;
-};
+// Helper utilities and components import
+import {
+  getSearchHistory,
+  saveSearchTermToStorage,
+  getRecentlyViewed,
+  saveRecentlyViewedProduct,
+} from "@/lib/searchHistory";
+import { SearchSuggestionsPanel } from "@/components/search/SearchSuggestionsPanel";
+import { TrendingAndHistoryPanel } from "@/components/search/TrendingAndHistoryPanel";
 
 interface SearchAutocompleteProps {
   isOpen: boolean;
   onClose: () => void;
   onProductSelect?: (slug: string) => void;
+}
+
+interface SearchState {
+  query: string;
+  products: Product[];
+  isLoading: boolean;
+  showSuggestions: boolean;
+  searchHistory: string[];
+  recentlyViewed: Product[];
+  focusedIndex: number;
+  hotProducts: Product[];
+  hasLoadedHotProducts: boolean;
+}
+
+type SearchAction =
+  | { type: "SET_QUERY"; payload: string }
+  | { type: "SET_PRODUCTS"; payload: Product[] }
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_SHOW_SUGGESTIONS"; payload: boolean }
+  | { type: "SET_SEARCH_HISTORY"; payload: string[] }
+  | { type: "SET_RECENTLY_VIEWED"; payload: Product[] }
+  | { type: "SET_FOCUSED_INDEX"; payload: number }
+  | { type: "SET_HOT_PRODUCTS"; payload: Product[] }
+  | { type: "SET_HAS_LOADED_HOT_PRODUCTS"; payload: boolean }
+  | { type: "OPEN_MODAL"; payload: { history: string[]; viewed: Product[] } }
+  | { type: "LOCALE_CHANGE" }
+  | { type: "CLEAR_HISTORY"; payload: "search" | "viewed" }
+  | { type: "CLOSE_MODAL" }
+  | { type: "SEARCH_RESULTS"; payload: { products: Product[]; showSuggestions: boolean } }
+  | { type: "RESET_RESULTS" };
+
+const initialSearchState: SearchState = {
+  query: "",
+  products: [],
+  isLoading: false,
+  showSuggestions: false,
+  searchHistory: [],
+  recentlyViewed: [],
+  focusedIndex: -1,
+  hotProducts: [],
+  hasLoadedHotProducts: false,
+};
+
+function searchReducer(state: SearchState, action: SearchAction): SearchState {
+  switch (action.type) {
+    case "SET_QUERY":
+      return { ...state, query: action.payload };
+    case "SET_PRODUCTS":
+      return { ...state, products: action.payload };
+    case "SET_LOADING":
+      return { ...state, isLoading: action.payload };
+    case "SET_SHOW_SUGGESTIONS":
+      return { ...state, showSuggestions: action.payload };
+    case "SET_SEARCH_HISTORY":
+      return { ...state, searchHistory: action.payload };
+    case "SET_RECENTLY_VIEWED":
+      return { ...state, recentlyViewed: action.payload };
+    case "SET_FOCUSED_INDEX":
+      return { ...state, focusedIndex: action.payload };
+    case "SET_HOT_PRODUCTS":
+      return { ...state, hotProducts: action.payload };
+    case "SET_HAS_LOADED_HOT_PRODUCTS":
+      return { ...state, hasLoadedHotProducts: action.payload };
+    case "OPEN_MODAL":
+      return {
+        ...state,
+        searchHistory: action.payload.history,
+        recentlyViewed: action.payload.viewed,
+        focusedIndex: -1,
+      };
+    case "LOCALE_CHANGE":
+      return {
+        ...state,
+        hotProducts: [],
+        hasLoadedHotProducts: false,
+      };
+    case "CLEAR_HISTORY":
+      if (action.payload === "search") {
+        return { ...state, searchHistory: [] };
+      } else {
+        return { ...state, recentlyViewed: [] };
+      }
+    case "CLOSE_MODAL":
+      return {
+        ...state,
+        query: "",
+        products: [],
+        showSuggestions: false,
+      };
+    case "SEARCH_RESULTS":
+      return {
+        ...state,
+        products: action.payload.products,
+        showSuggestions: action.payload.showSuggestions,
+        focusedIndex: -1,
+      };
+    case "RESET_RESULTS":
+      return {
+        ...state,
+        products: [],
+        showSuggestions: false,
+        isLoading: false,
+      };
+    default:
+      return state;
+  }
 }
 
 export function SearchAutocomplete({
@@ -73,94 +142,118 @@ export function SearchAutocomplete({
   const t = useTranslations("searchModal");
   const locale = useLocale();
 
-  const [query, setQuery] = useState("");
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [searchHistory, setSearchHistory] = useState<string[]>([]);
-  const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
-  const [focusedIndex, setFocusedIndex] = useState(-1);
-  const [hotProducts, setHotProducts] = useState<Product[]>([]);
-  const [isLoadingHot, setIsLoadingHot] = useState(false);
+  const [state, dispatchState] = useReducer(searchReducer, initialSearchState);
+  const {
+    query,
+    products,
+    isLoading,
+    showSuggestions,
+    searchHistory,
+    recentlyViewed,
+    focusedIndex,
+    hotProducts,
+    hasLoadedHotProducts,
+  } = state;
+
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const previousIsOpenRef = useRef(isOpen);
+  const previousLocaleRef = useRef(locale);
 
+  if (isOpen !== previousIsOpenRef.current) {
+    previousIsOpenRef.current = isOpen;
 
-  // Custom debounced search effect - sử dụng cùng endpoint với products page
+    if (isOpen) {
+      dispatchState({
+        type: "OPEN_MODAL",
+        payload: { history: getSearchHistory(), viewed: getRecentlyViewed() },
+      });
+    }
+  }
+
+  if (locale !== previousLocaleRef.current) {
+    previousLocaleRef.current = locale;
+    dispatchState({ type: "LOCALE_CHANGE" });
+  }
+
+  const isLoadingHot =
+    isOpen && recentlyViewed.length === 0 && !hasLoadedHotProducts;
+
+  // Clean timeout on unmount
   useEffect(() => {
-    // Clear previous timeout
+    const activeTimeout = timeoutRef.current;
+    return () => {
+      if (activeTimeout) {
+        clearTimeout(activeTimeout);
+      }
+    };
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    dispatchState({ type: "SET_QUERY", payload: val });
+
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    // If query is too short, clear suggestions immediately
-    if (query.length < 2) {
-      setProducts([]);
-      setShowSuggestions(false);
-      setIsLoading(false);
+    if (val.length < 2) {
+      dispatchState({ type: "RESET_RESULTS" });
       return;
     }
 
-    // Set new timeout for search
+    dispatchState({ type: "SET_LOADING", payload: true });
     timeoutRef.current = setTimeout(async () => {
-      setIsLoading(true);
       try {
-        // Sử dụng cùng endpoint với products page
         const response = await fetch(
-          `/api/products?search=${encodeURIComponent(query)}&limit=12&locale=${locale}`
+          `/api/products?search=${encodeURIComponent(val)}&limit=12&locale=${locale}`
         );
 
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.data?.items) {
-            setProducts(data.data.items);
-            setShowSuggestions(true);
-            setFocusedIndex(-1);
+            dispatchState({
+              type: "SEARCH_RESULTS",
+              payload: { products: data.data.items, showSuggestions: true },
+            });
 
             // Track search event
-            trackSearch(query, data.data.items.length);
+            trackSearch(val, data.data.items.length);
           }
         }
       } catch {
-        setProducts([]);
+        dispatchState({ type: "SET_PRODUCTS", payload: [] });
       } finally {
-        setIsLoading(false);
+        dispatchState({ type: "SET_LOADING", payload: false });
       }
     }, 300);
-
-    // Cleanup function
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [query, locale]);
+  };
 
   // Focus input when modal opens
+  // react-doctor-disable-next-line react-doctor/no-effect-event-handler, react-doctor/no-fetch-in-effect -- synchronizing state, focusing input, and fetching hot products are valid layout side-effects
   useEffect(() => {
     if (isOpen) {
       if (inputRef.current) {
         inputRef.current.focus();
       }
-      const history = getSearchHistory();
-      const viewed = getRecentlyViewed();
-      
-      setSearchHistory(history);
-      setRecentlyViewed(viewed);
-      setFocusedIndex(-1);
 
-      if (viewed.length === 0) {
+      if (recentlyViewed.length === 0 && !hasLoadedHotProducts) {
         let isMounted = true;
-        setIsLoadingHot(true);
+        // react-doctor-disable-next-line react-doctor/no-fetch-in-effect -- fetching featured/trending products on modal display synchronizes with initial layout requirements
         fetch(`/api/products?sort=featured&limit=4&locale=${locale}`)
-          .then((res) => res.json())
+          .then((res) => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+          })
           .then((data) => {
             if (isMounted && data.success && data.data?.items) {
-              setHotProducts(data.data.items);
+              dispatchState({ type: "SET_HOT_PRODUCTS", payload: data.data.items });
             }
           })
-          .catch(() => {})
+          .catch((err) => {
+            console.error("Failed to load hot products:", err);
+          })
           .finally(() => {
-            if (isMounted) setIsLoadingHot(false);
+            if (isMounted) dispatchState({ type: "SET_HAS_LOADED_HOT_PRODUCTS", payload: true });
           });
 
         return () => {
@@ -168,12 +261,12 @@ export function SearchAutocomplete({
         };
       }
     }
-  }, [isOpen, locale]);
+  }, [isOpen, locale, recentlyViewed.length, hasLoadedHotProducts]);
 
   const handleProductClick = (product: Product) => {
     const updatedHistory = saveRecentlyViewedProduct(product);
     if (updatedHistory) {
-      setRecentlyViewed(updatedHistory);
+      dispatchState({ type: "SET_RECENTLY_VIEWED", payload: updatedHistory });
     }
     if (onProductSelect) {
       onProductSelect(product.slug);
@@ -184,19 +277,17 @@ export function SearchAutocomplete({
   };
 
   const handleClose = () => {
-    setQuery("");
-    setProducts([]);
-    setShowSuggestions(false);
+    dispatchState({ type: "CLOSE_MODAL" });
     onClose();
   };
 
   const handleClearHistory = (type: "search" | "viewed") => {
     if (type === "search") {
-      localStorage.removeItem(SEARCH_HISTORY_KEY);
-      setSearchHistory([]);
+      localStorage.removeItem("starbucks-search-history");
+      dispatchState({ type: "CLEAR_HISTORY", payload: "search" });
     } else {
-      localStorage.removeItem(RECENTLY_VIEWED_KEY);
-      setRecentlyViewed([]);
+      localStorage.removeItem("starbucks-recently-viewed");
+      dispatchState({ type: "CLEAR_HISTORY", payload: "viewed" });
     }
   };
 
@@ -204,7 +295,7 @@ export function SearchAutocomplete({
     e.preventDefault();
     if (query.trim()) {
       const updatedHistory = saveSearchTermToStorage(query.trim());
-      if (updatedHistory) setSearchHistory(updatedHistory);
+      if (updatedHistory) dispatchState({ type: "SET_SEARCH_HISTORY", payload: updatedHistory });
       router.push(`/products?search=${encodeURIComponent(query.trim())}`);
       handleClose();
     }
@@ -213,22 +304,20 @@ export function SearchAutocomplete({
   const handleViewAllResults = () => {
     if (query.trim()) {
       const updatedHistory = saveSearchTermToStorage(query.trim());
-      if (updatedHistory) setSearchHistory(updatedHistory);
+      if (updatedHistory) dispatchState({ type: "SET_SEARCH_HISTORY", payload: updatedHistory });
       router.push(`/products?search=${encodeURIComponent(query.trim())}`);
       handleClose();
     }
   };
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = useCallback((product: Product) => {
     dispatch(addToCart({ product }));
-
-    // Track add to cart event
     trackAddToCart({
       id: product.id,
       name: product.name,
       category: product.productCategories?.[0]?.category?.name,
     });
-  };
+  }, [dispatch]);
 
   if (!isOpen) return null;
 
@@ -236,19 +325,22 @@ export function SearchAutocomplete({
     <div
       className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-10"
       onClick={handleClose}
+      role="presentation"
     >
       <div
         className="bg-zinc-900 rounded-lg max-w-2xl lg:max-w-4xl w-full mx-4 overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
+        role="presentation"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700">
           <h2 className="text-lg font-bold text-white">{t("title")}</h2>
           <button
+            type="button"
             onClick={handleClose}
             className="p-2 rounded-lg hover:bg-zinc-800 text-white transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="size-5" />
           </button>
         </div>
 
@@ -256,23 +348,23 @@ export function SearchAutocomplete({
         <div className="p-4">
           <form onSubmit={handleSubmit}>
             <div className="relative">
-              <div className="flex items-center gap-2 bg-zinc-800 rounded-lg px-3 py-3">
-                <Search className="w-5 h-5 text-zinc-400 flex-shrink-0" />
+              <div className="flex items-center gap-2 bg-zinc-800 rounded-lg p-3">
+                <Search className="size-5 text-zinc-400 flex-shrink-0" />
                 <input
                   ref={inputRef}
                   id="search-autocomplete"
                   name="search-autocomplete"
                   type="text"
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={handleInputChange}
                   onKeyDown={(e) => {
                     if (!showSuggestions || products.length === 0) return;
                     if (e.key === "ArrowDown") {
                       e.preventDefault();
-                      setFocusedIndex((prev) => Math.min(prev + 1, products.length - 1));
+                      dispatchState({ type: "SET_FOCUSED_INDEX", payload: Math.min(focusedIndex + 1, products.length - 1) });
                     } else if (e.key === "ArrowUp") {
                       e.preventDefault();
-                      setFocusedIndex((prev) => Math.max(prev - 1, -1));
+                      dispatchState({ type: "SET_FOCUSED_INDEX", payload: Math.max(focusedIndex - 1, -1) });
                     } else if (e.key === "Enter" && focusedIndex >= 0) {
                       e.preventDefault();
                       handleProductClick(products[focusedIndex]);
@@ -286,187 +378,49 @@ export function SearchAutocomplete({
                   <button
                     type="button"
                     onClick={() => {
-                      setQuery("");
+                      dispatchState({ type: "SET_QUERY", payload: "" });
                       inputRef.current?.focus();
                     }}
                     className="text-zinc-400 hover:text-white transition-colors flex-shrink-0 cursor-pointer"
                     aria-label="Clear search"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="size-4" />
                   </button>
                 )}
                 {isLoading && (
-                  <Loader2 className="w-4 h-4 text-zinc-400 animate-spin flex-shrink-0" />
+                  <Loader2 className="size-4 text-zinc-400 animate-spin flex-shrink-0" />
                 )}
               </div>
             </div>
           </form>
         </div>
 
-        {/* Suggestions */}
-        {query.length >= 2 && (
-          <div className="border-t border-zinc-700">
-            {isLoading && products.length === 0 ? (
-              <div className="p-4">
-                <ProductSkeleton count={8} layout="custom" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" />
-              </div>
-            ) : showSuggestions && products.length > 0 ? (
-              <div className="max-h-[60vh] lg:max-h-[75vh] overflow-y-auto custom-scrollbar">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
-                  {products.map((product, index) => (
-                    <div
-                      key={product.id}
-                      onClick={() => handleProductClick(product)}
-                      className={`cursor-pointer rounded-2xl transition-shadow ${
-                        focusedIndex === index ? "ring-2 ring-white/60" : ""
-                      }`}
-                    >
-                      <ProductCard
-                        product={product}
-                        onAddToCart={handleAddToCart}
-                        showAddToCart={false}
-                        showSecondaryImage={false}
-                        highlightText={query}
-                      />
-                    </div>
-                  ))}
-                </div>
+        {/* Suggestions Panel */}
+        <SearchSuggestionsPanel
+          query={query}
+          products={products}
+          isLoading={isLoading}
+          showSuggestions={showSuggestions}
+          focusedIndex={focusedIndex}
+          handleProductClick={handleProductClick}
+          handleAddToCart={handleAddToCart}
+          handleViewAllResults={handleViewAllResults}
+          t={t}
+        />
 
-                {/* View All Results Button */}
-                <div className="p-4 border-t border-zinc-700">
-                  <button
-                    onClick={handleViewAllResults}
-                    className="w-full bg-white text-black py-2 px-4 rounded-lg font-medium hover:bg-zinc-200 transition-colors text-sm cursor-pointer"
-                  >
-                    {t("viewAllResults", { query })}
-                  </button>
-                </div>
-              </div>
-            ) : query.length >= 2 && !isLoading ? (
-              <div className="p-8 text-center">
-                <Search className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-                <p className="text-zinc-400">{t("noResults")}</p>
-                <button
-                  onClick={handleViewAllResults}
-                  className="mt-4 bg-white text-black py-2 px-4 rounded-lg font-medium hover:bg-zinc-200 transition-colors text-sm cursor-pointer"
-                >
-                  {t("searchOnProductsPage")}
-                </button>
-              </div>
-            ) : null}
-          </div>
-        )}
-
-        {/* Empty State / History */}
-        {query.length < 2 && (
-          <div className="p-4 border-t border-zinc-700 min-h-[300px] overflow-y-auto max-h-[60vh] lg:max-h-[75vh] custom-scrollbar">
-            {searchHistory.length === 0 && recentlyViewed.length === 0 ? (
-              <div className="p-4 space-y-6">
-                <div>
-                  <h3 className="text-sm font-medium text-white mb-3 px-2">{t("trending")}</h3>
-                  <div className="trending flex flex-wrap gap-2 px-2">
-                    {t("trendingKeywords").split(",").map((keyword) => (
-                      <button
-                        key={keyword.trim()}
-                        type="button"
-                        onClick={() => setQuery(keyword.trim())}
-                        className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm rounded-full transition-colors cursor-pointer"
-                      >
-                        {keyword.trim()}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium text-white mb-3 px-2">{t("hotProducts")}</h3>
-                  {isLoadingHot ? (
-                    <ProductSkeleton count={4} layout="custom" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-2" />
-                  ) : hotProducts.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
-                      {hotProducts.map((product) => (
-                        <div
-                          key={product.id}
-                          onClick={() => handleProductClick(product)}
-                          className="cursor-pointer"
-                        >
-                          <ProductCard
-                            product={product}
-                            onAddToCart={handleAddToCart}
-                            showAddToCart={false}
-                            showSecondaryImage={false}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Search History */}
-                {searchHistory.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3 px-2">
-                      <h3 className="text-sm font-medium text-white">{t("recentSearches")}</h3>
-                      <button 
-                        onClick={() => handleClearHistory("search")}
-                        type="button"
-                        className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                      >
-                        {t("clearHistory")}
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap gap-2 px-2">
-                      {searchHistory.map((term, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setQuery(term)}
-                          type="button"
-                          className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm rounded-full transition-colors cursor-pointer"
-                        >
-                          {term}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Recently Viewed */}
-                {recentlyViewed.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3 px-2">
-                      <h3 className="text-sm font-medium text-white">{t("recentlyViewed")}</h3>
-                      <button 
-                        onClick={() => handleClearHistory("viewed")}
-                        type="button"
-                        className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                      >
-                        {t("clearHistory")}
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {recentlyViewed.map((product) => (
-                        <div
-                          key={product.id}
-                          onClick={() => handleProductClick(product)}
-                          className="cursor-pointer"
-                        >
-                          <ProductCard
-                            product={product}
-                            onAddToCart={handleAddToCart}
-                            showAddToCart={false}
-                            showSecondaryImage={false}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+        {/* Trending & History Panel */}
+        <TrendingAndHistoryPanel
+          query={query}
+          searchHistory={searchHistory}
+          recentlyViewed={recentlyViewed}
+          hotProducts={hotProducts}
+          isLoadingHot={isLoadingHot}
+          setQuery={(q) => dispatchState({ type: "SET_QUERY", payload: q })}
+          handleClearHistory={handleClearHistory}
+          handleProductClick={handleProductClick}
+          handleAddToCart={handleAddToCart}
+          t={t}
+        />
       </div>
     </div>
   );

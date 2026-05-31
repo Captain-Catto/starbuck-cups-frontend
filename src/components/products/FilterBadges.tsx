@@ -87,12 +87,12 @@ export function FilterBadges({
           <span>
             {t("searchLabel")} <span className="font-medium">{searchQuery}</span>
           </span>
-          <button
+          <button type="button"
             onClick={onRemoveSearch}
             className="hover:bg-zinc-700 rounded p-0.5 transition-colors cursor-pointer"
             aria-label={t("removeSearch")}
           >
-            <X className="w-4 h-4" />
+            <X className="size-4" />
           </button>
         </div>
       )}
@@ -106,12 +106,12 @@ export function FilterBadges({
               {getCategoryName(selectedCategory)}
             </span>
           </span>
-          <button
+          <button type="button"
             onClick={onRemoveCategory}
             className="hover:bg-zinc-700 rounded p-0.5 transition-colors cursor-pointer"
             aria-label={t("removeCategory")}
           >
-            <X className="w-4 h-4" />
+            <X className="size-4" />
           </button>
         </div>
       )}
@@ -123,12 +123,12 @@ export function FilterBadges({
             {t("colorLabel")}{" "}
             <span className="font-medium">{getColorName(selectedColor)}</span>
           </span>
-          <button
+          <button type="button"
             onClick={onRemoveColor}
             className="hover:bg-zinc-700 rounded p-0.5 transition-colors cursor-pointer"
             aria-label={t("removeColor")}
           >
-            <X className="w-4 h-4" />
+            <X className="size-4" />
           </button>
         </div>
       )}
@@ -143,12 +143,12 @@ export function FilterBadges({
               {capacityRange.max < 9999 ? `${capacityRange.max}ml` : "∞"}
             </span>
           </span>
-          <button
+          <button type="button"
             onClick={onRemoveCapacity}
             className="hover:bg-zinc-700 rounded p-0.5 transition-colors cursor-pointer"
             aria-label={t("removeCapacity")}
           >
-            <X className="w-4 h-4" />
+            <X className="size-4" />
           </button>
         </div>
       )}
@@ -159,19 +159,19 @@ export function FilterBadges({
           <span>
             {t("sortLabel")} <span className="font-medium">{getSortLabel(sortBy)}</span>
           </span>
-          <button
+          <button type="button"
             onClick={onRemoveSort}
             className="hover:bg-zinc-700 rounded p-0.5 transition-colors cursor-pointer"
             aria-label={t("removeSort")}
           >
-            <X className="w-4 h-4" />
+            <X className="size-4" />
           </button>
         </div>
       )}
 
       {/* Clear All Button */}
       {activeFiltersCount >= 1 && (
-        <button
+        <button type="button"
           onClick={onClearAll}
           className="text-zinc-400 hover:text-white text-sm font-medium cursor-pointer transition-colors underline underline-offset-2"
         >

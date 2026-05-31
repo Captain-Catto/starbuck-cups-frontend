@@ -25,15 +25,27 @@ interface OverviewCardsProps {
   lowStockCount: number;
 }
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-};
+const currencyFormatter = new Intl.NumberFormat("vi-VN", {
+  style: "currency",
+  currency: "VND",
+});
 
-const formatNumber = (num: number) => {
-  return new Intl.NumberFormat("vi-VN").format(num);
+const numberFormatter = new Intl.NumberFormat("vi-VN");
+
+const formatCurrency = (amount: number) => currencyFormatter.format(amount);
+const formatNumber = (num: number) => numberFormatter.format(num);
+
+const getPeriodLabel = (period: string) => {
+  switch (period) {
+    case "week":
+      return "tuần";
+    case "month":
+      return "tháng";
+    case "year":
+      return "năm";
+    default:
+      return "tháng";
+  }
 };
 
 const GrowthIndicator = ({ value }: { value: number }) => {
@@ -43,7 +55,7 @@ const GrowthIndicator = ({ value }: { value: number }) => {
 
   return (
     <div className={`flex items-center ${colorClass}`}>
-      <Icon className="h-4 w-4 mr-1" />
+      <Icon className="size-4 mr-1" />
       <span className="text-sm font-medium">
         {isPositive ? "+" : ""}
         {value}%
@@ -57,29 +69,16 @@ export function OverviewCards({
   period,
   lowStockCount,
 }: OverviewCardsProps) {
-  const getPeriodLabel = (period: string) => {
-    switch (period) {
-      case "week":
-        return "tuần";
-      case "month":
-        return "tháng";
-      case "year":
-        return "năm";
-      default:
-        return "tháng";
-    }
-  };
-
   const periodLabel = getPeriodLabel(period);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-300">
             Tổng sản phẩm đã bán
           </CardTitle>
-          <Package className="h-4 w-4 text-gray-400" />
+          <Package className="size-4 text-gray-400" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
@@ -93,11 +92,11 @@ export function OverviewCards({
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-300">
             Tổng doanh thu
           </CardTitle>
-          <DollarSign className="h-4 w-4 text-gray-400" />
+          <DollarSign className="size-4 text-gray-400" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
@@ -111,11 +110,11 @@ export function OverviewCards({
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-300">
             Đơn hàng {periodLabel} này
           </CardTitle>
-          <ShoppingCart className="h-4 w-4 text-gray-400" />
+          <ShoppingCart className="size-4 text-gray-400" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-white">
@@ -126,11 +125,11 @@ export function OverviewCards({
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-300">
             Sản phẩm sắp hết hàng
           </CardTitle>
-          <AlertTriangle className="h-4 w-4 text-gray-400" />
+          <AlertTriangle className="size-4 text-gray-400" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-red-400">{lowStockCount}</div>
