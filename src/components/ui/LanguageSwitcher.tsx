@@ -47,8 +47,10 @@ export function LanguageSwitcher() {
       <div className="hidden md:block relative" ref={dropdownRef}>
         <button type="button"
           onClick={() => setIsOpen(!isOpen)}
+          aria-label={`Select language. Current language: ${localeNames[locale]}`}
           aria-expanded={isOpen}
           aria-haspopup="listbox"
+          title={`Select language. Current language: ${localeNames[locale]}`}
           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-zinc-300 hover:text-white rounded transition-colors cursor-pointer"
         >
           <Image 
@@ -70,6 +72,8 @@ export function LanguageSwitcher() {
               <button type="button"
                 key={loc}
                 onClick={() => handleLocaleChange(loc)}
+                aria-label={`Switch language to ${localeNames[loc]}`}
+                title={`Switch language to ${localeNames[loc]}`}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors cursor-pointer ${
                   locale === loc
                     ? "bg-zinc-700 text-white"
@@ -97,6 +101,8 @@ export function LanguageSwitcher() {
             {index > 0 && <span aria-hidden="true" className="text-zinc-600 mx-1">|</span>}
             <button type="button"
               onClick={() => handleLocaleChange(loc)}
+              aria-label={`Switch language to ${localeNames[loc]}`}
+              title={`Switch language to ${localeNames[loc]}`}
               className={`text-xs font-medium px-1.5 py-0.5 rounded transition-colors cursor-pointer ${
                 locale === loc
                   ? "bg-white text-black"

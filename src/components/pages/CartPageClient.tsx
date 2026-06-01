@@ -182,17 +182,17 @@ export default function CartPageClient() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="pt-16">
-        <div className="max-w-6xl mx-auto p-4">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white">
+        <div className="max-w-6xl mx-auto px-4 py-6 sm:p-4">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl font-bold text-white sm:text-3xl">
               {tForm("consultationCart")}
             </h1>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
             {/* Cart Items */}
-            <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">
+            <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-4 sm:p-6">
+              <h2 className="mb-4 text-lg font-semibold leading-snug text-white sm:text-xl">
                 {tForm("productsToConsult", { count: totalItems })}
               </h2>
 
@@ -207,12 +207,14 @@ export default function CartPageClient() {
             </div>
 
             {/* Customer Information Form */}
-            <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
+            <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-4 sm:p-6">
               <div className="mb-6">
-                <h2 className="text-xl font-semibold text-white">
+                <h2 className="text-lg font-semibold leading-snug text-white sm:text-xl">
                   {tForm("contactInfo")}
                 </h2>
-                <p className="text-zinc-400">{tForm("contactHint")}</p>
+                <p className="mt-1 text-sm leading-relaxed text-zinc-400 sm:text-base">
+                  {tForm("contactHint")}
+                </p>
               </div>
               <form className="space-y-4">
                 <div>
@@ -226,7 +228,7 @@ export default function CartPageClient() {
                     onChange={(e) =>
                       handleInputChange("customerName", e.target.value)
                     }
-                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
+                    className="w-full px-3 py-2 text-sm bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 sm:text-base"
                     placeholder={tForm("fullNamePlaceholder")}
                     required id="page-text"
                   />
@@ -243,7 +245,7 @@ export default function CartPageClient() {
                     onChange={(e) =>
                       handleInputChange("phoneNumber", e.target.value)
                     }
-                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
+                    className="w-full px-3 py-2 text-sm bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 sm:text-base"
                     placeholder={tForm("phonePlaceholder")}
                     required id="page-tel"
                   />
@@ -258,7 +260,7 @@ export default function CartPageClient() {
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
+                    className="w-full px-3 py-2 text-sm bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 sm:text-base"
                     placeholder={tForm("emailPlaceholder")} id="page-email"
                   />
                 </div>
@@ -274,7 +276,7 @@ export default function CartPageClient() {
                       handleInputChange("address", e.target.value)
                     }
                     rows={3}
-                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500"
+                    className="w-full px-3 py-2 text-sm bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:ring-2 focus:ring-zinc-500 focus:border-zinc-500 sm:text-base"
                     placeholder={tForm("addressPlaceholder")}
                     required id="page-form-control"
                   />
@@ -314,8 +316,8 @@ export default function CartPageClient() {
 const CartItemRow = memo(function CartItemRow({ item }: { item: CartItem }) {
   const t = useTranslations("cart");
   return (
-    <div className="flex items-center gap-4 p-4 border border-zinc-700 rounded-lg bg-zinc-800">
-      <div className="relative size-16 flex-shrink-0">
+    <div className="flex items-start gap-3 rounded-lg border border-zinc-700 bg-zinc-800 p-3 sm:items-center sm:gap-4 sm:p-4">
+      <div className="relative size-20 flex-shrink-0 sm:size-16">
         <OptimizedImage
           src={
             getFirstProductImageUrl(item.product.productImages) ||
@@ -328,21 +330,24 @@ const CartItemRow = memo(function CartItemRow({ item }: { item: CartItem }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-white truncate">{item.product.name}</h3>
-        <p className="text-sm text-zinc-400">
+        <div className="mb-2 flex flex-wrap items-start gap-2">
+          <h3 className="min-w-0 flex-1 text-sm font-medium leading-snug text-white break-words sm:truncate sm:text-base">
+            {item.product.name}
+          </h3>
+          <span className="inline-flex flex-shrink-0 rounded-full border border-zinc-700 px-2 py-1 text-[11px] leading-none text-zinc-300 sm:text-xs">
+            {t("interestedProduct")}
+          </span>
+        </div>
+        <p className="text-xs leading-relaxed text-zinc-400 break-words sm:text-sm">
           {t("colorLabel")} {item.colorRequest || t("colorNotSelected")} •{" "}
           {item.product.capacity?.name || t("notAvailable")}
         </p>
-        <p className="text-sm text-zinc-400">
+        <p className="text-xs leading-relaxed text-zinc-400 break-words sm:text-sm">
           {t("categoryLabel")}{" "}
           {item.product.productCategories
             ?.map((pc) => pc.category.name)
             .join(", ") || t("notAvailable")}
         </p>
-      </div>
-
-      <div className="text-right">
-        <p className="text-sm text-zinc-400">{t("interestedProduct")}</p>
       </div>
     </div>
   );

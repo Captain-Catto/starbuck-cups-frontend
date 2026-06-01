@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useState } from "react";
+import React, { memo, useSyncExternalStore } from "react";
 import { Link } from "@/i18n/routing";
 import { ShoppingCart } from "lucide-react";
 import { Product } from "@/types";
@@ -11,12 +11,20 @@ import { ConditionalFeaturedBadge } from "@/components/ui/FeaturedBadge";
 import OptimizedImage from "@/components/OptimizedImage";
 import { useTranslations } from "next-intl";
 
+const subscribeToTouchDevice = () => () => {};
+
+const getTouchDeviceSnapshot = () =>
+  typeof window !== "undefined" &&
+  ("ontouchstart" in window || navigator.maxTouchPoints > 0);
+
+const getServerTouchDeviceSnapshot = () => false;
+
 function useIsTouchDevice() {
-  const [isTouch] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return "ontouchstart" in window || navigator.maxTouchPoints > 0;
-  });
-  return isTouch;
+  return useSyncExternalStore(
+    subscribeToTouchDevice,
+    getTouchDeviceSnapshot,
+    getServerTouchDeviceSnapshot
+  );
 }
 
 interface ProductCardProps {

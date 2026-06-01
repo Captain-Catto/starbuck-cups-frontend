@@ -31,6 +31,16 @@ const FloatingContactButton = dynamic(
   }
 );
 
+const BackToTopButton = dynamic(
+  () =>
+    import("@/components/ui/BackToTopButton").then((mod) => ({
+      default: mod.BackToTopButton,
+    })),
+  {
+    ssr: false,
+  }
+);
+
 interface ClientLayoutProps {
   children: React.ReactNode;
 }
@@ -97,6 +107,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
       <Footer />
       {isRuntimeReady && <Cart />}
       {isRuntimeReady && <FloatingContactButton />}
+      {isRuntimeReady && <BackToTopButton />}
       <Toaster
         position="top-right"
         richColors

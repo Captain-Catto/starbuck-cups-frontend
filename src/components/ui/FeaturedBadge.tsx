@@ -49,6 +49,7 @@ export function FeaturedBadge({
             transparent 100%
           );
           animation: featured-shimmer-sweep 2.5s infinite;
+          will-change: transform, opacity;
           z-index: 2;
           pointer-events: none;
         }
@@ -67,6 +68,12 @@ export function FeaturedBadge({
           100% {
             transform: translateX(70%) skewX(-15deg);
             opacity: 0;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .featured-shimmer::before {
+            animation: none;
           }
         }
       `}</style>

@@ -28,7 +28,7 @@ export function VipBadge({ size = "md", className = "" }: VipBadgeProps) {
 
       <style>{`
         .vip-pulse {
-          animation: vip-pulse 1.5s infinite;
+          animation: vip-pulse 2.5s ease-in-out infinite;
         }
 
         .vip-shimmer {
@@ -55,19 +55,19 @@ export function VipBadge({ size = "md", className = "" }: VipBadgeProps) {
             transparent 100%
           );
           animation: vip-shimmer-sweep 2.5s infinite;
+          will-change: transform, opacity;
           z-index: 2;
         }
 
         @keyframes vip-pulse {
           0%,
           100% {
-            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.6));
-            box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.9);
+            transform: scale(1);
+            opacity: 1;
           }
           50% {
-            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 1))
-              drop-shadow(0 0 25px rgba(255, 215, 0, 0.8));
-            box-shadow: 0 0 0 8px rgba(255, 215, 0, 0.2);
+            transform: scale(1.06);
+            opacity: 0.92;
           }
         }
 
@@ -85,6 +85,13 @@ export function VipBadge({ size = "md", className = "" }: VipBadgeProps) {
           100% {
             transform: translateX(70%) skewX(-15deg);
             opacity: 0;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .vip-pulse,
+          .vip-shimmer::before {
+            animation: none;
           }
         }
       `}</style>
