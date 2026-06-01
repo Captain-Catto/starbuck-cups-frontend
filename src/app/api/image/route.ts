@@ -22,6 +22,23 @@ function getCacheDir(): string {
 }
 
 const CACHE_DIR = getCacheDir();
+const DEFAULT_IMAGE_WIDTH = 1200;
+const MAX_IMAGE_WIDTH = 1920;
+const MIN_IMAGE_QUALITY = 40;
+const MAX_IMAGE_QUALITY = 90;
+const DEFAULT_IMAGE_QUALITY = 70;
+const MAX_SOURCE_IMAGE_BYTES = 15 * 1024 * 1024;
+const IMAGE_FETCH_TIMEOUT_MS = 8000;
+const SUPPORTED_FORMATS = new Set(["webp", "avif", "jpeg", "png"]);
+const ALLOWED_IMAGE_HOSTS = new Set([
+  "example.com",
+  "flagcdn.com",
+  "hasron-starbucks-shop.s3.ap-southeast-1.amazonaws.com",
+  "starbucks-shop.s3.ap-southeast-1.amazonaws.com",
+  "drive.google.com",
+  "docs.google.com",
+  "lh3.googleusercontent.com",
+]);
 
 const FALLBACK_SVG = `
 <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
@@ -58,20 +75,80 @@ function getCacheKey(
 
 // Fetch image from URL
 async function fetchImage(url: string): Promise<Buffer> {
-  const response = await fetch(url, { cache: "no-store" });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), IMAGE_FETCH_TIMEOUT_MS);
+
+  const response = await fetch(url, {
+    cache: "no-store",
+    signal: controller.signal,
+  }).finally(() => clearTimeout(timeoutId));
+
   if (!response.ok) {
     throw new Error(`Failed to fetch image: ${response.statusText}`);
   }
+
+  const contentType = response.headers.get("content-type");
+  if (contentType && !contentType.startsWith("image/")) {
+    throw new Error(`Unsupported image content type: ${contentType}`);
+  }
+
+  const contentLength = response.headers.get("content-length");
+  if (contentLength && Number(contentLength) > MAX_SOURCE_IMAGE_BYTES) {
+    throw new Error("Source image is too large");
+  }
+
   const arrayBuffer = await response.arrayBuffer();
+  if (arrayBuffer.byteLength > MAX_SOURCE_IMAGE_BYTES) {
+    throw new Error("Source image is too large");
+  }
+
   return Buffer.from(arrayBuffer);
+}
+
+function parseIntegerParam(
+  value: string | null,
+  fallback: number,
+  min: number,
+  max: number
+) {
+  const parsed = Number.parseInt(value || "", 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
+function parseImageUrl(url: string) {
+  try {
+    const parsedUrl = new URL(url);
+    if (parsedUrl.protocol !== "https:") {
+      return null;
+    }
+
+    if (!ALLOWED_IMAGE_HOSTS.has(parsedUrl.hostname)) {
+      return null;
+    }
+
+    return parsedUrl.toString();
+  } catch {
+    return null;
+  }
 }
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     let url = searchParams.get("url");
-    const width = parseInt(searchParams.get("w") || "1200");
-    const quality = parseInt(searchParams.get("q") || "70");
+    const width = parseIntegerParam(
+      searchParams.get("w"),
+      DEFAULT_IMAGE_WIDTH,
+      64,
+      MAX_IMAGE_WIDTH
+    );
+    const quality = parseIntegerParam(
+      searchParams.get("q"),
+      DEFAULT_IMAGE_QUALITY,
+      MIN_IMAGE_QUALITY,
+      MAX_IMAGE_QUALITY
+    );
     const format = searchParams.get("f") || "webp";
 
     if (!url) {
@@ -83,9 +160,19 @@ export async function GET(request: NextRequest) {
 
     // Convert Google Drive URLs to direct googleusercontent URLs
     url = convertDriveUrl(url);
+    const parsedUrl = parseImageUrl(url);
+
+    if (!parsedUrl) {
+      return NextResponse.json(
+        { error: "Unsupported image URL" },
+        { status: 400 }
+      );
+    }
+
+    url = parsedUrl;
 
     // Validate format
-    if (!["webp", "avif", "jpeg", "png"].includes(format)) {
+    if (!SUPPORTED_FORMATS.has(format)) {
       return NextResponse.json(
         { error: "Invalid format. Supported: webp, avif, jpeg, png" },
         { status: 400 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, use, useEffect, useSyncExternalStore } from "react";
-import { io, Socket } from "socket.io-client";
+import type { Socket } from "socket.io-client";
 import { useAppSelector } from "@/store";
 import { getSocketBackendUrl } from "@/lib/client-config";
 
@@ -59,6 +59,9 @@ export function SettingsSocketProvider({
       return;
     }
 
+    let isActive = true;
+    let socketInstance: Socket | null = null;
+
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const baseUrl = apiUrl
       ? apiUrl.endsWith("/api")
@@ -66,15 +69,9 @@ export function SettingsSocketProvider({
         : apiUrl
       : getSocketBackendUrl();
 
-    const socketInstance = io(baseUrl, {
-      auth: {
-        token,
-      },
-      withCredentials: true,
-      transports: ["polling", "websocket"],
-    });
-
     const handleConnect = () => {
+      if (!socketInstance) return;
+
       settingsSocketStore.setSnapshot({
         socket: socketInstance,
         isConnected: true,
@@ -82,6 +79,8 @@ export function SettingsSocketProvider({
     };
 
     const handleDisconnect = () => {
+      if (!socketInstance) return;
+
       settingsSocketStore.setSnapshot({
         socket: socketInstance,
         isConnected: false,
@@ -89,26 +88,41 @@ export function SettingsSocketProvider({
     };
 
     const handleConnectError = () => {
+      if (!socketInstance) return;
+
       settingsSocketStore.setSnapshot({
         socket: socketInstance,
         isConnected: false,
       });
     };
 
-    socketInstance.on("connect", handleConnect);
-    socketInstance.on("disconnect", handleDisconnect);
-    socketInstance.on("connect_error", handleConnectError);
+    void import("socket.io-client").then(({ io }) => {
+      if (!isActive) return;
 
-    settingsSocketStore.setSnapshot({
-      socket: socketInstance,
-      isConnected: false,
+      socketInstance = io(baseUrl, {
+        auth: {
+          token,
+        },
+        withCredentials: true,
+        transports: ["polling", "websocket"],
+      });
+
+      socketInstance.on("connect", handleConnect);
+      socketInstance.on("disconnect", handleDisconnect);
+      socketInstance.on("connect_error", handleConnectError);
+
+      settingsSocketStore.setSnapshot({
+        socket: socketInstance,
+        isConnected: false,
+      });
     });
 
     return () => {
-      socketInstance.off("connect", handleConnect);
-      socketInstance.off("disconnect", handleDisconnect);
-      socketInstance.off("connect_error", handleConnectError);
-      socketInstance.disconnect();
+      isActive = false;
+      socketInstance?.off("connect", handleConnect);
+      socketInstance?.off("disconnect", handleDisconnect);
+      socketInstance?.off("connect_error", handleConnectError);
+      socketInstance?.disconnect();
       settingsSocketStore.setSnapshot(initialSettingsSocketState);
     };
   }, [token]);

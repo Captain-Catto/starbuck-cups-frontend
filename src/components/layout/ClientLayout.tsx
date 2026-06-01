@@ -52,7 +52,9 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   const [isRuntimeReady, setIsRuntimeReady] = useState(false);
 
   // Get cart state for global notifications
-  const { lastAction } = useAppSelector((state) => state.cart);
+  const { isOpen: isCartOpen, lastAction } = useAppSelector(
+    (state) => state.cart
+  );
 
   // Global cart notification handler
   useEffect(() => {
@@ -105,7 +107,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
         </main>
       </SettingsSocketProvider>
       <Footer />
-      {isRuntimeReady && <Cart />}
+      {isCartOpen && <Cart />}
       {isRuntimeReady && <FloatingContactButton />}
       {isRuntimeReady && <BackToTopButton />}
       <Toaster
