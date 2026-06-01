@@ -16,6 +16,13 @@ interface CartProps {
   className?: string;
 }
 
+const getProductColorNames = (item: CartItem, fallback: string) =>
+  item.product.productColors
+    ?.flatMap((productColor) =>
+      productColor.color.name ? [productColor.color.name] : []
+    )
+    .join(", ") || item.colorRequest || fallback;
+
 export function Cart({ className = "" }: CartProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -46,6 +53,10 @@ export function Cart({ className = "" }: CartProps) {
 
     // Navigate to cart page for consultation form
     router.push("/cart");
+  };
+
+  const handleOpenProduct = () => {
+    dispatch(closeCart());
   };
 
   return (
@@ -114,6 +125,7 @@ export function Cart({ className = "" }: CartProps) {
                       key={item.product.id}
                       item={item}
                       onRemove={() => handleRemoveItem(item.product.id)}
+                      onOpenProduct={handleOpenProduct}
                     />
                   );
                 })}
@@ -146,17 +158,20 @@ export function Cart({ className = "" }: CartProps) {
 interface CartItemCardProps {
   item: CartItem;
   onRemove: () => void;
+  onOpenProduct: () => void;
 }
 
-function CartItemCard({ item, onRemove }: CartItemCardProps) {
+function CartItemCard({ item, onRemove, onOpenProduct }: CartItemCardProps) {
   const { product } = item;
   const t = useTranslations("cart");
+  const colorText = getProductColorNames(item, t("noColor"));
 
   return (
     <div className="flex gap-3 p-3 bg-zinc-800 rounded-lg">
       {/* Product Image */}
       <Link
         href={`/products/${product.slug}`}
+        onClick={onOpenProduct}
         className="size-16 bg-zinc-700 rounded-lg overflow-hidden flex-shrink-0 hover:opacity-80 transition-opacity"
       >
         {getFirstProductImageUrl(product.productImages) ? (
@@ -180,6 +195,7 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
       <div className="flex-1 min-w-0">
         <Link
           href={`/products/${product.slug}`}
+          onClick={onOpenProduct}
           className="hover:text-zinc-300 transition-colors"
         >
           <h4 className="font-medium text-white text-sm line-clamp-2 mb-1">
@@ -187,10 +203,10 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
           </h4>
         </Link>
 
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-start gap-2 mb-2">
           {product.productColors && product.productColors.length > 0 ? (
-            <div className="flex items-center gap-1">
-              <div className="flex -gap-x-1">
+            <div className="flex min-w-0 items-start gap-1">
+              <div className="flex -gap-x-1 pt-0.5">
                 {product.productColors.slice(0, 3).map((pc) => (
                   <div
                     key={pc.color.id}
@@ -209,14 +225,14 @@ function CartItemCard({ item, onRemove }: CartItemCardProps) {
                   </div>
                 )}
               </div>
-              <span className="text-xs text-zinc-400">
-                {t("colors", { count: product.productColors.length })} •{" "}
+              <span className="min-w-0 text-xs leading-relaxed text-zinc-400 break-words">
+                {colorText} •{" "}
                 {product.capacity?.name || t("notAvailable")}
               </span>
             </div>
           ) : (
-            <span className="text-xs text-zinc-400">
-              {t("noColor")} • {product.capacity?.name || t("notAvailable")}
+            <span className="text-xs leading-relaxed text-zinc-400 break-words">
+              {colorText} • {product.capacity?.name || t("notAvailable")}
             </span>
           )}
         </div>

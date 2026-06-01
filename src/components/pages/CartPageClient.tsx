@@ -24,6 +24,17 @@ interface ConsultationFormData {
   address: string;
 }
 
+const getCartItemColorText = (item: CartItem, fallback: string) => {
+  const colorNames =
+    item.product.productColors
+      ?.flatMap((productColor) =>
+        productColor.color.name ? [productColor.color.name] : []
+      )
+      .join(", ") || "";
+
+  return colorNames || item.colorRequest || fallback;
+};
+
 export default function CartPageClient() {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -96,7 +107,7 @@ export default function CartPageClient() {
         items: items.map((item) => ({
           productId: item.product.id,
           productName: item.product.name,
-          color: item.colorRequest || t("colorNotSelected"),
+          color: getCartItemColorText(item, t("colorNotSelected")),
           capacity: item.product.capacity?.name || t("notAvailable"),
           category:
             item.product.productCategories
@@ -315,6 +326,8 @@ export default function CartPageClient() {
 
 const CartItemRow = memo(function CartItemRow({ item }: { item: CartItem }) {
   const t = useTranslations("cart");
+  const colorText = getCartItemColorText(item, t("colorNotSelected"));
+
   return (
     <div className="flex items-start gap-3 rounded-lg border border-zinc-700 bg-zinc-800 p-3 sm:items-center sm:gap-4 sm:p-4">
       <div className="relative size-20 flex-shrink-0 sm:size-16">
@@ -330,16 +343,11 @@ const CartItemRow = memo(function CartItemRow({ item }: { item: CartItem }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="mb-2 flex flex-wrap items-start gap-2">
-          <h3 className="min-w-0 flex-1 text-sm font-medium leading-snug text-white break-words sm:truncate sm:text-base">
-            {item.product.name}
-          </h3>
-          <span className="inline-flex flex-shrink-0 rounded-full border border-zinc-700 px-2 py-1 text-[11px] leading-none text-zinc-300 sm:text-xs">
-            {t("interestedProduct")}
-          </span>
-        </div>
+        <h3 className="mb-2 text-sm font-medium leading-snug text-white break-words sm:text-base">
+          {item.product.name}
+        </h3>
         <p className="text-xs leading-relaxed text-zinc-400 break-words sm:text-sm">
-          {t("colorLabel")} {item.colorRequest || t("colorNotSelected")} •{" "}
+          {t("colorLabel")} {colorText} •{" "}
           {item.product.capacity?.name || t("notAvailable")}
         </p>
         <p className="text-xs leading-relaxed text-zinc-400 break-words sm:text-sm">
