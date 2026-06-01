@@ -13,7 +13,6 @@ import {
   X,
 } from "lucide-react";
 import { useAppSelector } from "@/store";
-import { getApiUrl } from "@/lib/api-config";
 
 interface Customer {
   id: string;
@@ -318,7 +317,7 @@ export function CustomerInfoManager({
   const handleUpdate = useCallback(async () => {
     if (!token || !formData.fullName.trim()) return;
     try {
-      const response = await fetch(getApiUrl(`admin/customers/${customer.id}`), {
+      const response = await fetch(`/api/admin/customers/${customer.id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,

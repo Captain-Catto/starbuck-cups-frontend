@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { apiService } from "@/lib/api";
+import { clientApi } from "@/lib/client-api";
 import type { AuthState } from "@/types";
 import { getUserFromToken } from "@/lib/jwt";
 
@@ -51,12 +51,12 @@ export const checkAuthStatus = createAsyncThunk(
 
       if (token) {
         // Có token, verify với backend
-        const response = await apiService.verifyToken();
+        const response = await clientApi.verifyToken();
         return response.data;
       } else {
         // Không có access token, thử restore session bằng refresh token cookie
         // (cookie là HttpOnly nên không check được qua document.cookie — để server quyết định)
-        const sessionResponse = await apiService.checkSession();
+        const sessionResponse = await clientApi.checkSession();
 
         // Lưu token mới vào localStorage
         if (sessionResponse.data.token) {
@@ -89,7 +89,7 @@ export const refreshAuthToken = createAsyncThunk(
       }
 
       // Refresh token sẽ được gửi tự động trong cookie
-      const response = await apiService.refreshToken("");
+      const response = await clientApi.refreshToken();
       return response.data;
     } catch (error: unknown) {
       // Clear invalid tokens
@@ -113,7 +113,7 @@ export const login = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await apiService.login(email, password);
+      const response = await clientApi.adminLogin(email, password);
       return response.data;
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -132,24 +132,24 @@ export const loginAdmin = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await apiService.adminLogin(email, password);
+      const response = await clientApi.adminLogin(email, password);
       return response.data;
     } catch (error: unknown) {
-      // Check HTTP status codes first — Axios errors extend Error so
-      // `instanceof Error` would match them too, masking the specific messages.
-      const axiosError = error as {
+      // Check HTTP status codes first — clientApi attaches response metadata
+      // so generic Error handling does not mask specific auth messages.
+      const apiError = error as {
         response?: { status?: number; data?: { message?: string } };
         message?: string;
       };
 
-      if (axiosError.response?.status === 401) {
+      if (apiError.response?.status === 401) {
         return rejectWithValue("Email hoặc mật khẩu không đúng");
-      } else if (axiosError.response?.status === 403) {
+      } else if (apiError.response?.status === 403) {
         return rejectWithValue("Tài khoản không có quyền truy cập admin");
-      } else if (axiosError.response?.status && axiosError.response.status >= 500) {
+      } else if (apiError.response?.status && apiError.response.status >= 500) {
         return rejectWithValue("Lỗi server, vui lòng thử lại sau");
-      } else if (axiosError.response?.data?.message) {
-        return rejectWithValue(axiosError.response.data.message);
+      } else if (apiError.response?.data?.message) {
+        return rejectWithValue(apiError.response.data.message);
       } else if (error instanceof Error) {
         return rejectWithValue(error.message);
       }
@@ -162,7 +162,7 @@ export const logout = createAsyncThunk(
   "auth/logout",
   async (_, { rejectWithValue }) => {
     try {
-      await apiService.logout();
+      await clientApi.logout();
     } catch (error: unknown) {
       if (error instanceof Error) {
         return rejectWithValue(error.message);
@@ -277,7 +277,7 @@ const authSlice = createSlice({
         };
 
         state.token = action.payload.token;
-        state.refreshToken = action.payload.refreshToken;
+        state.refreshToken = action.payload.refreshToken ?? null;
         if (typeof window !== "undefined") {
           localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, action.payload.token);
           // Refresh token chỉ ở cookie
@@ -304,7 +304,7 @@ const authSlice = createSlice({
         };
 
         state.token = action.payload.token;
-        state.refreshToken = action.payload.refreshToken;
+        state.refreshToken = action.payload.refreshToken ?? null;
         if (typeof window !== "undefined") {
           localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, action.payload.token);
           // Refresh token chỉ ở cookie

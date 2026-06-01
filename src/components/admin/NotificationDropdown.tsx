@@ -7,7 +7,7 @@ import {
   markNotificationAsRead,
   markAllAsRead,
 } from "@/store/slices/notificationSlice";
-import { apiWithAuth } from "@/lib/apiWithAuth";
+import { clientApi } from "@/lib/client-api";
 import {
   isConsultationData,
   isOrderData,
@@ -139,7 +139,7 @@ export function NotificationDropdown({
     if (!notification.read) {
       try {
         dispatch(markNotificationAsRead(notification.id));
-        await apiWithAuth.markNotificationAsRead(notification.id);
+        await clientApi.markNotificationAsRead(notification.id);
       } catch (err) {
         console.error("Failed to mark notification as read:", err);
       }
@@ -155,7 +155,7 @@ export function NotificationDropdown({
   const handleMarkAllAsRead = useCallback(async () => {
     try {
       dispatch(markAllAsRead());
-      await apiWithAuth.markAllNotificationsAsRead();
+      await clientApi.markAllNotificationsAsRead();
     } catch (err) {
       console.error("Failed to mark all notifications as read:", err);
     }

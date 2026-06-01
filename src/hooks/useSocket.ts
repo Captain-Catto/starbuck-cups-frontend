@@ -11,7 +11,7 @@ import {
 } from "@/store/slices/notificationSlice";
 import { toast } from "sonner";
 import { NotificationPayload } from "@/types/notification.types";
-import { apiWithAuth } from "@/lib/apiWithAuth";
+import { clientApi } from "@/lib/client-api";
 
 export const useSocket = () => {
   const dispatch = useAppDispatch();
@@ -42,7 +42,7 @@ export const useSocket = () => {
     try {
 
       hasLoadedNotifications.current = true;
-      const response = await apiWithAuth.getNotifications({ limit: 20 });
+      const response = await clientApi.getNotifications({ limit: 20 });
       if (response.success && response.data) {
 
         dispatch(setNotifications(response.data));
@@ -233,7 +233,7 @@ export const useSocket = () => {
     async (notificationId: string) => {
       try {
         dispatch(markNotificationAsRead(notificationId));
-        await apiWithAuth.markNotificationAsRead(notificationId);
+        await clientApi.markNotificationAsRead(notificationId);
 
         if (socketManager.isConnected()) {
           socketManager.markNotificationAsRead(notificationId);

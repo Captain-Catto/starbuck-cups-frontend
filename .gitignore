@@ -16,6 +16,7 @@
 # next.js
 /.next/
 /out/
+/.image-cache/
 
 # production
 /build
@@ -46,3 +47,4 @@ dist/
 .serena*
 *.claude*
 *.serena*
+react-doctor*.txt

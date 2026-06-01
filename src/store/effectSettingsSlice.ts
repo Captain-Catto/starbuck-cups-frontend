@@ -1,6 +1,4 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import axios from "axios";
-import { getApiUrl } from "@/lib/api-config";
 
 // Types
 export type EffectType = "snow" | "redEnvelope";
@@ -72,17 +70,30 @@ const initialState: EffectSettingsState = {
   error: null,
 };
 
-const EFFECT_SETTINGS_API_URL = getApiUrl("settings/effect-settings");
+const EFFECT_SETTINGS_API_URL = "/api/settings/effect-settings";
+
+async function readSettingsResponse(response: Response, fallbackMessage: string) {
+  const data = await response.json().catch(() => ({
+    success: false,
+    message: response.statusText,
+  }));
+
+  if (!response.ok) {
+    throw new Error(data.message || fallbackMessage);
+  }
+
+  return data.data;
+}
 
 // Thunks
 export const fetchEffectSettings = createAsyncThunk(
   "effectSettings/fetch",
   async () => {
     try {
-      const response = await axios.get(EFFECT_SETTINGS_API_URL);
-      return response.data.data;
+      const response = await fetch(EFFECT_SETTINGS_API_URL);
+      return readSettingsResponse(response, "Failed to fetch settings");
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || "Failed to fetch settings");
+      throw new Error(error.message || "Failed to fetch settings");
     }
   }
 );
@@ -93,13 +104,17 @@ export const updateEffectSettings = createAsyncThunk(
     const state = getState() as { auth: { token: string | null } };
     const token = state.auth.token;
     try {
-      const response = await axios.put(EFFECT_SETTINGS_API_URL, settings, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        withCredentials: true,
+      const response = await fetch(EFFECT_SETTINGS_API_URL, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(settings),
       });
-      return response.data.data;
+      return readSettingsResponse(response, "Failed to update settings");
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || "Failed to update settings");
+      throw new Error(error.message || "Failed to update settings");
     }
   }
 );

@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { generateBreadcrumbStructuredData } from "@/lib/seo";
-import { getApiUrl } from "@/lib/api-config";
+import { getApiUrl } from "@/lib/server-api";
 import type { Category } from "@/types";
 
 interface Props {

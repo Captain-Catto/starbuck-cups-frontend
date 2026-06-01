@@ -11,6 +11,11 @@ export function getAdminForwardHeaders(request: NextRequest): Record<string, str
     headers["authorization"] = authHeader;
   }
 
+  const cookieHeader = request.headers.get("cookie");
+  if (cookieHeader) {
+    headers["cookie"] = cookieHeader;
+  }
+
   // Forward IP address if available
   const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {

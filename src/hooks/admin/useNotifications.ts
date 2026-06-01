@@ -10,7 +10,7 @@ import {
   clearNotifications,
   setNotifications,
 } from "@/store/slices/notificationSlice";
-import { apiWithAuth } from "@/lib/apiWithAuth";
+import { clientApi } from "@/lib/client-api";
 import type { NotificationData } from "@/types/notification.types";
 import {
   isConsultationData,
@@ -125,7 +125,7 @@ export function useNotifications(): UseNotificationsReturn {
   const loadNotifications = useCallback(async () => {
     try {
       dispatchState({ type: "LOAD_START" });
-      const response = await apiWithAuth.getNotifications({ limit: 100 });
+      const response = await clientApi.getNotifications({ limit: 100 });
       if (isMountedRef.current && response.success && response.data) {
         dispatch(setNotifications(response.data));
       }
@@ -180,7 +180,7 @@ export function useNotifications(): UseNotificationsReturn {
   const handleNotificationClick = useCallback(async (notification: NotificationData) => {
     try {
       if (notification.read !== true) {
-        await apiWithAuth.markNotificationAsRead(notification.id);
+        await clientApi.markNotificationAsRead(notification.id);
         dispatch(markNotificationAsRead(notification.id));
       }
 
@@ -200,7 +200,7 @@ export function useNotifications(): UseNotificationsReturn {
 
   const handleMarkAllAsRead = useCallback(async () => {
     try {
-      await apiWithAuth.markAllNotificationsAsRead();
+      await clientApi.markAllNotificationsAsRead();
       dispatch(markAllAsRead());
     } catch {
       toast.error("Không thể đánh dấu đã đọc");

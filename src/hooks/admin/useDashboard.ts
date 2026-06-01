@@ -5,7 +5,7 @@ import {
   DashboardStats,
   RecentOrder,
   RevenueData,
-} from "@/lib/api/dashboard";
+} from "@/lib/client-dashboard-api";
 
 export interface UseDashboardReturn {
   // Data

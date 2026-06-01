@@ -3,7 +3,7 @@
 import { createContext, use, useEffect, useSyncExternalStore } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAppSelector } from "@/store";
-import { getBackendUrl } from "@/lib/api-config";
+import { getSocketBackendUrl } from "@/lib/client-config";
 
 interface SettingsSocketContextType {
   socket: Socket | null;
@@ -64,7 +64,7 @@ export function SettingsSocketProvider({
       ? apiUrl.endsWith("/api")
         ? apiUrl.slice(0, -4)
         : apiUrl
-      : getBackendUrl();
+      : getSocketBackendUrl();
 
     const socketInstance = io(baseUrl, {
       auth: {

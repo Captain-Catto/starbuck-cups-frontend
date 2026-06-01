@@ -1,6 +1,5 @@
 import { useReducer, useEffect, useCallback } from "react";
 import { useAppSelector } from "@/store";
-import { getApiUrl } from "@/lib/api-config";
 
 export interface StatisticsData {
   period: string;
@@ -137,7 +136,7 @@ export function invalidateStatisticsCache() {
 }
 
 export const useStatistics = (period: "week" | "month" | "year" = "month") => {
-  const statisticsUrl = getApiUrl("admin/dashboard/statistics");
+  const statisticsUrl = "/api/admin/dashboard/statistics";
   const [{ data, loading, error }, dispatch] = useReducer(
     statisticsReducer,
     initialStatisticsState

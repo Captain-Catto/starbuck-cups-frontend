@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getApiUrl } from "@/lib/api-config";
+import { getApiUrl } from "@/lib/server-api";
 import { buildProductsQueryParams } from "@/lib/products-query";
 import CategoryPageClient from "@/components/pages/CategoryPageClient";
 import ProductsPageSkeleton from "@/components/ui/ProductsPageSkeleton";

@@ -1,6 +1,5 @@
 import { useAppSelector } from '@/store';
-import type { UploadFolder } from '@/lib/api/upload';
-import { getApiUrl } from "@/lib/api-config";
+import type { UploadFolder } from '@/lib/client-upload-api';
 
 export const useUpload = () => {
   const token = useAppSelector((state) => state.auth.token);
@@ -14,7 +13,7 @@ export const useUpload = () => {
     formData.append('image', file);
     formData.append('folder', folder);
 
-    const url = getApiUrl("admin/upload/single");
+    const url = "/api/admin/upload/single";
 
     const response = await fetch(url, {
       method: 'POST',
@@ -43,7 +42,7 @@ export const useUpload = () => {
     });
     formData.append('folder', folder);
 
-    const url = getApiUrl("admin/upload/multiple");
+    const url = "/api/admin/upload/multiple";
 
     const response = await fetch(url, {
       method: 'POST',

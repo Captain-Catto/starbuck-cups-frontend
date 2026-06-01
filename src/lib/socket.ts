@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import { NotificationPayload } from "@/types/notification.types";
-import { getBackendUrl } from "@/lib/api-config";
+import { getSocketBackendUrl } from "@/lib/client-config";
 
 interface ServerToClientEvents {
   "notification:new": (notification: NotificationPayload) => void;
@@ -62,7 +62,7 @@ class SocketManager {
           serverUrl = apiUrl;
         }
       } else {
-        serverUrl = getBackendUrl();
+        serverUrl = getSocketBackendUrl();
       }
 
       this.socket = io(serverUrl, {

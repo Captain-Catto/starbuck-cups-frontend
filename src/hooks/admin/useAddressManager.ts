@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useReducer } from "react";
 import { useAppSelector } from "@/store";
 import { toast } from "sonner";
-import { getApiUrl } from "@/lib/api-config";
 
 import { Address } from "@/components/admin/customers/AddressCard";
 import { AddressFormData } from "@/components/admin/customers/AddressForm";
@@ -80,7 +79,7 @@ export function useAddressManager(customerId: string) {
         throw new Error("No authentication token");
       }
 
-      const response = await fetch(getApiUrl(`admin/customers/${customerId}`), {
+      const response = await fetch(`/api/admin/customers/${customerId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -177,7 +176,7 @@ export function useAddressManager(customerId: string) {
       if (isAdding) {
         // Create new address
         const response = await fetch(
-          getApiUrl(`admin/customers/${customerId}/addresses`),
+          `/api/admin/customers/${customerId}/addresses`,
           {
             method: "POST",
             headers: {
@@ -203,7 +202,7 @@ export function useAddressManager(customerId: string) {
       } else if (editingId) {
         // Update existing address
         const response = await fetch(
-          getApiUrl(`admin/customers/${customerId}/addresses/${editingId}`),
+          `/api/admin/customers/${customerId}/addresses/${editingId}`,
           {
             method: "PUT",
             headers: {
@@ -272,7 +271,7 @@ export function useAddressManager(customerId: string) {
 
     try {
       const response = await fetch(
-        getApiUrl(`admin/customers/${customerId}/addresses/${addressId}`),
+        `/api/admin/customers/${customerId}/addresses/${addressId}`,
         {
           method: "DELETE",
           headers: {
@@ -324,9 +323,7 @@ export function useAddressManager(customerId: string) {
 
     try {
       const response = await fetch(
-        getApiUrl(
-          `admin/customers/${customerId}/addresses/${addressId}/set-default`
-        ),
+        `/api/admin/customers/${customerId}/addresses/${addressId}/set-default`,
         {
           method: "PUT",
           headers: {

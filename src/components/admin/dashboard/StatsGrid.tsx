@@ -6,7 +6,7 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react";
-import { DashboardStats, RevenueData } from "@/lib/api/dashboard";
+import { DashboardStats, RevenueData } from "@/lib/client-dashboard-api";
 
 interface StatsGridProps {
   dashboardStats: DashboardStats | null;

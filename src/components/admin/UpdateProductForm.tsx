@@ -4,7 +4,7 @@ import React, { useState, useCallback } from "react";
 import { X } from "lucide-react";
 import type { Category, Color, Capacity } from "@/types";
 import { useUpdateProduct } from "@/hooks/business/useUpdateProduct";
-import { uploadAPI } from "@/lib/api/upload";
+import { uploadAPI } from "@/lib/client-upload-api";
 import { ProductFormFields } from "./ProductFormFields";
 
 interface UpdateProductFormProps {

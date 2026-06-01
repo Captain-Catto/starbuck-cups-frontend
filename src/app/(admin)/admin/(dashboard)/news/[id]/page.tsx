@@ -1,5 +1,5 @@
 import { NewsForm } from "@/components/admin/news/NewsForm";
-import { getApiUrl } from "@/lib/api-config";
+import { getApiUrl } from "@/lib/server-api";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import type { News } from "@/types";

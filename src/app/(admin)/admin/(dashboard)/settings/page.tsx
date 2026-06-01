@@ -12,8 +12,6 @@ import {
 } from "@/store/effectSettingsSlice";
 import { toast } from "sonner";
 import { Save, RefreshCw } from "lucide-react";
-import axios from "axios";
-import { getApiUrl } from "@/lib/api-config";
 
 // Sub-components import
 import { RedEnvelopeSettingsPanel } from "@/components/admin/settings/RedEnvelopeSettingsPanel";
@@ -24,7 +22,7 @@ import {
 } from "@/components/admin/settings/WatermarkSettingsPanel";
 import { ExcludedPathsPanel } from "@/components/admin/settings/ExcludedPathsPanel";
 
-const WATERMARK_SETTINGS_API_URL = getApiUrl("settings/watermark-settings");
+const WATERMARK_SETTINGS_API_URL = "/api/settings/watermark-settings";
 
 const DEFAULT_WATERMARK_SETTINGS: ProductWatermarkSettings = {
   enabled: true,
@@ -55,11 +53,12 @@ export default function SettingsPage() {
   const fetchWatermarkSettings = async () => {
     try {
       setIsWatermarkLoading(true);
-      const response = await axios.get(WATERMARK_SETTINGS_API_URL);
-      if (response.data?.success && response.data?.data) {
+      const response = await fetch(WATERMARK_SETTINGS_API_URL);
+      const data = await response.json().catch(() => null);
+      if (response.ok && data?.success && data?.data) {
         setWatermarkSettings({
           ...DEFAULT_WATERMARK_SETTINGS,
-          ...response.data.data,
+          ...data.data,
         });
       } else {
         setWatermarkSettings(DEFAULT_WATERMARK_SETTINGS);
@@ -132,9 +131,13 @@ function SettingsForm({
     try {
       await Promise.all([
         dispatch(updateEffectSettings(localSettings)).unwrap(),
-        axios.put(WATERMARK_SETTINGS_API_URL, watermarkSettings, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          withCredentials: true,
+        fetch(WATERMARK_SETTINGS_API_URL, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(watermarkSettings),
         }),
       ]);
       toast.success("Cập nhật cài đặt thành công!");

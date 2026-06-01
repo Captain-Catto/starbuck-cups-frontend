@@ -1,5 +1,5 @@
-﻿import { NextRequest, NextResponse } from "next/server";
-import { getApiUrl } from "@/lib/api-config";
+import { NextRequest, NextResponse } from "next/server";
+import { getApiUrl } from "@/lib/server-api";
 
 export interface ConsultationOrderData {
   customer: {

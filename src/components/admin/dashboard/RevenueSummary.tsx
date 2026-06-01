@@ -1,5 +1,5 @@
 import { DollarSign, TrendingUp, TrendingDown } from "lucide-react";
-import { RevenueData } from "@/lib/api/dashboard";
+import { RevenueData } from "@/lib/client-dashboard-api";
 
 interface RevenueSummaryProps {
   revenueData: RevenueData | null;

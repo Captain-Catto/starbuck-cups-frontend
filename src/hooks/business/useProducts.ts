@@ -284,13 +284,12 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
         throw new Error("Không tìm thấy sản phẩm");
       }
 
-      const response = await fetch(`/api/admin/products/${productId}/status`, {
-        method: "PUT",
+      const response = await fetch(`/api/admin/products/${productId}/toggle-status`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           ...getAuthHeaders(),
         },
-        body: JSON.stringify({ isActive: !product.isActive }),
       });
 
       if (!response.ok) {
@@ -300,7 +299,14 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
       const data = await response.json();
 
       if (data.success) {
-        dispatch({ type: "TOGGLE_STATUS", productId });
+        dispatch({
+          type: "UPDATE_PRODUCT",
+          product: {
+            ...product,
+            ...data.data,
+            isActive: data.data?.isActive ?? !product.isActive,
+          },
+        });
         toast.success(
           product.isActive
             ? "Đã ẩn sản phẩm"

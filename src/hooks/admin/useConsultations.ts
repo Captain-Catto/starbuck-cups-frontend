@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useReducer } from "react";
 import { useAppSelector } from "@/store";
 import type { Consultation, ConsultationStatus, PaginationMeta } from "@/types";
 import { toast } from "sonner";
-import { getApiUrl } from "@/lib/api-config";
 
 interface ConsultationFilters {
   status: string;
@@ -115,7 +114,7 @@ export interface UseConsultationsReturn {
 }
 
 export function useConsultations(): UseConsultationsReturn {
-  const apiBaseUrl = getApiUrl("");
+  const apiBaseUrl = "/api";
   const { token } = useAppSelector((state) => state.auth);
   const [{ consultations, loading, pagination }, dispatchData] = useReducer(
     consultationsDataReducer,

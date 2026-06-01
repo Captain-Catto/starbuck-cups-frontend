@@ -3,7 +3,7 @@ import {
   generateProductStructuredData,
   generateBreadcrumbStructuredData,
 } from "@/lib/seo";
-import { getApiUrl } from "@/lib/api-config";
+import { getApiUrl } from "@/lib/server-api";
 import { Product } from "@/types";
 
 interface Props {

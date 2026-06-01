@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { ShoppingCart, Clock, ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { RecentOrder } from "@/lib/api/dashboard";
+import { RecentOrder } from "@/lib/client-dashboard-api";
 
 interface RecentOrdersProps {
   orders: RecentOrder[];

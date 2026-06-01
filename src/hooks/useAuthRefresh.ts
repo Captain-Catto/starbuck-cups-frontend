@@ -7,7 +7,7 @@ import {
 import { decodeJWT, isTokenExpired } from "@/lib/jwt";
 import { TokenRefreshNotification } from "@/utils/tokenNotification";
 import { AuthDebug } from "@/utils/authDebug";
-import apiService from "@/lib/api";
+import { clientApi } from "@/lib/client-api";
 
 const ADMIN_TOKEN_STORAGE_KEY = "admin_token";
 
@@ -17,8 +17,10 @@ function getStoredAdminToken() {
 
 export function useAuthRefresh() {
   const dispatch = useAppDispatch();
-  const { token, refreshToken, isAuthenticated, sessionChecked } =
-    useAppSelector((state) => state.auth);
+  const token = useAppSelector((state) => state.auth.token);
+  const refreshToken = useAppSelector((state) => state.auth.refreshToken);
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const sessionChecked = useAppSelector((state) => state.auth.sessionChecked);
 
   // Thêm ref để track đang kiểm tra
   const isCheckingRef = useRef(false);
@@ -56,7 +58,7 @@ export function useAuthRefresh() {
 
           try {
             const newToken = await AuthDebug.timeOperation("Token Refresh (Expired)", async () => {
-              return await apiService.doProactiveRefresh();
+              return await clientApi.doProactiveRefresh();
             });
 
             if (newToken) {
@@ -90,7 +92,7 @@ export function useAuthRefresh() {
 
             TokenRefreshNotification.showTokenExpiring();
 
-            const newToken = await apiService.doProactiveRefresh();
+            const newToken = await clientApi.doProactiveRefresh();
             if (newToken) {
               dispatch(setTokens({ token: newToken }));
               TokenRefreshNotification.showRefreshSuccess();

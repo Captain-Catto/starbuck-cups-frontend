@@ -112,6 +112,8 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
   );
 
   const fetchControllerRef = useRef<AbortController | null>(null);
+  const orderRef = useRef<OrderDetailData | null>(null);
+  orderRef.current = order;
   const token = useSelector((state: RootState) => state.auth.token);
 
   const fetchOrder = useCallback(async () => {
@@ -154,7 +156,7 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
 
   const updateStatus = useCallback(
     async (newStatus: string): Promise<boolean> => {
-      if (!orderId || !token || !order) return false;
+      if (!orderId || !token || !orderRef.current) return false;
 
       dispatch({ type: "UPDATE_START" });
       try {
@@ -191,7 +193,7 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
         dispatch({ type: "UPDATE_FINISH" });
       }
     },
-    [orderId, token, order, fetchOrder]
+    [orderId, token, fetchOrder]
   );
 
   const clearError = useCallback(() => {

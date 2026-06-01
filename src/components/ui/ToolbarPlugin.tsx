@@ -19,7 +19,7 @@ import { $setBlocksType } from "@lexical/selection";
 import { $createParagraphNode } from "lexical";
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import { INSERT_IMAGE_COMMAND } from "./ImageCommands";
-import { uploadAPI } from "@/lib/api/upload";
+import { uploadAPI } from "@/lib/client-upload-api";
 import { $isImageNode, $createImageNode } from "./ImageNode";
 
 type ToolbarState = {

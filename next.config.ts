@@ -68,7 +68,6 @@ const nextConfig: NextConfig = {
       "@lexical/react",
       "@lexical/html",
       "@lexical/utils",
-      "lodash",
       "swiper",
     ],
     webpackBuildWorker: true,
@@ -89,9 +88,6 @@ const nextConfig: NextConfig = {
   // Compression
   compress: true,
   modularizeImports: {
-    lodash: {
-      transform: "lodash/{{member}}",
-    },
     "@lexical/react": {
       transform: "@lexical/react/{{member}}",
     },

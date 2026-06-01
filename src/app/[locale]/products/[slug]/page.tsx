@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getApiUrl } from "@/lib/api-config";
+import { getApiUrl } from "@/lib/server-api";
 import { convertDriveUrl } from "@/utils/googleDriveHelper";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Cart } from "@/components/ui/Cart";

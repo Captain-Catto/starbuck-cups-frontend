@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import ProductsPageClient from "@/components/pages/ProductsPageClient";
-import { getApiUrl } from "@/lib/api-config";
+import { getApiUrl } from "@/lib/server-api";
 import { buildProductsQueryParams } from "@/lib/products-query";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { generateBreadcrumbStructuredData, generateSEO } from "@/lib/seo";

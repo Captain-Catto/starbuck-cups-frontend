@@ -4,7 +4,6 @@ import { useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { RootState } from "@/store";
-import { getApiUrl } from "@/lib/api-config";
 
 export interface CustomerPhone {
   id: string;
@@ -44,7 +43,7 @@ export function useCustomerPhones(customerId: string) {
 
     try {
       const response = await fetch(
-        getApiUrl(`admin/customers/${customerId}/phones`),
+        `/api/admin/customers/${customerId}/phones`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -77,7 +76,7 @@ export function useCustomerPhones(customerId: string) {
 
       try {
         const response = await fetch(
-          getApiUrl(`admin/customers/${customerId}/phones`),
+          `/api/admin/customers/${customerId}/phones`,
           {
             method: "POST",
             headers: {
@@ -123,7 +122,7 @@ export function useCustomerPhones(customerId: string) {
       if (!token) return false;
 
       try {
-        const response = await fetch(getApiUrl(`admin/phones/${phoneId}`), {
+        const response = await fetch(`/api/admin/phones/${phoneId}`, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -157,7 +156,7 @@ export function useCustomerPhones(customerId: string) {
       if (!token) return false;
 
       try {
-        const response = await fetch(getApiUrl(`admin/phones/${phoneId}`), {
+        const response = await fetch(`/api/admin/phones/${phoneId}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -191,7 +190,7 @@ export function useCustomerPhones(customerId: string) {
 
       try {
         const response = await fetch(
-          getApiUrl(`admin/phones/${phoneId}/set-main`),
+          `/api/admin/phones/${phoneId}/set-main`,
           {
             method: "PUT",
             headers: {

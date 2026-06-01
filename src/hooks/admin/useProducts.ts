@@ -11,7 +11,7 @@ import type {
   Capacity,
   PaginationMeta,
 } from "@/types";
-import { apiService } from "@/lib/api";
+import { clientApi } from "@/lib/client-api";
 import { invalidateProductDependentCaches } from "@/lib/adminCacheInvalidation";
 
 interface ProductListItem extends Product {
@@ -427,7 +427,7 @@ export function useProducts(
       dispatchList({ type: "SET_LOADING", loading: true });
       const promises = selectedProducts.map(async (productId) => {
         if (action === "delete") {
-          return apiService.adminDeleteProduct(productId);
+          return clientApi.adminDeleteProduct(productId);
         } else {
           // For activate/deactivate, we need to check current status first
           const product = products.find((p) => p.id === productId);
@@ -438,7 +438,7 @@ export function useProducts(
             (action === "deactivate" && product.isActive);
 
           if (shouldToggle) {
-            return apiService.toggleProductStatus(productId);
+            return clientApi.toggleProductStatus(productId);
           }
           return Promise.resolve();
         }
@@ -511,7 +511,7 @@ export function useProducts(
 
     try {
       if (action === "delete") {
-        const result = await apiService.adminDeleteProduct(productId);
+        const result = await clientApi.adminDeleteProduct(productId);
         if (result.success) {
           invalidateProductDependentCaches();
           toast.success("Đã xóa sản phẩm thành công");
@@ -534,7 +534,7 @@ export function useProducts(
         );
         setProducts(optimisticProducts);
 
-        const result = await apiService.toggleProductStatus(productId);
+        const result = await clientApi.toggleProductStatus(productId);
 
         if (result.success) {
           invalidateProductDependentCaches();

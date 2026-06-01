@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { getApiUrl } from "@/lib/api-config";
+import { getApiUrl } from "@/lib/server-api";
 import { locales, defaultLocale } from "@/i18n/config";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

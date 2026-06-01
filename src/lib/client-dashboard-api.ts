@@ -1,6 +1,4 @@
-import { getApiUrl } from "@/lib/api-config";
-
-const API_BASE_URL = getApiUrl("");
+const API_BASE_URL = "/api";
 
 export interface DashboardStats {
   totalOrders: number;
@@ -38,15 +36,13 @@ class DashboardAPI {
     token?: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint}`;
-
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
       headers: {
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
-      ...options,
     });
 
     if (!response.ok) {
@@ -57,16 +53,13 @@ class DashboardAPI {
     }
 
     const result = await response.json();
-    // Extract data from API response wrapper
     return result.data || result;
   }
 
-  // Get dashboard statistics
   async getDashboardStats(token?: string): Promise<DashboardStats> {
     return this.request<DashboardStats>("/admin/dashboard/stats", token);
   }
 
-  // Get pending consultations count
   async getPendingConsultationsCount(
     token?: string
   ): Promise<{ count: number }> {
@@ -76,21 +69,17 @@ class DashboardAPI {
     );
   }
 
-  // Get recent orders
-  async getRecentOrders(
-    limit: number = 10,
-    token?: string
-  ): Promise<RecentOrder[]> {
+  async getRecentOrders(limit = 10, token?: string): Promise<RecentOrder[]> {
     return this.request<RecentOrder[]>(
       `/admin/orders/recent?limit=${limit}`,
       token
     );
   }
 
-  // Get revenue data
   async getRevenueData(token?: string): Promise<RevenueData> {
     return this.request<RevenueData>("/admin/dashboard/revenue", token);
   }
 }
 
 export const dashboardAPI = new DashboardAPI();
+
