@@ -56,6 +56,16 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Swiper custom nav buttons (e.g. RelatedProducts) — Swiper toggles this class
+   at the start/end of the slide list, but its default CSS only styles the
+   built-in .swiper-button-next/.swiper-button-prev classes, not custom ones. */
+.swiper-button-prev-custom.swiper-button-disabled,
+.swiper-button-next-custom.swiper-button-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* Zoom in animation for lazy loaded cards */
 @keyframes zoom-in {
   from {

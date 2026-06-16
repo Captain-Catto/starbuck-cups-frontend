@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface FloatingContactButtonProps {
   zaloPhone?: string;
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
 function getMessengerLink() {
@@ -25,8 +27,9 @@ function handleMessengerClick() {
 
 export function FloatingContactButton({
   zaloPhone = "0896686008",
+  isOpen,
+  onToggle,
 }: FloatingContactButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const isHydrated = useSyncExternalStore(() => () => {}, () => true, () => false);
   const t = useTranslations("floating");
 
@@ -100,7 +103,7 @@ export function FloatingContactButton({
 
       {/* Main Toggle Button */}
       <button type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onToggle}
         className={`size-14 bg-black hover:bg-white text-white hover:text-black rounded-full shadow-lg transition-all duration-300 hover:scale-110 border border-neutral-800 hover:border-white flex items-center justify-center cursor-pointer ${
           isOpen ? "rotate-90" : ""
         }`}
