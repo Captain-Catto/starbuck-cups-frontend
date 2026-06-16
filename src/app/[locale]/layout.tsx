@@ -6,18 +6,11 @@ import "@/app/globals.css";
 import NextTopLoader from "nextjs-toploader";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
-import { JetBrains_Mono } from "next/font/google";
+import { jetbrainsMono } from "@/lib/fonts";
 import { routing } from "@/i18n/routing";
 import StoreProvider from "@/components/StoreProvider";
 import ClientLayout from "@/components/layout/ClientLayout";
 import { generateSEO, generateOrganizationStructuredData, siteConfig } from "@/lib/seo";
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin", "vietnamese"],
-  weight: ["400", "700"],
-  variable: "--font-jetbrains",
-  display: "swap",
-});
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -145,7 +138,7 @@ export default async function LocaleLayout({
     !!gaMeasurementId && gaMeasurementId !== "G-XXXXXXXXXX";
 
   return (
-    <html lang={locale} className={`${jetbrainsMono.variable}`}>
+    <html lang={locale} className={jetbrainsMono.variable}>
       <head>
 
         <meta name="theme-color" content="#000000" />

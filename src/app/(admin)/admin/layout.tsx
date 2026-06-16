@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import StoreProvider from "@/components/StoreProvider";
 import AdminClientLayout from "@/components/layout/AdminClientLayout";
+import { jetbrainsMono } from "@/lib/fonts";
 
 export default async function AdminHtmlLayout({
   children,
@@ -13,7 +14,7 @@ export default async function AdminHtmlLayout({
   const messages = await getMessages({ locale: "vi" });
 
   return (
-    <html lang="vi">
+    <html lang="vi" className={jetbrainsMono.variable}>
       <head>
         <meta
           name="viewport"

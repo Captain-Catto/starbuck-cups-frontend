@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import type { TranslationValues } from "use-intl";
 
 interface ImageZoomControlsProps {
   scale: number;
@@ -9,7 +10,7 @@ interface ImageZoomControlsProps {
   MIN_SCALE: number;
   handleZoom: (scale: number) => void;
   resetZoom: () => void;
-  t: (key: string, values?: any) => string;
+  t: (key: string, values?: TranslationValues) => string;
   hasMultipleImages: boolean;
 }
 

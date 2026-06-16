@@ -49,7 +49,7 @@ export function FloatingContactButton({
       >
           <button type="button"
             onClick={handleMessengerClick}
-            className="flex items-center justify-center size-14 bg-zinc-950 hover:bg-zinc-800 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-zinc-700 cursor-pointer"
+            className="flex items-center justify-center size-14 bg-black hover:bg-neutral-900 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-neutral-800 hover:border-neutral-700 cursor-pointer"
             aria-label={t("messenger")}
           >
             {/* Messenger Icon SVG */}
@@ -81,7 +81,7 @@ export function FloatingContactButton({
       >
           <button type="button"
             onClick={handleZaloClick}
-            className="flex items-center justify-center size-14 bg-zinc-950 hover:bg-zinc-800 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-zinc-700 cursor-pointer"
+            className="flex items-center justify-center size-14 bg-black hover:bg-neutral-900 rounded-full shadow-lg transition-all duration-300 hover:scale-105 border border-neutral-800 hover:border-neutral-700 cursor-pointer"
             aria-label={t("zalo")}
           >
             {/* Zalo Icon SVG */}
@@ -101,15 +101,15 @@ export function FloatingContactButton({
       {/* Main Toggle Button */}
       <button type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`size-14 bg-zinc-950 hover:bg-zinc-800 rounded-full shadow-lg transition-all duration-300 hover:scale-110 border border-zinc-700 flex items-center justify-center cursor-pointer ${
+        className={`size-14 bg-black hover:bg-white text-white hover:text-black rounded-full shadow-lg transition-all duration-300 hover:scale-110 border border-neutral-800 hover:border-white flex items-center justify-center cursor-pointer ${
           isOpen ? "rotate-90" : ""
         }`}
         aria-label={isOpen ? t("closeContact") : t("openContact")}
       >
         {isOpen ? (
-          <X className="size-6 text-white" />
+          <X className="size-6 transition-colors duration-200" />
         ) : (
-          <MessageCircle className="size-6 text-white" />
+          <MessageCircle className="size-6 transition-colors duration-200" />
         )}
       </button>
     </div>

@@ -77,12 +77,12 @@ const ProductCard: React.FC<ProductCardProps> = memo(({
         });
       }}
     >
-      <div className={`bg-zinc-900 rounded-2xl overflow-hidden transition-all duration-300 relative ${
+      <div className={`bg-black border border-neutral-900 rounded-xl overflow-hidden transition-all duration-300 relative ${
         product.stockQuantity === 0
           ? "opacity-60 grayscale"
-          : "hover:bg-zinc-800 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/60"
+          : "hover:border-neutral-700 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/80"
       }`}>
-        <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
+        <div className="aspect-square bg-neutral-950/50 relative overflow-hidden">
           {/* Featured Badge - TOP LEFT */}
           {showBadges && (
             <div className="absolute top-3 left-3 z-10">
@@ -158,7 +158,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({
         <div className="mt-3">
           <p
             className={`text-base lg:text-lg font-medium mb-1 line-clamp-2 ${
-              product.stockQuantity === 0 ? "text-zinc-400" : "text-white"
+              product.stockQuantity === 0 ? "text-neutral-400" : "text-white"
             }`}
           >
             <HighlightedName name={product.name} highlight={highlightText} />
@@ -219,7 +219,7 @@ const HighlightedName = memo(({ name, highlight }: HighlightedNameProps) => {
     <>
       {segments.map((segment) =>
         segment.highlighted ? (
-          <span key={`part-${segment.start}-${segment.text}`} className="font-bold text-emerald-400">
+          <span key={`part-${segment.start}-${segment.text}`} className="font-bold text-white underline">
             {segment.text}
           </span>
         ) : (

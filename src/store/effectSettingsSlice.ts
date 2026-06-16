@@ -92,8 +92,8 @@ export const fetchEffectSettings = createAsyncThunk(
     try {
       const response = await fetch(EFFECT_SETTINGS_API_URL);
       return readSettingsResponse(response, "Failed to fetch settings");
-    } catch (error: any) {
-      throw new Error(error.message || "Failed to fetch settings");
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Failed to fetch settings");
     }
   }
 );
@@ -113,8 +113,8 @@ export const updateEffectSettings = createAsyncThunk(
         body: JSON.stringify(settings),
       });
       return readSettingsResponse(response, "Failed to update settings");
-    } catch (error: any) {
-      throw new Error(error.message || "Failed to update settings");
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Failed to update settings");
     }
   }
 );

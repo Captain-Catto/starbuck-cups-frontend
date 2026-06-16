@@ -2,13 +2,14 @@
 
 import React from "react";
 import OptimizedImage from "@/components/OptimizedImage";
+import type { TranslationValues } from "use-intl";
 
 interface ImageThumbnailsProps {
   images: string[];
   isMobile: boolean;
   activeIndex: number;
   handleThumbnailClick: (index: number, event: React.MouseEvent) => void;
-  t: (key: string, values?: any) => string;
+  t: (key: string, values?: TranslationValues) => string;
 }
 
 export function ImageThumbnails({

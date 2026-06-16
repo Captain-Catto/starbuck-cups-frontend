@@ -8,7 +8,10 @@ import {
   UNDO_COMMAND,
   REDO_COMMAND,
   $getRoot,
+  $isElementNode,
   type LexicalEditor,
+  type LexicalNode,
+  type ElementNode,
 } from "lexical";
 import {
   $isHeadingNode,
@@ -388,11 +391,11 @@ function applyLineHeight(editor: LexicalEditor, newLineHeight: string) {
       return;
     }
 
-    const paragraphNodes = new Set<any>();
+    const paragraphNodes = new Set<ElementNode>();
     selection.getNodes().forEach((node) => {
-      let currentNode: any = node;
+      let currentNode: LexicalNode | null = node;
       while (currentNode) {
-        if (currentNode.getType() === "paragraph") {
+        if (currentNode.getType() === "paragraph" && $isElementNode(currentNode)) {
           paragraphNodes.add(currentNode);
           break;
         }
@@ -450,12 +453,12 @@ function replaceTemporaryImage(
     const root = $getRoot();
     const children = root.getChildren();
 
-    children.forEach((child: any) => {
-      if (child.getType() !== "paragraph") {
+    children.forEach((child) => {
+      if (child.getType() !== "paragraph" || !$isElementNode(child)) {
         return;
       }
 
-      child.getChildren().forEach((grandChild: any) => {
+      child.getChildren().forEach((grandChild) => {
         if (!$isImageNode(grandChild) || grandChild.getSrc() !== tempSrc) {
           return;
         }

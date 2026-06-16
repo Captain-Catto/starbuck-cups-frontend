@@ -50,7 +50,7 @@ export function BackToTopButton() {
       onClick={handleClick}
       aria-label={t("backToTop")}
       title={t("backToTop")}
-      className={`fixed bottom-[6.5rem] right-6 z-30 flex size-12 items-center justify-center rounded-full border border-zinc-700 bg-zinc-950 text-white shadow-lg transition-all duration-200 hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white md:bottom-[6.75rem] ${
+      className={`fixed bottom-[6.5rem] right-6 z-30 flex size-12 items-center justify-center rounded-full border border-neutral-800 bg-black text-white shadow-lg transition-all duration-200 hover:bg-white hover:text-black hover:border-white active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white md:bottom-[6.75rem] ${
         isVisible
           ? "translate-y-0 opacity-100"
           : "pointer-events-none translate-y-3 opacity-0"

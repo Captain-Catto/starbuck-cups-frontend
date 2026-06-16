@@ -3,6 +3,7 @@
 import ProductCard from "@/components/ProductCard";
 import ProductSkeleton from "@/components/ui/ProductSkeleton";
 import type { Product } from "@/types";
+import type { TranslationValues } from "use-intl";
 
 interface TrendingAndHistoryPanelProps {
   query: string;
@@ -14,7 +15,7 @@ interface TrendingAndHistoryPanelProps {
   handleClearHistory: (type: "search" | "viewed") => void;
   handleProductClick: (product: Product) => void;
   handleAddToCart: (product: Product) => void;
-  t: (key: string, values?: any) => string;
+  t: (key: string, values?: TranslationValues) => string;
 }
 
 export function TrendingAndHistoryPanel({

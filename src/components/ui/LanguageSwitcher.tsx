@@ -58,7 +58,7 @@ export function LanguageSwitcher() {
             alt={locale} 
             width={20} 
             height={15} 
-            className="rounded-sm object-cover shadow-sm"
+            className="w-5 h-[15px] rounded-sm object-cover shadow-sm"
           />
           <span>{localeNames[locale]}</span>
           <ChevronDown
@@ -85,7 +85,7 @@ export function LanguageSwitcher() {
                   alt={loc} 
                   width={20} 
                   height={15} 
-                  className="rounded-sm object-cover shadow-sm"
+                  className="w-5 h-[15px] rounded-sm object-cover shadow-sm"
                 />
                 <span>{localeNames[loc]}</span>
               </button>

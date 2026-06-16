@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import ProductSkeleton from "@/components/ui/ProductSkeleton";
 import type { Product } from "@/types";
+import type { TranslationValues } from "use-intl";
 
 interface SearchSuggestionsPanelProps {
   query: string;
@@ -14,7 +15,7 @@ interface SearchSuggestionsPanelProps {
   handleProductClick: (product: Product) => void;
   handleAddToCart: (product: Product) => void;
   handleViewAllResults: () => void;
-  t: (key: string, values?: any) => string;
+  t: (key: string, values?: TranslationValues) => string;
 }
 
 export function SearchSuggestionsPanel({

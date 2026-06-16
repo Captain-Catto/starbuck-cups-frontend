@@ -88,7 +88,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col">
       <ScrollToTop />
       <Header />
       <SettingsSocketProvider>

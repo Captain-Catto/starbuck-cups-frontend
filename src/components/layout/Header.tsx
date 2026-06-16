@@ -57,7 +57,7 @@ export function Header({ className = "" }: HeaderProps) {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm border-b border-zinc-800 ${className}`}
+        className={`fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-md border-b border-neutral-900 ${className}`}
         suppressHydrationWarning
       >
         {/* Mobile Layout */}
@@ -125,7 +125,7 @@ export function Header({ className = "" }: HeaderProps) {
                 className={`text-lg font-medium tracking-wider transition-colors relative pb-0.5 ${
                   pathname === href
                     ? "text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-white after:rounded-full"
-                    : "text-zinc-400 hover:text-white"
+                    : "text-neutral-400 hover:text-white"
                 }`}
               >
                 {label}
@@ -180,7 +180,7 @@ export function Header({ className = "" }: HeaderProps) {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-80 bg-zinc-900 z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-80 bg-black border-r border-neutral-900 z-50 transform transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -202,7 +202,7 @@ export function Header({ className = "" }: HeaderProps) {
             </div>
             <button type="button"
               onClick={() => setIsSidebarOpen(false)}
-              className="p-2 rounded-lg hover:bg-zinc-800 text-white transition-colors"
+              className="p-2 rounded-lg hover:bg-neutral-900 text-white transition-colors"
               aria-label={t("closeMenu")}
             >
               <X className="size-5" />
@@ -238,8 +238,8 @@ export function Header({ className = "" }: HeaderProps) {
                 onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center gap-3 py-3 px-4 rounded-lg text-base font-medium tracking-wide transition-colors ${
                   pathname === href
-                    ? "bg-zinc-800 text-white"
-                    : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                    ? "bg-neutral-900 text-white"
+                    : "text-neutral-300 hover:bg-neutral-900 hover:text-white"
                 }`}
               >
                 <svg className="size-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -250,7 +250,7 @@ export function Header({ className = "" }: HeaderProps) {
             ))}
           </div>
 
-          <div className="mt-8 pt-8 border-t border-zinc-700">
+          <div className="mt-8 pt-8 border-t border-neutral-900">
             <h3 className="text-base font-medium text-zinc-400 mb-4">
               {t("quickActions")}
             </h3>
@@ -260,7 +260,7 @@ export function Header({ className = "" }: HeaderProps) {
                   setIsSidebarOpen(false);
                   handleSearchClick();
                 }}
-                className="w-full text-left py-3 px-4 text-lg rounded-lg transition-colors text-zinc-300 hover:bg-zinc-800 hover:text-white flex items-center gap-3"
+                className="w-full text-left py-3 px-4 text-lg rounded-lg transition-colors text-neutral-300 hover:bg-neutral-900 hover:text-white flex items-center gap-3"
                 aria-label={t("searchProductsAria")}
               >
                 <Search className="size-5" />
@@ -271,7 +271,7 @@ export function Header({ className = "" }: HeaderProps) {
                   setIsSidebarOpen(false);
                   dispatch(openCart());
                 }}
-                className="w-full text-left py-3 px-4 text-lg rounded-lg transition-colors text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                className="w-full text-left py-3 px-4 text-lg rounded-lg transition-colors text-neutral-300 hover:bg-neutral-900 hover:text-white"
                 aria-label={t("shoppingCartAria")}
               >
                 <div className="flex items-center justify-between w-full">

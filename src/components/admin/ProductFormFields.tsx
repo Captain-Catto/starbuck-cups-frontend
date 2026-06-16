@@ -1,21 +1,44 @@
 "use client";
 
 import React from "react";
-import type { Category, Color, Capacity } from "@/types";
+import type { Category, Color, Capacity, ProductLocale } from "@/types";
+import type { ProductTranslationsInput } from "@/types";
 import { VipToggle } from "./VipRadio";
 import { FeaturedToggle } from "./FeaturedToggle";
 import { ProductTranslationsFields } from "./ProductTranslationsFields";
 import { ProductImageFields } from "./ProductImageFields";
 
+// Shared shape used by both useProductForm's ProductFormData (capacityIds)
+// and useUpdateProduct's UpdateProductFormData (capacityId) — this component
+// is duck-typed across both forms, so only the fields it actually reads are listed.
+interface ProductFormFieldsData {
+  translations: ProductTranslationsInput;
+  hasVariants: boolean;
+  categoryIds: string[];
+  colorIds: string[];
+  capacityId?: string;
+  capacityIds?: string[];
+  stockQuantity: number;
+  productUrl: string;
+  isActive: boolean;
+  isVip: boolean;
+  isFeatured: boolean;
+}
+
 interface ProductFormFieldsProps {
-  formData: any;
+  formData: ProductFormFieldsData;
   errors: Record<string, string>;
   categories: Category[];
   colors: Color[];
   capacities: Capacity[];
-  updateField: (key: any, value: any) => void;
-  updateTranslation: (lang: any, field: any, value: any) => void;
-  toggleArrayField: (key: any, value: any) => void;
+  // Method shorthand (bivariant params) so either form's narrower updateField/toggleArrayField can be passed.
+  updateField(key: string, value: unknown): void;
+  updateTranslation(
+    lang: ProductLocale,
+    field: "name" | "description" | "metaTitle" | "metaDescription",
+    value: string
+  ): void;
+  toggleArrayField(key: string, value: string): void;
   images: string[];
   isUploading: boolean;
   handleImageSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;

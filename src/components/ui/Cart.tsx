@@ -73,20 +73,20 @@ export function Cart({ className = "" }: CartProps) {
 
       {/* Cart Panel — always mounted so slide transition works */}
       <div
-        className={`fixed right-0 top-0 size-full max-w-md z-50 bg-zinc-900 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed right-0 top-0 size-full max-w-md z-50 bg-black border-l border-neutral-900 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? "translate-x-0" : "translate-x-full"
         } ${className}`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-800 flex-shrink-0">
+        <div className="flex items-center justify-between p-4 border-b border-neutral-900 flex-shrink-0">
           <h2 className="text-lg font-semibold text-white">
             {t("title", { count: totalItems })}
           </h2>
           <button type="button"
             onClick={() => dispatch(closeCart())}
-            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+            className="p-2 hover:bg-neutral-900 rounded-lg transition-colors cursor-pointer"
           >
-            <X className="size-5 text-zinc-400" />
+            <X className="size-5 text-neutral-400" />
           </button>
         </div>
 
@@ -105,13 +105,13 @@ export function Cart({ className = "" }: CartProps) {
           {items.length === 0 ? (
             // Empty Cart
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-              <div className="size-16 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
-                <ShoppingBag className="size-8 text-zinc-400" />
+              <div className="size-16 bg-neutral-900 border border-neutral-800 rounded-full flex items-center justify-center mb-4">
+                <ShoppingBag className="size-8 text-neutral-400" />
               </div>
               <h3 className="text-lg font-medium text-white mb-2">
                 {t("emptyTitle")}
               </h3>
-              <p className="text-zinc-400 mb-4">
+              <p className="text-neutral-400 mb-4">
                 {t("emptyDescription")}
               </p>
             </div>
@@ -132,18 +132,18 @@ export function Cart({ className = "" }: CartProps) {
               </div>
 
               {/* Footer Actions - Fixed at bottom */}
-              <div className="border-t border-zinc-800 bg-zinc-900 p-4 space-y-3">
+              <div className="border-t border-neutral-900 bg-black p-4 space-y-3">
                 {/* Consultation Order Button */}
                 <button type="button"
                   onClick={handleCreateConsultationOrder}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-zinc-100 text-black font-medium rounded-lg transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-neutral-100 text-black font-medium rounded-lg transition-colors cursor-pointer"
                 >
                   <FileText className="size-5" />
                   {t("createOrder")}
                 </button>
 
                 {/* Info Text */}
-                <p className="text-xs text-zinc-400 text-center">
+                <p className="text-xs text-neutral-400 text-center">
                   {t("createOrderInfo")}
                 </p>
               </div>
@@ -167,12 +167,12 @@ function CartItemCard({ item, onRemove, onOpenProduct }: CartItemCardProps) {
   const colorText = getProductColorNames(item, t("noColor"));
 
   return (
-    <div className="flex gap-3 p-3 bg-zinc-800 rounded-lg">
+    <div className="flex gap-3 p-3 bg-black border border-neutral-900 rounded-lg">
       {/* Product Image */}
       <Link
         href={`/products/${product.slug}`}
         onClick={onOpenProduct}
-        className="size-16 bg-zinc-700 rounded-lg overflow-hidden flex-shrink-0 hover:opacity-80 transition-opacity"
+        className="size-16 bg-neutral-950 rounded-lg overflow-hidden flex-shrink-0 hover:opacity-80 transition-opacity"
       >
         {getFirstProductImageUrl(product.productImages) ? (
           <OptimizedImage
@@ -210,7 +210,7 @@ function CartItemCard({ item, onRemove, onOpenProduct }: CartItemCardProps) {
                 {product.productColors.slice(0, 3).map((pc) => (
                   <div
                     key={pc.color.id}
-                    className="size-3 rounded-full border border-zinc-600"
+                    className="size-3 rounded-full border border-neutral-800"
                     style={{
                       backgroundColor: pc.color.hexCode || "#ffffff",
                     }}
@@ -218,20 +218,20 @@ function CartItemCard({ item, onRemove, onOpenProduct }: CartItemCardProps) {
                   />
                 ))}
                 {product.productColors.length > 3 && (
-                  <div className="size-3 rounded-full border border-zinc-600 bg-zinc-700 flex items-center justify-center">
-                    <span className="text-[8px] text-zinc-300">
+                  <div className="size-3 rounded-full border border-neutral-800 bg-neutral-900 flex items-center justify-center">
+                    <span className="text-[8px] text-neutral-400">
                       +{product.productColors.length - 3}
                     </span>
                   </div>
                 )}
               </div>
-              <span className="min-w-0 text-xs leading-relaxed text-zinc-400 break-words">
+              <span className="min-w-0 text-xs leading-relaxed text-neutral-400 break-words">
                 {colorText} •{" "}
                 {product.capacity?.name || t("notAvailable")}
               </span>
             </div>
           ) : (
-            <span className="text-xs leading-relaxed text-zinc-400 break-words">
+            <span className="text-xs leading-relaxed text-neutral-400 break-words">
               {colorText} • {product.capacity?.name || t("notAvailable")}
             </span>
           )}
@@ -242,9 +242,9 @@ function CartItemCard({ item, onRemove, onOpenProduct }: CartItemCardProps) {
       {/* Remove Button */}
       <button type="button"
         onClick={onRemove}
-        className="p-1 hover:bg-zinc-700 rounded transition-colors self-start cursor-pointer"
+        className="p-1 hover:bg-neutral-900 rounded transition-colors self-start cursor-pointer"
       >
-        <X className="size-4 text-zinc-400" />
+        <X className="size-4 text-neutral-400" />
       </button>
     </div>
   );

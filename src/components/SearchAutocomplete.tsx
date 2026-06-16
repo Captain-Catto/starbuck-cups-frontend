@@ -323,22 +323,22 @@ export function SearchAutocomplete({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-10"
+      className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-start justify-center pt-10"
       onClick={handleClose}
       role="presentation"
     >
       <div
-        className="bg-zinc-900 rounded-lg max-w-2xl lg:max-w-4xl w-full mx-4 overflow-hidden shadow-2xl"
+        className="bg-black border border-neutral-900 rounded-lg max-w-2xl lg:max-w-4xl w-full mx-4 overflow-hidden shadow-2xl shadow-black/80"
         onClick={(e) => e.stopPropagation()}
         role="presentation"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-900">
           <h2 className="text-lg font-bold text-white">{t("title")}</h2>
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 rounded-lg hover:bg-zinc-800 text-white transition-colors cursor-pointer"
+            className="p-2 rounded-lg hover:bg-neutral-900 text-white transition-colors cursor-pointer"
           >
             <X className="size-5" />
           </button>
@@ -348,8 +348,8 @@ export function SearchAutocomplete({
         <div className="p-4">
           <form onSubmit={handleSubmit}>
             <div className="relative">
-              <div className="flex items-center gap-2 bg-zinc-800 rounded-lg p-3">
-                <Search className="size-5 text-zinc-400 flex-shrink-0" />
+              <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-800 rounded-lg p-3 focus-within:border-white transition-colors duration-200">
+                <Search className="size-5 text-neutral-400 flex-shrink-0" />
                 <input
                   ref={inputRef}
                   id="search-autocomplete"
@@ -372,7 +372,7 @@ export function SearchAutocomplete({
                   }}
                   placeholder={t("placeholder")}
                   aria-label={t("placeholder")}
-                  className="flex-1 bg-transparent text-white placeholder-zinc-400 outline-none"
+                  className="flex-1 bg-transparent text-white placeholder-neutral-500 outline-none"
                 />
                 {query.length > 0 && (
                   <button
@@ -381,14 +381,14 @@ export function SearchAutocomplete({
                       dispatchState({ type: "SET_QUERY", payload: "" });
                       inputRef.current?.focus();
                     }}
-                    className="text-zinc-400 hover:text-white transition-colors flex-shrink-0 cursor-pointer"
+                    className="text-neutral-400 hover:text-white transition-colors flex-shrink-0 cursor-pointer"
                     aria-label="Clear search"
                   >
                     <X className="size-4" />
                   </button>
                 )}
                 {isLoading && (
-                  <Loader2 className="size-4 text-zinc-400 animate-spin flex-shrink-0" />
+                  <Loader2 className="size-4 text-neutral-400 animate-spin flex-shrink-0" />
                 )}
               </div>
             </div>
