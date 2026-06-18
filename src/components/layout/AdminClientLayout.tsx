@@ -9,7 +9,7 @@ interface AdminClientLayoutProps {
 
 export function AdminClientLayout({ children }: AdminClientLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
       <ErrorBoundary>{children}</ErrorBoundary>
       <Toaster
         position="top-right"
