@@ -230,14 +230,14 @@ export async function GET(request: NextRequest) {
       case "webp":
         sharpInstance = sharpInstance.webp({
           quality,
-          effort: 6,
+          effort: 4,
           smartSubsample: true,
         });
         break;
       case "avif":
         sharpInstance = sharpInstance.avif({
           quality,
-          effort: 9,
+          effort: 4,
         });
         break;
       case "jpeg":

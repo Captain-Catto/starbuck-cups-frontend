@@ -129,7 +129,7 @@ async function getProduct(slug: string, locale: string): Promise<Product | null>
   try {
     const response = await fetch(
       `${getApiUrl(`products/public/${slug}`)}?locale=${encodeURIComponent(locale)}`,
-      { next: { revalidate: 3600, tags: ["products"] } }
+      { next: { revalidate: 3600, tags: ["products"] }, signal: AbortSignal.timeout(8000) }
     );
     if (!response.ok) return null;
     const data = await response.json();
