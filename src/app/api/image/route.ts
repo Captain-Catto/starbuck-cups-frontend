@@ -81,6 +81,10 @@ async function fetchImage(url: string): Promise<Buffer> {
   const response = await fetch(url, {
     cache: "no-store",
     signal: controller.signal,
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+      "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+    },
   }).finally(() => clearTimeout(timeoutId));
 
   if (!response.ok) {

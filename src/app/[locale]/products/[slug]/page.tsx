@@ -75,7 +75,7 @@ export async function generateMetadata({
 
   const ogImageUrl = rawOgImage
     ? `${siteUrl}/api/image?url=${encodeURIComponent(convertDriveUrl(rawOgImage))}&w=1200&q=85&f=jpeg`
-    : `${siteUrl}/logo.png`;
+    : `${siteUrl}/images/placeholder.webp`;
 
   const ogTitleSuffix: Record<string, string> = {
     vi: "Mua ly Starbucks chính hãng",

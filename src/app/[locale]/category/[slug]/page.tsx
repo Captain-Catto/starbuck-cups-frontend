@@ -53,7 +53,7 @@ export async function generateMetadata({
     openGraph: {
       title: `${categoryName} Starbucks | ${siteConfig.name}`,
       description,
-      image: `${siteConfig.url}/logo.png`,
+      image: `${siteConfig.url}/images/placeholder.webp`,
       url: `/category/${slug}`,
       type: "website",
     },

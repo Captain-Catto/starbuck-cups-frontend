@@ -42,7 +42,7 @@ export async function generateMetadata({
       openGraph: {
         title: t("siteTitle"),
         description: t("siteDescription"),
-        image: "/logo.png",
+        image: "/images/placeholder.webp",
         url: "/",
         type: "website",
       },
@@ -51,7 +51,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: t("twitterTitle"),
       description: t("twitterDescription"),
-      images: ["/logo.png"],
+      images: ["/images/placeholder.webp"],
     },
     icons: {
       icon: [

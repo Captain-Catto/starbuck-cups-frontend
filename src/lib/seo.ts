@@ -6,7 +6,7 @@ export const siteConfig = {
   description:
     "Chuyên ly Starbucks, cốc Starbucks chính hãng các nước. Starbucks Cups, Tumbler, bình giữ nhiệt chính hãng. 95% mẫu hàng sẵn, ship hoả tốc HCM. Quà tặng cao cấp, có dịch vụ gói quà.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://hasron.vn",
-  image: "/logo.png",
+  image: "/images/placeholder.webp",
   keywords:
     "starbucks, ly starbucks, ly starbuck, cốc starbucks, cốc starbuck, starbucks cups, starbucks cup, starbuck cups, starbuck cup, cups, tumbler, ly giữ nhiệt, starbucks vietnam, ly starbucks chính hãng, ly starbuck chính hãng, mua ly starbuck, mua ly starbucks, mua cốc starbucks, bình starbucks chính hãng, bình giữ nhiệt starbucks, ly giữ nhiệt starbucks, ly sứ starbucks, ly starbucks giá rẻ, ly starbucks hcm, starbuck vietnam, quà tặng starbucks, ly starbucks chính hãng hcm, cốc starbucks sưu tầm, mua ly starbucks auth, ly starbucks auth, ly starbucks nhập khẩu, ly starbucks limited edition, ly starbucks các nước, tumbler starbucks chính hãng, bình nước starbucks, ly starbucks quà tặng",
 };
@@ -76,10 +76,15 @@ export function generateSEO(
         {
           url: image,
           alt: seo.openGraph?.title || title,
-          ...((image.includes('/api/image') || image.includes('lh3.googleusercontent.com')) && {
-            type: 'image/jpeg',
-            width: 1200,
-          }),
+          width: 1200,
+          height: 630,
+          ...(image.includes('/api/image') || image.includes('lh3.googleusercontent.com')
+            ? { type: 'image/jpeg' }
+            : image.endsWith('.jpg') || image.endsWith('.jpeg')
+            ? { type: 'image/jpeg' }
+            : image.endsWith('.png')
+            ? { type: 'image/png' }
+            : {}),
         },
       ],
       locale: ogLocale,
