@@ -25,7 +25,7 @@ export async function PATCH(
     const data = await handleAdminBackendResponse(response);
 
     if (data.success) {
-      revalidateTag("colors");
+      revalidateTag("colors", "default");
     }
 
     return NextResponse.json(data, { status: response.status });

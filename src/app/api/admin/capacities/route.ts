@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     const data = await handleAdminBackendResponse(response);
 
     if (data.success) {
-      revalidateTag("capacities");
+      revalidateTag("capacities", "default");
     }
 
     return NextResponse.json(data, { status: response.status });
