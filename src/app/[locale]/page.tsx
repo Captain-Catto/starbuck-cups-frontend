@@ -177,7 +177,6 @@ export default async function HomePage({
         <link
           rel="preload"
           as="image"
-          // @ts-expect-error -- imageSrcSet/imageSizes not yet in React types
           imageSrcSet={buildHeroPreloadSrcSet(firstHeroImage.imageUrl)}
           imageSizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 60vw, 50vw"
         />
