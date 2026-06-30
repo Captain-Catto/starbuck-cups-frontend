@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }`;
 
     const response = await fetch(url, {
-      cache: "no-store",
+      next: { revalidate: 30, tags: ["products"] },
       method: "GET",
       headers: {
         "Content-Type": "application/json",

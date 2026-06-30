@@ -15,7 +15,7 @@ export async function GET(
     });
 
     const response = await fetch(url.toString(), {
-      cache: "no-store",
+      next: { revalidate: 3600, tags: ["products"] },
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -35,11 +35,14 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      data: data.data,
-      error: null,
-    });
+    return NextResponse.json(
+      { success: true, data: data.data, error: null },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+        },
+      }
+    );
   } catch {
     return NextResponse.json(
       {

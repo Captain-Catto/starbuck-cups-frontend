@@ -33,16 +33,17 @@ export default function EffectManager() {
     redEnvelopeSettings,
     snowSettings,
     excludedPaths,
+    loaded,
   } = useSelector((state: RootState) => state.effectSettings);
 
   const { socket } = useSettingsSocket();
 
-  // Fetch settings on mount
+  // Fetch settings on mount (skip if already loaded)
   useEffect(() => {
-    // Dispatch action to fetch settings via API
-    // Need to implement fetchEffectSettings thunk
-    dispatch(fetchEffectSettings());
-  }, [dispatch]);
+    if (!loaded) {
+      dispatch(fetchEffectSettings());
+    }
+  }, [dispatch, loaded]);
 
   // Listen for socket updates
   useEffect(() => {

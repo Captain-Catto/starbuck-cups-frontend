@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const backendUrl = `${getApiUrl("capacities/public")}${query ? `?${query}` : ""}`;
 
     const response = await fetch(backendUrl, {
-      cache: "no-store",
+      next: { revalidate: 3600, tags: ["capacities"] },
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -21,7 +21,11 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    });
   } catch {
     return NextResponse.json(
       { error: "Failed to fetch capacities" },

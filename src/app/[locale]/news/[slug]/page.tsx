@@ -7,6 +7,24 @@ import type { News } from "@/types";
 import type { Metadata } from "next";
 
 export const revalidate = 3600;
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  try {
+    const res = await fetch(`${getApiUrl("news/public")}?limit=100`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const items: Array<{ slug: string }> = data.data?.items ?? [];
+    const locales = ["vi", "en", "zh"];
+    return locales.flatMap((locale) =>
+      items.map(({ slug }) => ({ locale, slug }))
+    );
+  } catch {
+    return [];
+  }
+}
 
 async function getNews(slug: string, locale: string): Promise<News | null> {
   try {

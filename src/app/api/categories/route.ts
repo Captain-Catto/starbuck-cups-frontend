@@ -6,7 +6,7 @@ export async function GET() {
     const backendUrl = getApiUrl("categories/public");
 
     const response = await fetch(backendUrl, {
-      cache: "no-store",
+      next: { revalidate: 3600, tags: ["categories"] },
       method: "GET",
       headers: {
         "Content-Type": "application/json",

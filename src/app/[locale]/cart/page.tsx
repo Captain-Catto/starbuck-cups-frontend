@@ -3,6 +3,8 @@ import { getTranslations } from "next-intl/server";
 import { generateSEO } from "@/lib/seo";
 import CartPageClient from "@/components/pages/CartPageClient";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: {

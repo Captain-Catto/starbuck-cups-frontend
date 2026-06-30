@@ -37,6 +37,7 @@ export interface EffectSettings {
 interface EffectSettingsState extends EffectSettings {
   isLoading: boolean;
   error: string | null;
+  loaded: boolean;
 }
 
 const DEFAULT_RED_ENVELOPE_SETTINGS: RedEnvelopeSettings = {
@@ -68,6 +69,7 @@ const initialState: EffectSettingsState = {
   excludedPaths: [],
   isLoading: false,
   error: null,
+  loaded: false,
 };
 
 const EFFECT_SETTINGS_API_URL = "/api/settings/effect-settings";
@@ -152,6 +154,7 @@ const effectSettingsSlice = createSlice({
       })
       .addCase(fetchEffectSettings.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.loaded = true;
         // Merge state
         Object.assign(state, action.payload);
         // Ensure defaults
