@@ -3,7 +3,6 @@
 import React from "react";
 import { Category } from "@/types";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
 import { useTranslations } from "next-intl";
 
 interface CategoryTabsProps {

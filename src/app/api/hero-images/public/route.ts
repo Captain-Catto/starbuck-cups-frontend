@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     });
 
     const response = await fetch(url.toString(), {
-      cache: "no-store",
+      next: { revalidate: 300 },
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -21,7 +21,12 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
-    return NextResponse.json(data, { status: response.status });
+    return NextResponse.json(data, {
+      status: response.status,
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+      },
+    });
   } catch {
     return NextResponse.json(
       { success: false, message: "Failed to fetch hero images" },

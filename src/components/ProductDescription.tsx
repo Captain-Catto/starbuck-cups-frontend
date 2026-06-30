@@ -3,7 +3,6 @@
 import type { Product } from "@/types";
 import DOMPurify from "isomorphic-dompurify";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
 import { useTranslations } from "next-intl";
 
 interface ProductDescriptionProps {

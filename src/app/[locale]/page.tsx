@@ -4,9 +4,19 @@ import { generateSEO } from "@/lib/seo";
 import HomePageComponent from "@/components/pages/HomePage";
 import { Category, Product } from "@/types";
 import { getApiUrl } from "@/lib/server-api";
+import { convertDriveUrl } from "@/utils/googleDriveHelper";
 
 export const revalidate = 3600;
 export const dynamic = "force-static";
+
+const HERO_PRELOAD_WIDTHS = [320, 640, 828, 960, 1200];
+
+function buildHeroPreloadSrcSet(rawUrl: string): string {
+  const converted = convertDriveUrl(rawUrl);
+  return HERO_PRELOAD_WIDTHS.map(
+    (w) => `/api/image?url=${encodeURIComponent(converted)}&w=${w}&q=75&f=webp ${w}w`
+  ).join(", ");
+}
 
 interface HeroImageData {
   id: string;
@@ -157,11 +167,26 @@ export default async function HomePage({
 
   const homePageData = await getHomePageData(locale);
 
+  const firstHeroImage = homePageData.heroImages
+    .filter((img) => img.isActive)
+    .sort((a, b) => a.order - b.order)[0];
+
   return (
-    <HomePageComponent
-      heroImages={homePageData.heroImages}
-      promotionalBanner={homePageData.promotionalBanner}
-      products={homePageData.products}
-    />
+    <>
+      {firstHeroImage && (
+        <link
+          rel="preload"
+          as="image"
+          // @ts-expect-error -- imageSrcSet/imageSizes not yet in React types
+          imageSrcSet={buildHeroPreloadSrcSet(firstHeroImage.imageUrl)}
+          imageSizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 60vw, 50vw"
+        />
+      )}
+      <HomePageComponent
+        heroImages={homePageData.heroImages}
+        promotionalBanner={homePageData.promotionalBanner}
+        products={homePageData.products}
+      />
+    </>
   );
 }

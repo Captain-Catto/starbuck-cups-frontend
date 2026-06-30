@@ -10,7 +10,6 @@ import { fetchProductBySlug } from "@/store/slices/productsSlice";
 import { toast } from "sonner";
 import { PropertyGallery } from "@/components/ui/PropertyGallery";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import { trackProductClick, trackAddToCartClick } from "@/lib/productAnalytics";
 import { useLocale, useTranslations } from "next-intl";

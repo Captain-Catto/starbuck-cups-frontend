@@ -10,6 +10,26 @@ import { PRODUCTS_PAGE_LIMIT } from "@/utils/layoutCalculator";
 import { generateSEO, siteConfig } from "@/lib/seo";
 import type { Category, Color, Capacity, Product } from "@/types";
 
+export const revalidate = 3600;
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  try {
+    const res = await fetch(getApiUrl("categories/public"), {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const items: Array<{ slug: string }> = data.data?.items ?? [];
+    const locales = ["vi", "en", "zh"];
+    return locales.flatMap((locale) =>
+      items.map(({ slug }) => ({ locale, slug }))
+    );
+  } catch {
+    return [];
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {

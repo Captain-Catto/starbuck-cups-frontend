@@ -19,36 +19,18 @@ interface SwiperCarouselProps {
 }
 
 export default function SwiperCarousel({ images }: SwiperCarouselProps) {
-  const [stylesReady, setStylesReady] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
-
-    // Load Swiper styles after hydration to avoid blocking initial render CSS.
-    Promise.all([import("swiper/css"), import("swiper/css/pagination")])
-      .then(() => {
-        if (isMounted) {
-          setStylesReady(true);
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
-          // Keep carousel usable even if style loading fails.
-          setStylesReady(true);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
+    setMounted(true);
   }, []);
 
-  if (!stylesReady || images.length === 0) {
-    const fallbackImage = images[0];
+  if (images.length === 0) {
+    return <div className="size-full bg-zinc-900" />;
+  }
 
-    if (!fallbackImage) {
-      return <div className="size-full bg-zinc-900" />;
-    }
+  if (!mounted) {
+    const fallbackImage = images[0];
 
     return (
       <div className="relative size-full">

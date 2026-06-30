@@ -1,7 +1,5 @@
 "use client";
 
-import "swiper/css";
-import "swiper/css/navigation";
 
 import { useEffect, useMemo } from "react";
 import { Product } from "@/types";
