@@ -20,9 +20,11 @@ interface HomeProductGridProps {
 const ProductRow = memo(function ProductRow({
   row,
   rowIndex,
+  imageSizes,
 }: {
   row: Product[];
   rowIndex: number;
+  imageSizes?: string;
 }) {
   const dispatch = useAppDispatch();
 
@@ -40,7 +42,8 @@ const ProductRow = memo(function ProductRow({
             product={product}
             onAddToCart={handleAddToCart}
             showAddToCart={true}
-            priority={globalIndex === 0}
+            priority={rowIndex === 0}
+            imageSizes={imageSizes}
           />
         );
       })}
@@ -75,6 +78,7 @@ export default function HomeProductGrid({
             key={`${selectedCategory}-${rowIndex}`}
             row={row}
             rowIndex={rowIndex}
+            imageSizes="(max-width: 1023px) calc(50vw - 1.5rem), calc(25vw - 1.5rem)"
           />
         ))}
       </div>

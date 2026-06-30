@@ -1,20 +1,12 @@
 "use client";
 
-import React, { lazy, Suspense } from "react";
+import React from "react";
 import { useTranslations } from "next-intl";
-import { ProductGridSkeleton } from "@/components/ui/LoadingSkeleton";
 import { Product } from "@/types";
 
-// Hero Section không lazy load để tối ưu LCP
 import HeroSection from "@/components/home/HeroSection";
+import HomeProductGrid from "@/components/HomeProductGrid";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
-
-// Lazy load các components khác để giảm bundle size và TBT
-const HomeProductGrid = lazy(() =>
-  import("@/components/HomeProductGrid").then((module) => ({
-    default: module.default,
-  }))
-);
 
 interface HeroImageData {
   id: string;
@@ -76,9 +68,7 @@ const HomePage: React.FC<HomePageProps> = ({
           </ScrollReveal>
 
           {/* Products Grid */}
-          <Suspense fallback={<ProductGridSkeleton />}>
-            <HomeProductGrid products={products} selectedCategory={null} />
-          </Suspense>
+          <HomeProductGrid products={products} selectedCategory={null} />
         </div>
       </section>
     </div>

@@ -2,14 +2,14 @@ import { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { generateSEO } from "@/lib/seo";
 import HomePageComponent from "@/components/pages/HomePage";
-import { Category, Product } from "@/types";
+import { Product } from "@/types";
 import { getApiUrl } from "@/lib/server-api";
 import { convertDriveUrl } from "@/utils/googleDriveHelper";
 
 export const revalidate = 3600;
 export const dynamic = "force-static";
 
-const HERO_PRELOAD_WIDTHS = [320, 640, 828, 960, 1200];
+const HERO_PRELOAD_WIDTHS = [384, 512, 750, 828, 960, 1200, 1600, 1920];
 
 function buildHeroPreloadSrcSet(rawUrl: string): string {
   const converted = convertDriveUrl(rawUrl);
@@ -38,7 +38,6 @@ interface PromotionalBannerData {
 }
 
 interface HomePageProps {
-  categories: Category[];
   heroImages: HeroImageData[];
   promotionalBanner: PromotionalBannerData | null;
   products: Product[];
@@ -67,94 +66,55 @@ export async function generateMetadata({
   });
 }
 
-async function getHomePageData(locale: string): Promise<HomePageProps> {
+async function fetchHeroImages(): Promise<HeroImageData[]> {
   try {
-    const categoriesResponse = await fetch(getApiUrl("categories/public/"), {
+    const res = await fetch(getApiUrl("hero-images/public"), {
       next: { revalidate: 300 },
       cache: "force-cache",
     });
-
-    let categories: Category[] = [];
-
-    if (categoriesResponse.ok) {
-      const categoriesData = await categoriesResponse.json();
-
-      if (categoriesData.success && categoriesData.data?.items) {
-        categories = categoriesData.data.items;
-      }
-    }
-
-    let heroImages: HeroImageData[] = [];
-    try {
-      const heroImagesUrl = getApiUrl("hero-images/public");
-
-      const heroImagesResponse = await fetch(heroImagesUrl, {
-        next: { revalidate: 300 },
-        cache: "force-cache",
-      });
-
-      if (heroImagesResponse.ok) {
-        const heroImagesData = await heroImagesResponse.json();
-
-        if (heroImagesData.success && heroImagesData.data) {
-          heroImages = heroImagesData.data;
-        }
-      }
-    } catch {}
-
-    let promotionalBanner: PromotionalBannerData | null = null;
-    try {
-      const bannerUrl = getApiUrl("promotional-banners");
-
-      const bannerResponse = await fetch(bannerUrl, {
-        next: { revalidate: 60 },
-        cache: "force-cache",
-      });
-
-      if (bannerResponse.ok) {
-        const bannerData = await bannerResponse.json();
-
-        if (bannerData.success && bannerData.data) {
-          promotionalBanner = bannerData.data;
-        }
-      }
-    } catch {}
-
-    let products: Product[] = [];
-    try {
-      const productsResponse = await fetch(
-        getApiUrl(
-          `products?sortBy=createdAt&sortOrder=desc&limit=12&locale=${locale}`
-        ),
-        {
-          next: { revalidate: 300 },
-          cache: "force-cache",
-        }
-      );
-
-      if (productsResponse.ok) {
-        const productsData = await productsResponse.json();
-
-        if (productsData.success && productsData.data?.items) {
-          products = productsData.data.items;
-        }
-      }
-    } catch {}
-
-    return {
-      categories,
-      heroImages,
-      promotionalBanner,
-      products,
-    };
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.success && data.data ? data.data : [];
   } catch {
-    return {
-      categories: [],
-      heroImages: [],
-      promotionalBanner: null,
-      products: [],
-    };
+    return [];
   }
+}
+
+async function fetchPromotionalBanner(): Promise<PromotionalBannerData | null> {
+  try {
+    const res = await fetch(getApiUrl("promotional-banners"), {
+      next: { revalidate: 300 },
+      cache: "force-cache",
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.success && data.data ? data.data : null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchProducts(locale: string): Promise<Product[]> {
+  try {
+    const res = await fetch(
+      getApiUrl(`products/public?sortBy=createdAt&sortOrder=desc&limit=12&locale=${locale}`),
+      { next: { revalidate: 300 }, cache: "force-cache" }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.success && data.data?.items ? data.data.items : [];
+  } catch {
+    return [];
+  }
+}
+
+async function getHomePageData(locale: string): Promise<HomePageProps> {
+  const [heroImages, promotionalBanner, products] = await Promise.all([
+    fetchHeroImages(),
+    fetchPromotionalBanner(),
+    fetchProducts(locale),
+  ]);
+  return { heroImages, promotionalBanner, products };
 }
 
 export default async function HomePage({

@@ -98,7 +98,7 @@ export async function generateMetadata({
   });
 }
 
-const PRELOAD_WIDTHS = [320, 456, 640, 828, 960, 1200];
+const PRELOAD_WIDTHS = [256, 320, 384, 456, 512, 640, 750, 828, 960, 1080, 1200];
 
 function buildPreloadSrcSet(rawUrl: string): string {
   const converted = convertDriveUrl(rawUrl);
@@ -147,13 +147,13 @@ export default async function ProductDetailPage({
   const { slug, locale } = await params;
   setRequestLocale(locale);
 
-  const product = await getProduct(slug, locale);
-  if (!product) notFound();
-
-  const [t, tProduct] = await Promise.all([
+  const [product, t, tProduct] = await Promise.all([
+    getProduct(slug, locale),
     getTranslations({ locale, namespace: "common" }),
     getTranslations({ locale, namespace: "productDetail" }),
   ]);
+
+  if (!product) notFound();
 
   const firstImageUrl = product.productImages?.reduce(
     (firstImage, image) => (image.order < firstImage.order ? image : firstImage),

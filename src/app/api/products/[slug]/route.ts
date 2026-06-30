@@ -8,7 +8,7 @@ export async function GET(
   try {
     const { slug } = await params;
     const searchParams = request.nextUrl.searchParams;
-    const backendUrl = new URL(getApiUrl(`products/${slug}`));
+    const backendUrl = new URL(getApiUrl(`products/public/${slug}`));
 
     searchParams.forEach((value, key) => {
       backendUrl.searchParams.append(key, value);

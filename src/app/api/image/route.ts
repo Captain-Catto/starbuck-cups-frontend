@@ -22,6 +22,13 @@ function getCacheDir(): string {
 }
 
 const CACHE_DIR = getCacheDir();
+
+// Initialize cache directory once at module load — not per request
+fs.mkdir(CACHE_DIR, { recursive: true }).catch(() => {});
+
+// Deduplicate concurrent requests for the same image to prevent thundering herd
+const inFlight = new Map<string, Promise<Buffer>>();
+
 const DEFAULT_IMAGE_WIDTH = 1200;
 const MAX_IMAGE_WIDTH = 1920;
 const MIN_IMAGE_QUALITY = 40;
@@ -49,15 +56,6 @@ const FALLBACK_SVG = `
 </svg>
 `;
 
-// Ensure cache directory exists
-async function ensureCacheDir() {
-  try {
-    await fs.access(CACHE_DIR);
-  } catch {
-    // Create directory recursively to ensure all parent dirs exist
-    await fs.mkdir(CACHE_DIR, { recursive: true });
-  }
-}
 
 // Generate cache key from URL and params
 function getCacheKey(
@@ -183,91 +181,77 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Ensure cache directory exists
-    await ensureCacheDir();
-
-    // Check cache first
+    // Check disk cache first
     const cacheKey = getCacheKey(url, width, quality, format);
     const cachePath = path.join(CACHE_DIR, cacheKey);
 
     try {
       // react-doctor-disable-next-line react-doctor/server-hoist-static-io -- The path is computed dynamically based on the incoming request params, so this file read cannot be hoisted to module scope.
       const cachedImage = await fs.readFile(cachePath);
-      const cachedBody = cachedImage as unknown as BodyInit;
-      return new NextResponse(cachedBody, {
+      return new NextResponse(cachedImage as unknown as BodyInit, {
         headers: {
           "Content-Type": `image/${format}`,
           "Cache-Control": "public, max-age=31536000, immutable",
         },
       });
     } catch {
-      // Cache miss, continue to optimization
+      // Cache miss — continue
     }
 
-    // Fetch original image with fallback protection
-    let imageBuffer: Buffer;
-    let isFallback = false;
-    try {
-      imageBuffer = await fetchImage(url);
-    } catch (fetchError) {
-      console.warn(`Failed to fetch original image (${url}), using fallback SVG placeholder:`, fetchError);
-      imageBuffer = Buffer.from(FALLBACK_SVG);
-      isFallback = true;
+    // Deduplicate concurrent requests for the same cache key
+    let processPromise = inFlight.get(cacheKey);
+    if (!processPromise) {
+      processPromise = (async (): Promise<Buffer> => {
+        let imageBuffer: Buffer;
+        let isFallback = false;
+        try {
+          imageBuffer = await fetchImage(url);
+        } catch (fetchError) {
+          console.warn(`Failed to fetch image (${url}), using fallback:`, fetchError);
+          imageBuffer = Buffer.from(FALLBACK_SVG);
+          isFallback = true;
+        }
+
+        let sharpInstance = sharp(imageBuffer);
+        const metadata = await sharpInstance.metadata();
+
+        if (metadata.width && metadata.width > width) {
+          sharpInstance = sharpInstance.resize(width, null, {
+            withoutEnlargement: true,
+            fit: "inside",
+          });
+        }
+
+        switch (format) {
+          case "webp":
+            sharpInstance = sharpInstance.webp({ quality, effort: 4, smartSubsample: true });
+            break;
+          case "avif":
+            sharpInstance = sharpInstance.avif({ quality, effort: 4 });
+            break;
+          case "jpeg":
+            sharpInstance = sharpInstance.jpeg({ quality, mozjpeg: true });
+            break;
+          case "png":
+            sharpInstance = sharpInstance.png({ quality, compressionLevel: 9 });
+            break;
+        }
+
+        const optimizedImage = await sharpInstance.toBuffer();
+
+        if (!isFallback) {
+          fs.writeFile(cachePath, optimizedImage).catch(() => {});
+        }
+
+        return optimizedImage;
+      })();
+
+      inFlight.set(cacheKey, processPromise);
+      processPromise.finally(() => inFlight.delete(cacheKey));
     }
 
-    // Process image with sharp
-    let sharpInstance = sharp(imageBuffer);
-
-    // Get metadata to check if resize is needed
-    const metadata = await sharpInstance.metadata();
-
-    // Only resize if image is larger than requested width
-    if (metadata.width && metadata.width > width) {
-      sharpInstance = sharpInstance.resize(width, null, {
-        withoutEnlargement: true,
-        fit: "inside",
-      });
-    }
-
-    // Convert to requested format with optimized settings
-    switch (format) {
-      case "webp":
-        sharpInstance = sharpInstance.webp({
-          quality,
-          effort: 4,
-          smartSubsample: true,
-        });
-        break;
-      case "avif":
-        sharpInstance = sharpInstance.avif({
-          quality,
-          effort: 4,
-        });
-        break;
-      case "jpeg":
-        sharpInstance = sharpInstance.jpeg({
-          quality,
-          mozjpeg: true,
-        });
-        break;
-      case "png":
-        sharpInstance = sharpInstance.png({
-          quality,
-          compressionLevel: 9, // Max compression
-        });
-        break;
-    }
-
-    const optimizedImage = await sharpInstance.toBuffer();
-
-    // Save to cache if not using the placeholder fallback
-    if (!isFallback) {
-      await fs.writeFile(cachePath, optimizedImage);
-    }
-
-    // Return optimized image
-    const optimizedBody = optimizedImage as unknown as BodyInit;
-    return new NextResponse(optimizedBody, {
+    const optimizedImage = await processPromise;
+    return new NextResponse(optimizedImage as unknown as BodyInit, {
       headers: {
         "Content-Type": `image/${format}`,
         "Cache-Control": "public, max-age=31536000, immutable",

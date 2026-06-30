@@ -9,7 +9,6 @@ import { ArrowRight } from "lucide-react";
 
 // Dynamic import toàn bộ Swiper bundle
 const SwiperCarousel = dynamic(() => import("./SwiperCarousel"), {
-  ssr: false,
   loading: () => (
     <div className="h-full bg-zinc-800 rounded-2xl md:rounded-3xl animate-pulse" />
   ),

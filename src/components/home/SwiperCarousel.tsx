@@ -1,5 +1,7 @@
 "use client";
 
+import "swiper/css";
+import "swiper/css/pagination";
 import React, { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
@@ -25,18 +27,15 @@ export default function SwiperCarousel({ images }: SwiperCarouselProps) {
     setMounted(true);
   }, []);
 
-  if (images.length === 0) {
-    return <div className="size-full bg-zinc-900" />;
-  }
+  if (images.length === 0) return <div className="size-full bg-zinc-900" />;
 
   if (!mounted) {
-    const fallbackImage = images[0];
-
+    const fallback = images[0];
     return (
       <div className="relative size-full">
         <OptimizedImage
-          src={fallbackImage.imageUrl}
-          alt={fallbackImage.altText}
+          src={fallback.imageUrl}
+          alt={fallback.altText}
           fill
           width={960}
           className="object-contain"
