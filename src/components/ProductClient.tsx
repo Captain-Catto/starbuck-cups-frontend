@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "@/i18n/routing";
 import { ShoppingCart, ExternalLink } from "lucide-react";
-import { useAppDispatch } from "@/store";
+import { useAppDispatch } from "@/store/hooks";
 import { addToCart } from "@/store/slices/cartSlice";
 import { setCurrentProduct } from "@/store/slices/productsSlice";
 import { toast } from "sonner";
@@ -11,7 +11,6 @@ import { PropertyGallery } from "@/components/ui/PropertyGallery";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import { trackProductClick, trackAddToCartClick } from "@/lib/productAnalytics";
 import { useTranslations } from "next-intl";
-import DOMPurify from "isomorphic-dompurify";
 import RelatedProducts from "@/components/RelatedProducts";
 import { Product } from "@/types";
 
@@ -174,8 +173,8 @@ export default function ProductClient({ product, relatedTitle }: Props) {
               <div className="prose prose-sm prose-invert max-w-none">
                 <div
                   className="text-xs md:text-sm text-zinc-300 leading-relaxed"
-                  // react-doctor-disable-next-line react-doctor/no-danger -- safely sanitized using DOMPurify
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
+                  // react-doctor-disable-next-line react-doctor/no-danger -- sanitized server-side in products/[slug]/page.tsx getProduct()
+                  dangerouslySetInnerHTML={{ __html: product.description }}
                 />
               </div>
             </div>

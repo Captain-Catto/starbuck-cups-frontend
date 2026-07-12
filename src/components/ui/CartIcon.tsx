@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppDispatch, useAppSelector } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectCartCount } from "@/store/selectors";
 import { toggleCart } from "@/store/slices/cartSlice";
 import { ShoppingBag } from "lucide-react";

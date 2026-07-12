@@ -7,6 +7,7 @@ import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Cart } from "@/components/ui/Cart";
 import ProductClient from "@/components/ProductClient";
 import { generateSEO } from "@/lib/seo";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 import type { Product } from "@/types";
 
 export async function generateMetadata({
@@ -133,7 +134,13 @@ async function getProduct(slug: string, locale: string): Promise<Product | null>
     );
     if (!response.ok) return null;
     const data = await response.json();
-    return data.data || null;
+    const product: Product | null = data.data || null;
+    // Sanitize here so ProductClient can inject the HTML without bundling
+    // DOMPurify on the client.
+    if (product?.description) {
+      product.description = sanitizeHtml(product.description);
+    }
+    return product;
   } catch {
     return null;
   }

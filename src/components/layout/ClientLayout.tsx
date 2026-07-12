@@ -5,11 +5,10 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Toaster, toast } from "sonner";
-import { useAppSelector, useAppDispatch } from "@/store";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { clearLastAction } from "@/store/slices/cartSlice";
 import { SettingsSocketProvider } from "@/components/providers/SettingsSocketProvider";
 import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 
 // Dynamic imports for non-critical interactive widgets
@@ -43,9 +42,10 @@ const BackToTopButton = dynamic(
 
 interface ClientLayoutProps {
   children: React.ReactNode;
+  footer?: React.ReactNode;
 }
 
-export function ClientLayout({ children }: ClientLayoutProps) {
+export function ClientLayout({ children, footer }: ClientLayoutProps) {
   const dispatch = useAppDispatch();
   const t = useTranslations("cartNotification");
   const tError = useTranslations("error");
@@ -107,7 +107,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
           </ErrorBoundary>
         </main>
       </SettingsSocketProvider>
-      <Footer />
+      {footer}
       {isCartOpen && <Cart />}
       {isRuntimeReady && (
         <FloatingContactButton

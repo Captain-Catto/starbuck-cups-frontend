@@ -2,7 +2,7 @@
 
 import { createContext, use, useEffect, useSyncExternalStore } from "react";
 import type { Socket } from "socket.io-client";
-import { useAppSelector } from "@/store";
+import { useAppSelector } from "@/store/hooks";
 import { getSocketBackendUrl } from "@/lib/client-config";
 
 interface SettingsSocketContextType {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, memo } from "react";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/types";
-import { useAppDispatch } from "@/store";
+import { useAppDispatch } from "@/store/hooks";
 import { addToCart } from "@/store/slices/cartSlice";
 
 interface ProductGridProps {

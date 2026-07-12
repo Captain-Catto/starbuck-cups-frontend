@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useState } from "react";
-import { useAppSelector, useAppDispatch } from "@/store";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { selectCartItems } from "@/store/selectors";
 import { clearCart } from "@/store/slices/cartSlice";
 import { useRouter } from "@/i18n/routing";

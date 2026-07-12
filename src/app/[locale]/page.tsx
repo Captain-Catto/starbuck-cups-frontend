@@ -5,6 +5,7 @@ import HomePageComponent from "@/components/pages/HomePage";
 import { Product } from "@/types";
 import { getApiUrl } from "@/lib/server-api";
 import { convertDriveUrl } from "@/utils/googleDriveHelper";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 
 export const revalidate = 3600;
 export const dynamic = "force-static";
@@ -88,7 +89,11 @@ async function fetchPromotionalBanner(): Promise<PromotionalBannerData | null> {
     });
     if (!res.ok) return null;
     const data = await res.json();
-    return data.success && data.data ? data.data : null;
+    if (!data.success || !data.data) return null;
+    const banner = data.data as PromotionalBannerData;
+    // Sanitize here so the client HeroSection can inject the HTML without
+    // bundling DOMPurify on the client.
+    return { ...banner, description: sanitizeHtml(banner.description) };
   } catch {
     return null;
   }

@@ -4,7 +4,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { useEffect, useMemo } from "react";
 import { Product } from "@/types";
-import { useAppDispatch, useAppSelector } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addToCart } from "@/store/slices/cartSlice";
 import { fetchRelatedProducts } from "@/store/slices/productsSlice";
 import ProductCard from "@/components/ProductCard";

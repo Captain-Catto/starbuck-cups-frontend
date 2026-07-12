@@ -56,6 +56,27 @@ const config = [
     },
   },
   {
+    // Public UI must not pull the full store (admin slices) into the bundle.
+    // Admin components and the admin-only StoreProvider are exempt.
+    files: ["src/components/**/*.{ts,tsx}"],
+    ignores: ["src/components/admin/**", "src/components/StoreProvider.tsx"],
+    rules: {
+      "@typescript-eslint/no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@/store",
+              message:
+                "Import hooks from '@/store/hooks' instead — importing '@/store' bundles every admin slice into public pages. Type imports are allowed.",
+              allowTypeImports: true,
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     ignores: [
       "node_modules/**",
       ".next/**",

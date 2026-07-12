@@ -3,7 +3,7 @@
 import { memo, useCallback } from "react";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/types";
-import { useAppDispatch } from "@/store";
+import { useAppDispatch } from "@/store/hooks";
 import { addToCart } from "@/store/slices/cartSlice";
 import { Link } from "@/i18n/routing";
 import { ArrowRight } from "lucide-react";

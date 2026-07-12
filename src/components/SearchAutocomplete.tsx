@@ -4,7 +4,7 @@ import { useRef, useEffect, useReducer, useCallback } from "react";
 import { Search, X, Loader2 } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
-import { useAppDispatch } from "@/store";
+import { useAppDispatch } from "@/store/hooks";
 import { addToCart } from "@/store/slices/cartSlice";
 import type { Product } from "@/types";
 import { trackAddToCart, trackSearch } from "@/lib/analytics";

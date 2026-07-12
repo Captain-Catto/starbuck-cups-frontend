@@ -4,7 +4,7 @@ import { Link, usePathname, useRouter } from "@/i18n/routing";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState, useSyncExternalStore } from "react";
-import { useAppDispatch, useAppSelector } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectCartCount } from "@/store/selectors";
 import { openCart } from "@/store/slices/cartSlice";
 import { Search, Menu as MenuIcon, X } from "lucide-react";

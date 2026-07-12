@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import ProductCard from "@/components/ProductCard";
-import { useAppDispatch } from "@/store";
+import { useAppDispatch } from "@/store/hooks";
 import { addToCart } from "@/store/slices/cartSlice";
 import type { Product, CapacityRange } from "@/types";
 import { trackAddToCart, trackPagination } from "@/lib/analytics";

@@ -8,8 +8,10 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { jetbrainsMono } from "@/lib/fonts";
 import { routing } from "@/i18n/routing";
-import StoreProvider from "@/components/StoreProvider";
+import { pickClientMessages } from "@/i18n/clientMessages";
+import PublicStoreProvider from "@/components/PublicStoreProvider";
 import ClientLayout from "@/components/layout/ClientLayout";
+import Footer from "@/components/layout/Footer";
 import { generateSEO, generateOrganizationStructuredData, siteConfig } from "@/lib/seo";
 
 export function generateStaticParams() {
@@ -185,10 +187,10 @@ export default async function LocaleLayout({
       </head>
       <body className="antialiased font-sans">
         <NextTopLoader color="#ffffff" height={2} showSpinner={false} />
-        <NextIntlClientProvider messages={messages}>
-          <StoreProvider>
-            <ClientLayout>{children}</ClientLayout>
-          </StoreProvider>
+        <NextIntlClientProvider messages={pickClientMessages(messages)}>
+          <PublicStoreProvider>
+            <ClientLayout footer={<Footer />}>{children}</ClientLayout>
+          </PublicStoreProvider>
         </NextIntlClientProvider>
       </body>
     </html>
