@@ -38,6 +38,10 @@ interface ProductCardProps {
   showBadges?: boolean;
   showInfo?: boolean;
   highlightText?: string;
+  /** Set false in grids whose URL changes on every filter/search keystroke —
+   * each router.replace re-prefetches all visible links (request flood).
+   * Leave default on static-URL pages (home, product detail) for instant clicks. */
+  prefetch?: boolean;
 }
 
 // react-doctor-disable-next-line react-doctor/no-many-boolean-props -- Stacking flags is required here for granular, high-fidelity custom design control of card variations in different catalog sections.
@@ -52,6 +56,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({
   showBadges = true,
   showInfo = true,
   highlightText,
+  prefetch,
 }) => {
   const tProduct = useTranslations("productDetail");
   const isTouch = useIsTouchDevice();
@@ -60,6 +65,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({
   return (
     <Link
       href={`/products/${product.slug}`}
+      prefetch={prefetch}
       className={`group block ${
         animationDelay !== undefined ? "animate-zoom-in" : ""
       }`}

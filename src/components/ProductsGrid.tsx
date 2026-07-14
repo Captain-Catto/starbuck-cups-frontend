@@ -263,6 +263,7 @@ export default function ProductsGrid({
             onAddToCart={handleAddToCart}
             showAddToCart={true}
             showSecondaryImage={true}
+            prefetch={false}
             priority={
               index < 6 &&
               currentPage === 1 &&
