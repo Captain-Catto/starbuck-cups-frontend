@@ -163,6 +163,7 @@ function MainImageButton({
           index: currentImage + 1,
         })}
         fill
+        sizes="(max-width: 1024px) 100vw, 50vw"
         className={`object-contain transition-opacity duration-150 ${
           imgVisible ? "opacity-100" : "opacity-0"
         }`}
@@ -222,6 +223,8 @@ function ThumbnailGallery({
                 src={image}
                 alt={t("thumbnailAlt", { index: index + 1 })}
                 fill
+                width={128}
+                sizes="112px"
                 className="object-contain"
                 style={{ objectFit: "contain" }}
                 onError={(e) => {

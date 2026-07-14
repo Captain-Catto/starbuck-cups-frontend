@@ -338,6 +338,8 @@ const CartItemRow = memo(function CartItemRow({ item }: { item: CartItem }) {
           }
           alt={item.product.name}
           fill
+          width={96}
+          sizes="80px"
           className="object-cover rounded-lg"
         />
       </div>

@@ -156,6 +156,7 @@ export function SearchAutocomplete({
   } = state;
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchAbortRef = useRef<AbortController | null>(null);
   const previousIsOpenRef = useRef(isOpen);
   const previousLocaleRef = useRef(locale);
 
@@ -178,13 +179,14 @@ export function SearchAutocomplete({
   const isLoadingHot =
     isOpen && recentlyViewed.length === 0 && !hasLoadedHotProducts;
 
-  // Clean timeout on unmount
+  // Clean timeout + in-flight request on unmount
   useEffect(() => {
     const activeTimeout = timeoutRef.current;
     return () => {
       if (activeTimeout) {
         clearTimeout(activeTimeout);
       }
+      searchAbortRef.current?.abort();
     };
   }, []);
 
@@ -203,9 +205,16 @@ export function SearchAutocomplete({
 
     dispatchState({ type: "SET_LOADING", payload: true });
     timeoutRef.current = setTimeout(async () => {
+      // Cancel the previous in-flight search so a slow earlier response
+      // can't overwrite newer results.
+      searchAbortRef.current?.abort();
+      const controller = new AbortController();
+      searchAbortRef.current = controller;
+
       try {
         const response = await fetch(
-          `/api/products?search=${encodeURIComponent(val)}&limit=12&locale=${locale}`
+          `/api/products?search=${encodeURIComponent(val)}&limit=12&locale=${locale}`,
+          { signal: controller.signal }
         );
 
         if (response.ok) {
@@ -220,10 +229,13 @@ export function SearchAutocomplete({
             trackSearch(val, data.data.items.length);
           }
         }
-      } catch {
-        dispatchState({ type: "SET_PRODUCTS", payload: [] });
-      } finally {
         dispatchState({ type: "SET_LOADING", payload: false });
+      } catch (err) {
+        // An aborted request means a newer search took over — keep loading state.
+        if ((err as Error).name !== "AbortError") {
+          dispatchState({ type: "SET_PRODUCTS", payload: [] });
+          dispatchState({ type: "SET_LOADING", payload: false });
+        }
       }
     }, 300);
   };

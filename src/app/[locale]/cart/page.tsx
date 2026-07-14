@@ -3,7 +3,10 @@ import { getTranslations } from "next-intl/server";
 import { generateSEO } from "@/lib/seo";
 import CartPageClient from "@/components/pages/CartPageClient";
 
-export const dynamic = "force-dynamic";
+// Cart data lives entirely in client-side Redux/localStorage — the shell is
+// static so the CDN can cache it and TTFB is instant.
+export const dynamic = "force-static";
+export const revalidate = 86400;
 
 export async function generateMetadata({
   params,

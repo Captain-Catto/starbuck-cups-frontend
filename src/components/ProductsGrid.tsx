@@ -1,7 +1,7 @@
 "use client";
 
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import ProductCard from "@/components/ProductCard";
 import { useAppDispatch } from "@/store/hooks";
 import { addToCart } from "@/store/slices/cartSlice";
@@ -185,7 +185,9 @@ export default function ProductsGrid({
     locale,
   ]);
 
-  const handleAddToCart = (product: Product) => {
+  // Stable identities so memo()'d ProductCards don't re-render on every
+  // parent render (e.g. each search keystroke).
+  const handleAddToCart = useCallback((product: Product) => {
     dispatch(addToCart({ product }));
 
     // Track add to cart event
@@ -194,9 +196,9 @@ export default function ProductsGrid({
       name: product.name,
       category: product.productCategories?.[0]?.category?.name,
     });
-  };
+  }, [dispatch]);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     // Smooth scroll to top, with fallback for older browsers
     try {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -209,7 +211,7 @@ export default function ProductsGrid({
     if (paginationData) {
       trackPagination(page, paginationData.totalPages);
     }
-  };
+  }, [onPageChange, paginationData]);
 
   // Skeleton loading — only on first load when there are no products to show yet.
   // When products already exist and we're fetching new ones (filter change), show

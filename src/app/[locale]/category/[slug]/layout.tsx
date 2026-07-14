@@ -11,7 +11,8 @@ interface Props {
 async function getCategory(slug: string): Promise<Category | null> {
   try {
     const response = await fetch(getApiUrl(`categories/public/${slug}`), {
-      next: { revalidate: 3600 },
+      // Same options as the page's fetch so request memoization dedupes them
+      next: { revalidate: 3600, tags: ["categories"] },
     });
     if (!response.ok) return null;
     const data = await response.json();

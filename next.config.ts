@@ -82,16 +82,28 @@ const nextConfig: NextConfig = {
   // Disable source maps in production to reduce bundle size (~2-3MB)
   productionBrowserSourceMaps: false,
   // Hide server fingerprinting headers
-  headers: async () => [
-    {
-      source: "/(.*)",
-      headers: [
-        { key: "X-Powered-By", value: "" },
-        { key: "X-Content-Type-Options", value: "nosniff" },
-        { key: "X-Frame-Options", value: "SAMEORIGIN" },
-      ],
-    },
-  ],
+  headers: async () => {
+    // public/ assets get no Cache-Control by default; 30 days (not immutable)
+    // because these files change content without changing name.
+    const staticAssetCache = {
+      key: "Cache-Control",
+      value: "public, max-age=2592000, stale-while-revalidate=86400",
+    };
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Powered-By", value: "" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        ],
+      },
+      { source: "/logo.png", headers: [staticAssetCache] },
+      { source: "/logo-32.png", headers: [staticAssetCache] },
+      { source: "/favicon.ico", headers: [staticAssetCache] },
+      { source: "/images/:path*", headers: [staticAssetCache] },
+    ];
+  },
   // Compression
   compress: true,
   modularizeImports: {

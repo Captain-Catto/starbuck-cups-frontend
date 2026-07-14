@@ -57,11 +57,11 @@ export async function generateMetadata({
     },
     icons: {
       icon: [
+        { url: "/logo-32.png", sizes: "16x16", type: "image/png" },
+        { url: "/logo-32.png", sizes: "32x32", type: "image/png" },
         { url: "/logo.png", sizes: "any", type: "image/png" },
-        { url: "/logo.png", sizes: "16x16", type: "image/png" },
-        { url: "/logo.png", sizes: "32x32", type: "image/png" },
       ],
-      shortcut: "/logo.png",
+      shortcut: "/logo-32.png",
       apple: [{ url: "/logo.png", sizes: "180x180", type: "image/png" }],
     },
     alternates: {
@@ -155,10 +155,10 @@ export default async function LocaleLayout({
           <>
             <Script
               async
-              strategy="afterInteractive"
+              strategy="lazyOnload"
               src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
             />
-            <Script id="google-analytics-init" strategy="afterInteractive">
+            <Script id="google-analytics-init" strategy="lazyOnload">
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
