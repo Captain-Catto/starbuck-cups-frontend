@@ -72,9 +72,9 @@
     "emailResponse": "Response within 24 hours",
     "address": "Address",
     "addressLine1": "254 Tran Hung Dao B",
-    "addressLine2": "Ward 11, District 5",
+    "addressLine2": "Cho Lon Ward",
     "addressLine3": "Ho Chi Minh City",
-    "addressShort": "254 Tran Hung Dao B, W.11, D.5, HCMC",
+    "addressShort": "254 Tran Hung Dao B, Cho Lon Ward, HCMC",
     "workingHours": "Working Hours",
     "support247": "24/7 Support"
   },
