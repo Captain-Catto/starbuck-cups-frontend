@@ -17,6 +17,14 @@ const NotificationDropdown = dynamic(
     })),
   { ssr: false }
 );
+
+const NewConsultationAlertModal = dynamic(
+  () =>
+    import("@/components/admin/NewConsultationAlertModal").then((mod) => ({
+      default: mod.NewConsultationAlertModal,
+    })),
+  { ssr: false }
+);
 import {
   LayoutDashboard,
   Package,
@@ -564,6 +572,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       </div>
 
       <SidebarOverlay show={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* Blocking full-screen alert for new customer consultations — the bell
+          icon alone (shake + badge) is too easy to miss or mistake for noise. */}
+      <NewConsultationAlertModal />
     </div>
   );
 }
