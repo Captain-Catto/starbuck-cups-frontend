@@ -82,6 +82,33 @@ export function useConsultationAlertQueue() {
     };
   }, [queue.length]);
 
+  // Flash the browser tab title while an alert is waiting — the sound can be
+  // missed if the admin is on another tab/app, but a flashing title is
+  // visible the moment they glance at the taskbar/tab bar.
+  const originalTitle = useRef<string | null>(null);
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (originalTitle.current === null) originalTitle.current = document.title;
+
+    if (queue.length === 0) {
+      document.title = originalTitle.current;
+      return;
+    }
+
+    const alertTitle =
+      queue.length > 1 ? `🔴 (${queue.length}) Tin tư vấn mới!` : "🔴 Tin tư vấn mới!";
+    let showingAlert = false;
+    const flashTimer = setInterval(() => {
+      showingAlert = !showingAlert;
+      document.title = showingAlert ? alertTitle : originalTitle.current!;
+    }, 1000);
+
+    return () => {
+      clearInterval(flashTimer);
+      document.title = originalTitle.current!;
+    };
+  }, [queue.length]);
+
   const acknowledge = useCallback(
     async (id: string) => {
       setQueue((prev) => prev.filter((n) => n.id !== id));
