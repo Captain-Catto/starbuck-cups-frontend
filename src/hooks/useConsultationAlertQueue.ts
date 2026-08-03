@@ -9,10 +9,10 @@ import type { NotificationData } from "@/types/notification.types";
 
 let audioCtx: AudioContext | null = null;
 
-// Two-tone beep via Web Audio API — no external asset needed, and it repeats
-// while unacknowledged so it can't be missed like a silent badge or a toast
-// that auto-dismisses in a few seconds.
-function playAlertBeep() {
+// Two-tone beep via Web Audio API — used as a fallback if the real ringtone
+// file below is missing or fails to load, so sound never hard-depends on a
+// static asset being present.
+function playGeneratedBeep() {
   try {
     const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctx) return;
@@ -36,6 +36,27 @@ function playAlertBeep() {
   } catch {
     // Autoplay can be blocked before any user interaction — the visual
     // modal still appears regardless.
+  }
+}
+
+// Real ringtone file — drop an mp3 at public/sounds/consultation-alert.mp3.
+// Falls back to the generated beep if the file is missing (404) or blocked.
+const ALERT_SOUND_URL = "/sounds/consultation-alert.mp3";
+
+function playAlertBeep() {
+  try {
+    const audio = new Audio(ALERT_SOUND_URL);
+    audio.volume = 0.85;
+    let fellBack = false;
+    const fallback = () => {
+      if (fellBack) return;
+      fellBack = true;
+      playGeneratedBeep();
+    };
+    audio.addEventListener("error", fallback, { once: true });
+    audio.play().catch(fallback);
+  } catch {
+    playGeneratedBeep();
   }
 }
 
