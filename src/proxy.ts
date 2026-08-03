@@ -39,8 +39,10 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next|favicon\\.ico|logo.*|font|images|.*\\.webp|.*\\.png|.*\\.jpg|.*\\.svg|.*\\.ico|sitemap\\.xml|robots\\.txt).*)",
-  ],
+  // Exclude _next internals and any path with a file extension (favicon.ico,
+  // logo.png, images/*, sounds/*.mp3, sitemap.xml, ...) instead of listing
+  // every static folder/extension by hand — new public/ assets then need no
+  // changes here, unlike the previous list which silently 404'd .mp3 files.
+  matcher: ["/((?!_next|.*\\..*).*)"],
 };
 
