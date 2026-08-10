@@ -58,6 +58,12 @@ const nextConfig: NextConfig = {
   },
   // Bundle optimization
   experimental: {
+    // Next's proxy layer caps the request body it hands to Route Handlers at
+    // 10MB by default and silently truncates anything larger (not an error —
+    // just a corrupted body downstream). Admin uploads allow up to 10 files
+    // at 10MB each (see upload.middleware.ts), so the ceiling here has to
+    // cover that combined worst case with headroom for multipart overhead.
+    proxyClientMaxBodySize: "120mb",
     // Split CSS by route more aggressively to reduce shared blocking CSS.
     cssChunking: "strict",
     // Inline critical CSS into HTML to reduce render-blocking stylesheet requests.

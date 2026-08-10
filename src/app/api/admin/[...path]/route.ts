@@ -50,9 +50,17 @@ async function forwardAdminRequest(request: NextRequest, context: RouteContext) 
     }
 
     return nextResponse;
-  } catch {
+  } catch (error) {
+    // Previously swallowed silently — surfacing this is the only way to
+    // diagnose failures like a dropped mobile upload or an oversized body,
+    // since the generic 500 alone gives no signal of which.
+    console.error("[admin-proxy] Failed to proxy admin request:", error);
     return NextResponse.json(
-      { success: false, message: "Failed to proxy admin request" },
+      {
+        success: false,
+        message: "Failed to proxy admin request",
+        error: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

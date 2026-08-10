@@ -43,17 +43,71 @@ function playGeneratedBeep() {
 // Falls back to the generated beep if the file is missing (404) or blocked.
 const ALERT_SOUND_URL = "/sounds/consultation-alert.mp3";
 
+// A single reused <audio> element. Mobile Safari only trusts *this specific*
+// element for gesture-less playback after it's been "unlocked" (played once
+// synchronously inside a real tap) — a fresh `new Audio()` per call would not
+// carry that trust and would get silently blocked when a socket event fires
+// later without a tap.
+let sharedAudioEl: HTMLAudioElement | null = null;
+function getSharedAudioEl(): HTMLAudioElement {
+  if (!sharedAudioEl) {
+    sharedAudioEl = new Audio(ALERT_SOUND_URL);
+    sharedAudioEl.volume = 0.85;
+  }
+  return sharedAudioEl;
+}
+
+let audioUnlocked = false;
+/**
+ * Mobile browsers (especially iOS Safari) only allow audio.play() when it
+ * runs synchronously inside a real user gesture. A consultation alert is
+ * triggered by a socket event, not a tap, so without this it plays silently
+ * nowhere. Call once on the admin's first tap anywhere in the app to "prime"
+ * both the ringtone element and the Web Audio context for later gesture-less
+ * playback in the same page session.
+ */
+export function unlockConsultationAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+
+  try {
+    const el = getSharedAudioEl();
+    const prevVolume = el.volume;
+    el.volume = 0;
+    el.play()
+      .then(() => {
+        el.pause();
+        el.currentTime = 0;
+        el.volume = prevVolume;
+      })
+      .catch(() => {
+        el.volume = prevVolume;
+      });
+  } catch {
+    // Ignore — worst case the first real alert falls back silently.
+  }
+
+  try {
+    const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (Ctx) {
+      if (!audioCtx) audioCtx = new Ctx();
+      if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+    }
+  } catch {
+    // Ignore
+  }
+}
+
 function playAlertBeep() {
   try {
-    const audio = new Audio(ALERT_SOUND_URL);
-    audio.volume = 0.85;
+    const audio = getSharedAudioEl();
+    audio.currentTime = 0;
     let fellBack = false;
     const fallback = () => {
       if (fellBack) return;
       fellBack = true;
       playGeneratedBeep();
     };
-    audio.addEventListener("error", fallback, { once: true });
     audio.play().catch(fallback);
   } catch {
     playGeneratedBeep();
@@ -75,6 +129,21 @@ export function useConsultationAlertQueue() {
   const [queue, setQueue] = useState<NotificationData[]>([]);
   const seenIds = useRef<Set<string>>(new Set());
   const repeatTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Prime audio playback on the admin's first tap/click anywhere in the app —
+  // required on mobile (especially iOS Safari) since the alert sound is
+  // triggered later by a socket event, not a direct gesture.
+  useEffect(() => {
+    const events: Array<keyof DocumentEventMap> = ["pointerdown", "touchstart", "keydown"];
+    const handleFirstInteraction = () => {
+      unlockConsultationAudio();
+      events.forEach((evt) => document.removeEventListener(evt, handleFirstInteraction));
+    };
+    events.forEach((evt) => document.addEventListener(evt, handleFirstInteraction, { once: true }));
+    return () => {
+      events.forEach((evt) => document.removeEventListener(evt, handleFirstInteraction));
+    };
+  }, []);
 
   useEffect(() => {
     const fresh = notifications.filter(

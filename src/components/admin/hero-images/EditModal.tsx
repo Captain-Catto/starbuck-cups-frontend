@@ -37,9 +37,9 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Kích thước file không được vượt quá 5MB!");
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Kích thước file không được vượt quá 10MB!");
       return;
     }
 
@@ -177,7 +177,7 @@ export function EditModal({ image, onClose, onSuccess }: EditModalProps) {
                       Kéo thả ảnh mới vào đây hoặc click để chọn
                     </p>
                     <p className="text-gray-500 text-sm">
-                      PNG, JPG, WEBP (tối đa 5MB)
+                      PNG, JPG, WEBP (tối đa 10MB)
                     </p>
                     <input aria-label="file"
                       type="file"

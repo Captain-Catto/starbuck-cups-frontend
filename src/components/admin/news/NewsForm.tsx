@@ -329,7 +329,7 @@ function NewsSettingsPanel({
                 {thumbnailUploading ? "Đang upload..." : "Click hoặc kéo thả ảnh"}
               </span>
               <span className="text-xs text-gray-500">
-                PNG, JPG, WebP tối đa 5MB
+                PNG, JPG, WebP tối đa 10MB
               </span>
             </button>
           )}
@@ -432,8 +432,8 @@ export function NewsForm({ initialData }: NewsFormProps) {
       toast.error("Chỉ chấp nhận file ảnh");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Ảnh không được vượt quá 5MB");
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Ảnh không được vượt quá 10MB");
       return;
     }
     dispatch({ type: "SET_THUMBNAIL_UPLOADING", payload: true });
