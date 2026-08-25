@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "@/i18n/routing";
-import { ShoppingCart, ExternalLink } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { useAppDispatch } from "@/store/hooks";
 import { addToCart } from "@/store/slices/cartSlice";
 import { setCurrentProduct } from "@/store/slices/productsSlice";
@@ -158,8 +158,9 @@ export default function ProductClient({ product, relatedTitle }: Props) {
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-medium text-xs md:text-sm bg-white text-black hover:bg-zinc-100 active:scale-[0.97] transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
-                <ExternalLink className="size-4" />
+                <span aria-hidden="true">🎥</span>
                 {t("viewClip")}
+                <span aria-hidden="true">🎥</span>
               </a>
             )}
           </div>
