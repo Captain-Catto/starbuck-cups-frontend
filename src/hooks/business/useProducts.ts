@@ -3,6 +3,7 @@
 import { useReducer, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/redux";
+import { getAdminAuthHeaders } from "@/lib/admin-token";
 
 export interface Product {
   id: string;
@@ -183,7 +184,6 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
   // react-doctor-disable-next-line react-doctor/no-event-handler -- initialization fetch re-runs on pagination/filter change, not a user event
   } = options;
 
-  const { token } = useAppSelector((state) => state.auth);
 
   const [state, dispatch] = useReducer(productReducer, {
     products: [],
@@ -200,10 +200,8 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
   const { products, pagination, filters, loading, error } = state;
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-
-
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [token]);
+    return getAdminAuthHeaders();
+  }, []);
 
   const fetchProducts = useCallback(async () => {
     try {

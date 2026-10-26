@@ -30,7 +30,7 @@ export function OrderStatsCards({
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 sm:gap-6">
         {["a", "b", "c", "d"].map((id) => (
           <div
             key={id}
@@ -53,16 +53,16 @@ export function OrderStatsCards({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 sm:gap-6">
       {displayStats.map((stat) => (
         <div
           key={stat.label}
-          className="bg-gray-800 rounded-lg border border-gray-700 p-6 hover:bg-gray-750 transition-colors"
+          className="rounded-lg border border-gray-700 bg-gray-800 p-3 transition-colors hover:bg-gray-750 sm:p-6"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-400">{stat.label}</p>
-              <p className="text-2xl font-bold text-white mt-2">{stat.value}</p>
+              <p className="text-xs font-medium text-gray-400 sm:text-sm">{stat.label}</p>
+              <p className="mt-1 text-xl font-bold text-white sm:mt-2 sm:text-2xl">{stat.value}</p>
             </div>
             <div
               className={`flex items-center gap-1 text-sm font-medium ${

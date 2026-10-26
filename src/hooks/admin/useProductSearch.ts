@@ -1,9 +1,9 @@
 ﻿import { useState, useRef } from "react";
 import { useAppSelector } from "@/store";
 import { Product } from "@/types/orders";
+import { getAdminToken } from "@/lib/admin-token";
 
 export function useProductSearch() {
-  const { token } = useAppSelector((state) => state.auth);
 
   // Product search state
   const [productSearchTerm, setProductSearchTerm] = useState("");
@@ -34,8 +34,8 @@ export function useProductSearch() {
         "Content-Type": "application/json",
       };
 
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
+      if (getAdminToken()) {
+        headers.Authorization = `Bearer ${getAdminToken()}`;
       }
 
       const response = await fetch(

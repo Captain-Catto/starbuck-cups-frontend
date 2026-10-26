@@ -82,19 +82,19 @@ export default function OrdersPage() {
   }, []);
 
   return (
-    <div className="space-y-6 bg-gray-900 min-h-screen p-6">
+    <div className="min-h-screen space-y-4 bg-gray-900 sm:space-y-6 sm:p-6">
       <PageHeader
         title="Quản lý đơn hàng"
         description="Theo dõi và xử lý đơn hàng từ khách hàng"
         action={
-          <div className="flex gap-3">
-            <button type="button" className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
+          <div className="flex gap-2 sm:gap-3">
+            <button type="button" className="hidden items-center gap-2 rounded-lg bg-gray-700 px-4 py-2 text-white transition-colors hover:bg-gray-600 sm:inline-flex">
               <Download className="size-4" />
               Xuất Excel
             </button>
             <Link
               href="/admin/orders/new"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-700"
             >
               <Plus className="size-4" />
               Tạo đơn hàng

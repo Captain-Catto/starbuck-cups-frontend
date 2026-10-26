@@ -1,13 +1,23 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { clientApi } from "@/lib/client-api";
-import type { AuthState } from "@/types";
+import type { AdminUser, AuthState } from "@/types";
 import { getUserFromToken } from "@/lib/jwt";
 
 const ADMIN_TOKEN_STORAGE_KEY = "admin_token";
 
 function getStoredAdminToken() {
   return localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY);
+}
+
+// Fields the token does not carry; they always come from the verify/session/login response
+function accessFields(user: AdminUser | undefined) {
+  return {
+    mustChangePassword: Boolean(user?.mustChangePassword),
+    roleId: user?.roleId ?? null,
+    roleName: user?.roleName,
+    permissions: user?.permissions ?? [],
+  };
 }
 
 // Create initial state with client-side check
@@ -183,6 +193,9 @@ const authSlice = createSlice({
       state.sessionChecked = true;
       state.loading = false;
     },
+    passwordChanged: (state) => {
+      if (state.user) state.user.mustChangePassword = false;
+    },
     setTokens: (
       state,
       action: PayloadAction<{ token: string; refreshToken?: string }>
@@ -207,7 +220,7 @@ const authSlice = createSlice({
 
         // Check if payload has token (from session restore)
         const payload = action.payload as {
-          user: { id: string; email: string; name: string; role: string };
+          user: AdminUser;
           token?: string;
         };
 
@@ -229,6 +242,8 @@ const authSlice = createSlice({
         } else {
           state.user = payload.user;
         }
+        // The token does not carry this flag, so it always comes from the verify/session response
+        if (state.user) Object.assign(state.user, accessFields(payload.user));
 
         state.sessionChecked = true;
       })
@@ -302,6 +317,7 @@ const authSlice = createSlice({
           ...action.payload.user,
           role: "admin", // default admin role if not in token
         };
+        Object.assign(state.user, accessFields(action.payload.user));
 
         state.token = action.payload.token;
         state.refreshToken = action.payload.refreshToken ?? null;
@@ -327,5 +343,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, setTokens, setSessionChecked } = authSlice.actions;
+export const { clearError, setTokens, setSessionChecked, passwordChanged } = authSlice.actions;
 export default authSlice.reducer;

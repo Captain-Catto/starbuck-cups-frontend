@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useReducer } from "react";
 import { useAppSelector } from "@/store";
 import type { Consultation, ConsultationStatus, PaginationMeta } from "@/types";
 import { toast } from "sonner";
+import { getAdminAuthHeaders } from "@/lib/admin-token";
 
 interface ConsultationFilters {
   status: string;
@@ -115,7 +116,6 @@ export interface UseConsultationsReturn {
 
 export function useConsultations(): UseConsultationsReturn {
   const apiBaseUrl = "/api";
-  const { token } = useAppSelector((state) => state.auth);
   const [{ consultations, loading, pagination }, dispatchData] = useReducer(
     consultationsDataReducer,
     initialConsultationsDataState
@@ -146,8 +146,8 @@ export function useConsultations(): UseConsultationsReturn {
   );
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [token]);
+    return getAdminAuthHeaders();
+  }, []);
 
   const fetchConsultations = useCallback(async () => {
     try {

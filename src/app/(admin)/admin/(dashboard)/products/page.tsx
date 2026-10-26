@@ -7,26 +7,13 @@ import { useSearchParams } from "next/navigation";
 import { useProducts } from "@/hooks/admin/useProducts";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { PageHeader } from "@/components/admin/PageHeader";
-
-const ProductsFilters = dynamic(
-  () => import("@/components/admin/products/ProductsFilters").then(mod => ({ default: mod.ProductsFilters })),
-  { loading: () => <div className="h-12 bg-gray-100 animate-pulse rounded" /> }
-);
-
-const ProductsBulkActions = dynamic(
-  () => import("@/components/admin/products/ProductsBulkActions").then(mod => ({ default: mod.ProductsBulkActions })),
-  { loading: () => <div className="h-10 bg-gray-100 animate-pulse rounded" /> }
-);
-
-const ProductsTable = dynamic(
-  () => import("@/components/admin/products/ProductsTable").then(mod => ({ default: mod.ProductsTable })),
-  { loading: () => <LoadingSpinner /> }
-);
-
-const ProductsPagination = dynamic(
-  () => import("@/components/admin/products/ProductsPagination").then(mod => ({ default: mod.ProductsPagination })),
-  { loading: () => <div className="h-8 bg-gray-100 animate-pulse rounded" /> }
-);
+import ProductsLoading from "./loading";
+// Rendered on first paint, so imported statically: dynamic() would add a chunk round trip
+// after the route chunk, delaying the table behind a spinner.
+import { ProductsFilters } from "@/components/admin/products/ProductsFilters";
+import { ProductsBulkActions } from "@/components/admin/products/ProductsBulkActions";
+import { ProductsTable } from "@/components/admin/products/ProductsTable";
+import { ProductsPagination } from "@/components/admin/products/ProductsPagination";
 
 const ProductModal = dynamic(
   () => import("@/components/admin/ProductModal"),
@@ -40,7 +27,7 @@ const ProductConfirmModal = dynamic(
 
 export default function AdminProductsPage() {
   return (
-    <Suspense fallback={<LoadingSpinner />}>
+    <Suspense fallback={<ProductsLoading />}>
       <AdminProductsContent />
     </Suspense>
   );
@@ -74,6 +61,7 @@ function AdminProductsContent() {
     handleBulkAction,
     handleProductAction,
     performProductAction,
+    handleTogglePin,
     handleCreateProduct,
     handleEditProduct,
     handleCloseModal,
@@ -105,7 +93,7 @@ function AdminProductsContent() {
   }, [setSelectedProducts]);
 
   return (
-    <div className="space-y-6 bg-gray-900 min-h-screen p-6">
+    <div className="min-h-screen space-y-4 bg-gray-900 sm:space-y-6 sm:p-6">
       <PageHeader
         title="Quản lý sản phẩm"
         description="Quản lý danh sách sản phẩm, tồn kho và trạng thái"
@@ -147,6 +135,7 @@ function AdminProductsContent() {
         onSelectProduct={handleSelectProduct}
         onEditProduct={handleEditProduct}
         onProductAction={handleProductAction}
+        onTogglePin={handleTogglePin}
         getProductStatus={getProductStatus}
         onCategoryClick={(slug) => handleFilterChange("category", slug)}
         onColorClick={(slug) => handleFilterChange("color", slug)}

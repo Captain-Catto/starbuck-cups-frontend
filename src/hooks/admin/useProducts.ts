@@ -13,6 +13,15 @@ import type {
 } from "@/types";
 import { clientApi } from "@/lib/client-api";
 import { invalidateProductDependentCaches } from "@/lib/adminCacheInvalidation";
+import { getAdminAuthHeaders } from "@/lib/admin-token";
+
+// Filter dropdown options rarely change, so keep the last result for the session and show it
+// immediately on the next visit while a fresh copy loads (client-only: effects never run in SSR).
+let filterOptionsCache: {
+  categories: Category[];
+  colors: Color[];
+  capacities: Capacity[];
+} | null = null;
 
 interface ProductListItem extends Product {
   isActive: boolean;
@@ -187,6 +196,7 @@ export interface UseProductsReturn {
     productId: string,
     action: "activate" | "deactivate" | "delete"
   ) => Promise<void>;
+  handleTogglePin: (productId: string) => Promise<void>;
   handleCreateProduct: () => void;
   handleEditProduct: (product: ProductListItem) => void;
   handleCloseModal: () => void;
@@ -215,13 +225,12 @@ export function useProducts(
 ): UseProductsReturn {
   const router = useRouter();
   const pathname = usePathname();
-  const token = useSelector((state: RootState) => state.auth.token);
 
   const [listState, dispatchList] = useReducer(productListReducer, {
     products: [],
-    categories: [],
-    colors: [],
-    capacities: [],
+    categories: filterOptionsCache?.categories ?? [],
+    colors: filterOptionsCache?.colors ?? [],
+    capacities: filterOptionsCache?.capacities ?? [],
     loading: true,
     filters: createInitialFilters(searchParams),
     pagination: DEFAULT_PAGINATION,
@@ -269,8 +278,8 @@ export function useProducts(
   }, []);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [token]);
+    return getAdminAuthHeaders();
+  }, []);
 
   // Debounce search query (500ms delay)
   useEffect(() => {
@@ -378,8 +387,7 @@ export function useProducts(
         capacitiesRes.json(),
       ]);
 
-      dispatchList({
-        type: "LOAD_FILTER_OPTIONS_SUCCESS",
+      const options = {
         categories:
           categoriesData.success && Array.isArray(categoriesData.data?.items)
             ? categoriesData.data.items
@@ -392,7 +400,9 @@ export function useProducts(
           capacitiesData.success && Array.isArray(capacitiesData.data?.items)
             ? capacitiesData.data.items
             : [],
-      });
+      };
+      filterOptionsCache = options;
+      dispatchList({ type: "LOAD_FILTER_OPTIONS_SUCCESS", ...options });
     } catch {
       dispatchList({ type: "LOAD_FILTER_OPTIONS_ERROR" });
     }
@@ -568,6 +578,38 @@ export function useProducts(
     }
   }, [actionLoading, products, loadProducts, setProducts]);
 
+  const handleTogglePin = useCallback(async (productId: string) => {
+    if (actionLoading) return;
+    const product = products.find((p) => p.id === productId);
+    if (!product) return;
+
+    const willPin = !product.pinnedAt;
+    setActionLoading(`pin-${productId}`);
+    try {
+      const result = willPin
+        ? await clientApi.pinProduct(productId)
+        : await clientApi.unpinProduct(productId);
+
+      if (result.success) {
+        invalidateProductDependentCaches();
+        setProducts((prev) =>
+          prev.map((p) =>
+            p.id === productId
+              ? { ...p, pinnedAt: result.data?.pinnedAt ?? null }
+              : p
+          )
+        );
+        toast.success(willPin ? "Đã ghim sản phẩm" : "Đã bỏ ghim sản phẩm");
+      } else {
+        toast.error(result.error || "Không thể cập nhật ghim sản phẩm");
+      }
+    } catch {
+      toast.error("Có lỗi xảy ra khi ghim sản phẩm");
+    } finally {
+      setActionLoading(null);
+    }
+  }, [actionLoading, products, setProducts]);
+
   const handleCreateProduct = useCallback(() => {
     setEditingProduct(null);
     setIsModalOpen(true);
@@ -663,6 +705,7 @@ export function useProducts(
     handleBulkAction,
     handleProductAction,
     performProductAction,
+    handleTogglePin,
     handleCreateProduct,
     handleEditProduct,
     handleCloseModal,

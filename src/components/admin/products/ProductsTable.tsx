@@ -7,6 +7,8 @@ import {
   Package,
   Image as ImageIcon,
   Loader2,
+  Pin,
+  PinOff,
 } from "lucide-react";
 import type { Product } from "@/types";
 import { ProductStatusBadge } from "@/components/admin/products/ProductStatusBadge";
@@ -56,22 +58,41 @@ interface ProductsTableProps {
     productId: string,
     action: "activate" | "deactivate" | "delete"
   ) => void;
+  onTogglePin: (productId: string) => void;
   getProductStatus: (product: ProductListItem) => ProductStatus;
   onCategoryClick?: (categorySlug: string) => void;
   onColorClick?: (colorSlug: string) => void;
   onCapacityClick?: (volumeMl: number) => void;
 }
 
+// Same look as the route's loading.tsx skeleton, so the page does not swap loading styles
+const SKELETON_ROWS = 8;
+
 const LoadingSkeleton = memo(function LoadingSkeleton() {
   return (
-    <tr>
-      <td colSpan={7} className="px-6 py-12 text-center text-gray-300">
-        <Loader2 className="size-6 animate-spin mx-auto mb-3" aria-hidden="true" />
-        Đang tải sản phẩm…
-      </td>
-    </tr>
+    <>
+      {Array.from({ length: SKELETON_ROWS }).map((_, i) => (
+        <tr key={i} className="animate-pulse">
+          <td colSpan={7} className="h-16 border-b border-gray-700" aria-hidden="true" />
+        </tr>
+      ))}
+      <tr>
+        <td colSpan={7} className="sr-only" role="status">
+          Đang tải sản phẩm…
+        </td>
+      </tr>
+    </>
   );
 });
+
+function PinnedBadge() {
+  return (
+    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-yellow-400/15 px-2 py-0.5 text-xs font-medium text-yellow-400">
+      <Pin className="size-3" aria-hidden="true" />
+      Đã ghim
+    </span>
+  );
+}
 
 interface ProductRowProps {
   product: ProductListItem;
@@ -84,6 +105,7 @@ interface ProductRowProps {
     productId: string,
     action: "activate" | "deactivate" | "delete"
   ) => void;
+  onTogglePin: (productId: string) => void;
   onCategoryClick?: (categorySlug: string) => void;
   onColorClick?: (colorSlug: string) => void;
   onCapacityClick?: (volumeMl: number) => void;
@@ -98,6 +120,7 @@ const ProductRow = memo(
     onSelectProduct,
     onEditProduct,
     onProductAction,
+    onTogglePin,
     onCategoryClick,
     onColorClick,
     onCapacityClick,
@@ -155,6 +178,7 @@ const ProductRow = memo(
                 {product.name}
               </button>
               <div className="text-sm text-gray-300">{product.slug}</div>
+              {product.pinnedAt && <PinnedBadge />}
             </div>
           </div>
         </td>
@@ -228,6 +252,15 @@ const ProductRow = memo(
               <Edit className="size-4" />
             </button>
             <button type="button"
+              onClick={() => onTogglePin(product.id)}
+              disabled={rowActionLoading}
+              className={`hover:bg-gray-700 p-1 rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${product.pinnedAt ? "text-yellow-400" : "text-white"}`}
+              aria-label={product.pinnedAt ? "Bỏ ghim" : "Ghim lên đầu"}
+              title={product.pinnedAt ? "Bỏ ghim" : "Ghim lên đầu"}
+            >
+              {product.pinnedAt ? <PinOff className="size-4" /> : <Pin className="size-4" />}
+            </button>
+            <button type="button"
               onClick={() => {
                 const targetAction = product.isActive ? "deactivate" : "activate";
                 onProductAction(product.id, targetAction);
@@ -272,6 +305,162 @@ const ProductRow = memo(
   }
 );
 
+interface ProductCardProps extends ProductRowProps {}
+
+/** Phone layout: one compact card per product instead of a 7-column table row. */
+const ProductCard = memo(function ProductCard({
+  product,
+  status,
+  isSelected,
+  rowActionLoading,
+  onSelectProduct,
+  onEditProduct,
+  onProductAction,
+  onTogglePin,
+  onCategoryClick,
+}: ProductCardProps) {
+  const firstImage = getFirstProductImage(product.productImages);
+  const categories = product.productCategories ?? [];
+  const colors = product.productColors ?? [];
+
+  return (
+    <li className="p-3">
+      <div className="flex gap-3">
+        <label className="flex shrink-0 items-start pt-1">
+          <input
+            aria-label={`Select ${product.name}`}
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) => onSelectProduct(product.id, e.target.checked)}
+            className="size-5 rounded border-gray-600 text-gray-500 focus:ring-gray-500"
+          />
+        </label>
+
+        <button
+          type="button"
+          onClick={() => onEditProduct(product)}
+          className="relative size-16 shrink-0 cursor-pointer"
+          aria-label={`Chỉnh sửa ${product.name}`}
+        >
+          {firstImage ? (
+            <OptimizedImage
+              src={firstImage.url}
+              alt={product.name}
+              width={64}
+              height={64}
+              className="size-16 rounded-lg object-cover"
+            />
+          ) : (
+            <div className="flex size-16 items-center justify-center rounded-lg bg-gray-700">
+              <ImageIcon className="size-6 text-gray-400" />
+            </div>
+          )}
+          <div className="pointer-events-none absolute -left-1 -top-1 z-10">
+            <ConditionalFeaturedBadge product={product} size="xs" />
+          </div>
+          <div className="pointer-events-none absolute -right-1 -top-1 z-10">
+            <ConditionalVipBadge product={product} size="xs" />
+          </div>
+        </button>
+
+        <div className="min-w-0 flex-1">
+          <button
+            type="button"
+            onClick={() => onEditProduct(product)}
+            className="line-clamp-2 cursor-pointer text-left text-sm font-medium text-white"
+          >
+            {product.name}
+          </button>
+          {product.pinnedAt && <PinnedBadge />}
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-300">
+            {categories.slice(0, 2).map((pc: ProductCategory) => (
+              <button
+                type="button"
+                key={pc.category.id}
+                onClick={() => onCategoryClick?.(pc.category.slug)}
+                className="rounded bg-gray-700 px-1.5 py-0.5"
+              >
+                {pc.category.name}
+              </button>
+            ))}
+            {product.capacity ? <span>{product.capacity.name}</span> : null}
+          </div>
+          {colors.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {colors.map((pc: ProductColor) => (
+                <span
+                  key={pc.color.id}
+                  title={pc.color.name}
+                  className="size-4 rounded-full border border-gray-500"
+                  style={{ backgroundColor: pc.color.hexCode }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center justify-between gap-2 pl-8">
+        <div className="flex items-center gap-3">
+          <ProductStatusBadge {...status} />
+          <span
+            className={`text-xs ${
+              product.stock <= 1 ? "text-gray-300 font-medium" : "text-white"
+            }`}
+          >
+            Tồn: {product.stock}
+          </span>
+        </div>
+        <div className="flex items-center">
+          <button
+            type="button"
+            onClick={() => onEditProduct(product)}
+            className="flex size-11 cursor-pointer items-center justify-center rounded-lg text-white active:bg-gray-700"
+            aria-label="Chỉnh sửa"
+          >
+            <Edit className="size-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onTogglePin(product.id)}
+            disabled={rowActionLoading}
+            className={`flex size-11 cursor-pointer items-center justify-center rounded-lg active:bg-gray-700 disabled:opacity-50 ${product.pinnedAt ? "text-yellow-400" : "text-white"}`}
+            aria-label={product.pinnedAt ? "Bỏ ghim" : "Ghim lên đầu"}
+          >
+            {product.pinnedAt ? <PinOff className="size-5" /> : <Pin className="size-5" />}
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onProductAction(product.id, product.isActive ? "deactivate" : "activate")
+            }
+            disabled={rowActionLoading}
+            className="flex size-11 cursor-pointer items-center justify-center rounded-lg text-white active:bg-gray-700 disabled:opacity-50"
+            aria-label={product.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
+          >
+            {rowActionLoading ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : product.isActive ? (
+              <EyeOff className="size-5" />
+            ) : (
+              <Eye className="size-5" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => onProductAction(product.id, "delete")}
+            disabled={rowActionLoading}
+            className="flex size-11 cursor-pointer items-center justify-center rounded-lg text-white active:bg-gray-700 disabled:opacity-50"
+            aria-label="Xóa"
+          >
+            <Trash2 className="size-5" />
+          </button>
+        </div>
+      </div>
+    </li>
+  );
+});
+
 export function ProductsTable({
   products,
   loading,
@@ -283,6 +472,7 @@ export function ProductsTable({
   onSelectProduct,
   onEditProduct,
   onProductAction,
+  onTogglePin,
   getProductStatus,
   onCategoryClick,
   onColorClick,
@@ -302,9 +492,58 @@ export function ProductsTable({
     return productIdParts.join("-") || null;
   }, [actionLoading]);
 
+  const mobileList = loading ? (
+    <div className="animate-pulse" role="status">
+      <span className="sr-only">Đang tải sản phẩm…</span>
+      {Array.from({ length: SKELETON_ROWS }).map((_, i) => (
+        <div key={i} className="h-20 border-b border-gray-700" aria-hidden="true" />
+      ))}
+    </div>
+  ) : products.length === 0 ? (
+    <div className="px-4 py-12 text-center">
+      <Package className="mx-auto mb-4 size-12 text-white" />
+      <p className="text-gray-300">Không có sản phẩm nào</p>
+    </div>
+  ) : (
+    <>
+      <label className="flex items-center gap-3 border-b border-gray-700 bg-gray-700 px-4 py-3 text-sm text-white">
+        <input
+          aria-label="Select all products"
+          type="checkbox"
+          checked={isAllSelected}
+          ref={(el) => {
+            if (el) el.indeterminate = isIndeterminate;
+          }}
+          onChange={(e) => onSelectAll(e.target.checked)}
+          className="size-5 rounded border-gray-600 text-gray-500 focus:ring-gray-500"
+        />
+        Chọn tất cả
+      </label>
+      <ul className="divide-y divide-gray-700">
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            status={getProductStatus(product)}
+            isSelected={selectedProductIds.has(product.id)}
+            rowActionLoading={activeActionProductId === product.id}
+            onSelectProduct={onSelectProduct}
+            onEditProduct={onEditProduct}
+            onProductAction={onProductAction}
+            onTogglePin={onTogglePin}
+            onCategoryClick={onCategoryClick}
+            onColorClick={onColorClick}
+            onCapacityClick={onCapacityClick}
+          />
+        ))}
+      </ul>
+    </>
+  );
+
   return (
-    <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-      <div className="overflow-x-auto">
+    <div className="overflow-hidden rounded-lg border border-gray-700 bg-gray-800">
+      <div className="lg:hidden">{mobileList}</div>
+      <div className="hidden overflow-x-auto lg:block">
         <table className="min-w-full divide-y divide-gray-700">
           <thead className="bg-gray-700">
             <tr>
@@ -362,6 +601,7 @@ export function ProductsTable({
                     onSelectProduct={onSelectProduct}
                     onEditProduct={onEditProduct}
                     onProductAction={onProductAction}
+            onTogglePin={onTogglePin}
                     onCategoryClick={onCategoryClick}
                     onColorClick={onColorClick}
                     onCapacityClick={onCapacityClick}

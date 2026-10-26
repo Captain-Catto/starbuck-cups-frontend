@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useReducer } from "react";
 import { useAppSelector } from "@/store";
+import { getAdminToken } from "@/lib/admin-token";
 
 export interface PendingConsultationsResponse {
   success: boolean;
@@ -55,10 +56,8 @@ export function usePendingConsultations() {
     initialPendingConsultationsState
   );
 
-  const token = useAppSelector((state) => state.auth.token);
-
   const fetchPendingCount = useCallback(async () => {
-    if (!token) {
+    if (!getAdminToken()) {
       dispatch({ type: "NO_TOKEN" });
       return;
     }
@@ -69,7 +68,7 @@ export function usePendingConsultations() {
       const response = await fetch("/api/admin/consultations/pending/count", {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${getAdminToken()}`,
           "Content-Type": "application/json",
         },
       });
@@ -97,7 +96,7 @@ export function usePendingConsultations() {
         payload: err instanceof Error ? err.message : "Unknown error occurred",
       });
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     fetchPendingCount();

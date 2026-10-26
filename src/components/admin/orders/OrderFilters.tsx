@@ -40,23 +40,23 @@ export function OrderFilters({
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
-      <div className="flex gap-4 items-center">
-        <div className="flex-1 relative">
+    <div className="rounded-lg border border-gray-700 bg-gray-800 p-3 sm:p-4">
+      <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center sm:gap-4 lg:flex-nowrap">
+        <div className="relative col-span-2 sm:min-w-64 sm:flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-4" />
           <input aria-label="Tìm kiếm theo mã đơn hàng, tên khách hàng..."
             type="text"
             placeholder="Tìm kiếm theo mã đơn hàng, tên khách hàng..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-gray-700 text-white placeholder-gray-400"
+            className="w-full min-h-11 pl-10 pr-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-gray-700 text-white placeholder-gray-400"
           />
         </div>
 
         <select aria-label="Select option"
           value={statusFilter}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="px-3 py-2 pr-8 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white"
+          className="min-h-11 w-full min-w-0 px-3 py-2 pr-8 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white sm:w-auto"
         >
           <option value="all">Tất cả trạng thái</option>
           <option value="pending">Chờ xử lý</option>
@@ -70,7 +70,7 @@ export function OrderFilters({
         <select aria-label="Select option"
           value={typeFilter}
           onChange={(e) => onTypeChange(e.target.value)}
-          className="px-3 py-2 pr-8 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white"
+          className="min-h-11 w-full min-w-0 px-3 py-2 pr-8 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white sm:w-auto"
         >
           <option value="all">Tất cả loại</option>
           <option value="product">Đơn sản phẩm</option>
@@ -79,7 +79,7 @@ export function OrderFilters({
 
         <button type="button"
           onClick={() => setIsFilterOpen(!isFilterOpen)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+          className={`col-span-2 flex min-h-11 items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors sm:col-span-1 ${
             isFilterOpen
               ? "bg-gray-600 text-white"
               : "text-gray-300 bg-gray-700 hover:bg-gray-600"
@@ -93,7 +93,7 @@ export function OrderFilters({
       {/* Advanced Filters */}
       {isFilterOpen && (
         <div className="mt-4 pt-4 border-t border-gray-700">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="orderfilters-date">
                 Từ ngày
@@ -104,7 +104,7 @@ export function OrderFilters({
                 onChange={(e) =>
                   handleAdvancedFilterChange("dateFrom", e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white" id="orderfilters-date"
+                className="w-full min-h-11 px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white" id="orderfilters-date"
               />
             </div>
             <div>
@@ -117,7 +117,7 @@ export function OrderFilters({
                 onChange={(e) =>
                   handleAdvancedFilterChange("dateTo", e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white" id="orderfilters-date-2"
+                className="w-full min-h-11 px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 bg-gray-700 text-white" id="orderfilters-date-2"
               />
             </div>
             <div>

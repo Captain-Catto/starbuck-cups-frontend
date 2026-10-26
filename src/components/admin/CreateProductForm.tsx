@@ -186,7 +186,7 @@ export function CreateProductForm({
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6">
+      <form onSubmit={handleSubmit} className="p-4 pb-0 sm:p-6 sm:pb-0">
         <ProductFormFields
           formData={formData}
           errors={errors}
@@ -206,18 +206,18 @@ export function CreateProductForm({
         />
 
         {/* Submit Buttons */}
-        <div className="flex justify-end gap-3 pt-4 border-t mt-6">
+        <div className="sticky bottom-0 -mx-4 mt-6 flex gap-3 border-t bg-white px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:justify-end sm:px-0 sm:pb-4 sm:pt-4">
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 cursor-pointer"
+            className="min-h-11 flex-1 cursor-pointer rounded border border-gray-300 px-4 py-2 text-gray-600 hover:bg-gray-50 sm:flex-none"
             disabled={isSubmitting}
           >
             Hủy
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 cursor-pointer"
+            className="min-h-11 flex-[2] cursor-pointer rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50 sm:flex-none"
             disabled={isSubmitting || isUploading}
           >
             {isUploading

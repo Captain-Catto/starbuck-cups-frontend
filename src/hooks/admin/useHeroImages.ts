@@ -2,6 +2,7 @@
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { RootState } from "@/store";
+import { getAdminAuthHeaders } from "@/lib/admin-token";
 
 export interface HeroImage {
   id: string;
@@ -36,16 +37,13 @@ export function useHeroImages(): UseHeroImagesReturn {
   const [error, setError] = useState<string | null>(null);
 
   // Get auth token from Redux store
-  const token = useSelector((state: RootState) => state.auth.token);
 
   // Fetch hero images
   const fetchHeroImages = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const authHeaders: Record<string, string> = token
-        ? { Authorization: `Bearer ${token}` }
-        : {};
+      const authHeaders: Record<string, string> = getAdminAuthHeaders();
       const response = await fetch("/api/admin/hero-images", {
         headers: authHeaders,
       });
@@ -62,15 +60,13 @@ export function useHeroImages(): UseHeroImagesReturn {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   // Delete hero image
   const deleteHeroImage = useCallback(
     async (id: string): Promise<boolean> => {
       try {
-        const authHeaders: Record<string, string> = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
+        const authHeaders: Record<string, string> = getAdminAuthHeaders();
         const response = await fetch(`/api/admin/hero-images/${id}`, {
           method: "DELETE",
           headers: authHeaders,
@@ -92,16 +88,14 @@ export function useHeroImages(): UseHeroImagesReturn {
         return false;
       }
     },
-    [token]
+    []
   );
 
   // Update hero image order
   const updateHeroImageOrder = useCallback(
     async (imageOrders: { id: string; order: number }[]): Promise<boolean> => {
       try {
-        const authHeaders: Record<string, string> = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
+        const authHeaders: Record<string, string> = getAdminAuthHeaders();
         const response = await fetch("/api/admin/hero-images/reorder", {
           method: "POST",
           headers: {
@@ -129,7 +123,7 @@ export function useHeroImages(): UseHeroImagesReturn {
         return false;
       }
     },
-    [token]
+    []
   );
 
   // Clear error

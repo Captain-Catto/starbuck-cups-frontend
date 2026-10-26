@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { RootState } from "@/store";
+import { getAdminToken } from "@/lib/admin-token";
 
 export interface CustomerPhone {
   id: string;
@@ -32,11 +33,10 @@ export function useCustomerPhones(customerId: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { token } = useSelector((state: RootState) => state.auth);
 
   // Fetch phones for customer
   const fetchPhones = useCallback(async () => {
-    if (!token || !customerId) return;
+    if (!getAdminToken() || !customerId) return;
 
     setLoading(true);
     setError(null);
@@ -46,7 +46,7 @@ export function useCustomerPhones(customerId: string) {
         `/api/admin/customers/${customerId}/phones`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${getAdminToken()}`,
             "Content-Type": "application/json",
           },
         }
@@ -67,12 +67,12 @@ export function useCustomerPhones(customerId: string) {
     } finally {
       setLoading(false);
     }
-  }, [customerId, token]);
+  }, [customerId]);
 
   // Create new phone
   const createPhone = useCallback(
     async (phoneData: CreatePhoneData) => {
-      if (!token || !customerId) return false;
+      if (!getAdminToken() || !customerId) return false;
 
       try {
         const response = await fetch(
@@ -80,7 +80,7 @@ export function useCustomerPhones(customerId: string) {
           {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${getAdminToken()}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify(phoneData),
@@ -113,19 +113,19 @@ export function useCustomerPhones(customerId: string) {
         return false;
       }
     },
-    [customerId, token, fetchPhones]
+    [customerId, fetchPhones]
   );
 
   // Update phone
   const updatePhone = useCallback(
     async (phoneId: string, phoneData: UpdatePhoneData) => {
-      if (!token) return false;
+      if (!getAdminToken()) return false;
 
       try {
         const response = await fetch(`/api/admin/phones/${phoneId}`, {
           method: "PUT",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${getAdminToken()}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(phoneData),
@@ -147,19 +147,19 @@ export function useCustomerPhones(customerId: string) {
         return false;
       }
     },
-    [token, fetchPhones]
+    [fetchPhones]
   );
 
   // Delete phone
   const deletePhone = useCallback(
     async (phoneId: string) => {
-      if (!token) return false;
+      if (!getAdminToken()) return false;
 
       try {
         const response = await fetch(`/api/admin/phones/${phoneId}`, {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${getAdminToken()}`,
             "Content-Type": "application/json",
           },
         });
@@ -180,13 +180,13 @@ export function useCustomerPhones(customerId: string) {
         return false;
       }
     },
-    [token, fetchPhones]
+    [fetchPhones]
   );
 
   // Set phone as main
   const setMainPhone = useCallback(
     async (phoneId: string) => {
-      if (!token) return false;
+      if (!getAdminToken()) return false;
 
       try {
         const response = await fetch(
@@ -194,7 +194,7 @@ export function useCustomerPhones(customerId: string) {
           {
             method: "PUT",
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${getAdminToken()}`,
               "Content-Type": "application/json",
             },
           }
@@ -216,7 +216,7 @@ export function useCustomerPhones(customerId: string) {
         return false;
       }
     },
-    [token, fetchPhones]
+    [fetchPhones]
   );
 
   return {

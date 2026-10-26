@@ -25,7 +25,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
   // Handle loading state
   if (loading) {
     return (
-      <div className="space-y-6 bg-gray-900 min-h-screen p-6">
+      <div className="min-h-screen space-y-4 bg-gray-900 sm:space-y-6 sm:p-6">
         <LoadingState />
       </div>
     );
@@ -34,7 +34,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
   // Handle error state
   if (error) {
     return (
-      <div className="space-y-6 bg-gray-900 min-h-screen p-6">
+      <div className="min-h-screen space-y-4 bg-gray-900 sm:space-y-6 sm:p-6">
         <ErrorMessage error={error} onRetry={clearError} />
       </div>
     );
@@ -43,7 +43,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
   // Handle no order found
   if (!order) {
     return (
-      <div className="space-y-6 bg-gray-900 min-h-screen p-6">
+      <div className="min-h-screen space-y-4 bg-gray-900 sm:space-y-6 sm:p-6">
         <ErrorMessage
           error="Không tìm thấy đơn hàng"
           onRetry={() => window.location.reload()}
@@ -53,21 +53,22 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
   }
 
   return (
-    <div className="space-y-6 bg-gray-900 min-h-screen p-6">
+    <div className="min-h-screen space-y-4 bg-gray-900 sm:space-y-6 sm:p-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-4">
           <Link
             href="/admin/orders"
-            className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+            aria-label="Quay lại"
+            className="flex size-11 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-gray-700"
           >
             <ArrowLeft className="size-5 text-gray-300" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="truncate text-lg font-bold text-white sm:text-2xl">
               Chi tiết đơn hàng #{order.orderNumber || id}
             </h1>
-            <p className="text-gray-300 mt-1">
+            <p className="mt-1 hidden text-gray-300 sm:block">
               Xem và quản lý thông tin đơn hàng
             </p>
           </div>
@@ -76,7 +77,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
         <div className="flex items-center gap-3">
           <button type="button"
             onClick={() => setIsEditing(!isEditing)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50"
+            className="flex min-h-11 items-center gap-2 rounded-lg bg-gray-700 px-4 py-2 text-white hover:bg-gray-600 disabled:opacity-50"
             disabled={loading || updating}
           >
             <Edit className="size-4" />

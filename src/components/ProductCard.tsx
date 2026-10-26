@@ -2,7 +2,7 @@
 
 import React, { memo, useSyncExternalStore } from "react";
 import { Link } from "@/i18n/routing";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Pin } from "lucide-react";
 import { Product } from "@/types";
 import { getFirstProductImage, getSecondProductImage } from "@/lib/utils/image";
 import { trackProductClick, trackAddToCartClick } from "@/lib/productAnalytics";
@@ -100,6 +100,14 @@ const ProductCard: React.FC<ProductCardProps> = memo(({
           {showBadges && (
             <div className="absolute top-3 right-3 z-10">
               <ConditionalVipBadge product={product} size="sm" />
+            </div>
+          )}
+
+          {/* Pinned Badge - BOTTOM LEFT */}
+          {showBadges && product.pinnedAt && (
+            <div className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-1 rounded-full bg-black/70 px-2 py-1 text-xs font-medium text-yellow-400">
+              <Pin className="size-3" aria-hidden="true" />
+              {tProduct("pinned")}
             </div>
           )}
 

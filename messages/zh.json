@@ -123,6 +123,7 @@
     "alreadyExists": "{name} 已在咨询购物车中"
   },
   "productDetail": {
+    "pinned": "置顶",
     "color": "颜色",
     "capacity": "容量",
     "category": "分类",

@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { PaginationMeta } from "@/types";
 import type { RootState } from "@/store";
+import { getAdminAuthHeaders } from "@/lib/admin-token";
 
 export interface CustomerAdmin {
   id: string;
@@ -141,11 +142,10 @@ export function useCustomers(
   });
   const { customers, pagination, loading, error, currentSearchTerm } = state;
 
-  const token = useSelector((state: RootState) => state.auth.token);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [token]);
+    return getAdminAuthHeaders();
+  }, []);
 
   const fetchCustomers = useCallback(
     async (

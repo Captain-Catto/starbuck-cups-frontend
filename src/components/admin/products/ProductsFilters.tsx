@@ -1,4 +1,5 @@
-import { Search } from "lucide-react";
+import { useState } from "react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import type { Color, Capacity, Category } from "@/types";
 
 interface ProductFilters {
@@ -27,11 +28,21 @@ export function ProductsFilters({
   capacities,
   onFilterChange,
 }: ProductsFiltersProps) {
+  // On phones only the search box is visible; the rest sits behind a toggle.
+  const [showMore, setShowMore] = useState(false);
+  const activeCount = [
+    filters.category,
+    filters.color,
+    filters.minCapacity,
+    filters.maxCapacity,
+    filters.status !== "all" ? filters.status : "",
+  ].filter(Boolean).length;
+
   return (
-    <div className="bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
-      <div className="space-y-4">
+    <div className="mb-0 rounded-lg bg-gray-800 p-3 shadow-sm sm:mb-6 sm:p-6">
+      <div className="space-y-3 sm:space-y-4">
         {/* Row 1: Search */}
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-4" />
             <input aria-label="Tìm kiếm sản phẩm..."
@@ -39,13 +50,28 @@ export function ProductsFilters({
               placeholder="Tìm kiếm sản phẩm..."
               value={filters.search}
               onChange={(e) => onFilterChange("search", e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-gray-700 text-white placeholder-gray-400"
+              className="w-full pl-10 pr-4 py-3 sm:py-2.5 border border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-gray-700 text-white placeholder-gray-400"
             />
           </div>
+          <button
+            type="button"
+            onClick={() => setShowMore((v) => !v)}
+            aria-expanded={showMore}
+            className="flex min-h-11 items-center justify-center gap-2 rounded-lg border border-gray-600 bg-gray-700 text-sm text-white md:hidden"
+          >
+            <SlidersHorizontal className="size-4" />
+            {showMore ? "Ẩn bộ lọc" : "Bộ lọc & sắp xếp"}
+            {activeCount > 0 && (
+              <span className="rounded-full bg-white px-1.5 text-xs text-black">
+                {activeCount}
+              </span>
+            )}
+          </button>
         </div>
 
+        <div className={`${showMore ? "block" : "hidden"} md:block space-y-3 sm:space-y-4`}>
         {/* Row 2: Category, Color, Capacity Range */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 sm:gap-4">
           {/* Category Filter */}
           <select aria-label="Select option"
             value={filters.category}
@@ -124,7 +150,7 @@ export function ProductsFilters({
         </div>
 
         {/* Row 3: Status, Sort */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           {/* Status Filter */}
           <select aria-label="Select option"
             value={filters.status}
@@ -163,6 +189,7 @@ export function ProductsFilters({
             <option value="updatedAt-desc">Cập nhật mới nhất</option>
             <option value="updatedAt-asc">Cập nhật cũ nhất</option>
           </select>
+        </div>
         </div>
       </div>
     </div>

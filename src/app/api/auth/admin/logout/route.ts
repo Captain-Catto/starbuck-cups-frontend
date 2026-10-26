@@ -20,6 +20,8 @@ export async function POST(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         Authorization: authHeader,
+        // The refresh cookie tells the backend which session (device) to end.
+        ...(request.headers.get("cookie") && { Cookie: request.headers.get("cookie") as string }),
         ...getClientForwardHeaders(request),
       },
     });

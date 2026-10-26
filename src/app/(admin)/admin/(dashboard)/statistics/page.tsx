@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { PageHeader } from "@/components/admin/PageHeader";
-import { LoadingState } from "@/components/admin/LoadingState";
+import StatisticsLoading from "./loading";
 import { ErrorMessage } from "@/components/admin/ErrorMessage";
 import { useStatistics } from "@/hooks/useStatistics";
 import {
@@ -139,7 +139,7 @@ export default function StatisticsPage() {
   };
 
   if (loading) {
-    return <LoadingState />;
+    return <StatisticsLoading />;
   }
 
   if (error) {

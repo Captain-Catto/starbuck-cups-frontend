@@ -2,6 +2,7 @@ import { memo } from "react";
 import { Edit2, Trash2, Eye, EyeOff, Package } from "lucide-react";
 import type { Capacity, PaginationMeta } from "@/types";
 import { Pagination } from "@/components/ui/Pagination";
+import { TableSkeletonRows } from "@/components/admin/TableSkeletonRows";
 
 interface CapacityWithCount extends Capacity {
   _count?: {
@@ -152,12 +153,7 @@ export function CapacitiesTable({
           </thead>
           <tbody className="bg-gray-800 divide-y divide-gray-700">
             {loading ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-12 text-center">
-                  <div className="animate-spin rounded-full size-8 border-b-2 border-gray-400 mx-auto" />
-                  <p className="text-gray-500 mt-2">Đang tải…</p>
-                </td>
-              </tr>
+              <TableSkeletonRows colSpan={6} />
             ) : capacities.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center">

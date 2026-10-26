@@ -1,5 +1,6 @@
 import { useReducer, useEffect, useCallback } from "react";
 import { useAppSelector } from "@/store";
+import { getAdminToken } from "@/lib/admin-token";
 
 export interface StatisticsData {
   period: string;
@@ -142,12 +143,12 @@ export const useStatistics = (period: "week" | "month" | "year" = "month") => {
     initialStatisticsState
   );
 
-  // Get token from Redux store
-  const { token } = useAppSelector((state) => state.auth);
+  // Only flips on login/logout; the token itself changes on every silent refresh
+  const hasToken = useAppSelector((state) => Boolean(state.auth.token));
 
   const getCacheKey = useCallback(
-    (selectedPeriod: string) => `${token || "guest"}:${selectedPeriod}`,
-    [token]
+    (selectedPeriod: string) => `${hasToken ? "session" : "guest"}:${selectedPeriod}`,
+    [hasToken]
   );
 
   const fetchStatistics = useCallback(
@@ -175,6 +176,7 @@ export const useStatistics = (period: "week" | "month" | "year" = "month") => {
           loading: forceRefresh || !hasCachedData,
         });
 
+        const token = getAdminToken();
         if (!token) {
           throw new Error("No authentication token found");
         }
@@ -221,14 +223,14 @@ export const useStatistics = (period: "week" | "month" | "year" = "month") => {
         });
       }
     },
-    [getCacheKey, statisticsUrl, token]
+    [getCacheKey, statisticsUrl]
   );
 
   useEffect(() => {
-    if (token) {
+    if (hasToken) {
       fetchStatistics(period, false);
     }
-  }, [period, token, fetchStatistics]);
+  }, [period, hasToken, fetchStatistics]);
 
   const refetch = useCallback(() => fetchStatistics(period, true), [fetchStatistics, period]);
 

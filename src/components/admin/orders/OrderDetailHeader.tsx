@@ -40,7 +40,7 @@ export function OrderDetailHeader({
           <button type="button"
             onClick={onSave}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50 cursor-pointer sm:w-auto"
           >
             <Save className="size-4" />
             {saving ? "Đang lưu..." : "Lưu thay đổi"}
@@ -48,12 +48,12 @@ export function OrderDetailHeader({
         </div>
       )}
 
-      <div className="flex items-start justify-between mb-6">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold text-white mb-2">
             Đơn hàng #{order.orderNumber}
           </h2>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
                 statusConfig[order.status]?.color || "bg-gray-100 text-gray-800"
@@ -66,8 +66,8 @@ export function OrderDetailHeader({
             </span>
           </div>
         </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold text-white">
+        <div className="text-left sm:text-right">
+          <div className="text-xl font-bold text-white sm:text-2xl">
             {formatCurrency(
               Number(order.totalAmount) +
                 (isFreeShipping(order) ? 0 : Number(order.shippingCost))

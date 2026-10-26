@@ -12,6 +12,7 @@ import {
 import { toast } from "sonner";
 import { useAppSelector } from "@/store";
 import { invalidateOrderDependentCaches } from "@/lib/adminCacheInvalidation";
+import { getAdminToken } from "@/lib/admin-token";
 
 // ─── Shared types ─────────────────────────────────────────────────────────────
 
@@ -206,7 +207,6 @@ function orderEditReducer(
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useOrderDetailEdit(orderId: string) {
-  const { token } = useAppSelector((state) => state.auth);
 
   const [orderState, dispatchOrder] = useReducer(
     orderEditReducer,
@@ -240,13 +240,13 @@ export function useOrderDetailEdit(orderId: string) {
 
   // react-doctor-disable-next-line react-doctor/no-fetch-in-effect -- no react-query/SWR in this project; fetch-on-mount with token guard is the established pattern
   useEffect(() => {
-    if (!token) return;
+    if (!getAdminToken()) return;
 
     const fetchOrder = async () => {
       dispatchOrder({ type: "FETCH_START" });
       try {
         const response = await fetch(`/api/admin/orders/${orderId}`, {
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          headers: { Authorization: `Bearer ${getAdminToken()}`, "Content-Type": "application/json" },
         });
         const data = await response.json();
 
@@ -261,18 +261,18 @@ export function useOrderDetailEdit(orderId: string) {
     };
 
     fetchOrder();
-  }, [orderId, token]);
+  }, [orderId]);
 
   // ─── Save ─────────────────────────────────────────────────────────────────
 
   const saveChanges = async () => {
-    if (!order || !token) return;
+    if (!order || !getAdminToken()) return;
 
     dispatchOrder({ type: "SAVE_START" });
     try {
       const response = await fetch(`/api/admin/orders/${orderId}`, {
         method: "PUT",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${getAdminToken()}`, "Content-Type": "application/json" },
         body: JSON.stringify(editData),
       });
       const data = await response.json();
@@ -342,13 +342,13 @@ export function useOrderDetailEdit(orderId: string) {
   // ─── Product selector ─────────────────────────────────────────────────────
 
   const fetchProducts = useCallback(async (search = "") => {
-    if (!token) return;
+    if (!getAdminToken()) return;
     setLoadingProducts(true);
     try {
       const params = new URLSearchParams({ limit: "50" });
       if (search) params.set("search", search);
       const response = await fetch(`/api/admin/products?${params}`, {
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${getAdminToken()}`, "Content-Type": "application/json" },
       });
       const data = await response.json();
       if (data.success && data.data?.items) {
@@ -361,7 +361,7 @@ export function useOrderDetailEdit(orderId: string) {
     } finally {
       setLoadingProducts(false);
     }
-  }, [token]);
+  }, []);
 
   // Debounce searchTerm → refetch from server while selector is open
   useEffect(() => {

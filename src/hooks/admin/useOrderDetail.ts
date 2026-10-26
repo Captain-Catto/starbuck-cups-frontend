@@ -2,6 +2,7 @@ import { useCallback, useEffect, useReducer, useRef } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { invalidateOrderDependentCaches } from "@/lib/adminCacheInvalidation";
+import { getAdminToken } from "@/lib/admin-token";
 
 export interface OrderDetailData {
   id: string;
@@ -114,10 +115,9 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
   const fetchControllerRef = useRef<AbortController | null>(null);
   const orderRef = useRef<OrderDetailData | null>(null);
   orderRef.current = order;
-  const token = useSelector((state: RootState) => state.auth.token);
 
   const fetchOrder = useCallback(async () => {
-    if (!orderId || !token) return;
+    if (!orderId || !getAdminToken()) return;
 
     if (fetchControllerRef.current) {
       fetchControllerRef.current.abort();
@@ -129,7 +129,7 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
     try {
       const response = await fetch(`/api/admin/orders/${orderId}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${getAdminToken()}`,
           "Content-Type": "application/json",
         },
         signal: controller.signal,
@@ -152,18 +152,18 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
         payload: "Lỗi kết nối. Vui lòng thử lại.",
       });
     }
-  }, [orderId, token]);
+  }, [orderId]);
 
   const updateStatus = useCallback(
     async (newStatus: string): Promise<boolean> => {
-      if (!orderId || !token || !orderRef.current) return false;
+      if (!orderId || !getAdminToken() || !orderRef.current) return false;
 
       dispatch({ type: "UPDATE_START" });
       try {
         const response = await fetch(`/api/admin/orders/${orderId}/status`, {
           method: "PATCH",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${getAdminToken()}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ status: newStatus }),
@@ -193,7 +193,7 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
         dispatch({ type: "UPDATE_FINISH" });
       }
     },
-    [orderId, token, fetchOrder]
+    [orderId, fetchOrder]
   );
 
   const clearError = useCallback(() => {
@@ -202,10 +202,10 @@ export function useOrderDetail(orderId: string): UseOrderDetailReturn {
 
   useEffect(() => {
     // react-doctor-disable-next-line react-doctor/no-event-handler -- initialization fetch triggered by auth token and order ID availability
-    if (orderId && token) {
+    if (orderId && getAdminToken()) {
       fetchOrder();
     }
-  }, [orderId, token, fetchOrder]);
+  }, [orderId, fetchOrder]);
 
   useEffect(() => {
     const controller = fetchControllerRef.current;

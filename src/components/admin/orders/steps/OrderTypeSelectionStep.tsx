@@ -17,7 +17,7 @@ export function OrderTypeSelectionStep({ formData, setFormData }: StepProps) {
         <button
           type="button"
           onClick={() => setFormData((prev) => ({ ...prev, orderType: "product" }))}
-          className={`w-full text-left p-6 border-2 rounded-lg cursor-pointer transition-colors ${
+          className={`w-full text-left p-4 sm:p-6 border-2 rounded-lg cursor-pointer transition-colors ${
             formData.orderType === "product"
               ? "border-gray-200 bg-gray-900/20"
               : "border-gray-600 hover:border-gray-500 hover:bg-gray-800"
@@ -40,7 +40,7 @@ export function OrderTypeSelectionStep({ formData, setFormData }: StepProps) {
         <button
           type="button"
           onClick={() => setFormData((prev) => ({ ...prev, orderType: "custom" }))}
-          className={`w-full text-left p-6 border-2 rounded-lg cursor-pointer transition-colors ${
+          className={`w-full text-left p-4 sm:p-6 border-2 rounded-lg cursor-pointer transition-colors ${
             formData.orderType === "custom"
               ? "border-gray-200 bg-gray-900/20"
               : "border-gray-600 hover:border-gray-500 hover:bg-gray-800"

@@ -49,7 +49,7 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+        <div className="rounded-lg border border-gray-700 bg-gray-800 p-4 sm:p-6">
           <div className="animate-pulse space-y-4">
             <div className="h-6 bg-gray-600 rounded w-1/4" />
             <div className="space-y-3">
@@ -66,7 +66,7 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
   if (!order) {
     return (
       <div className="space-y-6">
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+        <div className="rounded-lg border border-gray-700 bg-gray-800 p-4 sm:p-6">
           <div className="text-center py-8">
             <Package className="size-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-white mb-2">Không tìm thấy đơn hàng</h3>
@@ -91,7 +91,7 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
   return (
     <div className="space-y-6">
       {/* Order summary card */}
-      <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+      <div className="rounded-lg border border-gray-700 bg-gray-800 p-4 sm:p-6">
         <OrderDetailHeader
           order={order}
           isEditing={isEditing}
@@ -111,7 +111,7 @@ export function OrderDetail({ orderId, isEditing }: OrderDetailProps) {
       </div>
 
       {/* Items card */}
-      <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+      <div className="rounded-lg border border-gray-700 bg-gray-800 p-4 sm:p-6">
         <h3 className="text-lg font-semibold text-white mb-4">Chi tiết sản phẩm</h3>
 
         <OrderItemsList

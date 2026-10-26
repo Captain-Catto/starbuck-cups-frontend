@@ -11,6 +11,9 @@ import {
   SnowSettings,
 } from "@/store/effectSettingsSlice";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useRole } from "@/hooks/useRole";
+import { PERMISSIONS, getHomePath } from "@/lib/permissions";
 import { Save, RefreshCw } from "lucide-react";
 
 // Sub-components import
@@ -21,6 +24,7 @@ import {
   ProductWatermarkSettings,
 } from "@/components/admin/settings/WatermarkSettingsPanel";
 import { ExcludedPathsPanel } from "@/components/admin/settings/ExcludedPathsPanel";
+import SettingsLoading from "./loading";
 
 const WATERMARK_SETTINGS_API_URL = "/api/settings/watermark-settings";
 
@@ -35,6 +39,15 @@ const DEFAULT_WATERMARK_SETTINGS: ProductWatermarkSettings = {
 
 export default function SettingsPage() {
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+  const { can, permissions } = useRole();
+  const allowed = can(PERMISSIONS.SETTINGS_MANAGE);
+
+  // The API refuses everyone without settings.manage anyway
+  useEffect(() => {
+    if (!allowed) router.replace(getHomePath(permissions));
+  }, [allowed, permissions, router]);
+
   const token = useSelector((state: RootState) => state.auth.token);
   const {
     enabled,
@@ -94,8 +107,8 @@ export default function SettingsPage() {
     toast.success("Đã tải lại cấu hình");
   };
 
-  if ((isLoading && !redEnvelopeSettings) || isWatermarkLoading) {
-    return <div className="p-8">Đang tải cài đặt…</div>;
+  if (!allowed || (isLoading && !redEnvelopeSettings) || isWatermarkLoading) {
+    return <SettingsLoading />;
   }
 
   return (

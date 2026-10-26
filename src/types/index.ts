@@ -64,6 +64,7 @@ export interface Product {
   isActive: boolean;
   isVip?: boolean; // ✅ NEW FIELD for VIP products
   isFeatured?: boolean; // ✅ NEW FIELD for Featured products
+  pinnedAt?: string | null; // Set when an admin pins the product to the top
   createdAt: string;
   updatedAt: string;
   productCategories?: { category: Category }[];
@@ -231,6 +232,12 @@ export interface AdminUser {
   email: string;
   name: string;
   role: string;
+  // True while the account still uses the temporary password a super admin set for it
+  mustChangePassword?: boolean;
+  roleId?: string | null;
+  roleName?: string;
+  // What this account may do, resolved by the API from its role
+  permissions?: string[];
 }
 
 // Auth State

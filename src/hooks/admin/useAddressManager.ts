@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { Address } from "@/components/admin/customers/AddressCard";
 import { AddressFormData } from "@/components/admin/customers/AddressForm";
+import { getAdminToken } from "@/lib/admin-token";
 
 interface AddressState {
   addresses: Address[];
@@ -69,19 +70,18 @@ export function useAddressManager(customerId: string) {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Get token from Redux store
-  const { token } = useAppSelector((state) => state.auth);
 
   const fetchAddresses = useCallback(async () => {
     try {
       dispatchAddresses({ type: "FETCH_START" });
 
-      if (!token) {
+      if (!getAdminToken()) {
         throw new Error("No authentication token");
       }
 
       const response = await fetch(`/api/admin/customers/${customerId}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${getAdminToken()}`,
         },
       });
 
@@ -101,14 +101,14 @@ export function useAddressManager(customerId: string) {
     } catch {
       dispatchAddresses({ type: "FETCH_ERROR" });
     }
-  }, [customerId, token]);
+  }, [customerId]);
 
   useEffect(() => {
     // react-doctor-disable-next-line react-doctor/no-event-handler -- initialization fetch triggered by auth token and customer ID availability
-    if (customerId && token) {
+    if (customerId && getAdminToken()) {
       fetchAddresses();
     }
-  }, [customerId, token, fetchAddresses]);
+  }, [customerId, fetchAddresses]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -158,7 +158,7 @@ export function useAddressManager(customerId: string) {
   };
 
   const handleSave = async () => {
-    if (!validateForm() || !token) {
+    if (!validateForm() || !getAdminToken()) {
       return;
     }
 
@@ -181,7 +181,7 @@ export function useAddressManager(customerId: string) {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${getAdminToken()}`,
             },
             body: JSON.stringify(backendData),
           }
@@ -207,7 +207,7 @@ export function useAddressManager(customerId: string) {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${getAdminToken()}`,
             },
             body: JSON.stringify(backendData),
           }
@@ -259,7 +259,7 @@ export function useAddressManager(customerId: string) {
   };
 
   const handleDelete = async (addressId: string) => {
-    if (!token) return;
+    if (!getAdminToken()) return;
 
     const addressToDelete = addresses.find((addr) => addr.id === addressId);
     if (!addressToDelete) return;
@@ -275,7 +275,7 @@ export function useAddressManager(customerId: string) {
         {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${getAdminToken()}`,
           },
         }
       );
@@ -307,7 +307,7 @@ export function useAddressManager(customerId: string) {
   };
 
   const handleSetDefault = async (addressId: string) => {
-    if (!token) return;
+    if (!getAdminToken()) return;
 
     setActionLoading(`default-${addressId}`);
 
@@ -327,7 +327,7 @@ export function useAddressManager(customerId: string) {
         {
           method: "PUT",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${getAdminToken()}`,
           },
         }
       );

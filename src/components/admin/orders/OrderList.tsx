@@ -207,6 +207,77 @@ const OrderRow = memo(
   (prev, next) => prev.order === next.order
 );
 
+const OrderCard = memo(
+  function OrderCard({ order }: OrderRowProps) {
+    const phone =
+      order.customer.customerPhones?.find((p) => p.isMain)?.phoneNumber ||
+      order.customer.customerPhones?.[0]?.phoneNumber ||
+      "Chưa có số điện thoại";
+    const address = [
+      order.deliveryAddress?.addressLine,
+      order.deliveryAddress?.district,
+      order.deliveryAddress?.city,
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    return (
+      <li>
+        <Link
+          href={`/admin/orders/${order.id}`}
+          className="block p-3 active:bg-gray-700"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="truncate text-sm font-semibold text-white">
+                {order.orderNumber}
+              </div>
+              <div className="mt-0.5 text-xs text-gray-300">
+                {formatDate(order.createdAt)}
+              </div>
+            </div>
+            <div className="shrink-0 text-right">
+              <div className="text-sm font-semibold text-white">
+                {formatCurrency(order.totalAmount)}
+              </div>
+              <div className="mt-0.5 text-xs text-gray-300">
+                {order.orderType === "PRODUCT"
+                  ? `${order._count?.items || 0} sản phẩm`
+                  : "Đơn tùy chỉnh"}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <div className="min-w-0 text-sm text-white">
+              <span className="font-medium">
+                {order.customer.fullName || "Khách hàng"}
+              </span>
+              <span className="text-gray-300"> · {phone}</span>
+            </div>
+            <span
+              className={`inline-flex shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${
+                statusConfig[order.status.toLowerCase()]?.color ||
+                "bg-gray-700 text-white"
+              }`}
+            >
+              {statusConfig[order.status.toLowerCase()]?.label || order.status}
+            </span>
+          </div>
+
+          {address && (
+            <div className="mt-1.5 flex items-start gap-1.5 text-xs text-gray-300">
+              <MapPin className="mt-0.5 size-3.5 shrink-0" />
+              <span className="line-clamp-2">{address}</span>
+            </div>
+          )}
+        </Link>
+      </li>
+    );
+  },
+  (prev, next) => prev.order === next.order
+);
+
 export function OrderList(props: OrderListProps) {
   const { orders, pagination, loading, error, setPage } = useOrders(props);
 
@@ -264,7 +335,12 @@ export function OrderList(props: OrderListProps) {
 
   return (
     <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-      <div className="overflow-x-auto">
+      <ul className="divide-y divide-gray-700 lg:hidden">
+        {orders.map((order) => (
+          <OrderCard key={order.id} order={order} />
+        ))}
+      </ul>
+      <div className="hidden overflow-x-auto lg:block">
         <table className="min-w-full divide-y divide-gray-700">
           <thead className="bg-gray-700">
             <tr>
@@ -312,7 +388,7 @@ export function OrderList(props: OrderListProps) {
       </div>
 
       {pagination.total_pages > 1 && (
-        <div className="mt-6 pt-4 border-t border-gray-700">
+        <div className="border-t border-gray-700 p-3 sm:mt-6 sm:pt-4">
           <Pagination data={pagination} onPageChange={setPage} />
         </div>
       )}

@@ -4,6 +4,7 @@ import { useAppSelector } from "@/store";
 import { OrderFormData, Product } from "@/types/orders";
 import { toast } from "sonner";
 import { invalidateOrderDependentCaches } from "@/lib/adminCacheInvalidation";
+import { getAdminToken } from "@/lib/admin-token";
 
 const initialFormData: OrderFormData = {
   customerId: "",
@@ -19,7 +20,6 @@ const initialFormData: OrderFormData = {
 
 export function useOrderCreation() {
   const router = useRouter();
-  const { token } = useAppSelector((state) => state.auth);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<OrderFormData>(initialFormData);
@@ -317,8 +317,8 @@ export function useOrderCreation() {
         "Content-Type": "application/json",
       };
 
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
+      if (getAdminToken()) {
+        headers.Authorization = `Bearer ${getAdminToken()}`;
       }
 
       // Call actual API

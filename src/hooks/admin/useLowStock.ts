@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer } from "react";
 import { useAppSelector } from "@/store";
 import type { PaginationMeta } from "@/types";
+import { getAdminToken } from "@/lib/admin-token";
 
 export interface LowStockProduct {
   id: string;
@@ -102,11 +103,11 @@ export const useLowStock = (
   const { limit = 10, threshold = 10, autoFetch = true } = options;
   const [state, dispatch] = useReducer(lowStockReducer, initialLowStockState);
 
-  const { token } = useAppSelector((state) => state.auth);
+  const hasToken = useAppSelector((state) => Boolean(state.auth.token));
 
   const fetchLowStockProducts = useCallback(
     async (page: number = 1) => {
-      if (!token) {
+      if (!getAdminToken()) {
         dispatch({ type: "NO_TOKEN" });
         return;
       }
@@ -124,7 +125,7 @@ export const useLowStock = (
           `/api/admin/products/low-stock?${params.toString()}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${getAdminToken()}`,
               "Content-Type": "application/json",
             },
           }
@@ -156,7 +157,7 @@ export const useLowStock = (
         });
       }
     },
-    [token, limit, threshold]
+    [limit, threshold]
   );
 
   const handlePageChange = useCallback(
@@ -171,11 +172,11 @@ export const useLowStock = (
   }, [fetchLowStockProducts, state.currentPage]);
 
   useEffect(() => {
-    if (autoFetch && token) {
+    if (autoFetch && hasToken) {
       // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent -- initialization fetch, data flows down via hook return value
       fetchLowStockProducts(1);
     }
-  }, [autoFetch, token, fetchLowStockProducts]);
+  }, [autoFetch, hasToken, fetchLowStockProducts]);
 
   return {
     products: state.products,

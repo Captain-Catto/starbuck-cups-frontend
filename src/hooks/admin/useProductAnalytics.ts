@@ -2,6 +2,7 @@
 
 import { useReducer, useEffect, useCallback, useRef } from "react";
 import { useAppSelector } from "@/store";
+import { getAdminAuthHeaders } from "@/lib/admin-token";
 
 export interface ProductAnalytics {
   productId: string;
@@ -156,7 +157,6 @@ export const useTopClickedProducts = (
   page: number = 1,
   enabled: boolean = true
 ) => {
-  const { token } = useAppSelector((state) => state.auth);
   const [{ products, totalPages, loading, error }, dispatch] = useReducer(
     productAnalyticsListReducer,
     initialProductAnalyticsListState
@@ -164,8 +164,8 @@ export const useTopClickedProducts = (
   const requestControllerRef = useRef<AbortController | null>(null);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [token]);
+    return getAdminAuthHeaders();
+  }, []);
 
   const fetchTopClicked = useCallback(async () => {
     if (!enabled) {
@@ -256,7 +256,6 @@ export const useTopConversionProducts = (
   page: number = 1,
   enabled: boolean = true
 ) => {
-  const { token } = useAppSelector((state) => state.auth);
   const [{ products, totalPages, loading, error }, dispatch] = useReducer(
     productAnalyticsListReducer,
     initialProductAnalyticsListState
@@ -264,8 +263,8 @@ export const useTopConversionProducts = (
   const requestControllerRef = useRef<AbortController | null>(null);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [token]);
+    return getAdminAuthHeaders();
+  }, []);
 
   const fetchTopConversion = useCallback(async () => {
     if (!enabled) {

@@ -6,6 +6,7 @@ import {
   RecentOrder,
   RevenueData,
 } from "@/lib/client-dashboard-api";
+import { getAdminToken } from "@/lib/admin-token";
 
 export interface UseDashboardReturn {
   // Data
@@ -34,6 +35,8 @@ type SectionCache<T> = {
 };
 
 const DASHBOARD_CACHE_TTL_MS = 45_000;
+// Caches are keyed by a constant, not the access token, which changes on every silent refresh
+const CACHE_KEY = "session";
 
 const statsCache: SectionCache<DashboardStats> = {
   token: null,
@@ -87,7 +90,7 @@ export function invalidateDashboardCache() {
 
 function isSectionCacheFresh<T>(cache: SectionCache<T>, token: string) {
   return (
-    cache.token === token &&
+    cache.token === CACHE_KEY &&
     cache.value !== null &&
     Date.now() - cache.fetchedAt < DASHBOARD_CACHE_TTL_MS
   );
@@ -100,7 +103,7 @@ function setSectionCache<T>(cache: SectionCache<T>, token: string, value: T) {
 }
 
 export function useDashboard(): UseDashboardReturn {
-  const { token } = useAppSelector((state) => state.auth);
+  const hasToken = useAppSelector((state) => Boolean(state.auth.token));
 
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(
     null
@@ -117,6 +120,7 @@ export function useDashboard(): UseDashboardReturn {
   // Fetch dashboard data - each section fetches independently for progressive rendering
   const fetchDashboardData = useCallback(
     async (forceRefresh = false) => {
+      const token = getAdminToken();
       if (!token) {
         setError("Không có token xác thực");
         setStatsLoading(false);
@@ -128,12 +132,12 @@ export function useDashboard(): UseDashboardReturn {
       setError(null);
 
       // Stats
-      const hasCachedStats = statsCache.token === token && statsCache.value !== null;
+      const hasCachedStats = statsCache.token === CACHE_KEY && statsCache.value !== null;
       if (hasCachedStats) {
         setDashboardStats(statsCache.value);
       }
 
-      if (!forceRefresh && isSectionCacheFresh(statsCache, token)) {
+      if (!forceRefresh && isSectionCacheFresh(statsCache, CACHE_KEY)) {
         setStatsLoading(false);
       } else {
         setStatsLoading(forceRefresh || !hasCachedStats);
@@ -142,7 +146,7 @@ export function useDashboard(): UseDashboardReturn {
           statsCache.inFlight = dashboardAPI
             .getDashboardStats(token)
             .then((stats) => {
-              setSectionCache(statsCache, token, stats);
+              setSectionCache(statsCache, CACHE_KEY, stats);
               return stats;
             })
             .finally(() => {
@@ -160,12 +164,12 @@ export function useDashboard(): UseDashboardReturn {
 
       // Recent orders
       const hasCachedOrders =
-        recentOrdersCache.token === token && recentOrdersCache.value !== null;
+        recentOrdersCache.token === CACHE_KEY && recentOrdersCache.value !== null;
       if (hasCachedOrders) {
         setRecentOrders(recentOrdersCache.value || []);
       }
 
-      if (!forceRefresh && isSectionCacheFresh(recentOrdersCache, token)) {
+      if (!forceRefresh && isSectionCacheFresh(recentOrdersCache, CACHE_KEY)) {
         setOrdersLoading(false);
       } else {
         setOrdersLoading(forceRefresh || !hasCachedOrders);
@@ -174,7 +178,7 @@ export function useDashboard(): UseDashboardReturn {
           recentOrdersCache.inFlight = dashboardAPI
             .getRecentOrders(5, token)
             .then((orders) => {
-              setSectionCache(recentOrdersCache, token, orders);
+              setSectionCache(recentOrdersCache, CACHE_KEY, orders);
               return orders;
             })
             .finally(() => {
@@ -191,12 +195,12 @@ export function useDashboard(): UseDashboardReturn {
       }
 
       // Revenue
-      const hasCachedRevenue = revenueCache.token === token && revenueCache.value !== null;
+      const hasCachedRevenue = revenueCache.token === CACHE_KEY && revenueCache.value !== null;
       if (hasCachedRevenue) {
         setRevenueData(revenueCache.value);
       }
 
-      if (!forceRefresh && isSectionCacheFresh(revenueCache, token)) {
+      if (!forceRefresh && isSectionCacheFresh(revenueCache, CACHE_KEY)) {
         setRevenueLoading(false);
       } else {
         setRevenueLoading(forceRefresh || !hasCachedRevenue);
@@ -205,7 +209,7 @@ export function useDashboard(): UseDashboardReturn {
           revenueCache.inFlight = dashboardAPI
             .getRevenueData(token)
             .then((revenue) => {
-              setSectionCache(revenueCache, token, revenue);
+              setSectionCache(revenueCache, CACHE_KEY, revenue);
               return revenue;
             })
             .finally(() => {
@@ -223,18 +227,18 @@ export function useDashboard(): UseDashboardReturn {
 
       // Pending consultations (no hard loading state for this metric)
       const hasCachedPending =
-        pendingConsultationsCache.token === token &&
+        pendingConsultationsCache.token === CACHE_KEY &&
         pendingConsultationsCache.value !== null;
       if (hasCachedPending) {
         setPendingConsultations(pendingConsultationsCache.value || 0);
       }
 
-      if (forceRefresh || !isSectionCacheFresh(pendingConsultationsCache, token)) {
+      if (forceRefresh || !isSectionCacheFresh(pendingConsultationsCache, CACHE_KEY)) {
         if (!pendingConsultationsCache.inFlight || forceRefresh) {
           pendingConsultationsCache.inFlight = dashboardAPI
             .getPendingConsultationsCount(token)
             .then((res) => {
-              setSectionCache(pendingConsultationsCache, token, res.count);
+              setSectionCache(pendingConsultationsCache, CACHE_KEY, res.count);
               return res.count;
             })
             .finally(() => {
@@ -249,7 +253,7 @@ export function useDashboard(): UseDashboardReturn {
           .catch(() => { setError((prev) => prev || "Không thể tải dữ liệu tư vấn"); });
       }
     },
-    [token]
+    []
   );
 
   const refetch = useCallback(() => {
@@ -257,11 +261,11 @@ export function useDashboard(): UseDashboardReturn {
   }, [fetchDashboardData]);
 
   useEffect(() => {
-    if (token) {
+    if (hasToken) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchDashboardData(false);
     }
-  }, [token, fetchDashboardData]);
+  }, [hasToken, fetchDashboardData]);
 
   // Overall loading = any section still loading
   const loading = statsLoading || ordersLoading || revenueLoading;

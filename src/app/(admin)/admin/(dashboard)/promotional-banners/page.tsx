@@ -11,7 +11,7 @@ import {
 } from "@/hooks/admin/usePromotionalBanner";
 import { BannerCard } from "@/components/admin/promotional-banners/BannerCard";
 import { BannerFormModal } from "@/components/admin/promotional-banners/BannerFormModal";
-import { LoadingState } from "@/components/admin/LoadingState";
+import PromotionalBannersLoading from "./loading";
 import { ErrorMessage } from "@/components/admin/ErrorMessage";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { PageHeader } from "@/components/admin/PageHeader";
@@ -102,7 +102,7 @@ export default function PromotionalBannersPage() {
 
 
   if (loading && banners.length === 0) {
-    return <LoadingState />;
+    return <PromotionalBannersLoading />;
   }
 
   return (

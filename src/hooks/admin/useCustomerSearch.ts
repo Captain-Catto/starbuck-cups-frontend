@@ -1,9 +1,12 @@
 ﻿import { useState, useEffect, useRef } from "react";
 import { useAppSelector } from "@/store";
 import { Customer } from "@/types/orders";
+import { getAdminToken } from "@/lib/admin-token";
 
 export function useCustomerSearch() {
-  const { token, sessionChecked } = useAppSelector((state) => state.auth);
+  // hasToken only flips on login/logout, unlike the token itself which changes on every silent refresh
+  const hasToken = useAppSelector((state) => Boolean(state.auth.token));
+  const sessionChecked = useAppSelector((state) => state.auth.sessionChecked);
 
   // Customer data state
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -26,7 +29,7 @@ export function useCustomerSearch() {
       return;
     }
 
-    if (!token) {
+    if (!hasToken) {
 
       setCustomers([]);
       setLoadingCustomers(false);
@@ -42,8 +45,8 @@ export function useCustomerSearch() {
           "Content-Type": "application/json",
         };
 
-        if (token) {
-          headers.Authorization = `Bearer ${token}`;
+        if (getAdminToken()) {
+          headers.Authorization = `Bearer ${getAdminToken()}`;
 
         }
 
@@ -69,7 +72,7 @@ export function useCustomerSearch() {
     };
 
     fetchCustomers();
-  }, [token, sessionChecked]);
+  }, [hasToken, sessionChecked]);
 
   // Customer search logic
   const searchCustomers = async (searchTerm: string) => {
@@ -89,8 +92,8 @@ export function useCustomerSearch() {
         "Content-Type": "application/json",
       };
 
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
+      if (getAdminToken()) {
+        headers.Authorization = `Bearer ${getAdminToken()}`;
       }
 
       const response = await fetch(

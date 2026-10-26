@@ -44,13 +44,13 @@ export function ProductTranslationsFields({
   return (
     <div className="space-y-4">
       {/* Locale Tabs */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-gray-200 overflow-x-auto">
         {LOCALES.map((locale) => (
           <button
             type="button"
             key={locale.code}
             onClick={() => setActiveLocale(locale.code)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            className={`min-h-11 flex-1 sm:flex-none px-2 sm:px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeLocale === locale.code
                 ? "border-green-500 text-green-600"
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -81,7 +81,7 @@ export function ProductTranslationsFields({
               type="text"
               value={translations[locale.code].name}
               onChange={(e) => onChange(locale.code, "name", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder={
                 locale.code === "vi"
                   ? "Tên sản phẩm tiếng Việt"
@@ -125,7 +125,7 @@ export function ProductTranslationsFields({
                 onChange={(e) =>
                   onChange(locale.code, "metaTitle", e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Tiêu đề SEO" id="producttranslationsfields-ti-u-seo"
               />
             </div>
@@ -140,7 +140,7 @@ export function ProductTranslationsFields({
                 onChange={(e) =>
                   onChange(locale.code, "metaDescription", e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Mô tả SEO" id="producttranslationsfields-m-t-seo"
               />
             </div>

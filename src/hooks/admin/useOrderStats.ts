@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
+import { getAdminToken, getAdminAuthHeaders } from "@/lib/admin-token";
 
 export interface OrderStats {
   total: number;
@@ -41,6 +42,8 @@ type OrderStatsCache = {
 };
 
 const ORDER_STATS_CACHE_TTL_MS = 30_000;
+// Keyed by a constant, not the access token, which changes on every silent refresh
+const CACHE_KEY = "session";
 
 const orderStatsCache: OrderStatsCache = {
   token: null,
@@ -56,9 +59,9 @@ export function invalidateOrderStatsCache() {
   orderStatsCache.inFlight = null;
 }
 
-function isOrderStatsCacheFresh(token: string) {
+function isOrderStatsCacheFresh() {
   return (
-    orderStatsCache.token === token &&
+    orderStatsCache.token === CACHE_KEY &&
     orderStatsCache.value !== null &&
     Date.now() - orderStatsCache.fetchedAt < ORDER_STATS_CACHE_TTL_MS
   );
@@ -69,24 +72,24 @@ export function useOrderStats(): UseOrderStatsReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Get auth token from Redux store
-  const token = useSelector((state: RootState) => state.auth.token);
+  // Only flips on login/logout; the token itself changes on every silent refresh
+  const hasToken = useSelector((state: RootState) => Boolean(state.auth.token));
 
   // Fetch order statistics
   const fetchStats = useCallback(
     async (forceRefresh = false) => {
-      if (!token) {
+      if (!getAdminToken()) {
         setLoading(false);
         return;
       }
 
       const hasCachedStats =
-        orderStatsCache.token === token && orderStatsCache.value !== null;
+        orderStatsCache.token === CACHE_KEY && orderStatsCache.value !== null;
       if (hasCachedStats) {
         setStats(orderStatsCache.value);
       }
 
-      if (!forceRefresh && isOrderStatsCacheFresh(token)) {
+      if (!forceRefresh && isOrderStatsCacheFresh()) {
         setError(null);
         setLoading(false);
         return;
@@ -97,9 +100,7 @@ export function useOrderStats(): UseOrderStatsReturn {
 
       try {
         if (!orderStatsCache.inFlight || forceRefresh) {
-          const authHeaders: Record<string, string> = token
-            ? { Authorization: `Bearer ${token}` }
-            : {};
+          const authHeaders = getAdminAuthHeaders();
 
           orderStatsCache.inFlight = fetch("/api/admin/orders/stats", {
             headers: authHeaders,
@@ -108,7 +109,7 @@ export function useOrderStats(): UseOrderStatsReturn {
               const data = await response.json();
 
               if (data.success) {
-                orderStatsCache.token = token;
+                orderStatsCache.token = CACHE_KEY;
                 orderStatsCache.value = data.data;
                 orderStatsCache.fetchedAt = Date.now();
                 return data.data as OrderStats;
@@ -131,7 +132,7 @@ export function useOrderStats(): UseOrderStatsReturn {
         setLoading(false);
       }
     },
-    [token]
+    []
   );
 
   // Clear error
@@ -141,10 +142,10 @@ export function useOrderStats(): UseOrderStatsReturn {
 
   // Auto fetch stats on mount and when token changes
   useEffect(() => {
-    if (token) {
+    if (hasToken) {
       fetchStats(false);
     }
-  }, [token, fetchStats]);
+  }, [hasToken, fetchStats]);
 
   // Calculate percentage change
   const calculateChange = useCallback(

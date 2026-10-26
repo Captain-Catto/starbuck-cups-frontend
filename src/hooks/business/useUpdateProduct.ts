@@ -5,6 +5,7 @@ import {
   useCallback,
   useReducer,
   useRef,
+  useState,
   type SetStateAction,
 } from "react";
 import { useSelector } from "react-redux";
@@ -16,6 +17,9 @@ import type {
   ProductTranslationsMap,
 } from "@/types";
 import { invalidateProductDependentCaches } from "@/lib/adminCacheInvalidation";
+
+// Never leave the save button spinning forever on a flaky mobile connection.
+const SUBMIT_TIMEOUT_MS = 60_000;
 
 type TranslationField = "name" | "description" | "metaTitle" | "metaDescription";
 
@@ -93,6 +97,9 @@ export interface UpdateProductFormData {
   isVip: boolean;
   hasVariants: boolean;
   isFeatured: boolean;
+  isPinned: boolean;
+  // Pin state when the product was loaded, to project the pinned count while editing
+  initialIsPinned: boolean;
   translations: ProductTranslationsInput;
   newImages?: File[];
   keepExistingImages?: boolean;
@@ -108,8 +115,14 @@ export interface UseUpdateProductOptions {
   onError?: (error: string) => void;
 }
 
+export interface PinStats {
+  count: number;
+  max: number;
+}
+
 export interface UseUpdateProductReturn {
   formData: UpdateProductFormData;
+  pinStats: PinStats | null;
   errors: ValidationErrors;
   loading: boolean;
   isSubmitting: boolean;
@@ -138,6 +151,8 @@ const initialFormData: UpdateProductFormData = {
   isVip: false,
   hasVariants: true,
   isFeatured: false,
+  isPinned: false,
+  initialIsPinned: false,
   translations: createDefaultTranslations(),
   newImages: [],
   keepExistingImages: true,
@@ -227,6 +242,7 @@ export function useUpdateProduct(
     formData: initialFormData,
   });
   const { loading, isSubmitting, errors, formData } = state;
+  const [pinStats, setPinStats] = useState<PinStats | null>(null);
 
   const token = useSelector((state: RootState) => state.auth.token);
 
@@ -274,6 +290,7 @@ export function useUpdateProduct(
         isActive?: boolean;
         isVip?: boolean;
         isFeatured?: boolean;
+        pinnedAt?: string | null;
         translations?: ProductTranslationsMap;
       };
 
@@ -293,6 +310,8 @@ export function useUpdateProduct(
           Boolean(product.capacity?.id != null) ||
           Boolean(product.productColors && product.productColors.length > 0),
         isFeatured: product.isFeatured ?? false,
+        isPinned: Boolean(product.pinnedAt),
+        initialIsPinned: Boolean(product.pinnedAt),
         translations: createDefaultTranslations(
           product.name || "",
           product.description || "",
@@ -303,6 +322,15 @@ export function useUpdateProduct(
       };
 
       dispatch({ type: "LOAD_SUCCESS", formData: mappedData });
+
+      // Best-effort: the pin counter is informational, the backend enforces the limit
+      try {
+        const statsResponse = await fetch("/api/admin/products/stats/pinned", {
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        });
+        const stats = await statsResponse.json();
+        if (statsResponse.ok && stats.success) setPinStats(stats.data);
+      } catch {}
     } catch (error) {
       const errorMsg =
         error instanceof Error
@@ -483,6 +511,7 @@ export function useUpdateProduct(
         formDataToSend.append("isActive", formData.isActive.toString());
         formDataToSend.append("isVip", formData.isVip.toString());
         formDataToSend.append("isFeatured", formData.isFeatured.toString());
+        formDataToSend.append("isPinned", formData.isPinned.toString());
         formDataToSend.append("translations", JSON.stringify(translationsPayload));
 
         const productUrlValue = formData.productUrl.trim();
@@ -508,6 +537,7 @@ export function useUpdateProduct(
             ...getAuthHeaders(),
           },
           body: formDataToSend,
+          signal: AbortSignal.timeout(SUBMIT_TIMEOUT_MS),
         });
 
         const data = await response.json();
@@ -526,6 +556,7 @@ export function useUpdateProduct(
           isActive: formData.isActive,
           isVip: formData.isVip,
           isFeatured: formData.isFeatured,
+          isPinned: formData.isPinned,
           translations: translationsPayload,
           productImages: formData.images.map((url, index) => ({
             url,
@@ -540,6 +571,7 @@ export function useUpdateProduct(
             ...getAuthHeaders(),
           },
           body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(SUBMIT_TIMEOUT_MS),
         });
 
         const data = await response.json();
@@ -552,8 +584,14 @@ export function useUpdateProduct(
       toast.success("Cập nhật sản phẩm thành công!");
       if (onSuccess) onSuccess();
     } catch (error) {
-      const errorMsg =
-        error instanceof Error ? error.message : "Có lỗi xảy ra";
+      const isTimeout =
+        error instanceof DOMException &&
+        (error.name === "TimeoutError" || error.name === "AbortError");
+      const errorMsg = isTimeout
+        ? "Máy chủ phản hồi quá lâu, vui lòng kiểm tra mạng và thử lại"
+        : error instanceof Error
+        ? error.message
+        : "Có lỗi xảy ra";
       toast.error(errorMsg);
       if (onError) onError(errorMsg);
     } finally {
@@ -563,6 +601,7 @@ export function useUpdateProduct(
 
   return {
     formData,
+    pinStats,
     errors,
     loading,
     isSubmitting,

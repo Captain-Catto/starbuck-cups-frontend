@@ -219,3 +219,25 @@
 .editor-tokenFunction {
   color: #06b6d4;
 }
+
+
+/* Phones: iOS Safari zooms the page when a focused field is under 16px, and the
+   toolbar is wider than the screen. */
+@media (max-width: 639px) {
+  .editor-input,
+  .editor-placeholder {
+    font-size: 16px;
+  }
+
+  .toolbar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .toolbar-item {
+    min-width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+}

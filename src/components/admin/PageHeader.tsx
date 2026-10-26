@@ -12,10 +12,10 @@ export function PageHeader({
   className = "",
 }: PageHeaderProps) {
   return (
-    <div className={`flex justify-between items-center ${className}`}>
+    <div className={`flex flex-wrap items-center justify-between gap-3 ${className}`}>
       <div>
-        <h1 className="text-2xl font-bold text-white">{title}</h1>
-        {description && <p className="text-gray-300 mt-1">{description}</p>}
+        <h1 className="text-xl font-bold text-white sm:text-2xl">{title}</h1>
+        {description && <p className="mt-1 hidden text-gray-300 sm:block">{description}</p>}
       </div>
       {action && <div>{action}</div>}
     </div>

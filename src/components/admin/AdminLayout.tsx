@@ -1,14 +1,19 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { AdminBottomNav } from "@/components/admin/AdminBottomNav";
 import { useAppSelector } from "@/store";
+import { useRole } from "@/hooks/useRole";
+import { PERMISSIONS, getHomePath, type PermissionKey } from "@/lib/permissions";
 import { useAdminAuth } from "@/hooks/useStandardAuth";
 import { useSocket } from "@/hooks/useSocket";
 import { usePendingConsultations } from "@/hooks/admin/usePendingConsultations";
 import { useConsultationSocket } from "@/hooks/useConsultationSocket";
+import { decodeJWT } from "@/lib/jwt";
+import { getAdminToken } from "@/lib/admin-token";
 
 const NotificationDropdown = dynamic(
   () =>
@@ -43,6 +48,8 @@ import {
   BarChart3,
   Megaphone,
   Newspaper,
+  UserCog,
+  ShieldCheck,
 } from "lucide-react";
 
 interface SidebarItem {
@@ -63,12 +70,14 @@ function SidebarNavItem({
   expandedItems,
   isActivePath,
   onToggleSubmenu,
+  onNavigate,
 }: {
   item: SidebarItem;
   pathname: string;
   expandedItems: string[];
   isActivePath: (path: string) => boolean;
   onToggleSubmenu: (path: string) => void;
+  onNavigate: () => void;
 }) {
   if (item.submenu) {
     return (
@@ -96,8 +105,10 @@ function SidebarNavItem({
           <div className="ml-6 mt-1 space-y-1">
             {item.submenu.map((subItem) => (
               <Link
+                prefetch={false}
                 key={subItem.path}
                 href={subItem.path}
+                onClick={onNavigate}
                 className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
                   pathname === subItem.path
                     ? "bg-gray-700 text-white"
@@ -115,8 +126,10 @@ function SidebarNavItem({
 
   return (
     <Link
+      prefetch={false}
       href={item.path}
-      className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+      onClick={onNavigate}
+      className={`flex items-center gap-3 px-3 py-3 lg:py-2 text-sm font-medium rounded-lg transition-colors ${
         isActivePath(item.path)
           ? "bg-gray-700 text-white border-r-2 border-white"
           : "text-white hover:bg-gray-700"
@@ -172,7 +185,7 @@ function AdminSidebar({
         </button>
       </div>
 
-      <nav className="mt-6 px-3">
+      <nav className="mt-4 h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain px-3 pb-8">
         <div className="space-y-1">
           {sidebarItems.map((item) => (
             <SidebarNavItem
@@ -182,6 +195,7 @@ function AdminSidebar({
               expandedItems={expandedItems}
               isActivePath={isActivePath}
               onToggleSubmenu={onToggleSubmenu}
+              onNavigate={onClose}
             />
           ))}
         </div>
@@ -231,6 +245,7 @@ function ProfileDropdown({
             </div>
 
             <Link
+              prefetch={false}
               href="/admin/profile"
               onClick={onClose}
               className="flex items-center gap-3 px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
@@ -240,6 +255,7 @@ function ProfileDropdown({
             </Link>
 
             <Link
+              prefetch={false}
               href="/admin/settings"
               onClick={onClose}
               className="flex items-center gap-3 px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
@@ -296,28 +312,29 @@ function AdminTopHeader({
   onLogout: () => void;
 }) {
   return (
-    <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+    <header className="sticky top-0 z-30 bg-gray-800 border-b border-gray-700 px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 sm:py-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <button
             type="button"
             onClick={onOpenSidebar}
-            className="lg:hidden p-2 rounded-md hover:bg-gray-700"
+            aria-label="Mở menu"
+            className="hidden sm:block lg:hidden p-2 rounded-md hover:bg-gray-700"
           >
             <Menu className="size-5 text-white" />
           </button>
           <div>
-            <h2 className="text-lg font-semibold text-white">{greeting}</h2>
-            <p className="text-sm text-white">{user?.name || "Admin"}</p>
+            <h2 className="truncate text-base font-semibold text-white sm:text-lg">{greeting}</h2>
+            <p className="truncate text-sm text-white">{user?.name || "Admin"}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-4">
           <div className="relative notification-dropdown">
             <button
               type="button"
               onClick={onToggleNotifications}
-              className="relative p-2 rounded-lg hover:bg-gray-700 transition-colors"
+              className="relative flex size-11 items-center justify-center rounded-lg hover:bg-gray-700 transition-colors sm:size-auto sm:p-2"
               title={`${unreadCount} thông báo chưa đọc${
                 isConnected ? " (Real-time)" : " (Offline)"
               }`}
@@ -361,7 +378,7 @@ function AdminMainContent({
   children: React.ReactNode;
 }) {
   return (
-    <main className="flex-1 p-6 bg-zinc-950">
+    <main className="min-w-0 flex-1 bg-zinc-950 p-3 pb-24 sm:p-6 sm:pb-24 lg:pb-6">
       {isAdminReady ? (
         children
       ) : (
@@ -386,11 +403,39 @@ function SidebarOverlay({
 
   return (
     <div
-      className="fixed inset-0 z-40 bg-zinc-950 bg-opacity-75 lg:hidden"
+      className="fixed inset-0 z-40 bg-zinc-950/75 lg:hidden"
       onClick={onClose}
       role="presentation"
     />
   );
+}
+
+// Permission needed to see each menu entry (the API enforces the same permissions)
+const SIDEBAR_PERMISSIONS: Record<string, PermissionKey> = {
+  "/admin/dashboard": PERMISSIONS.DASHBOARD_VIEW,
+  "/admin/products": PERMISSIONS.PRODUCTS_VIEW,
+  "/admin/orders": PERMISSIONS.ORDERS_VIEW,
+  "/admin/customers": PERMISSIONS.CUSTOMERS_VIEW,
+  "/admin/consultations": PERMISSIONS.CONSULTATIONS_VIEW,
+  "/admin/colors": PERMISSIONS.CATALOG_VIEW,
+  "/admin/capacities": PERMISSIONS.CATALOG_VIEW,
+  "/admin/categories": PERMISSIONS.CATALOG_VIEW,
+  "/admin/hero-images": PERMISSIONS.HERO_IMAGES_VIEW,
+  "/admin/promotional-banners": PERMISSIONS.BANNERS_VIEW,
+  "/admin/news": PERMISSIONS.NEWS_VIEW,
+  "/admin/statistics": PERMISSIONS.DASHBOARD_VIEW,
+  "/admin/users": PERMISSIONS.USERS_MANAGE,
+  "/admin/roles": PERMISSIONS.ROLES_MANAGE,
+  "/admin/settings": PERMISSIONS.SETTINGS_MANAGE,
+};
+
+// Matches useAuthRefresh, which refreshes the token once less than 10 minutes remain
+const TOKEN_FRESH_SECONDS = 600;
+
+function hasFreshStoredToken(): boolean {
+  const token = getAdminToken();
+  const exp = token ? decodeJWT(token)?.exp : undefined;
+  return exp !== undefined && exp - Date.now() / 1000 > TOKEN_FRESH_SECONDS;
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
@@ -400,10 +445,40 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [notificationDropdownOpen, setNotificationDropdownOpen] =
     useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useAppSelector((state) => state.auth);
+  const { can, permissions, mustChangePassword } = useRole();
+
+  // Send people away from sections their role cannot open (e.g. a login landing on the dashboard)
+  useEffect(() => {
+    if (!user?.permissions) return;
+    const section = Object.keys(SIDEBAR_PERMISSIONS).find((p) => pathname === p || pathname.startsWith(p + "/"));
+    if (section && !can(SIDEBAR_PERMISSIONS[section])) router.replace(getHomePath(permissions));
+  }, [user?.permissions, pathname, can, permissions, router]);
+
+  // A temporary password has to be replaced before anything else in the admin can be used
+  useEffect(() => {
+    if (mustChangePassword && pathname !== "/admin/profile") {
+      router.replace("/admin/profile");
+    }
+  }, [mustChangePassword, pathname, router]);
 
   // Sử dụng standardized admin authentication hook
-  const { isAdminReady, logout: performLogout } = useAdminAuth();
+  const { isAdminReady, sessionChecked, logout: performLogout } = useAdminAuth();
+
+  // A token that is comfortably within its lifetime means the session is very likely valid, so
+  // start rendering (and fetching) the page right away instead of waiting for the verify round
+  // trip. Data hooks send the Redux token without a 401 retry, so when it is expired or about to
+  // be refreshed by useAuthRefresh (under TOKEN_FRESH_SECONDS left) we keep waiting for verify.
+  // If verification fails the token is cleared, this turns false and useAdminAuth redirects to
+  // the login page. The API enforces auth on every request regardless.
+  // Read through useSyncExternalStore (server snapshot false) so hydration stays consistent.
+  const hasFreshToken = useSyncExternalStore(
+    () => () => {},
+    hasFreshStoredToken,
+    () => false
+  );
+  const showContent = isAdminReady || (!sessionChecked && hasFreshToken);
 
   // Initialize Socket.IO for real-time notifications
   const { isConnected, unreadCount } = useSocket();
@@ -482,11 +557,24 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       path: "/admin/statistics",
     },
     {
+      icon: UserCog,
+      label: "Quản lý tài khoản",
+      path: "/admin/users",
+    },
+    {
+      icon: ShieldCheck,
+      label: "Vai trò & Quyền",
+      path: "/admin/roles",
+    },
+    {
       icon: Settings,
       label: "Cấu hình Hiệu ứng",
       path: "/admin/settings",
     },
-  ], [pendingCount]);
+  ].filter((item) => {
+    const required = SIDEBAR_PERMISSIONS[item.path];
+    return !required || can(required);
+  }), [pendingCount, can]);
 
   // Close dropdowns when clicking outside - only attach listener when a dropdown is open
   useEffect(() => {
@@ -549,7 +637,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         onToggleSubmenu={toggleSubmenu}
       />
 
-      <div className="flex-1 flex flex-col lg:ml-0">
+      <div className="flex min-w-0 flex-1 flex-col lg:ml-0">
         <AdminTopHeader
           greeting={greeting}
           user={user}
@@ -566,10 +654,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           onCloseProfile={() => setProfileDropdownOpen(false)}
           onLogout={handleLogout}
         />
-        <AdminMainContent isAdminReady={isAdminReady}>
+        <AdminMainContent isAdminReady={showContent}>
           {children}
         </AdminMainContent>
       </div>
+
+      <AdminBottomNav
+        pathname={pathname}
+        pendingCount={pendingCount}
+        onOpenMenu={() => setSidebarOpen(true)}
+      />
 
       <SidebarOverlay show={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 

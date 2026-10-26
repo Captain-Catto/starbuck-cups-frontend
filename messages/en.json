@@ -123,6 +123,7 @@
     "alreadyExists": "{name} is already in the consultation cart"
   },
   "productDetail": {
+    "pinned": "Pinned",
     "color": "Color",
     "capacity": "Capacity",
     "category": "Category",

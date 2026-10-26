@@ -2,6 +2,7 @@
 import { useSelector } from "react-redux";
 import { useReducer } from "react";
 import type { RootState } from "@/store";
+import { getAdminAuthHeaders } from "@/lib/admin-token";
 
 export interface Order {
   id: string;
@@ -150,9 +151,6 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
     ? { ...pagination, current_page: 1 }
     : pagination;
 
-  // Get auth token from Redux store
-  const token = useSelector((state: RootState) => state.auth.token);
-
   // Debounce search to avoid flooding API while typing
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -225,9 +223,7 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
     dispatch({ type: "FETCH_START", filterKey });
 
     try {
-      const authHeaders: Record<string, string> = token
-        ? { Authorization: `Bearer ${token}` }
-        : {};
+      const authHeaders = getAdminAuthHeaders();
       const queryParams = buildQueryParams();
       const url = `/api/admin/orders${queryParams ? `?${queryParams}` : ""}`;
 
@@ -260,7 +256,7 @@ export function useOrders(filters: OrderFilters): UseOrdersReturn {
         error: "Lỗi kết nối. Vui lòng thử lại.",
       });
     }
-  }, [token, buildQueryParams, filterKey]);
+  }, [buildQueryParams, filterKey]);
 
   // Clear error
   const clearError = useCallback(() => {

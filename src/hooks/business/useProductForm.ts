@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import type { ProductLocale, ProductTranslationsInput } from "@/types";
 import { useAppSelector } from "@/hooks/redux";
 import { invalidateProductDependentCaches } from "@/lib/adminCacheInvalidation";
+import { getAdminAuthHeaders } from "@/lib/admin-token";
 
 type TranslationField = "name" | "description" | "metaTitle" | "metaDescription";
 
@@ -169,7 +170,6 @@ export function useProductForm(
   } = options;
 
   const router = useRouter();
-  const { token } = useAppSelector((state) => state.auth);
 
   const [formData, setFormData] = useState<ProductFormData>({
     name: initialData?.name || "",
@@ -192,8 +192,8 @@ export function useProductForm(
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [token]);
+    return getAdminAuthHeaders();
+  }, []);
 
   const updateField = useCallback(
     (field: keyof ProductFormData, value: unknown) => {

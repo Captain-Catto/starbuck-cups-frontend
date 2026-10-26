@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/store";
 import { toast } from "sonner";
+import { getAdminToken, getAdminAuthHeaders } from "@/lib/admin-token";
 
 export interface Address {
   addressLine: string;
@@ -63,7 +64,6 @@ export function useCustomerForm(
   const router = useRouter();
 
   // Get token from Redux store
-  const { token } = useAppSelector((state) => state.auth);
 
   const [formData, setFormData] = useState<CustomerFormData>({
     messengerId: initialData?.messengerId || "",
@@ -219,7 +219,7 @@ export function useCustomerForm(
         method,
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(getAdminAuthHeaders()),
         },
         body: JSON.stringify(payload),
       });
@@ -257,16 +257,7 @@ export function useCustomerForm(
     } finally {
       setIsSubmitting(false);
     }
-  }, [
-    formData,
-    isEditing,
-    customerId,
-    validateForm,
-    onSuccess,
-    onError,
-    router,
-    token,
-  ]);
+  }, [formData, isEditing, customerId, validateForm, onSuccess, onError, router]);
 
   const resetForm = useCallback(() => {
     setFormData({

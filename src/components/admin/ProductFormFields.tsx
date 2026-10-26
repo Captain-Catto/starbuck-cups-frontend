@@ -23,6 +23,8 @@ interface ProductFormFieldsData {
   isActive: boolean;
   isVip: boolean;
   isFeatured: boolean;
+  isPinned?: boolean;
+  initialIsPinned?: boolean;
 }
 
 interface ProductFormFieldsProps {
@@ -46,6 +48,9 @@ interface ProductFormFieldsProps {
   handleImageUrlRemove: (index: number) => void;
   handleImageUrlAdd: () => void;
   showActiveToggle?: boolean;
+  // When set, shows the "pin to top" checkbox with the current pinned count (edit form only)
+  pinStats?: { count: number; max: number } | null;
+  showPinToggle?: boolean;
 }
 
 export function ProductFormFields({
@@ -64,7 +69,18 @@ export function ProductFormFields({
   handleImageUrlRemove,
   handleImageUrlAdd,
   showActiveToggle = false,
+  pinStats = null,
+  showPinToggle = false,
 }: ProductFormFieldsProps) {
+  const isPinned = formData.isPinned ?? false;
+  // Count as it would be if this form were saved now (this product may toggle in or out)
+  const projectedPinned = pinStats
+    ? pinStats.count - (formData.initialIsPinned ? 1 : 0) + (isPinned ? 1 : 0)
+    : null;
+  const pinSlotsLeft =
+    pinStats && projectedPinned !== null ? pinStats.max - projectedPinned : null;
+  const pinDisabled = !isPinned && pinSlotsLeft !== null && pinSlotsLeft <= 0;
+
   return (
     <div className="space-y-4">
       {/* Multilingual Product Name & Description */}
@@ -288,6 +304,38 @@ export function ProductFormFields({
             onChange={(isFeatured) => updateField("isFeatured", isFeatured)}
           />
         </div>
+
+        {/* Pin Status */}
+        {showPinToggle && (
+          <div>
+            <span className="block text-sm font-medium text-gray-700 mb-2">
+              Ghim lên đầu trang sản phẩm
+            </span>
+            <label
+              className={`inline-flex items-center gap-3 ${pinDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+            >
+              <input
+                aria-label="Ghim sản phẩm"
+                type="checkbox"
+                checked={isPinned}
+                disabled={pinDisabled}
+                onChange={(e) => updateField("isPinned", e.target.checked)}
+                className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+              />
+              <span className="text-base text-gray-900">Ghim sản phẩm này</span>
+            </label>
+            {pinStats && projectedPinned !== null && pinSlotsLeft !== null && (
+              <p
+                className={`mt-1 text-sm ${pinSlotsLeft <= 0 ? "text-red-600" : "text-gray-500"}`}
+              >
+                Đã ghim {projectedPinned}/{pinStats.max} sản phẩm
+                {pinSlotsLeft > 0
+                  ? ` (còn ${pinSlotsLeft} lượt ghim)`
+                  : " (đã đạt giới hạn, hãy bỏ ghim sản phẩm khác để ghim thêm)"}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Images Section */}

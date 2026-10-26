@@ -7,7 +7,7 @@ import { useHeroImages, HeroImage } from "@/hooks/admin/useHeroImages";
 import { HeroImageGrid } from "@/components/admin/hero-images/HeroImageGrid";
 import { UploadModal } from "@/components/admin/hero-images/UploadModal";
 import { EditModal } from "@/components/admin/hero-images/EditModal";
-import { LoadingState } from "@/components/admin/LoadingState";
+import HeroImagesLoading from "./loading";
 import { ErrorMessage } from "@/components/admin/ErrorMessage";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { PageHeader } from "@/components/admin/PageHeader";
@@ -62,7 +62,7 @@ export default function HeroImagesPage() {
 
 
   if (loading) {
-    return <LoadingState />;
+    return <HeroImagesLoading />;
   }
 
   return (

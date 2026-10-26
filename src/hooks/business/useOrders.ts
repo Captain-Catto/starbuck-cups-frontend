@@ -5,6 +5,7 @@ import { useReducer, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { RootState } from "@/store";
+import { getAdminAuthHeaders } from "@/lib/admin-token";
 
 export interface OrderItem {
   id: string;
@@ -174,11 +175,10 @@ export function useOrders(options: UseOrdersOptions = {}): UseOrdersReturn {
   });
   const { orders, pagination, filters, loading, error } = state;
 
-  const token = useSelector((state: RootState) => state.auth.token);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [token]);
+    return getAdminAuthHeaders();
+  }, []);
 
   const fetchOrders = useCallback(async () => {
     try {

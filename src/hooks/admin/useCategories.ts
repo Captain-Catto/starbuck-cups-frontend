@@ -13,6 +13,7 @@ import {
   type CategoryPagination,
   type CategoryStatusFilter,
 } from "@/store/slices/categoriesSlice";
+import { getAdminAuthHeaders } from "@/lib/admin-token";
 
 interface CategoryWithCount extends Category {
   _count?: {
@@ -111,7 +112,6 @@ export function useCategories(): UseCategoriesReturn {
   });
 
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const token = useAppSelector((state) => state.auth.token);
 
   useEffect(() => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
@@ -162,8 +162,8 @@ export function useCategories(): UseCategoriesReturn {
   };
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [token]);
+    return getAdminAuthHeaders();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,4 +1,4 @@
-import type { ApiResponse, Product } from "@/types";
+import type { AdminUser, ApiResponse, Product } from "@/types";
 import type { NotificationData } from "@/types/notification.types";
 
 const ADMIN_TOKEN_STORAGE_KEY = "admin_token";
@@ -148,7 +148,7 @@ class ClientApi {
     ApiResponse<{
       token: string;
       refreshToken?: string;
-      user: { id: string; email: string; name: string; role: string };
+      user: AdminUser;
     }>
   > {
     return this.request("/api/auth/admin/login", {
@@ -192,6 +192,20 @@ class ClientApi {
 
   async toggleProductStatus(productId: string): Promise<ApiResponse<Product>> {
     return this.request(`/api/admin/products/${productId}/toggle-status`, {
+      method: "PATCH",
+      body: JSON.stringify({}),
+    });
+  }
+
+  async pinProduct(productId: string): Promise<ApiResponse<{ pinnedAt: string | null }>> {
+    return this.request(`/api/admin/products/${productId}/pin`, {
+      method: "PATCH",
+      body: JSON.stringify({}),
+    });
+  }
+
+  async unpinProduct(productId: string): Promise<ApiResponse<{ pinnedAt: string | null }>> {
+    return this.request(`/api/admin/products/${productId}/unpin`, {
       method: "PATCH",
       body: JSON.stringify({}),
     });

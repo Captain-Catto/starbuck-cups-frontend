@@ -119,7 +119,7 @@ export function OrderDetailActions({
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+    <div className="rounded-lg border border-gray-700 bg-gray-800 p-4 sm:p-6">
       <div className="flex items-center gap-3 mb-4">
         <AlertCircle className="size-5 text-blue-400" />
         <h3 className="text-lg font-medium text-white">Hành động nhanh</h3>

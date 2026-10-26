@@ -34,8 +34,9 @@ export default function ProductModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-zinc-950 bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-white sm:flex sm:items-center sm:justify-center sm:bg-zinc-950/60 sm:p-4">
+      {/* Full-screen sheet on phones (one scroll area, sticky action bar); centered dialog from sm up. */}
+      <div className="h-dvh w-full overflow-y-auto overscroll-contain bg-white sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-lg">
         {product ? (
           <UpdateProductForm
             productId={product.id}

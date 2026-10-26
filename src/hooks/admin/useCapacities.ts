@@ -11,6 +11,7 @@ import {
   setCurrentPage,
   setCapacitiesDirectly,
 } from "@/store/slices/capacitiesSlice";
+import { getAdminAuthHeaders } from "@/lib/admin-token";
 
 interface CapacityWithCount extends Capacity {
   _count?: {
@@ -120,11 +121,10 @@ export function useCapacities(): UseCapacitiesReturn {
   });
 
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const token = useAppSelector((state) => state.auth.token);
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [token]);
+    return getAdminAuthHeaders();
+  }, []);
 
   useEffect(() => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);

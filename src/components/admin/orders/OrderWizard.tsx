@@ -58,7 +58,7 @@ function PricingStep({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 sm:gap-6">
         <div className="space-y-4">
           <div>
             <label
@@ -166,7 +166,7 @@ function PricingStep({
           </div>
         </div>
 
-        <div className="bg-gray-800 rounded-lg p-6">
+        <div className="bg-gray-800 rounded-lg p-4 sm:p-6">
           <h4 className="font-semibold text-white mb-4">Tóm tắt đơn hàng</h4>
           <div className="space-y-3">
             <div className="flex justify-between">
@@ -223,7 +223,7 @@ function ConfirmationStep({
         </p>
       </div>
 
-      <div className="bg-gray-800 border border-gray-600 rounded-lg p-6">
+      <div className="bg-gray-800 border border-gray-600 rounded-lg p-4 sm:p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <h4 className="font-semibold text-white mb-3">
@@ -325,7 +325,7 @@ function ConfirmationStep({
 
 function StepsHeader({ currentStep }: { currentStep: number }) {
   return (
-    <div className="px-6 py-4 border-b border-gray-700">
+    <div className="border-b border-gray-700 px-3 py-3 sm:px-6 sm:py-4">
       <div className="flex items-center justify-between">
         {steps.map((step, index) => {
           const isActive = currentStep === step.id;
@@ -333,10 +333,13 @@ function StepsHeader({ currentStep }: { currentStep: number }) {
           const StepIcon = step.icon;
 
           return (
-            <div key={step.id} className="flex items-center">
+            <div
+              key={step.id}
+              className={`flex items-center ${index < steps.length - 1 ? "flex-1" : ""}`}
+            >
               <div className="flex items-center">
                 <div
-                  className={`size-10 rounded-full flex items-center justify-center ${
+                  className={`flex size-8 shrink-0 items-center justify-center rounded-full sm:size-10 ${
                     isCompleted
                       ? "bg-gray-500 text-white"
                       : isActive
@@ -362,7 +365,7 @@ function StepsHeader({ currentStep }: { currentStep: number }) {
               </div>
               {index < steps.length - 1 && (
                 <div
-                  className={`w-12 h-0.5 ml-4 ${
+                  className={`ml-2 h-0.5 flex-1 sm:ml-4 sm:w-12 sm:flex-none ${
                     currentStep > step.id ? "bg-gray-500" : "bg-gray-600"
                   }`}
                 />
@@ -371,6 +374,9 @@ function StepsHeader({ currentStep }: { currentStep: number }) {
           );
         })}
       </div>
+      <p className="mt-2 text-sm font-medium text-white md:hidden">
+        Bước {currentStep}/{steps.length}: {steps.find((st) => st.id === currentStep)?.title}
+      </p>
     </div>
   );
 }
@@ -389,23 +395,23 @@ function WizardNavigation({
   onSubmit: () => void;
 }) {
   return (
-    <div className="px-6 py-4 border-t border-gray-700 flex items-center justify-between">
+    <div className="flex items-center justify-between gap-3 border-t border-gray-700 px-3 py-3 sm:px-6 sm:py-4">
       <button
         type="button"
         onClick={onPrev}
         disabled={currentStep === 1}
-        className="flex items-center gap-2 px-4 py-2 text-gray-300 bg-gray-800 border border-gray-600 rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        className="flex min-h-11 items-center gap-2 rounded-lg border border-gray-600 bg-gray-800 px-4 py-2 text-gray-300 hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
       >
         <ChevronLeft className="size-4" />
         Trước
       </button>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-1 items-center justify-end gap-3">
         {currentStep < steps.length ? (
           <button
             type="button"
             onClick={onNext}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 cursor-pointer"
+            className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 cursor-pointer sm:flex-none"
           >
             Tiếp theo
             <ChevronRight className="size-4" />
@@ -415,7 +421,7 @@ function WizardNavigation({
             type="button"
             onClick={onSubmit}
             disabled={loading}
-            className="flex items-center gap-2 px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 cursor-pointer"
+            className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-gray-600 px-6 py-2 text-white hover:bg-gray-700 disabled:opacity-50 cursor-pointer sm:flex-none"
           >
             {loading ? (
               <>
@@ -548,7 +554,7 @@ export function OrderWizard() {
   return (
     <div className="bg-gray-900 rounded-lg border border-gray-700">
       <StepsHeader currentStep={currentStep} />
-      <div className="p-6">{stepContent}</div>
+      <div className="p-3 sm:p-6">{stepContent}</div>
       <WizardNavigation
         currentStep={currentStep}
         loading={loading}

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useReducer } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import type { RootState } from "@/store";
+import { getAdminAuthHeaders } from "@/lib/admin-token";
 
 export interface CustomerAdmin {
   id: string;
@@ -97,7 +98,7 @@ export function useAdminCustomers(
   dateFrom = "",
   dateTo = ""
 ) {
-  const token = useSelector((state: RootState) => state.auth.token);
+  const hasToken = useSelector((state: RootState) => Boolean(state.auth.token));
 
   const [{ customers, loading, actionLoading }, dispatchState] = useReducer(
     customersReducer,
@@ -110,11 +111,8 @@ export function useAdminCustomers(
   });
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    const baseHeaders = { "Content-Type": "application/json" };
-    return token
-      ? { ...baseHeaders, Authorization: `Bearer ${token}` }
-      : baseHeaders;
-  }, [token]);
+    return { "Content-Type": "application/json", ...getAdminAuthHeaders() };
+  }, []);
 
   const fetchCustomers = useCallback(async () => {
     try {
@@ -175,8 +173,8 @@ export function useAdminCustomers(
   };
 
   useEffect(() => {
-    if (token) fetchCustomers();
-  }, [fetchCustomers, token]);
+    if (hasToken) fetchCustomers();
+  }, [fetchCustomers, hasToken]);
 
   return {
     customers,

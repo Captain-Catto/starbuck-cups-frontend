@@ -123,6 +123,7 @@
     "alreadyExists": "{name} đã có trong giỏ tư vấn"
   },
   "productDetail": {
+    "pinned": "Ghim",
     "color": "Màu sắc",
     "capacity": "Dung tích",
     "category": "Danh mục",
