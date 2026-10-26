@@ -69,6 +69,15 @@ interface RichTextEditorProps {
 }
 
 // Plugin để sync HTML value
+//
+// The editor is the source of truth while the user types. Every HTML string it emits is
+// remembered; when the same string comes back through `value` it is an echo of our own
+// change (possibly a stale one if the user typed faster than React re-rendered) and must
+// NOT be written back into the editor. Only a `value` we never emitted (initial load,
+// reload, reset) is loaded into the editor. External loads are tagged "history-merge",
+// which OnChangePlugin ignores by default, so no flag/timer is needed to avoid a loop.
+const MAX_REMEMBERED_EMITS = 50;
+
 function ValuePlugin({
   value,
   onChange,
@@ -76,80 +85,49 @@ function ValuePlugin({
   value: string;
   onChange: (value: string) => void;
 }) {
-
   const [editor] = useLexicalComposerContext();
-  const isUpdatingFromExternalRef = useRef(false);
-  const lastValueRef = useRef("");
+  const emittedRef = useRef<string[]>([]);
+  // null = the editor has diverged from the last externally loaded value
+  const lastLoadedRef = useRef<string | null>("");
 
-  // Set initial value and update when value changes from external source
   useEffect(() => {
+    if (value === lastLoadedRef.current) return;
+    if (emittedRef.current.includes(value)) {
+      // Echo of something the editor emitted: if it is the latest one we are caught up.
+      if (value === emittedRef.current[emittedRef.current.length - 1]) {
+        emittedRef.current = [value];
+      }
+      return;
+    }
 
+    lastLoadedRef.current = value;
+    emittedRef.current = [];
 
-
-    // Avoid infinite loop: only update if value actually changed and not from internal change
-    if (value !== lastValueRef.current && !isUpdatingFromExternalRef.current) {
-
-      lastValueRef.current = value;
-      isUpdatingFromExternalRef.current = true;
-
-      if (value) {
-        editor.update(() => {
-          const root = $getRoot();
-
-          // Clear current content
-          root.clear();
-
-          // Parse and insert new content
-          const parser = new DOMParser();
-          const dom = parser.parseFromString(value, "text/html");
+    editor.update(
+      () => {
+        const root = $getRoot();
+        root.clear();
+        if (value) {
+          const dom = new DOMParser().parseFromString(value, "text/html");
           const nodes = $generateNodesFromDOM(editor, dom);
           $insertNodes(nodes);
-
-        });
-      } else {
-        // Clear editor if value is empty
-        editor.update(() => {
-          const root = $getRoot();
-          root.clear();
-
-        });
-      }
-
-      // Reset flag after update
-      const resetExternalUpdateTimer = setTimeout(() => {
-        isUpdatingFromExternalRef.current = false;
-
-      }, 100);
-
-      return () => clearTimeout(resetExternalUpdateTimer);
-    } else {
-
-    }
-  }, [value, editor]); // Include value in dependencies to update when it changes
+        }
+      },
+      { tag: "history-merge" }
+    );
+  }, [value, editor]);
 
   return (
     <OnChangePlugin
       onChange={(editorState) => {
-
-        // Skip onChange if we're updating from external source
-        if (isUpdatingFromExternalRef.current) {
-
-          return;
-        }
-
         editorState.read(() => {
           const htmlString = $generateHtmlFromNodes(editor, null);
+          if (htmlString === emittedRef.current[emittedRef.current.length - 1]) return;
+          if (htmlString === lastLoadedRef.current && emittedRef.current.length === 0) return;
 
-          // Kiểm tra xem có hình ảnh trong HTML không
-          const hasImages = htmlString.includes("<img");
-          const imageCount = (htmlString.match(/<img/g) || []).length;
-
-          if (hasImages) {
-
-          }
-
-          // Update last value ref to prevent unnecessary updates
-          lastValueRef.current = htmlString;
+          emittedRef.current.push(htmlString);
+          if (emittedRef.current.length > MAX_REMEMBERED_EMITS) emittedRef.current.shift();
+          lastLoadedRef.current = null;
           onChange(htmlString);
         });
       }}

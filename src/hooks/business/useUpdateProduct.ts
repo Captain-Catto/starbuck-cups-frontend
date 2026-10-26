@@ -4,6 +4,7 @@ import {
   useEffect,
   useCallback,
   useReducer,
+  useRef,
   type SetStateAction,
 } from "react";
 import { useSelector } from "react-redux";
@@ -18,51 +19,37 @@ import { invalidateProductDependentCaches } from "@/lib/adminCacheInvalidation";
 
 type TranslationField = "name" | "description" | "metaTitle" | "metaDescription";
 
-const toOptionalValue = (value: string): string | undefined => {
-  const trimmed = value.trim();
-  return trimmed ? trimmed : undefined;
-};
-
+// Builds the translations payload. Fields are always sent (as "" when empty) so the
+// backend can tell "cleared" apart from "not sent". For en/zh an empty name means
+// "no translation": the backend removes an existing one, or ignores it if none exists.
 const buildTranslationsPayload = (
   translations: ProductTranslationsInput,
   fallbackName: string,
   fallbackDescription: string
 ) => {
-  const buildLocale = (
-    locale: ProductLocale
-  ): Record<string, string> | undefined => {
+  const buildLocale = (locale: ProductLocale): Record<string, string> => {
     const source = translations[locale];
-    const entry: Record<string, string> = {};
+    const isDefault = locale === "vi";
 
-    const name =
-      locale === "vi"
-        ? source.name.trim() || fallbackName.trim()
-        : source.name.trim();
-    if (name) entry.name = name;
+    const name = isDefault
+      ? source.name.trim() || fallbackName.trim()
+      : source.name.trim();
+    if (!name) return { name: "" };
 
-    const description =
-      locale === "vi"
+    return {
+      name,
+      description: isDefault
         ? source.description.trim() || fallbackDescription.trim()
-        : source.description.trim();
-    if (description) entry.description = description;
-
-    const metaTitle = toOptionalValue(source.metaTitle);
-    if (metaTitle) entry.metaTitle = metaTitle;
-
-    const metaDescription = toOptionalValue(source.metaDescription);
-    if (metaDescription) entry.metaDescription = metaDescription;
-
-    return Object.keys(entry).length > 0 ? entry : undefined;
+        : source.description.trim(),
+      metaTitle: source.metaTitle.trim(),
+      metaDescription: source.metaDescription.trim(),
+    };
   };
 
-  const vi = buildLocale("vi");
-  const en = buildLocale("en");
-  const zh = buildLocale("zh");
-
   return {
-    ...(vi && { vi }),
-    ...(en && { en }),
-    ...(zh && { zh }),
+    vi: buildLocale("vi"),
+    en: buildLocale("en"),
+    zh: buildLocale("zh"),
   };
 };
 
@@ -243,9 +230,20 @@ export function useUpdateProduct(
 
   const token = useSelector((state: RootState) => state.auth.token);
 
+  // Token and callbacks are read through refs so that a silent token refresh (or an
+  // inline callback from the parent) never recreates loadProductData. Otherwise the
+  // load effect re-runs mid-edit and overwrites the user's unsaved changes.
+  const tokenRef = useRef(token);
+  const onErrorRef = useRef(onError);
+  useEffect(() => {
+    tokenRef.current = token;
+    onErrorRef.current = onError;
+  });
+
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [token]);
+    const current = tokenRef.current;
+    return current ? { Authorization: `Bearer ${current}` } : {};
+  }, []);
 
   const loadProductData = useCallback(async () => {
     try {
@@ -311,10 +309,10 @@ export function useUpdateProduct(
           ? error.message
           : "Có lỗi xảy ra khi tải dữ liệu";
       toast.error(errorMsg);
-      if (onError) onError(errorMsg);
+      onErrorRef.current?.(errorMsg);
       dispatch({ type: "LOAD_ERROR" });
     }
-  }, [productId, onError, getAuthHeaders]);
+  }, [productId, getAuthHeaders]);
 
   useEffect(() => {
     if (productId) {

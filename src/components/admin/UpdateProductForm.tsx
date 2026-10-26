@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import { X } from "lucide-react";
+import { toast } from "sonner";
 import type { Category, Color, Capacity } from "@/types";
 import { useUpdateProduct } from "@/hooks/business/useUpdateProduct";
 import { uploadAPI } from "@/lib/client-upload-api";
@@ -43,12 +44,16 @@ export function UpdateProductForm({
   // Image upload handler
   const handleImageSelect = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files;
+      const input = e.target;
+      const files = input.files;
       if (!files || files.length === 0) return;
+
+      const fileArray = Array.from(files);
+      // Reset so picking the same file again after a failure still fires onChange.
+      input.value = "";
 
       setIsUploading(true);
       try {
-        const fileArray = Array.from(files);
         const uploadResponse = await uploadAPI.uploadProductImages(fileArray);
 
         if (uploadResponse.success && uploadResponse.data) {
@@ -56,8 +61,13 @@ export function UpdateProductForm({
           const newImageUrls = uploadResponse.data.map((item) => item.url);
           const newImages = [...currentImages, ...newImageUrls];
           updateField("images", newImages);
+        } else {
+          toast.error(uploadResponse.message || "Không thể tải hình ảnh lên");
         }
-      } catch {
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Lỗi khi tải lên hình ảnh"
+        );
       } finally {
         setIsUploading(false);
       }

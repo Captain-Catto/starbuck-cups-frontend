@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/server-api";
+import { getClientForwardHeaders } from "@/lib/admin-api-helper";
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,6 +13,7 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         ...(cookies && { Cookie: cookies }),
+        ...getClientForwardHeaders(request),
       },
     });
 

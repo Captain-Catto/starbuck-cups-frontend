@@ -32,6 +32,20 @@ export function getAdminForwardHeaders(request: NextRequest): Record<string, str
 }
 
 /**
+ * Headers that identify the real client to the backend (IP + user agent) only.
+ * Without x-forwarded-for the backend sees this server's own IP for every user, so
+ * per-IP rate limiting (login/refresh/session) would share one bucket across everyone.
+ */
+export function getClientForwardHeaders(request: NextRequest): Record<string, string> {
+  const headers: Record<string, string> = {};
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) headers["x-forwarded-for"] = forwardedFor;
+  const userAgent = request.headers.get("user-agent");
+  if (userAgent) headers["user-agent"] = userAgent;
+  return headers;
+}
+
+/**
  * Robust handling of Backend responses to prevent JSON parsing errors
  * and forward the exact HTTP status codes to the frontend.
  * Returns the parsed data object.

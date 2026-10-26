@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiUrl } from "@/lib/server-api";
+import { getClientForwardHeaders } from "@/lib/admin-api-helper";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,7 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...getClientForwardHeaders(request),
       },
       body: JSON.stringify({ email, password }),
     });
